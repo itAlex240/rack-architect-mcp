@@ -5,6 +5,7 @@
 **The Open-Source, Agent-First "Rack-as-Code" Planning, 5-Stage Validation, Parametric 3D-Print (`.scad`/`.stl`) & Live 2D/3D CAD Platform for 19-Inch Enterprise Racks, 10-Inch Mini-Racks & 6-Inch Micro-Homelabs**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](./LICENSE)
+[![Glama MCP Score](https://glama.ai/mcp/servers/itAlex240/rack-architect-mcp/badges/score.svg)](https://glama.ai/mcp/servers/itAlex240/rack-architect-mcp)
 [![Live 3D Demo](https://img.shields.io/badge/Live_3D_Demo-GitHub_Pages-0EA5E9.svg)](https://italex240.github.io/rack-architect-mcp/)
 [![TypeScript 5.9 Strict](https://img.shields.io/badge/TypeScript-5.9_Strict-3178C6.svg)](./tsconfig.base.json)
 [![MCP Server](https://img.shields.io/badge/MCP-11_Tools_%2B_WebMCP-8B5CF6.svg)](./packages/mcp-server)
