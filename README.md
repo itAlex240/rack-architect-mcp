@@ -5,13 +5,14 @@
 **The Open-Source, Agent-First "Rack-as-Code" Planning, 5-Stage Validation, Parametric 3D-Print (`.scad`/`.stl`) & Live 2D/3D CAD Platform for 19-Inch Enterprise Racks, 10-Inch Mini-Racks & 6-Inch Micro-Homelabs**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](./LICENSE)
+[![Live 3D Demo](https://img.shields.io/badge/Live_3D_Demo-GitHub_Pages-0EA5E9.svg)](https://italex240.github.io/rack-architect-mcp/)
 [![TypeScript 5.9 Strict](https://img.shields.io/badge/TypeScript-5.9_Strict-3178C6.svg)](./tsconfig.base.json)
 [![MCP Server](https://img.shields.io/badge/MCP-11_Tools_%2B_WebMCP-8B5CF6.svg)](./packages/mcp-server)
 [![EIA-310 Standards](https://img.shields.io/badge/EIA--310-19%22_%7C_10%22_%7C_6%22-06B6D4.svg)](./ARCHITECTURE.md)
 [![3D Print Ready](https://img.shields.io/badge/3D--Print-OpenSCAD_.SCAD_%2B_.STL-F59E0B.svg)](./packages/exporters/src/openscad-carrier.ts)
 [![Tests](https://img.shields.io/badge/Vitest-34%2F34_Passing-10B981.svg)](./vitest.config.ts)
 
-[**Quickstart**](#-30-second-quickstart) · [**MCP Client Setup**](#-connect-claude-desktop-cursor-or-antigravity) · [**3D/2D Web-Viewer**](#-live-3d-digital-twin--2d-cad-web-viewer-1270013100) · [**3D-Print (.SCAD / .STL)**](#-parametric-3d-print-generator-scad--stl) · [**Add Hardware Blueprint**](./CONTRIBUTING.md) · [**Complete Handbook (DE)**](./docs/COMPLETE_SYSTEM_HANDBOOK.md)
+[**🌐 Launch Live 3D/2D Browser Demo**](https://italex240.github.io/rack-architect-mcp/) · [**Quickstart**](#-30-second-quickstart) · [**MCP Client Setup**](#-connect-claude-desktop-cursor-or-antigravity) · [**3D-Print (.SCAD / .STL)**](#-parametric-3d-print-generator-scad--stl) · [**Add Hardware Blueprint**](./CONTRIBUTING.md) · [**Complete Handbook (DE)**](./docs/COMPLETE_SYSTEM_HANDBOOK.md)
 
 </div>
 
