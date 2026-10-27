@@ -46,7 +46,7 @@ export function createRackMcpServer(
   const mcpServer = new McpServer(
     {
       name: RACK_MCP_SERVER_NAME,
-      version: '0.1.0'
+      version: '0.1.1'
     },
     {
       capabilities: {

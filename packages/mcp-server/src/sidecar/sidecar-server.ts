@@ -52,10 +52,70 @@ export interface RackSidecarServer {
   close(): Promise<void>;
 }
 
-function setCorsHeaders(res: http.ServerResponse): void {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+const ALLOWED_LOCAL_ORIGINS = new Set([
+  'http://127.0.0.1:3100',
+  'http://localhost:3100',
+  'http://127.0.0.1:5173',
+  'http://localhost:5173'
+]);
+
+function setCorsHeaders(
+  req: http.IncomingMessage,
+  res: http.ServerResponse
+): void {
+  const origin = req.headers.origin;
+  if (origin !== undefined && ALLOWED_LOCAL_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:3100');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+}
+
+interface StaticAssetEntry {
+  readonly contentType: string;
+  readonly body: Buffer;
+}
+
+function loadStaticWebViewerAssets(): ReadonlyMap<string, StaticAssetEntry> {
+  const assets = new Map<string, StaticAssetEntry>();
+  const currentDir = path.dirname(fileURLToPath(import.meta.url));
+  const distRoot = path.resolve(currentDir, '../../../web-viewer/dist');
+  if (!fs.existsSync(distRoot)) {
+    return assets;
+  }
+
+  const mimeMap: Record<string, string> = {
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.svg': 'image/svg+xml; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.map': 'application/json; charset=utf-8'
+  };
+
+  const walkDir = (dirPath: string, urlPrefix: string): void => {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name);
+      const routePath = `${urlPrefix}/${entry.name}`;
+      if (entry.isDirectory()) {
+        walkDir(fullPath, routePath);
+      } else if (entry.isFile()) {
+        const ext = path.extname(entry.name).toLowerCase();
+        const contentType = mimeMap[ext] ?? 'application/octet-stream';
+        assets.set(routePath, {
+          contentType,
+          body: fs.readFileSync(fullPath)
+        });
+      }
+    }
+  };
+
+  walkDir(distRoot, '');
+  return assets;
 }
 
 /**
@@ -69,9 +129,10 @@ export async function startRackSidecarServer(
   const requestedPort = options.port ?? 3100;
   const host = options.host ?? '127.0.0.1';
   const handlers = new RackMcpToolHandlers(stateManager);
+  const staticAssets = loadStaticWebViewerAssets();
 
   const httpServer = http.createServer((req, res) => {
-    setCorsHeaders(res);
+    setCorsHeaders(req, res);
 
     if (req.method === 'OPTIONS') {
       res.writeHead(204);
@@ -79,7 +140,7 @@ export async function startRackSidecarServer(
       return;
     }
 
-    const requestUrl = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
+    const requestUrl = new URL(req.url ?? '/', 'http://127.0.0.1');
     const pathname = requestUrl.pathname;
 
     try {
@@ -114,16 +175,30 @@ export async function startRackSidecarServer(
       }
 
       if (req.method === 'GET' && pathname === '/api/export/elevation.svg') {
-        const svg = generateElevationSvg(stateManager.getScene());
-        res.writeHead(200, { 'Content-Type': 'image/svg+xml; charset=utf-8' });
-        res.end(svg);
+        const svgBuffer = Buffer.from(
+          generateElevationSvg(stateManager.getScene()),
+          'utf8'
+        );
+        res.writeHead(200, {
+          'Content-Type': 'image/svg+xml; charset=utf-8',
+          'Content-Disposition': 'inline; filename="elevation.svg"',
+          'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'"
+        });
+        res.end(svgBuffer);
         return;
       }
 
       if (req.method === 'GET' && pathname === '/api/export/wiring.svg') {
-        const svg = generateWiringSchematicSvg(stateManager.getScene());
-        res.writeHead(200, { 'Content-Type': 'image/svg+xml; charset=utf-8' });
-        res.end(svg);
+        const svgBuffer = Buffer.from(
+          generateWiringSchematicSvg(stateManager.getScene()),
+          'utf8'
+        );
+        res.writeHead(200, {
+          'Content-Type': 'image/svg+xml; charset=utf-8',
+          'Content-Disposition': 'inline; filename="wiring-schematic.svg"',
+          'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'"
+        });
+        res.end(svgBuffer);
         return;
       }
 
@@ -131,6 +206,7 @@ export async function startRackSidecarServer(
         const glb = generateGlbBinary(stateManager.getScene());
         res.writeHead(200, {
           'Content-Type': 'model/gltf-binary',
+          'Content-Disposition': 'attachment; filename="rack-scene.glb"',
           'Content-Length': String(glb.byteLength)
         });
         res.end(Buffer.from(glb.buffer, glb.byteOffset, glb.byteLength));
@@ -138,49 +214,37 @@ export async function startRackSidecarServer(
       }
 
       if (req.method === 'GET' && pathname === '/api/export/bom.md') {
-        const md = generateBomMarkdown(
-          stateManager.getScene(),
-          stateManager.getCatalog().toRecord()
+        const mdBuffer = Buffer.from(
+          generateBomMarkdown(
+            stateManager.getScene(),
+            stateManager.getCatalog().toRecord()
+          ),
+          'utf8'
         );
-        res.writeHead(200, { 'Content-Type': 'text/markdown; charset=utf-8' });
-        res.end(md);
+        res.writeHead(200, {
+          'Content-Type': 'text/markdown; charset=utf-8',
+          'Content-Disposition': 'inline; filename="BOM.md"'
+        });
+        res.end(mdBuffer);
         return;
       }
 
-      // Static SPA Hosting from packages/web-viewer/dist
+      // Static SPA Hosting from pre-indexed in-memory asset map (zero path traversal surface)
       if (req.method === 'GET' && !pathname.startsWith('/api/')) {
-        const currentDir = path.dirname(fileURLToPath(import.meta.url));
-        const distRoot = path.resolve(currentDir, '../../../web-viewer/dist');
-        const requestedRel = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
-        const candidatePath = path.resolve(distRoot, requestedRel);
-
-        if (
-          candidatePath.startsWith(distRoot) &&
-          fs.existsSync(candidatePath) &&
-          fs.statSync(candidatePath).isFile()
-        ) {
-          const ext = path.extname(candidatePath).toLowerCase();
-          const mimeMap: Record<string, string> = {
-            '.html': 'text/html; charset=utf-8',
-            '.js': 'application/javascript; charset=utf-8',
-            '.css': 'text/css; charset=utf-8',
-            '.svg': 'image/svg+xml; charset=utf-8',
-            '.json': 'application/json; charset=utf-8',
-            '.map': 'application/json; charset=utf-8'
-          };
-          const contentType = mimeMap[ext] ?? 'application/octet-stream';
-          res.writeHead(200, { 'Content-Type': contentType });
-          res.end(fs.readFileSync(candidatePath));
+        const routeKey = pathname === '/' ? '/index.html' : pathname;
+        const asset = staticAssets.get(routeKey);
+        if (asset !== undefined) {
+          res.writeHead(200, { 'Content-Type': asset.contentType });
+          res.end(asset.body);
           return;
         }
       }
 
       res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
-      res.end(JSON.stringify({ error: `Not found: ${pathname}` }));
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      res.end(JSON.stringify({ error: 'Not found' }));
+    } catch {
       res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
-      res.end(JSON.stringify({ error: msg }));
+      res.end(JSON.stringify({ error: 'Internal server error' }));
     }
   });
 
@@ -227,7 +291,7 @@ export async function startRackSidecarServer(
           default: {
             const errReply: SidecarWsMessage = {
               type: 'ERROR',
-              message: `Unsupported WebSocket command tool.`
+              message: 'Unsupported WebSocket command tool.'
             };
             ws.send(JSON.stringify(errReply));
             return;
@@ -240,11 +304,10 @@ export async function startRackSidecarServer(
           result
         };
         ws.send(JSON.stringify(reply));
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
+      } catch {
         const errReply: SidecarWsMessage = {
           type: 'ERROR',
-          message: msg
+          message: 'Invalid command payload or parameters.'
         };
         ws.send(JSON.stringify(errReply));
       }

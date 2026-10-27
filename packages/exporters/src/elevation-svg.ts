@@ -41,7 +41,7 @@ export function escapeXml(value: string): string {
 }
 
 function getContrastingTextColor(hexColor: string): string {
-  const clean = hexColor.replace('#', '');
+  const clean = hexColor.replace(/#/g, '');
   if (clean.length !== 6) {
     return '#F8FAFC';
   }

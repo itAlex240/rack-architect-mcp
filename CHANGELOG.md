@@ -5,6 +5,22 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-10-27
+
+### Added & Improved
+- **Watertight 2-Manifold CSG `.stl` 3D-Print Mesher (`@rack-mcp/exporters` & `@rack-mcp/web-viewer`):**
+  - Upgraded `generateCarrierStl` and browser client-side `generateClientSideCarrierStl` to a 3D rectilinear CSG voxel mesher (`0` non-manifold edges, `0` unpaired half-edges, `0` internal faces).
+  - Directly bakes all 6 EIA-310 M6 mounting slots (`10.0 × 6.5 mm`), `+0.35 mm` FDM print-tolerance device bay cutouts, floor-fused retention guide rails, structural side gussets, and tray floor ventilation cutouts into the exported `.stl` mesh.
+  - Added automated 2-manifold edge and signed-volume verification tests in `packages/exporters/test/exporters.test.ts`.
+
+### Security
+- **Zero Dependabot Vulnerabilities (`pnpm audit` clean):**
+  - Upgraded `zod` to `^4.6.7` and `vitest` / `@vitest/mocker` to `^4.1.12` across all workspace packages and `pnpm.overrides`.
+- **CodeQL Code Scanning Hardening:**
+  - Replaced dynamic `fs` static file resolution in `sidecar-server.ts` with a pre-indexed in-memory static asset `Map` (`loadStaticWebViewerAssets`), strict loopback CORS origin allowlisting, `Content-Security-Policy` headers on SVG exports, and sanitized error responses.
+  - Replaced `dangerouslySetInnerHTML` in `SvgPanZoomViewer.tsx` with a sandboxed `<img src="data:image/svg+xml;...">` element.
+  - Added explicit `permissions: contents: read` to `.github/workflows/ci.yml` and global regex replacements (`/#/g`) in exporters.
+
 ## [0.1.0] - 2026-10-27
 
 ### Added

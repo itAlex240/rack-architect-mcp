@@ -1,6 +1,6 @@
 {
   "name": "@rack-mcp/mcp-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "description": "Model Context Protocol (MCP) server over stdio, 50-step atomic Undo/Redo state manager, and local WebSocket/REST sidecar server for RackArchitect MCP.",
   "type": "module",
@@ -29,12 +29,12 @@
     "@rack-mcp/hardware-catalog": "workspace:*",
     "ws": "^8.22.0",
     "yaml": "^2.9.1",
-    "zod": "^3.24.2"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
     "@types/ws": "^8.18.2",
     "typescript": "^5.7.2",
-    "vitest": "^3.0.5"
+    "vitest": "^4.1.12"
   }
 }

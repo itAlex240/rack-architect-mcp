@@ -59,7 +59,7 @@ function hexToRgba(
   hex: string,
   alpha = 1.0,
 ): readonly [number, number, number, number] {
-  const clean = hex.replace('#', '');
+  const clean = hex.replace(/#/g, '');
   if (clean.length !== 6) {
     return [0.5, 0.5, 0.5, alpha];
   }

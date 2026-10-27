@@ -173,8 +173,14 @@ export function SvgPanZoomViewer({
             transformOrigin: 'top center',
             transition: dragging ? 'none' : 'transform 120ms ease-out',
           }}
-          dangerouslySetInnerHTML={{ __html: svgMarkup }}
-        />
+        >
+          <img
+            src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup)}`}
+            alt={title}
+            draggable={false}
+            style={{ maxWidth: 'none', display: 'block', userSelect: 'none' }}
+          />
+        </div>
       </div>
     </div>
   );

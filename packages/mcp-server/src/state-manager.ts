@@ -283,12 +283,25 @@ export class ProjectStateManager {
 
     let savedPath: string | undefined;
     if (this.customCatalogDir !== undefined) {
-      fs.mkdirSync(this.customCatalogDir, { recursive: true });
-      savedPath = path.join(this.customCatalogDir, `${normalized.slug}.yaml`);
-      const tmpPath = `${savedPath}.tmp`;
-      const yamlText = YAML.stringify(normalized, { indent: 2, lineWidth: 100 });
-      fs.writeFileSync(tmpPath, yamlText, 'utf8');
-      fs.renameSync(tmpPath, savedPath);
+      const resolvedCatalogDir = path.resolve(this.customCatalogDir);
+      fs.mkdirSync(resolvedCatalogDir, { recursive: true });
+      const safeSlug = path
+        .basename(normalized.slug)
+        .replace(/[^a-z0-9-]/g, '');
+      const candidatePath = path.resolve(
+        resolvedCatalogDir,
+        `${safeSlug}.yaml`
+      );
+      if (candidatePath.startsWith(resolvedCatalogDir + path.sep)) {
+        savedPath = candidatePath;
+        const tmpPath = `${savedPath}.tmp`;
+        const yamlText = YAML.stringify(normalized, {
+          indent: 2,
+          lineWidth: 100
+        });
+        fs.writeFileSync(tmpPath, yamlText, 'utf8');
+        fs.renameSync(tmpPath, savedPath);
+      }
     }
 
     this.scene = evaluateRackScene(this.project, this.catalog.toRecord());

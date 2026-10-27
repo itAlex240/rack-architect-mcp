@@ -1,6 +1,6 @@
 {
   "name": "@rack-mcp/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "description": "Unified CLI entry point (rack-mcp serve | validate | export) launching the RackArchitect MCP stdio server, WebSocket sidecar, and 3D Web-Viewer.",
   "type": "module",
@@ -37,6 +37,6 @@
   "devDependencies": {
     "@types/node": "^26.6.5",
     "typescript": "^5.7.2",
-    "vitest": "^3.0.5"
+    "vitest": "^4.1.12"
   }
 }

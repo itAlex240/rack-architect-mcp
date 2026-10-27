@@ -711,24 +711,30 @@ export class RackMcpToolHandlers {
       } else if (fmt === 'carrier-scad') {
         const carriers = generateProjectPrintableCarriers(scene);
         for (const item of carriers) {
-          const filePath = path.join(outDir, item.filename_scad);
-          fs.writeFileSync(filePath, item.openscad_code, 'utf8');
-          exportedFiles.push({
-            format: fmt,
-            path: filePath,
-            size_bytes: Buffer.byteLength(item.openscad_code, 'utf8')
-          });
+          const safeName = path.basename(item.filename_scad);
+          const filePath = path.resolve(outDir, safeName);
+          if (filePath.startsWith(outDir + path.sep)) {
+            fs.writeFileSync(filePath, item.openscad_code, 'utf8');
+            exportedFiles.push({
+              format: fmt,
+              path: filePath,
+              size_bytes: Buffer.byteLength(item.openscad_code, 'utf8')
+            });
+          }
         }
       } else if (fmt === 'carrier-stl') {
         const carriers = generateProjectPrintableCarriers(scene);
         for (const item of carriers) {
-          const filePath = path.join(outDir, item.filename_stl);
-          fs.writeFileSync(filePath, item.stl_ascii, 'utf8');
-          exportedFiles.push({
-            format: fmt,
-            path: filePath,
-            size_bytes: Buffer.byteLength(item.stl_ascii, 'utf8')
-          });
+          const safeName = path.basename(item.filename_stl);
+          const filePath = path.resolve(outDir, safeName);
+          if (filePath.startsWith(outDir + path.sep)) {
+            fs.writeFileSync(filePath, item.stl_ascii, 'utf8');
+            exportedFiles.push({
+              format: fmt,
+              path: filePath,
+              size_bytes: Buffer.byteLength(item.stl_ascii, 'utf8')
+            });
+          }
         }
       }
     }
