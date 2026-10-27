@@ -36,10 +36,10 @@ Wer einen Netzwerkschrank oder ein Homelab-Rack plant – insbesondere kompakte 
 Wenn man ein Sprachmodell (LLM) ohne deterministische Physik-Engine bittet, ein solches Rack zu planen, halluziniert das LLM Maße, übersieht Stecker-Tiefenkollisionen und rät Kabellängen falsch.
 
 ### 1.2 Die Lösung: Agent-First „Rack-as-Code“
-**RackArchitect MCP** löst dieses Problem durch eine **deterministische Hybrid-Sidecar-Architektur**, die auf **drei unumstößlichen Grundgesetzen (Three Golden Laws)** basiert (definiert in [`AGENTS.md`](file:///home/alexb/projects/rack-designer/AGENTS.md) und [`ARCHITECTURE.md`](file:///home/alexb/projects/rack-designer/ARCHITECTURE.md)):
+**RackArchitect MCP** löst dieses Problem durch eine **deterministische Hybrid-Sidecar-Architektur**, die auf **drei unumstößlichen Grundgesetzen (Three Golden Laws)** basiert (definiert in [`AGENTS.md`](./AGENTS.md) und [`ARCHITECTURE.md`](./ARCHITECTURE.md)):
 
 1. **Gesetz 1 — LLMs raten niemals Geometrie:**  
-   KI-Agenten berechnen niemals Koordinaten, Kabellängen oder Tiefenkollisionen im eigenen Kontextfenster. Jede räumliche, elektrische und mechanische Wahrheit wird deterministisch in Millimetern (`mm`, wobei $1\text{ U} = 44.45\text{ mm}$) durch das Kernpaket [`@rack-mcp/core-domain`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/index.ts) berechnet.
+   KI-Agenten berechnen niemals Koordinaten, Kabellängen oder Tiefenkollisionen im eigenen Kontextfenster. Jede räumliche, elektrische und mechanische Wahrheit wird deterministisch in Millimetern (`mm`, wobei $1\text{ U} = 44.45\text{ mm}$) durch das Kernpaket [`@rack-mcp/core-domain`](./packages/core-domain/src/index.ts) berechnet.
 2. **Gesetz 2 — Single Source of Truth (`rack.yaml`):**  
    Der gesamte deklarative Zustand eines geplanten Racks liegt in einer einzigen, menschenlesbaren, Git-freundlichen YAML-Datei (`rack.yaml`), die zur Laufzeit durch strikte Zod-Schemas validiert wird. Abgeleitete 3D-Koordinaten werden niemals redundant in der `rack.yaml` gespeichert, sondern immer frisch aus der `rack.yaml` + dem Hardware-Katalog berechnet.
 3. **Gesetz 3 — Actionable Self-Correction Feedback:**  
@@ -59,20 +59,20 @@ Wenn jemand dieses Projekt untersucht und sich fragt: *„Wie logge ich mich ein
 ### 2.2 Netzwerk-Ports & Bind-Adressen
 | Komponente | Standard-Host | Standard-Port | Protokoll | Quelldatei |
 | :--- | :--- | :--- | :--- | :--- |
-| **MCP-Server (KI-Host-Kommunikation)** | Prozess-Standard-I/O | — (`stdin` / `stdout`) | JSON-RPC 2.0 (MCP `stdio`) | [`packages/mcp-server/src/mcp/server.ts`](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/mcp/server.ts#L393-L397) |
-| **Sidecar HTTP-Server (REST API + Web-UI Hosting)** | `127.0.0.1` (Loopback) | `3100` (konfigurierbar per `--port`) | HTTP (`GET`, `OPTIONS`) | [`packages/mcp-server/src/sidecar/sidecar-server.ts`](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/sidecar/sidecar-server.ts#L69-L70) |
-| **Sidecar WebSocket-Server (Echtzeit-Sync)** | `127.0.0.1` (Loopback) | `3100` (Pfad `/ws`) | WebSocket (`ws://127.0.0.1:3100/ws`) | [`packages/mcp-server/src/sidecar/sidecar-server.ts`](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/sidecar/sidecar-server.ts#L187) |
-| **Vite Dev-Server (nur für Frontend-Entwicklung)** | `localhost` | `5173` | HTTP + HMR | [`packages/web-viewer/vite.config.ts`](file:///home/alexb/projects/rack-designer/packages/web-viewer/vite.config.ts) |
+| **MCP-Server (KI-Host-Kommunikation)** | Prozess-Standard-I/O | — (`stdin` / `stdout`) | JSON-RPC 2.0 (MCP `stdio`) | [`packages/mcp-server/src/mcp/server.ts`](./packages/mcp-server/src/mcp/server.ts#L393-L397) |
+| **Sidecar HTTP-Server (REST API + Web-UI Hosting)** | `127.0.0.1` (Loopback) | `3100` (konfigurierbar per `--port`) | HTTP (`GET`, `OPTIONS`) | [`packages/mcp-server/src/sidecar/sidecar-server.ts`](./packages/mcp-server/src/sidecar/sidecar-server.ts#L69-L70) |
+| **Sidecar WebSocket-Server (Echtzeit-Sync)** | `127.0.0.1` (Loopback) | `3100` (Pfad `/ws`) | WebSocket (`ws://127.0.0.1:3100/ws`) | [`packages/mcp-server/src/sidecar/sidecar-server.ts`](./packages/mcp-server/src/sidecar/sidecar-server.ts#L187) |
+| **Vite Dev-Server (nur für Frontend-Entwicklung)** | `localhost` | `5173` | HTTP + HMR | [`packages/web-viewer/vite.config.ts`](./packages/web-viewer/vite.config.ts) |
 
 ### 2.3 Eingebaute Sicherheits- und Schutzmechanismen
 1. **Loopback-Only Binding (`127.0.0.1`):**  
    Der Sidecar-Server lauscht standardmäßig ausschließlich auf `127.0.0.1` (nicht `0.0.0.0`), sodass kein Zugriff aus dem lokalen Netzwerk (LAN) möglich ist.
 2. **Directory-Traversal-Schutz beim Static File Serving:**  
-   In [`sidecar-server.ts` (Zeilen 152–161)](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/sidecar/sidecar-server.ts#L152-L161) wird jede statische Dateianfrage über `path.resolve(distRoot, requestedRel)` aufgelöst und zwingend mit `candidatePath.startsWith(distRoot)` geprüft. Anfragen wie `/../../etc/passwd` werden dadurch deterministisch blockiert und mit HTTP `404` beantwortet.
+   In [`sidecar-server.ts` (Zeilen 152–161)](./packages/mcp-server/src/sidecar/sidecar-server.ts#L152-L161) wird jede statische Dateianfrage über `path.resolve(distRoot, requestedRel)` aufgelöst und zwingend mit `candidatePath.startsWith(distRoot)` geprüft. Anfragen wie `/../../etc/passwd` werden dadurch deterministisch blockiert und mit HTTP `404` beantwortet.
 3. **Atomare Datei-Persistenz & Write-Lock gegen Race-Conditions:**  
-   In [`state-manager.ts` (Zeilen 303–322)](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/state-manager.ts#L303-L322) wird `rack.yaml` niemals direkt überschrieben, sondern zuerst komplett nach `rack.yaml.tmp` geschrieben und dann per Betriebssystem-Syscall `fs.renameSync(tmpPath, this.projectPath)` atomar ersetzt. Währenddessen verhindert `isWritingLock = true` (mit `60 ms` Nachlaufzeit), dass der eigene Dateisystem-Watcher (`fs.watch`) die eigene Speicherung fälschlicherweise als externe Änderung interpretiert.
+   In [`state-manager.ts` (Zeilen 303–322)](./packages/mcp-server/src/state-manager.ts#L303-L322) wird `rack.yaml` niemals direkt überschrieben, sondern zuerst komplett nach `rack.yaml.tmp` geschrieben und dann per Betriebssystem-Syscall `fs.renameSync(tmpPath, this.projectPath)` atomar ersetzt. Währenddessen verhindert `isWritingLock = true` (mit `60 ms` Nachlaufzeit), dass der eigene Dateisystem-Watcher (`fs.watch`) die eigene Speicherung fälschlicherweise als externe Änderung interpretiert.
 4. **Strikte `stdio`-Trennung für MCP:**  
-   Im `serve`-Modus der CLI ([`packages/cli/src/index.ts` (Zeile 166)](file:///home/alexb/projects/rack-designer/packages/cli/src/index.ts#L166)) werden alle Status-Logs ausschließlich auf `process.stderr` ausgegeben, damit `process.stdout` zu 100 % sauber für den JSON-RPC-Stream des Model Context Protocols bleibt.
+   Im `serve`-Modus der CLI ([`packages/cli/src/index.ts` (Zeile 166)](./packages/cli/src/index.ts#L166)) werden alle Status-Logs ausschließlich auf `process.stderr` ausgegeben, damit `process.stdout` zu 100 % sauber für den JSON-RPC-Stream des Model Context Protocols bleibt.
 
 ---
 
@@ -104,12 +104,12 @@ flowchart TD
 
 | Paket | Pfad | Erlaubte interne Abhängigkeiten | Hauptaufgabe |
 | :--- | :--- | :--- | :--- |
-| **`@rack-mcp/core-domain`** | [`packages/core-domain`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/index.ts) | **KEINE** (`"types": []` in `tsconfig.json`) | Reine Mathematik, Konstanten, Zod-Schemas, Port-Matrix-Expander, 3D-Koordinaten-Transformer, 5-Stufen-Validierungs-Engine, 3D-Catmull-Rom-Kabelrouter. Läuft identisch in Node.js und im Browser. |
-| **`@rack-mcp/hardware-catalog`** | [`packages/hardware-catalog`](file:///home/alexb/projects/rack-designer/packages/hardware-catalog/src/index.ts) | `@rack-mcp/core-domain` | 20 kuratierte YAML-Hardware-Blueprints (`catalog/10inch`, `catalog/19inch`, `catalog/carriers`, `catalog/sub-modules`), eingebettetes TS-Bundle (`embedded-catalog.ts`), Geometrie-Integritäts-Validator und Such-/Filter-Registry (`CatalogRegistry`). |
-| **`@rack-mcp/exporters`** | [`packages/exporters`](file:///home/alexb/projects/rack-designer/packages/exporters/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` | Deterministische Generatoren für `elevation.svg` (2D-Ansichten + Z-Y-Tiefenschnitt), `wiring-schematic.svg` (Strom-DAG + orthogonales Pin-zu-Pin-Schaltbild), `BOM.md` (Stückliste + 3D-Druck-Queue + Patch-Checkliste) und `rack-scene.glb` (binäres 3D glTF 2.0 Modell). |
-| **`@rack-mcp/mcp-server`** | [`packages/mcp-server`](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters` | `ProjectStateManager` (Undo/Redo, File-Watcher, Atomic-Save), `RackMcpToolHandlers` (11 Tools), `createRackMcpServer` (MCP über `stdio`, 4 Resources, 2 Prompts), `generateAsciiElevation` und `startRackSidecarServer` (`HTTP + WebSocket`). |
-| **`@rack-mcp/web-viewer`** | [`packages/web-viewer`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` | Interaktives React 19 + Three.js (`@react-three/fiber`) CAD-Dashboard mit Dual-Mode (`sidecar-live` per WebSocket oder `standalone-demo` direkt im Browser) und Client-Side WebMCP (`document.modelContext`). |
-| **`@rack-mcp/cli`** | [`packages/cli`](file:///home/alexb/projects/rack-designer/packages/cli/src/index.ts) | `@rack-mcp/mcp-server` (und transitiv alle Pakete) | Kommandozeilen-Einstiegspunkt (`rack-mcp`) mit den Befehlen `serve`, `validate` und `export`. |
+| **`@rack-mcp/core-domain`** | [`packages/core-domain`](./packages/core-domain/src/index.ts) | **KEINE** (`"types": []` in `tsconfig.json`) | Reine Mathematik, Konstanten, Zod-Schemas, Port-Matrix-Expander, 3D-Koordinaten-Transformer, 5-Stufen-Validierungs-Engine, 3D-Catmull-Rom-Kabelrouter. Läuft identisch in Node.js und im Browser. |
+| **`@rack-mcp/hardware-catalog`** | [`packages/hardware-catalog`](./packages/hardware-catalog/src/index.ts) | `@rack-mcp/core-domain` | 20 kuratierte YAML-Hardware-Blueprints (`catalog/10inch`, `catalog/19inch`, `catalog/carriers`, `catalog/sub-modules`), eingebettetes TS-Bundle (`embedded-catalog.ts`), Geometrie-Integritäts-Validator und Such-/Filter-Registry (`CatalogRegistry`). |
+| **`@rack-mcp/exporters`** | [`packages/exporters`](./packages/exporters/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` | Deterministische Generatoren für `elevation.svg` (2D-Ansichten + Z-Y-Tiefenschnitt), `wiring-schematic.svg` (Strom-DAG + orthogonales Pin-zu-Pin-Schaltbild), `BOM.md` (Stückliste + 3D-Druck-Queue + Patch-Checkliste) und `rack-scene.glb` (binäres 3D glTF 2.0 Modell). |
+| **`@rack-mcp/mcp-server`** | [`packages/mcp-server`](./packages/mcp-server/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters` | `ProjectStateManager` (Undo/Redo, File-Watcher, Atomic-Save), `RackMcpToolHandlers` (11 Tools), `createRackMcpServer` (MCP über `stdio`, 4 Resources, 2 Prompts), `generateAsciiElevation` und `startRackSidecarServer` (`HTTP + WebSocket`). |
+| **`@rack-mcp/web-viewer`** | [`packages/web-viewer`](./packages/web-viewer/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` | Interaktives React 19 + Three.js (`@react-three/fiber`) CAD-Dashboard mit Dual-Mode (`sidecar-live` per WebSocket oder `standalone-demo` direkt im Browser) und Client-Side WebMCP (`document.modelContext`). |
+| **`@rack-mcp/cli`** | [`packages/cli`](./packages/cli/src/index.ts) | `@rack-mcp/mcp-server` (und transitiv alle Pakete) | Kommandozeilen-Einstiegspunkt (`rack-mcp`) mit den Befehlen `serve`, `validate` und `export`. |
 
 ### 3.2 Vollständiger Dateibaum des Projekts
 
@@ -203,14 +203,14 @@ rack-designer/
 
 ## 4. Physikalisches 3D-Koordinatensystem & Mechanische Normen (`@rack-mcp/core-domain`)
 
-Alle Berechnungen finden in [`packages/core-domain/src/geometry/`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/geometry/coordinate-transformer.ts) statt.
+Alle Berechnungen finden in [`packages/core-domain/src/geometry/`](./packages/core-domain/src/geometry/coordinate-transformer.ts) statt.
 
-### 4.1 Fließkomma-Präzision & Determinismus ([`precision.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/geometry/precision.ts))
+### 4.1 Fließkomma-Präzision & Determinismus ([`precision.ts`](./packages/core-domain/src/geometry/precision.ts))
 Um IEEE-754-Rundungsfehler (wie `0.1 + 0.2 = 0.30000000000000004`) auszuschließen, verwendet das gesamte System ausschließlich drei kanonische Rundungsfunktionen:
 - **`roundMm(value)`**: Rundet auf $10^{-4}\text{ mm}$ ($0.1\ \mu\text{m}$) für alle 3D-Raumkoordinaten.
 - **`roundCentis(value)`**: Rundet auf $10^{-2}$ für Bogenlängen, Schwerpunkt und Wattzahlen.
 - **`roundTenths(value)`**: Rundet auf $10^{-1}$ für Diagnose-Anzeigewerte.
-- **`AABB_INTERSECTION_EPSILON_MM = 1e-3`** ($0.001\text{ mm}$): Zwei Bounding-Boxen gelten nur dann als kollidierend, wenn ihre Überlappung auf **allen drei Achsen (`X`, `Y`, `Z`) strikt größer als `0.001 mm`** ist ([`boxesIntersect` in `aabb.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/geometry/aabb.ts#L58-L67)). Dadurch lösen Geräte, die sich an der Grenze zwischen `U1` ($Y_{\max} = 44.45\text{ mm}$) und `U2` ($Y_{\min} = 44.45\text{ mm}$) exakt berühren, niemals einen Fehlalarm aus.
+- **`AABB_INTERSECTION_EPSILON_MM = 1e-3`** ($0.001\text{ mm}$): Zwei Bounding-Boxen gelten nur dann als kollidierend, wenn ihre Überlappung auf **allen drei Achsen (`X`, `Y`, `Z`) strikt größer als `0.001 mm`** ist ([`boxesIntersect` in `aabb.ts`](./packages/core-domain/src/geometry/aabb.ts#L58-L67)). Dadurch lösen Geräte, die sich an der Grenze zwischen `U1` ($Y_{\max} = 44.45\text{ mm}$) und `U2` ($Y_{\min} = 44.45\text{ mm}$) exakt berühren, niemals einen Fehlalarm aus.
 
 ### 4.2 Das Rechtshändige 3D-Weltkoordinatensystem
 - **Ursprung `(0, 0, 0)`:** Untere, vordere, linke Außenkante der nutzbaren Rack-Frontplattenebene bei `U1`.
@@ -222,7 +222,7 @@ Um IEEE-754-Rundungsfehler (wie `0.1 + 0.2 = 0.30000000000000004`) auszuschließ
   - `Z < 0`: Bereich **vor** den vorderen Schienen (Rack-Ohren, Griffe, herausstehende Front-Patchkabel, bis hin zur vorderen Glastür bei `Z = -front_door_clearance_mm`).
   - `Z > 0`: Bereich **im** Rack-Inneren bis zu den hinteren Montageschienen bei `Z = rail_depth_mm` (und dahinter bis `Z = rail_depth_mm + rear_clearance_mm`).
 
-### 4.3 EIA-310-D & Homelab Rack-Breitenstandards ([`constants.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/schemas/constants.ts#L38-L84))
+### 4.3 EIA-310-D & Homelab Rack-Breitenstandards ([`constants.ts`](./packages/core-domain/src/schemas/constants.ts#L38-L84))
 
 | Standard (`RackStandardSlug`) | Gesamtbreite Frontplatte (`W_panel`) | Lichte Schienenöffnung (`W_aperture`) | Lochabstand Mitte-zu-Mitte (`W_holes`) | Linke Schienenbreite (`X_aperture_min`) | Linke Lochmitte (`X_hole_left`) |
 | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -233,7 +233,7 @@ Um IEEE-754-Rundungsfehler (wie `0.1 + 0.2 = 0.30000000000000004`) auszuschließ
 Innerhalb jeder Höheneinheit (`44.45 mm`) sitzen auf beiden Schienen jeweils **3 Käfigmuttern-Löcher** bei den vertikalen Offsets `U_HOLE_OFFSETS_MM = [6.35, 22.225, 38.1] mm` relativ zu `Y_min(u)`.
 
 ### 4.4 Transformation für Front- vs. Rear-Montage & Sub-U-Module (`Carrier -> Slot -> Child`)
-In [`coordinate-transformer.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/geometry/coordinate-transformer.ts#L86-L135) gilt:
+In [`coordinate-transformer.ts`](./packages/core-domain/src/geometry/coordinate-transformer.ts#L86-L135) gilt:
 1. **Geräte-Ursprung (`computeCarrierOrDeviceOrigin`):**
    - Bei `face === 'front'`: $\vec{O}_{\text{mount}} = (0,\ (u - 1) \times 44.45,\ 0)$
    - Bei `face === 'rear'`: $\vec{O}_{\text{mount}} = (W_{\text{panel}},\ (u - 1) \times 44.45,\ D_{\text{rail}})$
@@ -246,7 +246,7 @@ In [`coordinate-transformer.ts`](file:///home/alexb/projects/rack-designer/packa
      und anschließend über `transformLocalToWorldPoint` in den globalen 3D-Raum überführt.
 
 ### 4.5 Stecker-Clearance & Biegeradius-Tabelle (`DELTA_Z_PLUG_MM`)
-Sobald an einem Port ein Kabel angeschlossen ist, extrudiert [`computeDevicePlugClearances`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/geometry/coordinate-transformer.ts#L253-L330) entlang der Auswärts-Normalen (`world_normal.z`, also `-1` nach vorne oder `+1` nach hinten) eine **Stecker-Clearance-Bounding-Box (`B_clearance`)** um den Betrag $\Delta Z_{\text{plug}}$:
+Sobald an einem Port ein Kabel angeschlossen ist, extrudiert [`computeDevicePlugClearances`](./packages/core-domain/src/geometry/coordinate-transformer.ts#L253-L330) entlang der Auswärts-Normalen (`world_normal.z`, also `-1` nach vorne oder `+1` nach hinten) eine **Stecker-Clearance-Bounding-Box (`B_clearance`)** um den Betrag $\Delta Z_{\text{plug}}$:
 
 | Stecker-Typ (`ConnectorType`) | Gerader Stecker (`straight_mm`) | Gewinkelter Stecker (`angled_mm`, wenn `cable_type` `"angled"` enthält) |
 | :--- | :---: | :---: |
@@ -261,9 +261,9 @@ Sobald an einem Port ein Kabel angeschlossen ist, extrudiert [`computeDevicePlug
 
 ## 5. Datenmodelle & Strikte Zod-Schemas (`rack.yaml` & Blueprints)
 
-Alle Schemas sind in [`packages/core-domain/src/schemas/`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/schemas/index.ts) definiert. Es gibt **keinerlei** `z.any()` oder offene `z.string()`-Fallbacks für Fachtaxonomien.
+Alle Schemas sind in [`packages/core-domain/src/schemas/`](./packages/core-domain/src/schemas/index.ts) definiert. Es gibt **keinerlei** `z.any()` oder offene `z.string()`-Fallbacks für Fachtaxonomien.
 
-### 5.1 Projekt-Schema (`RackProjectSchema` in [`rack-project.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/schemas/rack-project.ts))
+### 5.1 Projekt-Schema (`RackProjectSchema` in [`rack-project.ts`](./packages/core-domain/src/schemas/rack-project.ts))
 So ist jede `rack.yaml`-Datei exakt aufgebaut:
 - **`schema_version`**: Literal `'1.0'` (Default `'1.0'`).
 - **`project_name`**: Name des Projekts (String, mind. 1 Zeichen).
@@ -300,7 +300,7 @@ So ist jede `rack.yaml`-Datei exakt aufgebaut:
 
 ### 5.2 Port-Matrix-Expansion (`port_groups` $\rightarrow$ `ports`)
 Damit man bei einem 24-Port-Switch oder 12-Port-Patch-Panel nicht 24 Einzelports von Hand ins YAML tippen muss, unterstützt `HardwareBlueprintSchema` den Block `port_groups`.  
-Beim Laden eines Blueprints expandiert [`expandPortGroupMacro` in `port-expander.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/schemas/port-expander.ts#L14-L47) jedes Grid-Makro zeilenweise (`col = i % columns`, `row = Math.floor(i / columns)`) nach der Formel:
+Beim Laden eines Blueprints expandiert [`expandPortGroupMacro` in `port-expander.ts`](./packages/core-domain/src/schemas/port-expander.ts#L14-L47) jedes Grid-Makro zeilenweise (`col = i % columns`, `row = Math.floor(i / columns)`) nach der Formel:
 $$x_{\text{mm}} = \text{origin\_x\_mm} + \text{col} \times \text{pitch\_x\_mm}, \qquad y_{\text{mm}} = \text{origin\_y\_mm} + \text{row} \times \text{pitch\_y\_mm}$$
 in flache `PortDefinition`-Objekte. Alle nachgelagerten Engines arbeiten ausschließlich mit dem expandierten Array `blueprint.ports`.
 
@@ -308,7 +308,7 @@ in flache `PortDefinition`-Objekte. Alle nachgelagerten Engines arbeiten ausschl
 
 ## 6. Die 5-stufige Deterministische Validierungs-Engine (`validateRackProject`)
 
-Implementiert in [`packages/core-domain/src/validation/validation-engine.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/validation/validation-engine.ts). Jede Evaluierung durchläuft exakt 5 Stufen und erzeugt ein `ValidationResult` (`status: 'VALID' | 'INVALID'`, wobei `is_valid = (error_count === 0)` gilt; Warnungen lassen den Status auf `'VALID'`).
+Implementiert in [`packages/core-domain/src/validation/validation-engine.ts`](./packages/core-domain/src/validation/validation-engine.ts). Jede Evaluierung durchläuft exakt 5 Stufen und erzeugt ein `ValidationResult` (`status: 'VALID' | 'INVALID'`, wobei `is_valid = (error_count === 0)` gilt; Warnungen lassen den Status auf `'VALID'`).
 
 ### Übersicht aller 16 Diagnose-Codes (`DiagnosticCodeSchema`)
 
@@ -333,13 +333,13 @@ Implementiert in [`packages/core-domain/src/validation/validation-engine.ts`](fi
 | **4** | `NO_FRONT_TO_REAR_PORTAL` | `ERROR` | Ein Kabel verbindet `front` mit `rear`, aber im Umkreis von $\pm 3\text{ U}$ existiert weder eine freie HE, noch ein `brush-panel`, noch ein seitlicher Spalt $\ge 15\text{ mm}$. | Schlägt `add_portal_gap` (Einbau eines `brush-panel` oder Freilassen einer HE im Bereich) vor. |
 
 > **Besonderheit in Stufe 3 (Multi-Hop Passthrough-Coupler-Auflösung):**  
-> In [`validation-engine.ts` (Zeilen 835–974)](file:///home/alexb/projects/rack-designer/packages/core-domain/src/validation/validation-engine.ts#L835-L974) verfolgt die Engine Kabelketten über beliebig viele passive Passthrough-Coupler (z. B. `Switch Front -> Patch-Panel Front | Patch-Panel Rear -> Keystone Front | Keystone Rear -> Endgerät`) und verschmilzt sie zu einem durchgehenden `LogicalLink`. Dadurch erkennt die PoE-Prüfung auch dann zuverlässig, dass ein Raspberry Pi PoE-Strom vom Switch erhält, wenn das Kabel über ein Patch-Panel oder einen Keystone-Coupler geführt wird!
+> In [`validation-engine.ts` (Zeilen 835–974)](./packages/core-domain/src/validation/validation-engine.ts#L835-L974) verfolgt die Engine Kabelketten über beliebig viele passive Passthrough-Coupler (z. B. `Switch Front -> Patch-Panel Front | Patch-Panel Rear -> Keystone Front | Keystone Rear -> Endgerät`) und verschmilzt sie zu einem durchgehenden `LogicalLink`. Dadurch erkennt die PoE-Prüfung auch dann zuverlässig, dass ein Raspberry Pi PoE-Strom vom Switch erhält, wenn das Kabel über ein Patch-Panel oder einen Keystone-Coupler geführt wird!
 
 ---
 
 ## 7. Die 3D-Kabel-Routing- & Längenberechnungs-Engine (`catmull-rom-router.ts`)
 
-Implementiert in [`packages/core-domain/src/routing/catmull-rom-router.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/routing/catmull-rom-router.ts).
+Implementiert in [`packages/core-domain/src/routing/catmull-rom-router.ts`](./packages/core-domain/src/routing/catmull-rom-router.ts).
 
 ### 7.1 Virtuelle Kabelschächte (Ducts) & EMV-Trennung
 Um Strom- und Netzwerkkabel sauber zu trennen (`isPowerCableType`), nutzt der Router 4 vertikale Kanäle:
@@ -375,7 +375,7 @@ Laufen mehrere Kabel durch denselben Schacht, erhält das $k$-te Kabel ($k = 0, 
 
 ## 8. Der Hardware-Katalog (`@rack-mcp/hardware-catalog`) — Alle 20 Blueprints
 
-Der Katalog liegt sowohl als Einzeldateien unter [`packages/hardware-catalog/catalog/`](file:///home/alexb/projects/rack-designer/packages/hardware-catalog/catalog/) als auch als vorab eingebettetes TypeScript-Array in [`embedded-catalog.ts`](file:///home/alexb/projects/rack-designer/packages/hardware-catalog/src/embedded-catalog.ts) vor. Das Skript `pnpm validate:catalog` ([`validate-cli.ts`](file:///home/alexb/projects/rack-designer/packages/hardware-catalog/src/validate-cli.ts)) stellt sicher, dass alle YAML-Dateien auf der Festplatte und das eingebettete Bundle zu 100 % synchron sind, keine Ports außerhalb der Gehäusemaße liegen und der Mindestabstand zwischen zwei Ports auf derselben Seite `MIN_PORT_CENTER_DISTANCE_MM = 8.0 mm` beträgt.
+Der Katalog liegt sowohl als Einzeldateien unter [`packages/hardware-catalog/catalog/`](./packages/hardware-catalog/catalog/) als auch als vorab eingebettetes TypeScript-Array in [`embedded-catalog.ts`](./packages/hardware-catalog/src/embedded-catalog.ts) vor. Das Skript `pnpm validate:catalog` ([`validate-cli.ts`](./packages/hardware-catalog/src/validate-cli.ts)) stellt sicher, dass alle YAML-Dateien auf der Festplatte und das eingebettete Bundle zu 100 % synchron sind, keine Ports außerhalb der Gehäusemaße liegen und der Mindestabstand zwischen zwei Ports auf derselben Seite `MIN_PORT_CENTER_DISTANCE_MM = 8.0 mm` beträgt.
 
 ### 8.1 10-Zoll Rackmount-Geräte (`catalog/10inch/*.yaml`)
 | Slug | Hersteller & Modell | Kategorie | HE (`U`) | Maße `B × H × T` (`mm`) | Leistung / Kapazität | Ports |
@@ -423,7 +423,7 @@ Der MCP-Server trägt den kanonischen Namen:
 export const RACK_MCP_SERVER_NAME = 'rack_architect_mcp' as const;
 ```
 
-### 9.2 Alle 11 MCP-Tools im Detail ([`mcp-tools.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/schemas/mcp-tools.ts) & [`tool-handlers.ts`](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/mcp/tool-handlers.ts))
+### 9.2 Alle 11 MCP-Tools im Detail ([`mcp-tools.ts`](./packages/core-domain/src/schemas/mcp-tools.ts) & [`tool-handlers.ts`](./packages/mcp-server/src/mcp/tool-handlers.ts))
 Jeder Tool-Aufruf gibt ein JSON-serialisiertes `ToolExecutionEnvelope` zurück (`isError: false`), das immer folgende 4 Felder besitzt:
 - `status`: `'VALID' | 'INVALID'`
 - `summary`: Menschen- und LLM-lesbare Zusammenfassung des Ergebnisses
@@ -444,17 +444,17 @@ Jeder Tool-Aufruf gibt ein JSON-serialisiertes `ToolExecutionEnvelope` zurück (
 | **10** | `export_deliverables` | `false` | `formats?` (Default: `['elevation-svg', 'wiring-svg', 'bom-md', 'scene-glb']`), `output_dir?` | Generiert `elevation.svg`, `wiring-schematic.svg`, `BOM.md` und `rack-scene.glb` auf der Festplatte und gibt Dateipfade, Dateigrößen in Bytes und eine BOM-Zusammenfassung zurück. |
 | **11** | `undo_redo` | `false` | `action` (`'undo' \| 'redo'`) | Wandert im 50-stufigen In-Memory-Verlauf (`undoStack` / `redoStack`) einen Schritt zurück oder vor, aktualisiert `rack.yaml` atomar und pusht das Update per WebSocket an den Browser. |
 
-### 9.3 Alle 4 MCP-Resources ([`server.ts` (Zeilen 201–291)](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/mcp/server.ts#L201-L291))
+### 9.3 Alle 4 MCP-Resources ([`server.ts` (Zeilen 201–291)](./packages/mcp-server/src/mcp/server.ts#L201-L291))
 1. **`rack://current/summary`** (`text/plain`): Liefert den deterministischen ASCII-Elevationsplan (Front-Spalte, Rear-Spalte, Z-Clearance pro HE, Strom-/PoE-Bilanz und aktive Diagnosen).
 2. **`rack://current/bom`** (`text/markdown`): Liefert die aktuelle Markdown-Stückliste (`BOM.md`).
 3. **`rack://current/diagnostics`** (`application/json`): Liefert das aktuelle `ValidationResult` als formatiertes JSON.
 4. **`rack://current/yaml`** (`application/yaml`): Liefert den exakten aktuellen YAML-Quelltext des aktiven Projekts.
 
-### 9.4 Alle 2 geführten MCP-Prompts ([`server.ts` (Zeilen 296–387)](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/mcp/server.ts#L296-L387))
+### 9.4 Alle 2 geführten MCP-Prompts ([`server.ts` (Zeilen 296–387)](./packages/mcp-server/src/mcp/server.ts#L296-L387))
 1. **`plan-homelab-from-scratch`** (Argumente: `standard?`, `u_height?`, `requirements?`): Gibt dem KI-Agenten einen 6-Schritte-Leitfaden (`search_catalog` $\rightarrow$ `init_rack` $\rightarrow$ `mount_equipment` von unten nach oben $\rightarrow$ `get_device_blueprint` & `connect_cables` $\rightarrow$ `validate_rack` bis 0 Errors $\rightarrow$ `export_deliverables`).
 2. **`optimize-and-fix-rack`** (Argument: `focus?`): Übergibt dem KI-Agenten automatisch den aktuellen ASCII-Elevationsplan samt aller Fehlermeldungen und weist ihn an, zuerst alle `ERROR`- und danach alle `WARNING`-Issues über deren `remediation_suggestions` aufzulösen.
 
-### 9.5 Der Sidecar HTTP- & WebSocket-Server ([`sidecar-server.ts`](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/sidecar/sidecar-server.ts))
+### 9.5 Der Sidecar HTTP- & WebSocket-Server ([`sidecar-server.ts`](./packages/mcp-server/src/sidecar/sidecar-server.ts))
 #### HTTP-Endpunkte (`http://127.0.0.1:3100`)
 - `GET /health` $\rightarrow$ `{"status":"ok"}`
 - `GET /api/state` $\rightarrow$ JSON mit `{ scene: SerializedRackScene, undoAvailable: number, redoAvailable: number }`
@@ -477,15 +477,15 @@ Jeder Tool-Aufruf gibt ein JSON-serialisiertes `ToolExecutionEnvelope` zurück (
 
 ## 10. Das Dashboard & 3D/2D Web-Viewer UI — Jede Schaltfläche im Detail (`@rack-mcp/web-viewer`)
 
-Das Web-Dashboard ([`AppDashboard.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/AppDashboard.tsx)) ist in drei Hauptbereiche gegliedert:
+Das Web-Dashboard ([`AppDashboard.tsx`](./packages/web-viewer/src/components/ui/AppDashboard.tsx)) ist in drei Hauptbereiche gegliedert:
 1. **Obere Navigationsleiste (`TopNavBar.tsx`)**
 2. **Zentraler Arbeitsbereich (`main`)**, der je nach gewähltem Tab eine der 4 Ansichten zeigt
 3. **Rechte Telemetrie-, Validierungs- & Inspektions-Sidebar (`InspectorSidebar.tsx`, 360 px breit)**
 
 ### 10.1 Betriebsmodi: `sidecar-live` vs. `standalone-demo`
-Beim Start prüft [`useRackState.ts`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/state/useRackState.ts#L300-L403) automatisch, ob unter `/api/state` und `ws://<host>/ws` ein laufender Sidecar-Server erreichbar ist:
+Beim Start prüft [`useRackState.ts`](./packages/web-viewer/src/state/useRackState.ts#L300-L403) automatisch, ob unter `/api/state` und `ws://<host>/ws` ein laufender Sidecar-Server erreichbar ist:
 - **Wenn erreichbar (`connectionMode === 'sidecar-live'`):** Das UI synchronisiert sich in Echtzeit mit dem Backend-MCP-Server und schreibt jede Änderung (z. B. Geräte-Verschiebung oder Undo/Redo) direkt in die `rack.yaml`.
-- **Wenn nicht erreichbar (`connectionMode === 'standalone-demo'`):** Das UI fällt nahtlos auf das im Browser eingebettete 8U-10-Zoll-Referenzprojekt ([`standalone-homelab.ts`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/state/standalone-homelab.ts)) zurück und führt alle Geometrie-, Kollisions- und Spline-Berechnungen zu 100 % lokal im Browser über `@rack-mcp/core-domain` aus!
+- **Wenn nicht erreichbar (`connectionMode === 'standalone-demo'`):** Das UI fällt nahtlos auf das im Browser eingebettete 8U-10-Zoll-Referenzprojekt ([`standalone-homelab.ts`](./packages/web-viewer/src/state/standalone-homelab.ts)) zurück und führt alle Geometrie-, Kollisions- und Spline-Berechnungen zu 100 % lokal im Browser über `@rack-mcp/core-domain` aus!
 
 ### 10.2 Obere Navigationsleiste (`TopNavBar.tsx`, `data-testid="top-nav-bar"`)
 
@@ -529,7 +529,7 @@ Diese Leiste schwebt oben im 3D-Viewport (`activeTab === '3d'`) und steuert Kame
 | **`X-Ray Ghost: OFF` / `ON`** | `hud-toggle-xray` | Schaltet alle Geräte-Chassis, Rack-Ohren und den Rack-Rahmen auf halbtransparent (`opacity: 0.15`, `depthWrite: false`), während alle 3D-Ports, LEDs und innenliegenden Kabel bei `opacity: 1.0` voll sichtbar bleiben. |
 | **`B_clearance: OFF` / `ON`** | `hud-toggle-clearance` | Blendet für jedes Gerät mit angeschlossenen Kabeln die berechnete Stecker-Clearance-Bounding-Box (`plug_clearance_box`) als gelb-oranges Wireframe-Volumen (`#F59E0B`) in der 3D-Szene ein. |
 | **`Glass Door: Closed` / `Open`** | `hud-toggle-door` | Schwenkt die getönte Rauchglas-Fronttür des Racks um `-105°` um das vordere linke Scharnier auf bzw. zu. |
-| **`Explode Z: 0mm` .. `250mm`** (Range-Slider, Schrittweite `5 mm`) | `hud-explode-z-slider` | Zieht das Rack entlang der Z-Achse (Tiefe) auseinander ([`computeDeviceExplodeOffsetZMm`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/canvas/CableTube3D.tsx#L21-L33)):<br/>- Front-Rackgeräte wandern um `-0.65 * explodeZMm` nach vorne.<br/>- Sub-Module in Carriern wandern um `+0.25 * explodeZMm` leicht nach hinten, sodass sie sich visuell vom Eltern-Carrier abheben.<br/>- Rear-Geräte (wie die PDU auf U2) wandern um `+1.0 * explodeZMm` nach hinten.<br/>- Alle 3D-Kabel-Splines strecken sich dynamisch mit ihren Start- und Zielgeräten mit! |
+| **`Explode Z: 0mm` .. `250mm`** (Range-Slider, Schrittweite `5 mm`) | `hud-explode-z-slider` | Zieht das Rack entlang der Z-Achse (Tiefe) auseinander ([`computeDeviceExplodeOffsetZMm`](./packages/web-viewer/src/components/canvas/CableTube3D.tsx#L21-L33)):<br/>- Front-Rackgeräte wandern um `-0.65 * explodeZMm` nach vorne.<br/>- Sub-Module in Carriern wandern um `+0.25 * explodeZMm` leicht nach hinten, sodass sie sich visuell vom Eltern-Carrier abheben.<br/>- Rear-Geräte (wie die PDU auf U2) wandern um `+1.0 * explodeZMm` nach hinten.<br/>- Alle 3D-Kabel-Splines strecken sich dynamisch mit ihren Start- und Zielgeräten mit! |
 
 ### 10.4 Interaktionen direkt im 3D-Viewport (`RackSceneCanvas.tsx`)
 - **Maus-Navigation (`OrbitControls`):** Links-Ziehen = Drehen (Orbit), Rechts-Ziehen = Verschieben (Pan), Mausrad = Zoomen.
@@ -590,9 +590,9 @@ Darunter zeigt die Ansicht drei übersichtliche Tabellen:
 
 ## 11. Die 4 CAD- & Dokumentations-Exporter (`@rack-mcp/exporters`)
 
-Alle 4 Exporter in [`packages/exporters/src/`](file:///home/alexb/projects/rack-designer/packages/exporters/src/index.ts) arbeiten komplett headless (ohne Browser/DOM) auf Basis eines `ComputedRackScene`-Objekts:
+Alle 4 Exporter in [`packages/exporters/src/`](./packages/exporters/src/index.ts) arbeiten komplett headless (ohne Browser/DOM) auf Basis eines `ComputedRackScene`-Objekts:
 
-1. **`generateElevationSvg(scene)` ([`elevation-svg.ts`](file:///home/alexb/projects/rack-designer/packages/exporters/src/elevation-svg.ts)):**
+1. **`generateElevationSvg(scene)` ([`elevation-svg.ts`](./packages/exporters/src/elevation-svg.ts)):**
    - Erzeugt ein hochauflösendes, zweizeiliges CAD-Zeichnungsblatt (`2620 × 1260 px` bei `scalePxPerMm = 2.8`):
    - **Obere Reihe:**
      - Links: `EQUIPMENT SCHEDULE (U1–UN)` Tabelle
@@ -602,11 +602,11 @@ Alle 4 Exporter in [`packages/exporters/src/`](file:///home/alexb/projects/rack-
    - **Untere Reihe:**
      - `SIDE-PROFILE DEPTH CUTAWAY (Z-Y PLANE)`: Ein technischer Längsschnitt durch die Z-Y-Ebene von der vorderen Glastür (`Z = -50 mm`) über die vorderen Schienen (`Z = 0 mm`) bis zur hinteren Schiene (`Z = 240 mm`) und Rückwand (`Z = 300 mm`). Zeigt L-förmige 3D-Druck-Carrier, eingeschobene Sub-Module, gestrichelte Stecker-Clearance-Zonen (`+35mm`, `+32mm`, `+55mm`), rote Kollisions-Markierungen (falls vorhanden) und den Kabeldurchtritt durch das `U6` Brush-Panel.
 
-2. **`generateWiringSchematicSvg(scene)` ([`wiring-svg.ts`](file:///home/alexb/projects/rack-designer/packages/exporters/src/wiring-svg.ts)):**
+2. **`generateWiringSchematicSvg(scene)` ([`wiring-svg.ts`](./packages/exporters/src/wiring-svg.ts)):**
    - **Sektion 1 (Oben):** Hierarchischer 3-stufiger **Power & PoE Distribution Tree (DAG)** von links nach rechts (`Tier 0: UPS` $\rightarrow$ `Tier 1: PDU & PSE Switch` $\rightarrow$ `Tier 2: Active Consumers`) mit Watt-Balken und geschwungenen Bézier-Verbindungslinien.
    - **Sektion 2 (Unten):** **Port-to-Port Network & Patch Schematic** mit Gerätekarten links (`UPS`, `PDU`, `Patch-Panel`) und rechts (`Switch`, `Router`, `Compute-Nodes`, `Keystones`) sowie einem **Multi-Track Orthogonal Channel Router** (`16 px` Spurabstand pro Kabel, `r = 8 px` abgerundete `Q`-Ecken und überlappungsfreie Kabel-Badges wie `patch-front-p1-sw1 | 0.25m Cat6A`).
 
-3. **`generateBomMarkdown(scene, catalog)` ([`bom-markdown.ts`](file:///home/alexb/projects/rack-designer/packages/exporters/src/bom-markdown.ts)):**
+3. **`generateBomMarkdown(scene, catalog)` ([`bom-markdown.ts`](./packages/exporters/src/bom-markdown.ts)):**
    - Erzeugt ein 5-teiliges GitHub-Flavored Markdown-Dokument (`BOM.md`):
      1. *Project & Validation Summary* (Status, Maße, Gesamt-Watt, PoE-Watt, Gewicht, Schwerpunkt $Y_{\text{CoG}}$)
      2. *Commercial Hardware BOM* (gruppiert nach `slug` mit Stückzahl, Einbauorten, Summe Watt & Gewicht)
@@ -614,7 +614,7 @@ Alle 4 Exporter in [`packages/exporters/src/`](file:///home/alexb/projects/rack-
      4. *Aggregated Cable Shopping List* (gruppiert nach `cable_type + commercialLengthMm + color_hex` als fertige Einkaufsliste)
      5. *Step-by-Step Assembly & Patching Checklist* (`Phase A: Mechanical Mounting` von unten nach oben + `Phase B: Power & Network Cable Patching` mit abhakbaren `[ ]` Checkboxen)
 
-4. **`generateGlbBinary(scene)` ([`glb-exporter.ts`](file:///home/alexb/projects/rack-designer/packages/exporters/src/glb-exporter.ts)):**
+4. **`generateGlbBinary(scene)` ([`glb-exporter.ts`](./packages/exporters/src/glb-exporter.ts)):**
    - Erzeugt ohne externe 3D-Bibliotheken ein standardkonformes binäres **glTF 2.0 (`.glb`)** 3D-Modell im Maßstab `1.0 = 1 Meter` (`MM_TO_METERS = 0.001`):
    - Enthält benannte Szenen-Knoten für den Rack-Rahmen (`RackFrame`), alle Geräte (`Device_<id>`, `SubDevice_<id>`), `1.8 mm` erhabene Ports (`Port_<instance>_<port>`) gegen Z-Fighting sowie verdrehungsfreie 8-seitige **Parallel-Transport-Frame (PTF) Kabel-Tubes** (`Cable_<id>`, Radius `3.2 mm`) inklusive Knickschutz-Tüllen (`r = 5.0 mm`).
 
@@ -622,7 +622,7 @@ Alle 4 Exporter in [`packages/exporters/src/`](file:///home/alexb/projects/rack-
 
 ## 12. Das Kommandozeilen-Werkzeug (`@rack-mcp/cli` / `rack-mcp`)
 
-Implementiert in [`packages/cli/src/index.ts`](file:///home/alexb/projects/rack-designer/packages/cli/src/index.ts) und [`packages/cli/src/bin.ts`](file:///home/alexb/projects/rack-designer/packages/cli/src/bin.ts).
+Implementiert in [`packages/cli/src/index.ts`](./packages/cli/src/index.ts) und [`packages/cli/src/bin.ts`](./packages/cli/src/bin.ts).
 
 ### Unterstützte Befehle & Flags
 
@@ -684,25 +684,25 @@ sequenceDiagram
 ```
 
 ### Tracing-Pfad 1: Ein Mensch klickt im Web-Dashboard auf `U2` im Selection Inspector
-1. In [`InspectorSidebar.tsx` (Zeile 405)](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/InspectorSidebar.tsx#L405) klickt der Nutzer auf den Button `data-testid="move-device-u-2"`.
-2. Dies ruft `onMoveDeviceU(selectedDevice.instance_id, 2)` in [`useRackState.ts` (Zeile 177)](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/state/useRackState.ts#L177) auf.
+1. In [`InspectorSidebar.tsx` (Zeile 405)](./packages/web-viewer/src/components/ui/InspectorSidebar.tsx#L405) klickt der Nutzer auf den Button `data-testid="move-device-u-2"`.
+2. Dies ruft `onMoveDeviceU(selectedDevice.instance_id, 2)` in [`useRackState.ts` (Zeile 177)](./packages/web-viewer/src/state/useRackState.ts#L177) auf.
 3. Im `sidecar-live`-Modus sendet der Browser über `ws://127.0.0.1:3100/ws` die Nachricht:
    `{"type":"COMMAND","tool":"modify_equipment","args":{"instance_id":"sw-u8","action":"move","new_u_position":2}}`.
-4. [`sidecar-server.ts` (Zeile 215)](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/sidecar/sidecar-server.ts#L215) empfängt das Kommando und ruft `handlers.modifyEquipment(args)` in [`tool-handlers.ts` (Zeile 373)](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/mcp/tool-handlers.ts#L373) auf.
-5. `modifyEquipment` aktualisiert `u_position` auf `2` und ruft `stateManager.applyMutation(nextProject)` in [`state-manager.ts` (Zeile 178)](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/state-manager.ts#L178) auf.
+4. [`sidecar-server.ts` (Zeile 215)](./packages/mcp-server/src/sidecar/sidecar-server.ts#L215) empfängt das Kommando und ruft `handlers.modifyEquipment(args)` in [`tool-handlers.ts` (Zeile 373)](./packages/mcp-server/src/mcp/tool-handlers.ts#L373) auf.
+5. `modifyEquipment` aktualisiert `u_position` auf `2` und ruft `stateManager.applyMutation(nextProject)` in [`state-manager.ts` (Zeile 178)](./packages/mcp-server/src/state-manager.ts#L178) auf.
 6. `applyMutation` legt den alten Zustand auf `undoStack`, berechnet über `evaluateRackScene` die neuen 3D-Boxen, erkennt eventuelle Kollisionen, routet alle Kabel neu, speichert `rack.yaml` atomar und feuert `emitChange('mutation')`.
 7. `sidecar-server.ts` sendet `STATE_UPDATED` an alle verbundenen Browser-Clients; das 3D-Modell, die Validierungskonsole und die 2D-SVGs aktualisieren sich sofort.
 
 ### Tracing-Pfad 2: Ein Mensch bearbeitet `rack.yaml` direkt in VS Code / Vim
 1. Der Nutzer speichert eine Änderung in `rack.yaml`.
-2. Der `fs.watch`-Listener in [`state-manager.ts` (Zeile 335)](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/state-manager.ts#L335) registriert das Datei-Event (sofern `isWritingLock === false`), wartet `80 ms` (Debounce) und ruft `reloadFromDiskIfChanged()` auf.
+2. Der `fs.watch`-Listener in [`state-manager.ts` (Zeile 335)](./packages/mcp-server/src/state-manager.ts#L335) registriert das Datei-Event (sofern `isWritingLock === false`), wartet `80 ms` (Debounce) und ruft `reloadFromDiskIfChanged()` auf.
 3. Die geänderte YAML wird geparst, gegen `RackProjectSchema` validiert, der alte Zustand auf den `undoStack` gelegt, `evaluateRackScene` ausgeführt und per `emitChange('external_file_change')` live an den Browser gepusht.
 
 ---
 
 ## 14. Das Referenzprojekt `examples/10inch-homelab` (Vollständiges Walkthrough)
 
-Unter [`examples/10inch-homelab/rack.yaml`](file:///home/alexb/projects/rack-designer/examples/10inch-homelab/rack.yaml) (identisch hinterlegt in [`reference-homelab.ts`](file:///home/alexb/projects/rack-designer/packages/exporters/src/reference-homelab.ts)) befindet sich das vollständig durchmodellierte, zu 100 % fehlerfreie (`VALID`, `0 Errors`, `0 Warnings`) Referenz-Homelab:
+Unter [`examples/10inch-homelab/rack.yaml`](./examples/10inch-homelab/rack.yaml) (identisch hinterlegt in [`reference-homelab.ts`](./packages/exporters/src/reference-homelab.ts)) befindet sich das vollständig durchmodellierte, zu 100 % fehlerfreie (`VALID`, `0 Errors`, `0 Warnings`) Referenz-Homelab:
 
 ### 14.1 Rack-Rahmenparameter
 - **Standard:** `10inch` ($W_{\text{panel}} = 254.0\text{ mm}$, $W_{\text{aperture}} = 222.25\text{ mm}$)
@@ -745,3 +745,41 @@ Unter [`examples/10inch-homelab/rack.yaml`](file:///home/alexb/projects/rack-des
    - `patch-front-p5-sw5` (`cat6a`, `#6366F1`): `patch-u7:p5 (front)` $\rightarrow$ `sw-u8:eth5 (front)`
 4. **1× Cross-Face Portal-Kabel (`cross-face-portal` durch das `U6` Brush-Panel):**
    - `cross-sw6-to-ucg-lan2` (`cat6a`, `#06B6D4`, `preferred_portal_u: 6`): `sw-u8:eth6 (front)` $\rightarrow$ durch `brush-u6` $\rightarrow$ `ucg-max:lan2 (rear)`
+
+
+---
+
+## 15. Teil 1 Upgrade: Parametrischer 3D-Druck-Exporter (`.SCAD` & `.STL`), Interaktiver Builder, VLAN/Speed-Check & Akustik-Engine
+
+### 15.1 Parametrischer 3D-Druck-Exporter (`@rack-mcp/exporters/src/openscad-carrier.ts`)
+Alle modularen 3D-Druck-Carrier (`category: 'modular-carrier'`) werden aus ihren `HardwareBlueprint`-Geometriedaten und `slots[]`-Definitionen deterministisch in zwei CAD-/Slicer-Formate übersetzt:
+1. **`generateCarrierOpenScad(blueprint, rackStandard)` (`.scad`):**
+   - Vollständig parametrisches OpenSCAD-Skript mit konfigurierbaren Variablen (`panel_width_mm`, `aperture_width_mm`, `hole_pitch_x_mm`, `faceplate_thickness_mm`, `tray_floor_thickness_mm`, `rail_wall_thickness_mm`).
+   - Generiert die Frontplatte mit EIA-310 Langlöchern (`9.5 × 6.5 mm`), exakten Durchbrüchen für alle `slots[]` (inkl. `+0.35 mm` 3D-Druck-Toleranz für Mini-PCs/Gateways und Snap-In-Rastlippen für Keystone-Jacks), seitlichen Stützstegen (`1.8 mm` Wandstärke), hinterem PSU-Cradle mit Klettband-Schlitzen und eingraviertem Modell-Schriftzug.
+2. **`generateCarrierStl(blueprint, rackStandard)` (`.stl`):**
+   - Berechnet ohne externe Abhängigkeiten im Speicher ein wasserdichtes ASCII-STL-Dreiecksnetz mittels 2D-Gitter-Subdivision um sämtliche Slot- und Langloch-Ausschnitte und fügt Bodenplatten sowie Stützstege für alle Bays hinzu.
+3. **`generateProjectPrintableCarriers(project, catalog)`:**
+   - Sammelt alle im Projekt montierten `modular-carrier`, dedupliziert sie nach `slug` und erzeugt `<slug>.scad` sowie `<slug>.stl`.
+   - Direkt abrufbar über das MCP-Tool `export_deliverables` (`formats: ['carrier-scad', 'carrier-stl']`) sowie per 1-Klick-Buttons (**`Download .SCAD`** / **`Download .STL`**) im Tab **`BOM & 3D-Print Hub`** (`BomAndExportsView.tsx`).
+
+### 15.2 Interaktiver Katalog- & Kabel-Builder im Web-Viewer (`CatalogBuilderDrawer.tsx`)
+- **`+ Catalog & Cable Builder`** (`data-testid="btn-toggle-builder"`) in der oberen Navigationsleiste öffnet die linke Builder-Schublade (`340 px`):
+  - **Tab `Hardware Catalog` (`builder-tab-catalog`):** Volltextsuche über alle 20 Blueprints, Formfaktor-Filter (`10inch`, `19inch`, `sub-module`), Wahl von `Target U (1..N)` und `Face (FRONT/REAR)` sowie 1-Klick **`+ Mount on U<N>`** (`mount-bp-<slug>`).
+  - **Tab `Cable Patch Builder` (`builder-tab-cables`):** Auswahl von Quell-Gerät/Port und Ziel-Gerät/Port, Kabeltyp (`cat6a`, `cat5e`, `sfp-dac`, `iec-c13-c14`, ...), optionaler `VLAN ID` & `IP CIDR` und **`+ Route 3D Spline Cable`** (`btn-connect-cable-submit`).
+- **Weitere Direkt-Aktionen im Browser:**
+  - **`Import JSON`** (`data-testid="btn-import-json"`) in `TopNavBar.tsx` lädt ein komplettes `RackProject`-JSON.
+  - **`Remove Device`** (`data-testid="btn-remove-device"`) und **`Disconnect Cable`** (`data-testid="btn-disconnect-cable"`) in `InspectorSidebar.tsx` löschen das ausgewählte Gerät (inkl. seiner angeschlossenen Kabel) bzw. das ausgewählte Kabel.
+
+### 15.3 Netzwerk-Bottleneck-Erkennung (`SPEED_MISMATCH`) & VLAN / IP-CIDR Schaltplan-Badges
+- `CableConnectionSchema` unterstützt `'cat5e'` und `'cat5e-angled'` sowie optionale Felder `vlan_id` (`1..4094`) und `ip_cidr` (z. B. `'10.10.20.0/24'`).
+- Verbindet ein `cat5e`-Kabel zwei High-Speed-Ports ($\ge 2.5\text{ GbE}$, ermittelt durch `extractMaxPortSpeedMbps()`), meldet Stufe 4 automatisch den Diagnose-Code **`SPEED_MISMATCH`** (`WARNING`) mit der Empfehlung, auf `cat6a` oder `sfp-dac` zu wechseln.
+- `generateWiringSchematicSvg()` rendert `VLAN<id>` und `ip_cidr` direkt in die Kabel-Badges von `wiring-schematic.svg`.
+
+### 15.4 Stufe 5: Thermik-Hotspots, Airflow-Konflikte & Logarithmische `dB(A)`-Akustik
+- **Thermische Verlustleistung (`total_thermal_btu_hr`):** $\text{BTU/hr} = P_{\text{total, W}} \times 3.41214$.
+- **Logarithmische Schallpegel-Addition (`combined_noise_db_a`):**
+  $$L_{\text{total}} = 10 \cdot \log_{10}\!\left(\sum_{i=1}^{n} 10^{L_i / 10}\right)\text{ dB(A)}$$
+- **Neue Diagnose-Codes in Stufe 5:**
+  - `THERMAL_AIRFLOW_CONFLICT` (`WARNING`): Mischung aus `front-to-rear` und `rear-to-front` Geräten (`airflow_profile: 'mixed-conflict'`).
+  - `THERMAL_HOTSPOT_STACKING` (`WARNING`): Zwei passiv gekühlte Hochleistungsgeräte ($\ge 30\text{ W}$ pro Gerät, zusammen $\ge 65\text{ W}$) direkt auf benachbarten HEs ohne `1U` Konvektionsabstand.
+  - `ACOUSTIC_NOISE_HIGH` (`WARNING`): Kombinierter Schalldruckpegel $L_{\text{total}} \ge 45.0\text{ dB(A)}$.
