@@ -1,9 +1,13 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.1.0` — 3D/2D Rack-Planer & 3D-Druck-Paket
+# 🏗️ RackArchitect MCP `v0.1.1` — 3D/2D Rack-Planer & 3D-Druck-Paket
 
-**Willkommen beim ersten Release von RackArchitect MCP!**  
+**Willkommen beim Release `v0.1.1` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
+
+> **✨ Neu in Version `v0.1.1`:**
+> - **100 % wasserdichte 2-Manifold `.STL`-Dateien (`0` Slicer-Warnungen):** Alle 6 seitlichen `EIA-310` M6-Rack-Langlöcher (`10.0 × 6.5 mm`), das `+0.35 mm` 3D-Druck-Spaltmaß, die eingeschmolzenen Führungsschienen und das Boden-Lüftungsgitter sind jetzt direkt im `.stl`-Mesh (sowie im Browser-Download) enthalten.
+> - **Security & Dependency Hardening:** Update auf `zod@4.6.7` & `vitest@4.1.12` (`0` Dependabot-Schwachstellen) sowie vollständige CodeQL-Härtung.
 
 *(🇬🇧 English Quick-Start Guide included below the German section!)*
 
