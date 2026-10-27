@@ -36,7 +36,7 @@
     "build": "pnpm -r run build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "pnpm -r run typecheck",
+    "typecheck": "pnpm -r run build && pnpm -r run typecheck",
     "validate:catalog": "pnpm --filter @rack-mcp/hardware-catalog run validate:catalog",
     "dev": "pnpm --filter @rack-mcp/cli run dev",
     "start": "node ./packages/cli/dist/bin.js serve --no-stdio --port 3100 --project ./examples/10inch-homelab/rack.yaml",

@@ -32,14 +32,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build all 6 monorepo packages in topological order
+        run: pnpm build
+
       - name: Run strict TypeScript compiler gates (typecheck)
-        run: pnpm typecheck
+        run: pnpm -r run typecheck
 
       - name: Validate all YAML hardware blueprints & port matrices
         run: pnpm validate:catalog
-
-      - name: Build all 6 monorepo packages
-        run: pnpm build
 
       - name: Run all 34 Vitest unit & integration suites
         run: pnpm test

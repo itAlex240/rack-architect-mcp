@@ -27,11 +27,11 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Install, Build & Test
+      - name: Install, Build, Typecheck & Test
         run: |
           pnpm install --frozen-lockfile
-          pnpm typecheck
           pnpm build
+          pnpm -r run typecheck
           pnpm test
 
       - name: Generate Reference CAD Deliverables (SVG, BOM, GLB, OpenSCAD, STL)
