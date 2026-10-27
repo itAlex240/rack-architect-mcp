@@ -49,5 +49,10 @@
     "typescript": "^5.7.2",
     "vitest": "^3.0.5",
     "zod": "^3.24.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "tinypool": "^2.2.0"
+    }
   }
 }

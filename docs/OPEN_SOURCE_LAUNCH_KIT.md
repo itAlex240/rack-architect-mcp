@@ -28,11 +28,11 @@ Dieses Dokument fasst zusammen, was im Repository bereits **schlüsselfertig aut
 Da ich keinen Zugriff auf deinen persönlichen GitHub-Account oder deine npm-Zugangsdaten habe, sind hier die **3 kurzen Schritte**, die du selbst ausführst (das lokale Git-Repository inkl. sauberem Initial-Commit und Tag `v0.1.0` habe ich bereits fertig angelegt!):
 
 ### Schritt 1: Öffentliches GitHub-Repository anlegen & pushen (1 Minute)
-1. Erstelle auf GitHub ein neues **Public** Repository (z. B. `rack-architect-mcp`, **ohne** Haken bei „Add a README" oder „Add .gitignore", da wir schon alles haben).
-2. Führe im Projektordner (`/home/alexb/projects/rack-designer`) folgende Befehle aus (ersetze `<DEIN-GITHUB-USER>`):
+1. Erstelle auf GitHub ein neues **Public** Repository (`rack-architect-mcp`).
+2. Führe im Projektordner folgende Befehle aus:
 
 ```bash
-cd /home/alexb/projects/rack-designer
+cd rack-architect-mcp
 
 # Falls dein Git-Name/E-Mail noch nicht global gesetzt ist:
 git config user.name "AlexB"
