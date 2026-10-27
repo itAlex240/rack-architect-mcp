@@ -263,6 +263,77 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
       expect(item.openscad_code).toContain('slot_bay_cutouts()');
       expect(item.stl_ascii.startsWith('solid ')).toBe(true);
       expect(item.stl_ascii.includes('facet normal')).toBe(true);
+
+      // Verify 100% watertight 2-manifold mesh quality (0 non-manifold edges, 0 holes, positive volume)
+      const vertexMatches = [
+        ...item.stl_ascii.matchAll(
+          /vertex\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/g,
+        ),
+      ];
+      expect(vertexMatches.length % 3).toBe(0);
+      expect(vertexMatches.length).toBeGreaterThan(300);
+
+      const directedEdges = new Map<string, number>();
+      const undirectedEdges = new Map<string, number>();
+      let signedVolumeMm3 = 0;
+
+      for (let i = 0; i < vertexMatches.length; i += 3) {
+        const v0 = vertexMatches[i]!;
+        const v1 = vertexMatches[i + 1]!;
+        const v2 = vertexMatches[i + 2]!;
+        const p0: [number, number, number] = [
+          Number(v0[1]),
+          Number(v0[2]),
+          Number(v0[3]),
+        ];
+        const p1: [number, number, number] = [
+          Number(v1[1]),
+          Number(v1[2]),
+          Number(v1[3]),
+        ];
+        const p2: [number, number, number] = [
+          Number(v2[1]),
+          Number(v2[2]),
+          Number(v2[3]),
+        ];
+
+        const pairs: Array<[[number, number, number], [number, number, number]]> =
+          [
+            [p0, p1],
+            [p1, p2],
+            [p2, p0],
+          ];
+        for (const [a, b] of pairs) {
+          const ka = `${a[0]},${a[1]},${a[2]}`;
+          const kb = `${b[0]},${b[1]},${b[2]}`;
+          const dirKey = `${ka}->${kb}`;
+          directedEdges.set(dirKey, (directedEdges.get(dirKey) ?? 0) + 1);
+          const undirKey = ka < kb ? `${ka}|${kb}` : `${kb}|${ka}`;
+          undirectedEdges.set(
+            undirKey,
+            (undirectedEdges.get(undirKey) ?? 0) + 1,
+          );
+        }
+
+        signedVolumeMm3 +=
+          (p0[0] * (p1[1] * p2[2] - p1[2] * p2[1]) -
+            p0[1] * (p1[0] * p2[2] - p1[2] * p2[0]) +
+            p0[2] * (p1[0] * p2[1] - p1[1] * p2[0])) /
+          6.0;
+      }
+
+      const nonManifoldCount = [...undirectedEdges.values()].filter(
+        (cnt) => cnt !== 2,
+      ).length;
+      expect(nonManifoldCount).toBe(0);
+
+      for (const [dirKey, cnt] of directedEdges.entries()) {
+        const [from, to] = dirKey.split('->');
+        expect(directedEdges.get(`${to}->${from}`)).toBe(cnt);
+      }
+
+      expect(signedVolumeMm3).toBeGreaterThan(50_000);
+
       writeFileSync(
         resolve(exampleDir, item.filename_scad),
         item.openscad_code,

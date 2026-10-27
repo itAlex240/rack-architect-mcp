@@ -52,11 +52,11 @@ module slot_bay_cutouts() {
 }
 
 module slot_retention_rails() {
-  // Guide rails for 'left-mini-pc-bay'
-  translate([18 - 2.6, 2, faceplate_thickness_mm])
-    cube([2.2, 8.0, 179]);
-  translate([198.4, 2, faceplate_thickness_mm])
-    cube([2.2, 8.0, 179]);
+  // Guide rails for 'left-mini-pc-bay' (fused to tray floor Y=0..8mm)
+  translate([18 - print_tolerance_mm - 2.2, 0, faceplate_thickness_mm])
+    cube([2.2, 8, 179]);
+  translate([198 + print_tolerance_mm, 0, faceplate_thickness_mm])
+    cube([2.2, 8, 179]);
 }
 
 module honeycomb_vent_cutouts() {

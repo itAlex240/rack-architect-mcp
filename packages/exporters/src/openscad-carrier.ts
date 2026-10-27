@@ -2,7 +2,6 @@ import {
   EIA_310_SPECS,
   MM_PER_U,
   roundCentis,
-  roundTenths,
   type ComputedRackScene,
   type HardwareBlueprint,
   type RackStandard,
@@ -116,11 +115,12 @@ export function generateCarrierOpenScad(
     const sy = roundCentis(slot.offset_mm.y);
     const sw = roundCentis(slot.max_dimensions_mm.width);
     const sd = roundCentis(Math.min(trayDepthMm - 6, slot.max_dimensions_mm.depth));
-    lines.push(`  // Guide rails for '${slot.slot_id}'`);
-    lines.push(`  translate([${sx} - 2.6, ${sy}, faceplate_thickness_mm])`);
-    lines.push(`    cube([2.2, 8.0, ${sd}]);`);
-    lines.push(`  translate([${roundCentis(sx + sw + 0.4)}, ${sy}, faceplate_thickness_mm])`);
-    lines.push(`    cube([2.2, 8.0, ${sd}]);`);
+    const railHeightMm = roundCentis(Math.min(panelHeightMm, Math.max(8.0, sy + 6.0)));
+    lines.push(`  // Guide rails for '${slot.slot_id}' (fused to tray floor Y=0..${railHeightMm}mm)`);
+    lines.push(`  translate([${sx} - print_tolerance_mm - 2.2, 0, faceplate_thickness_mm])`);
+    lines.push(`    cube([2.2, ${railHeightMm}, ${sd}]);`);
+    lines.push(`  translate([${roundCentis(sx + sw)} + print_tolerance_mm, 0, faceplate_thickness_mm])`);
+    lines.push(`    cube([2.2, ${railHeightMm}, ${sd}]);`);
   }
   lines.push(`}`);
   lines.push(``);
@@ -174,56 +174,52 @@ interface Box3DMm {
   readonly z1: number;
 }
 
-function appendBoxTrianglesToStl(lines: string[], b: Box3DMm): void {
-  const x0 = roundTenths(b.x0);
-  const y0 = roundTenths(b.y0);
-  const z0 = roundTenths(b.z0);
-  const x1 = roundTenths(b.x1);
-  const y1 = roundTenths(b.y1);
-  const z1 = roundTenths(b.z1);
-  if (x1 <= x0 || y1 <= y0 || z1 <= z0) return;
-
-  const emitTri = (
-    nx: number,
-    ny: number,
-    nz: number,
-    v1: readonly [number, number, number],
-    v2: readonly [number, number, number],
-    v3: readonly [number, number, number]
-  ) => {
-    lines.push(`  facet normal ${nx} ${ny} ${nz}`);
-    lines.push(`    outer loop`);
-    lines.push(`      vertex ${v1[0]} ${v1[1]} ${v1[2]}`);
-    lines.push(`      vertex ${v2[0]} ${v2[1]} ${v2[2]}`);
-    lines.push(`      vertex ${v3[0]} ${v3[1]} ${v3[2]}`);
-    lines.push(`    endloop`);
-    lines.push(`  endfacet`);
+function normalizeBox(b: Box3DMm): Box3DMm {
+  return {
+    x0: roundCentis(Math.min(b.x0, b.x1)),
+    y0: roundCentis(Math.min(b.y0, b.y1)),
+    z0: roundCentis(Math.min(b.z0, b.z1)),
+    x1: roundCentis(Math.max(b.x0, b.x1)),
+    y1: roundCentis(Math.max(b.y0, b.y1)),
+    z1: roundCentis(Math.max(b.z0, b.z1))
   };
+}
 
-  // Front face (Z = z0, normal 0 0 -1)
-  emitTri(0, 0, -1, [x0, y0, z0], [x0, y1, z0], [x1, y1, z0]);
-  emitTri(0, 0, -1, [x0, y0, z0], [x1, y1, z0], [x1, y0, z0]);
-  // Rear face (Z = z1, normal 0 0 1)
-  emitTri(0, 0, 1, [x0, y0, z1], [x1, y0, z1], [x1, y1, z1]);
-  emitTri(0, 0, 1, [x0, y0, z1], [x1, y1, z1], [x0, y1, z1]);
-  // Bottom face (Y = y0, normal 0 -1 0)
-  emitTri(0, -1, 0, [x0, y0, z0], [x1, y0, z0], [x1, y0, z1]);
-  emitTri(0, -1, 0, [x0, y0, z0], [x1, y0, z1], [x0, y0, z1]);
-  // Top face (Y = y1, normal 0 1 0)
-  emitTri(0, 1, 0, [x0, y1, z0], [x0, y1, z1], [x1, y1, z1]);
-  emitTri(0, 1, 0, [x0, y1, z0], [x1, y1, z1], [x1, y1, z0]);
-  // Left face (X = x0, normal -1 0 0)
-  emitTri(-1, 0, 0, [x0, y0, z0], [x0, y0, z1], [x0, y1, z1]);
-  emitTri(-1, 0, 0, [x0, y0, z0], [x0, y1, z1], [x0, y1, z0]);
-  // Right face (X = x1, normal 1 0 0)
-  emitTri(1, 0, 0, [x1, y0, z0], [x1, y1, z0], [x1, y1, z1]);
-  emitTri(1, 0, 0, [x1, y0, z0], [x1, y1, z1], [x1, y0, z1]);
+function isPointInsideBox(
+  x: number,
+  y: number,
+  z: number,
+  b: Box3DMm
+): boolean {
+  return (
+    x > b.x0 &&
+    x < b.x1 &&
+    y > b.y0 &&
+    y < b.y1 &&
+    z > b.z0 &&
+    z < b.z1
+  );
+}
+
+function collectUniqueSortedCoords(values: readonly number[]): number[] {
+  const sorted = [...values].map((v) => roundCentis(v)).sort((a, b) => a - b);
+  const unique: number[] = [];
+  for (const val of sorted) {
+    const prev = unique[unique.length - 1];
+    if (prev === undefined || Math.abs(val - prev) > 1e-3) {
+      unique.push(val);
+    }
+  }
+  return unique;
 }
 
 /**
- * Generates a ready-to-slice ASCII `.stl` 3D mesh for a modular rack carrier,
- * decomposing the faceplate around every sub-module slot cutout plus the L-shaped
- * rear support tray and side gussets.
+ * Generates a watertight, 2-manifold ASCII `.stl` 3D mesh for a modular rack carrier.
+ * Evaluates the full CSG assembly (Front EIA-310 Faceplate minus M6 Ear Mounting Slots
+ * and Tolerance-Compensated Sub-Module Bay Cutouts, Rear L-Shaped Support Tray Floor
+ * minus Ventilation Cutouts, Structural Side Gussets, and Sub-Module Retention Rails)
+ * on an exact rectilinear coordinate grid so there are zero internal faces, zero T-junctions,
+ * and zero non-manifold edges.
  */
 export function generateCarrierStl(
   blueprint: HardwareBlueprint,
@@ -235,120 +231,347 @@ export function generateCarrierStl(
   const uCount = Math.max(1, Math.round(blueprint.geometry.u_height || 1));
   const panelWidthMm = roundCentis(spec.W_panel);
   const apertureWidthMm = roundCentis(spec.W_aperture);
+  const holePitchXMm = roundCentis(spec.W_holes);
   const panelHeightMm = roundCentis(
     blueprint.geometry.height_mm || uCount * MM_PER_U - 0.75
   );
   const faceplateThicknessMm = 4.2;
+  const trayFloorThicknessMm = 3.2;
+  const sideGussetThicknessMm = 3.5;
+  const printToleranceMm = 0.35;
   const trayDepthMm = roundCentis(Math.max(40, blueprint.geometry.depth_mm));
   const earWidthMm = roundCentis((panelWidthMm - apertureWidthMm) / 2);
+
+  // 1. Primary additive CSG volumes
+  const faceplateBox = normalizeBox({
+    x0: 0,
+    y0: 0,
+    z0: 0,
+    x1: panelWidthMm,
+    y1: panelHeightMm,
+    z1: faceplateThicknessMm
+  });
+
+  const trayFloorBox = normalizeBox({
+    x0: earWidthMm,
+    y0: 0,
+    z0: faceplateThicknessMm,
+    x1: panelWidthMm - earWidthMm,
+    y1: trayFloorThicknessMm,
+    z1: trayDepthMm
+  });
+
+  const gussetHeightMm = roundCentis(panelHeightMm * 0.65);
+  const gussetBoxes: Box3DMm[] = [
+    normalizeBox({
+      x0: earWidthMm,
+      y0: 0,
+      z0: faceplateThicknessMm,
+      x1: earWidthMm + sideGussetThicknessMm,
+      y1: gussetHeightMm,
+      z1: trayDepthMm
+    }),
+    normalizeBox({
+      x0: panelWidthMm - earWidthMm - sideGussetThicknessMm,
+      y0: 0,
+      z0: faceplateThicknessMm,
+      x1: panelWidthMm - earWidthMm,
+      y1: gussetHeightMm,
+      z1: trayDepthMm
+    })
+  ];
+
+  // 2. EIA-310 M6 Mounting Slots (10.0 x 6.5 mm oblong slots on left and right rack ears)
+  const leftHoleX = roundCentis((panelWidthMm - holePitchXMm) / 2);
+  const rightHoleX = roundCentis(panelWidthMm - leftHoleX);
+  const slotHalfW = 5.0;
+  const slotHalfH = 3.25;
+  const earHoleBoxes: Box3DMm[] = [];
+  for (let u = 0; u < uCount; u++) {
+    const baseY = u * MM_PER_U;
+    for (const offsetY of [6.35, 22.225, 38.1]) {
+      const cy = roundCentis(baseY + offsetY);
+      if (cy + slotHalfH < panelHeightMm - 1.5 && cy - slotHalfH > 1.5) {
+        earHoleBoxes.push(
+          normalizeBox({
+            x0: Math.max(1.2, leftHoleX - slotHalfW),
+            y0: cy - slotHalfH,
+            z0: -1,
+            x1: Math.min(earWidthMm - 1.2, leftHoleX + slotHalfW),
+            y1: cy + slotHalfH,
+            z1: faceplateThicknessMm + 1
+          }),
+          normalizeBox({
+            x0: Math.max(panelWidthMm - earWidthMm + 1.2, rightHoleX - slotHalfW),
+            y0: cy - slotHalfH,
+            z0: -1,
+            x1: Math.min(panelWidthMm - 1.2, rightHoleX + slotHalfW),
+            y1: cy + slotHalfH,
+            z1: faceplateThicknessMm + 1
+          })
+        );
+      }
+    }
+  }
+
+  // 3. Sub-Module Bay Cutouts (with +0.35mm 3D-print clearance) & Retention Guide Rails
+  const slotCutoutBoxes: Box3DMm[] = [];
+  const railBoxes: Box3DMm[] = [];
+  for (const slot of blueprint.slots) {
+    const sx0 = roundCentis(
+      Math.max(earWidthMm + 1.0, slot.offset_mm.x - printToleranceMm)
+    );
+    const sx1 = roundCentis(
+      Math.min(
+        panelWidthMm - earWidthMm - 1.0,
+        slot.offset_mm.x + slot.max_dimensions_mm.width + printToleranceMm
+      )
+    );
+    const sy0 = roundCentis(Math.max(1.2, slot.offset_mm.y - printToleranceMm));
+    const sy1 = roundCentis(
+      Math.min(
+        panelHeightMm - 1.2,
+        slot.offset_mm.y + slot.max_dimensions_mm.height + printToleranceMm
+      )
+    );
+    if (sx1 > sx0 && sy1 > sy0) {
+      slotCutoutBoxes.push(
+        normalizeBox({
+          x0: sx0,
+          y0: sy0,
+          z0: -1,
+          x1: sx1,
+          y1: sy1,
+          z1: faceplateThicknessMm + 1
+        })
+      );
+    }
+
+    if (slot.accepted_slot_type !== 'standard-keystone') {
+      const sd = roundCentis(
+        Math.min(trayDepthMm - 6, slot.max_dimensions_mm.depth)
+      );
+      const railHeightMm = roundCentis(
+        Math.min(panelHeightMm, Math.max(8.0, slot.offset_mm.y + 6.0))
+      );
+      const leftRailX0 = roundCentis(
+        Math.max(earWidthMm + sideGussetThicknessMm, sx0 - 2.2)
+      );
+      if (sx0 - leftRailX0 >= 1.0) {
+        railBoxes.push(
+          normalizeBox({
+            x0: leftRailX0,
+            y0: 0,
+            z0: faceplateThicknessMm,
+            x1: sx0,
+            y1: railHeightMm,
+            z1: faceplateThicknessMm + sd
+          })
+        );
+      }
+      const rightRailX1 = roundCentis(
+        Math.min(panelWidthMm - earWidthMm - sideGussetThicknessMm, sx1 + 2.2)
+      );
+      if (rightRailX1 - sx1 >= 1.0) {
+        railBoxes.push(
+          normalizeBox({
+            x0: sx1,
+            y0: 0,
+            z0: faceplateThicknessMm,
+            x1: rightRailX1,
+            y1: railHeightMm,
+            z1: faceplateThicknessMm + sd
+          })
+        );
+      }
+    }
+  }
+
+  // 4. Tray Floor Ventilation Cutouts (spaced safely clear of gussets and retention rails)
+  const ventCutoutBoxes: Box3DMm[] = [];
+  const ventXMin = roundCentis(earWidthMm + sideGussetThicknessMm + 10);
+  const ventXMax = roundCentis(
+    panelWidthMm - earWidthMm - sideGussetThicknessMm - 10
+  );
+  for (let z = 20; z + 12 <= trayDepthMm - 12; z += 22) {
+    for (let x = ventXMin; x + 12 <= ventXMax; x += 22) {
+      const vx0 = roundCentis(x);
+      const vx1 = roundCentis(x + 12);
+      const vz0 = roundCentis(z);
+      const vz1 = roundCentis(z + 12);
+      const overlapsRail = railBoxes.some(
+        (r) =>
+          vx1 > r.x0 - 2.0 &&
+          vx0 < r.x1 + 2.0 &&
+          vz1 > r.z0 - 2.0 &&
+          vz0 < r.z1 + 2.0
+      );
+      if (!overlapsRail) {
+        ventCutoutBoxes.push(
+          normalizeBox({
+            x0: vx0,
+            y0: -1,
+            z0: vz0,
+            x1: vx1,
+            y1: trayFloorThicknessMm + 1,
+            z1: vz1
+          })
+        );
+      }
+    }
+  }
+
+  // 5. Build exact rectilinear coordinate grid across all features
+  const allBoxes = [
+    faceplateBox,
+    trayFloorBox,
+    ...gussetBoxes,
+    ...earHoleBoxes,
+    ...slotCutoutBoxes,
+    ...railBoxes,
+    ...ventCutoutBoxes
+  ];
+
+  const xs = collectUniqueSortedCoords(
+    allBoxes
+      .flatMap((b) => [b.x0, b.x1])
+      .filter((x) => x >= 0 && x <= panelWidthMm)
+  );
+  const ys = collectUniqueSortedCoords(
+    allBoxes
+      .flatMap((b) => [b.y0, b.y1])
+      .filter((y) => y >= 0 && y <= panelHeightMm)
+  );
+  const zs = collectUniqueSortedCoords(
+    allBoxes
+      .flatMap((b) => [b.z0, b.z1])
+      .filter((z) => z >= 0 && z <= trayDepthMm)
+  );
+
+  const nx = xs.length - 1;
+  const ny = ys.length - 1;
+  const nz = zs.length - 1;
+
+  const isCellSolid = (ix: number, iy: number, iz: number): boolean => {
+    if (ix < 0 || ix >= nx || iy < 0 || iy >= ny || iz < 0 || iz >= nz) {
+      return false;
+    }
+    const x0 = xs[ix];
+    const x1 = xs[ix + 1];
+    const y0 = ys[iy];
+    const y1 = ys[iy + 1];
+    const z0 = zs[iz];
+    const z1 = zs[iz + 1];
+    if (
+      x0 === undefined ||
+      x1 === undefined ||
+      y0 === undefined ||
+      y1 === undefined ||
+      z0 === undefined ||
+      z1 === undefined
+    ) {
+      return false;
+    }
+    const mx = 0.5 * (x0 + x1);
+    const my = 0.5 * (y0 + y1);
+    const mz = 0.5 * (z0 + z1);
+
+    const inFaceplate =
+      isPointInsideBox(mx, my, mz, faceplateBox) &&
+      !earHoleBoxes.some((b) => isPointInsideBox(mx, my, mz, b)) &&
+      !slotCutoutBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
+
+    const inTrayFloor =
+      isPointInsideBox(mx, my, mz, trayFloorBox) &&
+      !ventCutoutBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
+
+    const inGusset = gussetBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
+    const inRail = railBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
+
+    return inFaceplate || inTrayFloor || inGusset || inRail;
+  };
+
+  const solidGrid: boolean[][][] = [];
+  for (let ix = 0; ix < nx; ix++) {
+    const ySlice: boolean[][] = [];
+    for (let iy = 0; iy < ny; iy++) {
+      const zRow: boolean[] = [];
+      for (let iz = 0; iz < nz; iz++) {
+        zRow.push(isCellSolid(ix, iy, iz));
+      }
+      ySlice.push(zRow);
+    }
+    solidGrid.push(ySlice);
+  }
+
+  const getSolid = (ix: number, iy: number, iz: number): boolean =>
+    solidGrid[ix]?.[iy]?.[iz] ?? false;
 
   const solidName = blueprint.slug.replace(/[^a-zA-Z0-9_-]/g, '_');
   const lines: string[] = [];
   lines.push(`solid ${solidName}`);
 
-  const sortedSlots = [...blueprint.slots].sort(
-    (a, b) => a.offset_mm.x - b.offset_mm.x
-  );
+  const emitTri = (
+    normX: number,
+    normY: number,
+    normZ: number,
+    v1: readonly [number, number, number],
+    v2: readonly [number, number, number],
+    v3: readonly [number, number, number]
+  ) => {
+    lines.push(`  facet normal ${normX} ${normY} ${normZ}`);
+    lines.push(`    outer loop`);
+    lines.push(`      vertex ${v1[0]} ${v1[1]} ${v1[2]}`);
+    lines.push(`      vertex ${v2[0]} ${v2[1]} ${v2[2]}`);
+    lines.push(`      vertex ${v3[0]} ${v3[1]} ${v3[2]}`);
+    lines.push(`    endloop`);
+    lines.push(`  endfacet`);
+  };
 
-  if (sortedSlots.length === 0) {
-    appendBoxTrianglesToStl(lines, {
-      x0: 0,
-      y0: 0,
-      z0: 0,
-      x1: panelWidthMm,
-      y1: panelHeightMm,
-      z1: faceplateThicknessMm
-    });
-  } else {
-    let cursorX = 0;
-    for (const slot of sortedSlots) {
-      const sx0 = Math.max(cursorX, slot.offset_mm.x);
-      const sx1 = Math.min(
-        panelWidthMm,
-        slot.offset_mm.x + slot.max_dimensions_mm.width
-      );
-      const sy0 = Math.max(0, slot.offset_mm.y);
-      const sy1 = Math.min(
-        panelHeightMm,
-        slot.offset_mm.y + slot.max_dimensions_mm.height
-      );
+  for (let ix = 0; ix < nx; ix++) {
+    const x0 = xs[ix]!;
+    const x1 = xs[ix + 1]!;
+    for (let iy = 0; iy < ny; iy++) {
+      const y0 = ys[iy]!;
+      const y1 = ys[iy + 1]!;
+      for (let iz = 0; iz < nz; iz++) {
+        if (!getSolid(ix, iy, iz)) continue;
+        const z0 = zs[iz]!;
+        const z1 = zs[iz + 1]!;
 
-      // Vertical pillar to the left of this slot
-      if (sx0 > cursorX) {
-        appendBoxTrianglesToStl(lines, {
-          x0: cursorX,
-          y0: 0,
-          z0: 0,
-          x1: sx0,
-          y1: panelHeightMm,
-          z1: faceplateThicknessMm
-        });
+        // -Z face (Front)
+        if (!getSolid(ix, iy, iz - 1)) {
+          emitTri(0, 0, -1, [x0, y0, z0], [x0, y1, z0], [x1, y1, z0]);
+          emitTri(0, 0, -1, [x0, y0, z0], [x1, y1, z0], [x1, y0, z0]);
+        }
+        // +Z face (Rear)
+        if (!getSolid(ix, iy, iz + 1)) {
+          emitTri(0, 0, 1, [x0, y0, z1], [x1, y0, z1], [x1, y1, z1]);
+          emitTri(0, 0, 1, [x0, y0, z1], [x1, y1, z1], [x0, y1, z1]);
+        }
+        // -Y face (Bottom)
+        if (!getSolid(ix, iy - 1, iz)) {
+          emitTri(0, -1, 0, [x0, y0, z0], [x1, y0, z0], [x1, y0, z1]);
+          emitTri(0, -1, 0, [x0, y0, z0], [x1, y0, z1], [x0, y0, z1]);
+        }
+        // +Y face (Top)
+        if (!getSolid(ix, iy + 1, iz)) {
+          emitTri(0, 1, 0, [x0, y1, z0], [x0, y1, z1], [x1, y1, z1]);
+          emitTri(0, 1, 0, [x0, y1, z0], [x1, y1, z1], [x1, y1, z0]);
+        }
+        // -X face (Left)
+        if (!getSolid(ix - 1, iy, iz)) {
+          emitTri(-1, 0, 0, [x0, y0, z0], [x0, y0, z1], [x0, y1, z1]);
+          emitTri(-1, 0, 0, [x0, y0, z0], [x0, y1, z1], [x0, y1, z0]);
+        }
+        // +X face (Right)
+        if (!getSolid(ix + 1, iy, iz)) {
+          emitTri(1, 0, 0, [x1, y0, z0], [x1, y1, z0], [x1, y1, z1]);
+          emitTri(1, 0, 0, [x1, y0, z0], [x1, y1, z1], [x1, y0, z1]);
+        }
       }
-      // Bottom bezel strip below the slot opening
-      if (sy0 > 0) {
-        appendBoxTrianglesToStl(lines, {
-          x0: sx0,
-          y0: 0,
-          z0: 0,
-          x1: sx1,
-          y1: sy0,
-          z1: faceplateThicknessMm
-        });
-      }
-      // Top bezel strip above the slot opening
-      if (sy1 < panelHeightMm) {
-        appendBoxTrianglesToStl(lines, {
-          x0: sx0,
-          y0: sy1,
-          z0: 0,
-          x1: sx1,
-          y1: panelHeightMm,
-          z1: faceplateThicknessMm
-        });
-      }
-      cursorX = Math.max(cursorX, sx1);
-    }
-
-    // Rightmost ear/pillar after the last slot
-    if (cursorX < panelWidthMm) {
-      appendBoxTrianglesToStl(lines, {
-        x0: cursorX,
-        y0: 0,
-        z0: 0,
-        x1: panelWidthMm,
-        y1: panelHeightMm,
-        z1: faceplateThicknessMm
-      });
     }
   }
-
-  // Rear L-Tray Floor
-  appendBoxTrianglesToStl(lines, {
-    x0: earWidthMm,
-    y0: 0,
-    z0: faceplateThicknessMm,
-    x1: panelWidthMm - earWidthMm,
-    y1: 3.2,
-    z1: trayDepthMm
-  });
-
-  // Left & Right Side Gussets
-  appendBoxTrianglesToStl(lines, {
-    x0: earWidthMm,
-    y0: 3.2,
-    z0: faceplateThicknessMm,
-    x1: earWidthMm + 3.5,
-    y1: panelHeightMm * 0.65,
-    z1: trayDepthMm
-  });
-  appendBoxTrianglesToStl(lines, {
-    x0: panelWidthMm - earWidthMm - 3.5,
-    y0: 3.2,
-    z0: faceplateThicknessMm,
-    x1: panelWidthMm - earWidthMm,
-    y1: panelHeightMm * 0.65,
-    z1: trayDepthMm
-  });
 
   lines.push(`endsolid ${solidName}`);
   return lines.join('\n');

@@ -55,11 +55,11 @@ module slot_bay_cutouts() {
 }
 
 module slot_retention_rails() {
-  // Guide rails for 'gateway-bay'
-  translate([18 - 2.6, 4, faceplate_thickness_mm])
-    cube([2.2, 8.0, 134]);
-  translate([163.4, 4, faceplate_thickness_mm])
-    cube([2.2, 8.0, 134]);
+  // Guide rails for 'gateway-bay' (fused to tray floor Y=0..10mm)
+  translate([18 - print_tolerance_mm - 2.2, 0, faceplate_thickness_mm])
+    cube([2.2, 10, 134]);
+  translate([163 + print_tolerance_mm, 0, faceplate_thickness_mm])
+    cube([2.2, 10, 134]);
 }
 
 module honeycomb_vent_cutouts() {
