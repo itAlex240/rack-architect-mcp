@@ -1,0 +1,54 @@
+slug: "digitus-10inch-pdu-4way-schuko"
+manufacturer: "Digitus"
+model: "10-Inch 1U 4-Way Socket Strip (DN-95411)"
+category: "pdu"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 220.0
+  height_mm: 44.0
+  depth_mm: 55.0
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 480
+power_and_thermal:
+  electrical_role: "pdu"
+  idle_watts: 0
+  max_system_watts: 0
+  pdu_capacity_watts: 3600
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "outlet"
+    label_prefix: "Schuko "
+    start_index: 1
+    count: 4
+    face: "front"
+    connector_type: "schuko-cee7"
+    direction: "output"
+    capabilities: ["ac-mains"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 32.0
+      origin_y_mm: 22.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 44.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "mains_in"
+    label: "230V AC Input"
+    face: "front"
+    connector_type: "schuko-cee7"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 190.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#374151"
+  material_preset: "coated-aluminum"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

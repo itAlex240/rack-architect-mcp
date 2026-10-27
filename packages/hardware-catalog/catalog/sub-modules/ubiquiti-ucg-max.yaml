@@ -1,0 +1,64 @@
+slug: "ubiquiti-ucg-max"
+manufacturer: "Ubiquiti"
+model: "Cloud Gateway Max (UCG-Max)"
+category: "router"
+mount_type: "sub-module"
+slot_compatibility: "unifi-compact-gateway"
+geometry:
+  u_height: 0.8
+  width_mm: 141.8
+  height_mm: 30.0
+  depth_mm: 127.6
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 1.5
+  rear_protrusion_mm: 0.0
+  weight_grams: 519
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 9.5
+  max_system_watts: 16.1
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "lan"
+    label_prefix: "LAN "
+    start_index: 1
+    count: 4
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 25.0
+      origin_y_mm: 14.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 18.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "wan"
+    label: "WAN 2.5G"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 102.0
+      y_mm: 14.0
+      orientation: "upright"
+  - port_id: "usbc_pwr"
+    label: "5V 5A USB-C"
+    face: "rear"
+    connector_type: "usb-c"
+    direction: "input"
+    capabilities: ["usb-pd", "dc-power"]
+    coordinates:
+      x_mm: 125.0
+      y_mm: 14.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#F3F4F6"
+  material_preset: "polycarbonate"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

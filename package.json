@@ -1,0 +1,53 @@
+{
+  "name": "rack-architect-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://italex240.github.io/rack-architect-mcp/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/itAlex240/rack-architect-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/itAlex240/rack-architect-mcp/issues"
+  },
+  "description": "Agent-first Rack-as-Code planning, 5-stage physical/electrical/acoustic validation, parametric OpenSCAD/STL 3D-print generator, and 2D/3D CAD visualization platform for 19-inch, 10-inch, and 6-inch racks.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "rack-as-code",
+    "homelab",
+    "10-inch-rack",
+    "minilab",
+    "19-inch-rack",
+    "threejs",
+    "openscad",
+    "3d-printing",
+    "stl",
+    "webmcp",
+    "unifi",
+    "proxmox"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "pnpm -r run typecheck",
+    "validate:catalog": "pnpm --filter @rack-mcp/hardware-catalog run validate:catalog",
+    "dev": "pnpm --filter @rack-mcp/cli run dev",
+    "start": "node ./packages/cli/dist/bin.js serve --no-stdio --port 3100 --project ./examples/10inch-homelab/rack.yaml",
+    "validate:demo": "node ./packages/cli/dist/bin.js validate ./examples/10inch-homelab/rack.yaml",
+    "export:demo": "node ./packages/cli/dist/bin.js export ./examples/10inch-homelab/rack.yaml --out-dir ./examples/10inch-homelab"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "happy-dom": "^21.0.4",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.5",
+    "zod": "^3.24.2"
+  }
+}

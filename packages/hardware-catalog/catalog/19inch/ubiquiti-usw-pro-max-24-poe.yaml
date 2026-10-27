@@ -1,0 +1,74 @@
+slug: "ubiquiti-usw-pro-max-24-poe"
+manufacturer: "Ubiquiti"
+model: "UniFi Switch Pro Max 24 PoE (USW-Pro-Max-24-PoE)"
+category: "switch"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 442.4
+  height_mm: 43.7
+  depth_mm: 325.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 4.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 5100
+power_and_thermal:
+  electrical_role: "pse-switch"
+  idle_watts: 35
+  max_system_watts: 50
+  poe_budget_watts: 400
+  airflow: "front-to-rear"
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "Port "
+    start_index: 1
+    count: 24
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t", "poe-out", "poe+", "poe-out-af", "poe-out-at", "poe-out-bt-type3"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 165.0
+      origin_y_mm: 14.0
+      columns: 12
+      rows: 2
+      pitch_x_mm: 16.0
+      pitch_y_mm: 15.0
+ports:
+  - port_id: "sfp1"
+    label: "SFP+ 25"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 385.0
+      y_mm: 29.0
+      orientation: "upright"
+  - port_id: "sfp2"
+    label: "SFP+ 26"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 385.0
+      y_mm: 14.0
+      orientation: "upright"
+  - port_id: "ac_in"
+    label: "100-240V AC"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 400.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#D1D5DB"
+  material_preset: "coated-aluminum"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

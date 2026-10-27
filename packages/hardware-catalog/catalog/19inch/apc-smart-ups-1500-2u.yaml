@@ -1,0 +1,64 @@
+slug: "apc-smart-ups-1500-2u"
+manufacturer: "APC"
+model: "Smart-UPS 1500VA LCD RM 2U (SMT1500RMI2UC)"
+category: "ups"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 2.0
+  width_mm: 432.0
+  height_mm: 86.0
+  depth_mm: 477.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 12.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 24000
+power_and_thermal:
+  electrical_role: "ups"
+  idle_watts: 18
+  max_system_watts: 45
+  ups_capacity_watts: 1000
+  airflow: "front-to-rear"
+port_groups:
+  - id_prefix: "iec_out"
+    label_prefix: "OUT "
+    start_index: 1
+    count: 8
+    face: "rear"
+    connector_type: "iec-c13"
+    direction: "output"
+    capabilities: ["ac-mains"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 120.0
+      origin_y_mm: 28.0
+      columns: 4
+      rows: 2
+      pitch_x_mm: 38.0
+      pitch_y_mm: 30.0
+ports:
+  - port_id: "ac_in"
+    label: "AC INPUT"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 60.0
+      y_mm: 43.0
+      orientation: "upright"
+  - port_id: "smartconnect_eth"
+    label: "SmartConnect"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 360.0
+      y_mm: 43.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

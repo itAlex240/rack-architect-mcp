@@ -1,0 +1,83 @@
+slug: "ubiquiti-udm-pro"
+manufacturer: "Ubiquiti"
+model: "UniFi Dream Machine Pro (UDM-Pro)"
+category: "router"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 442.4
+  height_mm: 43.7
+  depth_mm: 285.6
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 4.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 3900
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 22
+  max_system_watts: 33
+  airflow: "front-to-rear"
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "LAN "
+    start_index: 1
+    count: 8
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 260.0
+      origin_y_mm: 14.0
+      columns: 4
+      rows: 2
+      pitch_x_mm: 16.0
+      pitch_y_mm: 15.0
+ports:
+  - port_id: "wan1"
+    label: "WAN 9 (2.5G)"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 345.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "sfp_wan2"
+    label: "SFP+ WAN 10"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 375.0
+      y_mm: 29.0
+      orientation: "upright"
+  - port_id: "sfp_lan11"
+    label: "SFP+ LAN 11"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 375.0
+      y_mm: 14.0
+      orientation: "upright"
+  - port_id: "ac_in"
+    label: "100-240V AC"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 400.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#D1D5DB"
+  material_preset: "coated-aluminum"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

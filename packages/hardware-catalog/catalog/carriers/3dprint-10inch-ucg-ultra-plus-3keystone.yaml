@@ -1,0 +1,71 @@
+slug: "3dprint-10inch-ucg-ultra-plus-3keystone"
+manufacturer: "Community 3D-Print"
+model: "10-Inch 1U Carrier for UniFi Cloud Gateway Ultra/Max + 3x Keystone"
+category: "modular-carrier"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 254.0
+  height_mm: 44.0
+  depth_mm: 140.0
+  ear_mount_style: "flush-front"
+  front_protrusion_mm: 3.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 155
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "passive-convection"
+slots:
+  - slot_id: "gateway-bay"
+    accepted_slot_type: "unifi-compact-gateway"
+    offset_mm:
+      x: 18.0
+      y: 4.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 145.0
+      height: 36.0
+      depth: 135.0
+  - slot_id: "keystone-1"
+    accepted_slot_type: "standard-keystone"
+    offset_mm:
+      x: 170.0
+      y: 11.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 16.5
+      height: 22.0
+      depth: 35.0
+  - slot_id: "keystone-2"
+    accepted_slot_type: "standard-keystone"
+    offset_mm:
+      x: 192.0
+      y: 11.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 16.5
+      height: 22.0
+      depth: 35.0
+  - slot_id: "keystone-3"
+    accepted_slot_type: "standard-keystone"
+    offset_mm:
+      x: 214.0
+      y: 11.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 16.5
+      height: 22.0
+      depth: 35.0
+visuals:
+  chassis_color_hex: "#E5E7EB"
+  material_preset: "3d-printed-petg"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata:
+  filament_grams: 150
+  material_recommendation: "PETG / ABS"
+  heat_set_inserts: "4x M3x5x4mm"
+  fasteners: "4x M3x12mm Socket Head"
+  printables_url: "https://www.printables.com/model/10inch-ucg-ultra-max-3keystone"

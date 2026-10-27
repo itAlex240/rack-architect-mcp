@@ -1,0 +1,67 @@
+slug: "raspberry-pi-5-poe-hat"
+manufacturer: "Raspberry Pi"
+model: "Raspberry Pi 5 (8GB) with Official PoE+ HAT"
+category: "sbc"
+mount_type: "sub-module"
+slot_compatibility: "sbc-rpi5"
+geometry:
+  u_height: 0.8
+  width_mm: 62.0
+  height_mm: 32.0
+  depth_mm: 92.0
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 110
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 4.5
+  max_system_watts: 12
+  airflow: "front-to-rear"
+ports:
+  - port_id: "eth0"
+    label: "GbE PoE"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "poe-in-af", "poe-in-at"]
+    coordinates:
+      x_mm: 16.0
+      y_mm: 14.0
+      orientation: "upright"
+  - port_id: "usb3_1"
+    label: "USB 3.0"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0"]
+    coordinates:
+      x_mm: 34.0
+      y_mm: 14.0
+      orientation: "upright"
+  - port_id: "usb2_1"
+    label: "USB 2.0"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0"]
+    coordinates:
+      x_mm: 50.0
+      y_mm: 14.0
+      orientation: "upright"
+  - port_id: "usbc_pwr"
+    label: "5V USB-C"
+    face: "rear"
+    connector_type: "usb-c"
+    direction: "input"
+    capabilities: ["usb-pd", "dc-power"]
+    coordinates:
+      x_mm: 20.0
+      y_mm: 10.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#166534"
+  material_preset: "polycarbonate"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

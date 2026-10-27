@@ -1,0 +1,84 @@
+slug: "mikrotik-rb5009upr-s-in"
+manufacturer: "MikroTik"
+model: "RB5009UPr+S+IN (PoE-In/Out Router)"
+category: "router"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 220.0
+  height_mm: 44.0
+  depth_mm: 125.0
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 754
+power_and_thermal:
+  electrical_role: "pse-switch"
+  idle_watts: 12
+  max_system_watts: 20
+  poe_budget_watts: 130
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "ETH "
+    start_index: 2
+    count: 7
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "poe-out", "poe+", "poe-out-af", "poe-out-at", "poe-in-af", "poe-in-at"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 68.0
+      origin_y_mm: 20.0
+      columns: 7
+      rows: 1
+      pitch_x_mm: 16.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "sfp_plus1"
+    label: "10G SFP+"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 25.0
+      y_mm: 20.0
+      orientation: "upright"
+  - port_id: "eth1"
+    label: "2.5G ETH1"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t", "poe-out", "poe+", "poe-out-af", "poe-out-at", "poe-in-af", "poe-in-at"]
+    coordinates:
+      x_mm: 48.0
+      y_mm: 20.0
+      orientation: "upright"
+  - port_id: "usb1"
+    label: "USB 3.0"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0"]
+    coordinates:
+      x_mm: 192.0
+      y_mm: 20.0
+      orientation: "upright"
+  - port_id: "pwr_in"
+    label: "AC/DC Input"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 190.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#1F2937"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

@@ -1,0 +1,316 @@
+schema_version: "1.0"
+project_name: 8U 10-Inch Proxmox & UniFi Homelab
+rack:
+  standard: 10inch
+  u_height: 8
+  rail_depth_mm: 240
+  enclosure_type: closed-glass-front
+  front_door_clearance_mm: 50
+  rear_clearance_mm: 60
+mounted_devices:
+  - instance_id: ups-u1
+    blueprint_slug: cyberpower-10inch-ups-1u
+    hostname: ups-core-01
+    u_position: 1
+    face: front
+    children: []
+  - instance_id: pdu-u2-rear
+    blueprint_slug: digitus-10inch-pdu-4way-schuko
+    hostname: pdu-rear-01
+    u_position: 2
+    face: rear
+    children: []
+  - instance_id: carrier-u3
+    blueprint_slug: 3dprint-10inch-ucg-ultra-plus-3keystone
+    hostname: carrier-gateway-u3
+    u_position: 3
+    face: front
+    children:
+      - instance_id: ucg-max
+        blueprint_slug: ubiquiti-ucg-max
+        hostname: gw-unifi-max
+        slot_id: gateway-bay
+      - instance_id: ks-u3-wan
+        blueprint_slug: keystone-rj45-cat6a-coupler
+        hostname: WAN-ISP
+        slot_id: keystone-1
+      - instance_id: ks-u3-uplink
+        blueprint_slug: keystone-rj45-cat6a-coupler
+        hostname: UCG-LAN1
+        slot_id: keystone-2
+      - instance_id: ks-u3-aux
+        blueprint_slug: keystone-rj45-cat6a-coupler
+        hostname: UCG-LAN2
+        slot_id: keystone-3
+  - instance_id: carrier-u4
+    blueprint_slug: 3dprint-10inch-lenovo-tiny-plus-2keystone
+    hostname: carrier-pve01-u4
+    u_position: 4
+    face: front
+    children:
+      - instance_id: pve-node-01
+        blueprint_slug: lenovo-thinkcentre-m920q
+        hostname: pve-node-01
+        slot_id: left-mini-pc-bay
+      - instance_id: ks-u4-eth1
+        blueprint_slug: keystone-rj45-cat6a-coupler
+        hostname: PVE1-2.5G
+        slot_id: keystone-1
+      - instance_id: ks-u4-ceph
+        blueprint_slug: keystone-rj45-cat6a-coupler
+        hostname: PVE1-CEPH
+        slot_id: keystone-2
+  - instance_id: carrier-u5
+    blueprint_slug: 3dprint-10inch-lenovo-tiny-plus-2keystone
+    hostname: carrier-pve02-u5
+    u_position: 5
+    face: front
+    children:
+      - instance_id: pve-node-02
+        blueprint_slug: lenovo-thinkcentre-m920q
+        hostname: pve-node-02
+        slot_id: left-mini-pc-bay
+      - instance_id: ks-u5-eth1
+        blueprint_slug: keystone-rj45-cat6a-coupler
+        hostname: PVE2-2.5G
+        slot_id: keystone-1
+      - instance_id: ks-u5-ceph
+        blueprint_slug: keystone-rj45-cat6a-coupler
+        hostname: PVE2-CEPH
+        slot_id: keystone-2
+  - instance_id: brush-u6
+    blueprint_slug: generic-10inch-brush-panel-1u
+    hostname: cable-brush-u6
+    u_position: 6
+    face: front
+    children: []
+  - instance_id: patch-u7
+    blueprint_slug: deskpi-10inch-patch-panel-12port
+    hostname: patch-panel-u7
+    u_position: 7
+    face: front
+    children: []
+  - instance_id: sw-u8
+    blueprint_slug: ubiquiti-usw-flex-2-5g-8-poe
+    hostname: sw-core-flex25g
+    u_position: 8
+    face: front
+    children: []
+cables:
+  - cable_id: pwr-ups-to-pdu
+    cable_type: power-schuko-c13
+    color_hex: "#EF4444"
+    label: UPS C13-1 -> Rear PDU Input
+    from:
+      instance_id: ups-u1
+      port_id: iec_out1
+      face: rear
+    to:
+      instance_id: pdu-u2-rear
+      port_id: mains_in
+  - cable_id: pwr-ups-to-sw
+    cable_type: power-c13-c14
+    color_hex: "#EF4444"
+    label: UPS C13-2 -> USW-Flex-2.5G
+    from:
+      instance_id: ups-u1
+      port_id: iec_out2
+      face: rear
+    to:
+      instance_id: sw-u8
+      port_id: pwr_in
+      face: rear
+  - cable_id: pwr-pdu-to-ucg
+    cable_type: power-usb-c
+    color_hex: "#F97316"
+    label: PDU Schuko 1 -> UCG-Max USB-C PD
+    from:
+      instance_id: pdu-u2-rear
+      port_id: outlet1
+    to:
+      instance_id: ucg-max
+      port_id: usbc_pwr
+      face: rear
+  - cable_id: pwr-pdu-to-pve1
+    cable_type: power-dc-5525
+    color_hex: "#F59E0B"
+    label: PDU Schuko 2 -> PVE-01 20V DC Brick
+    from:
+      instance_id: pdu-u2-rear
+      port_id: outlet2
+    to:
+      instance_id: pve-node-01
+      port_id: dc_in
+      face: rear
+  - cable_id: pwr-pdu-to-pve2
+    cable_type: power-dc-5525
+    color_hex: "#F59E0B"
+    label: PDU Schuko 3 -> PVE-02 20V DC Brick
+    from:
+      instance_id: pdu-u2-rear
+      port_id: outlet3
+    to:
+      instance_id: pve-node-02
+      port_id: dc_in
+      face: rear
+  - cable_id: trunk-ucg-lan1-to-patch1
+    cable_type: cat6a
+    color_hex: "#3B82F6"
+    label: UCG-Max LAN1 -> Patch P1 (Rear)
+    vlan_id: 1
+    ip_cidr: 10.10.0.1/24
+    from:
+      instance_id: ucg-max
+      port_id: lan1
+      face: rear
+    to:
+      instance_id: patch-u7
+      port_id: p1
+      face: rear
+  - cable_id: trunk-pve1-eth1-to-patch2
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: PVE-01 2.5G ETH1 -> Patch P2 (Rear)
+    from:
+      instance_id: pve-node-01
+      port_id: eth1
+      face: rear
+    to:
+      instance_id: patch-u7
+      port_id: p2
+      face: rear
+  - cable_id: trunk-pve2-eth1-to-patch3
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: PVE-02 2.5G ETH1 -> Patch P3 (Rear)
+    from:
+      instance_id: pve-node-02
+      port_id: eth1
+      face: rear
+    to:
+      instance_id: patch-u7
+      port_id: p3
+      face: rear
+  - cable_id: trunk-pve1-eth0-to-patch4
+    cable_type: cat6a
+    color_hex: "#6366F1"
+    label: PVE-01 Mgmt ETH0 -> Patch P4 (Rear)
+    from:
+      instance_id: pve-node-01
+      port_id: eth0
+      face: rear
+    to:
+      instance_id: patch-u7
+      port_id: p4
+      face: rear
+  - cable_id: trunk-pve2-eth0-to-patch5
+    cable_type: cat6a
+    color_hex: "#6366F1"
+    label: PVE-02 Mgmt ETH0 -> Patch P5 (Rear)
+    from:
+      instance_id: pve-node-02
+      port_id: eth0
+      face: rear
+    to:
+      instance_id: patch-u7
+      port_id: p5
+      face: rear
+  - cable_id: trunk-ucg-wan-to-ks
+    cable_type: cat6a
+    color_hex: "#EC4899"
+    label: UCG-Max WAN -> U3 Keystone 1 (Rear)
+    from:
+      instance_id: ucg-max
+      port_id: wan
+      face: rear
+    to:
+      instance_id: ks-u3-wan
+      port_id: coupler
+      face: rear
+  - cable_id: trunk-pve-ceph-direct
+    cable_type: cat6a
+    color_hex: "#A855F7"
+    label: PVE-01 ETH2 <-> PVE-02 ETH2 (2.5G Ceph Cluster)
+    vlan_id: 50
+    ip_cidr: 10.50.0.0/24
+    from:
+      instance_id: pve-node-01
+      port_id: eth2
+      face: rear
+    to:
+      instance_id: pve-node-02
+      port_id: eth2
+      face: rear
+  - cable_id: patch-front-p1-sw1
+    cable_type: cat6a
+    color_hex: "#3B82F6"
+    label: Patch P1 -> Switch Port 1 (Gateway Uplink)
+    from:
+      instance_id: patch-u7
+      port_id: p1
+      face: front
+    to:
+      instance_id: sw-u8
+      port_id: eth1
+      face: front
+  - cable_id: patch-front-p2-sw2
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Patch P2 -> Switch Port 2 (PVE-01 2.5G)
+    from:
+      instance_id: patch-u7
+      port_id: p2
+      face: front
+    to:
+      instance_id: sw-u8
+      port_id: eth2
+      face: front
+  - cable_id: patch-front-p3-sw3
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Patch P3 -> Switch Port 3 (PVE-02 2.5G)
+    from:
+      instance_id: patch-u7
+      port_id: p3
+      face: front
+    to:
+      instance_id: sw-u8
+      port_id: eth3
+      face: front
+  - cable_id: patch-front-p4-sw4
+    cable_type: cat6a
+    color_hex: "#6366F1"
+    label: Patch P4 -> Switch Port 4 (PVE-01 Mgmt)
+    from:
+      instance_id: patch-u7
+      port_id: p4
+      face: front
+    to:
+      instance_id: sw-u8
+      port_id: eth4
+      face: front
+  - cable_id: patch-front-p5-sw5
+    cable_type: cat6a
+    color_hex: "#6366F1"
+    label: Patch P5 -> Switch Port 5 (PVE-02 Mgmt)
+    from:
+      instance_id: patch-u7
+      port_id: p5
+      face: front
+    to:
+      instance_id: sw-u8
+      port_id: eth5
+      face: front
+  - cable_id: cross-sw6-to-ucg-lan2
+    cable_type: cat6a
+    color_hex: "#06B6D4"
+    label: Switch Port 6 (Front) -> U6 Brush Portal -> UCG-Max LAN2 (Rear)
+    preferred_portal_u: 6
+    from:
+      instance_id: sw-u8
+      port_id: eth6
+      face: front
+    to:
+      instance_id: ucg-max
+      port_id: lan2
+      face: rear

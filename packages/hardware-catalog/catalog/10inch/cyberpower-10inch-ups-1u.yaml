@@ -1,0 +1,54 @@
+slug: "cyberpower-10inch-ups-1u"
+manufacturer: "CyberPower"
+model: "10-Inch Compact Lithium UPS 500VA/300W 1U"
+category: "ups"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 220.0
+  height_mm: 44.0
+  depth_mm: 185.0
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 5.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 3200
+power_and_thermal:
+  electrical_role: "ups"
+  idle_watts: 5
+  max_system_watts: 15
+  ups_capacity_watts: 300
+  airflow: "front-to-rear"
+port_groups:
+  - id_prefix: "iec_out"
+    label_prefix: "Battery C13-"
+    start_index: 1
+    count: 4
+    face: "rear"
+    connector_type: "iec-c13"
+    direction: "output"
+    capabilities: ["ac-mains"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 35.0
+      origin_y_mm: 22.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 32.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "ac_in"
+    label: "AC Mains In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 185.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

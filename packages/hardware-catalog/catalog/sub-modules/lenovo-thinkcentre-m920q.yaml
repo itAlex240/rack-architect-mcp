@@ -1,0 +1,97 @@
+slug: "lenovo-thinkcentre-m920q"
+manufacturer: "Lenovo"
+model: "ThinkCentre M920q Tiny (with Dual-Port PCIe NIC)"
+category: "mini-pc"
+mount_type: "sub-module"
+slot_compatibility: "mini-pc-1liter"
+geometry:
+  u_height: 0.8
+  width_mm: 179.0
+  height_mm: 34.5
+  depth_mm: 182.0
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 1320
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 15
+  max_system_watts: 65
+  airflow: "front-to-rear"
+ports:
+  - port_id: "usb_c_front"
+    label: "USB-C"
+    face: "front"
+    connector_type: "usb-c"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0", "usb-3.1"]
+    coordinates:
+      x_mm: 52.0
+      y_mm: 17.0
+      orientation: "upright"
+  - port_id: "usb_a_front"
+    label: "USB-A"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0", "usb-3.1"]
+    coordinates:
+      x_mm: 68.0
+      y_mm: 17.0
+      orientation: "upright"
+  - port_id: "audio_front"
+    label: "Headset"
+    face: "front"
+    connector_type: "audio-35mm"
+    direction: "bidirectional"
+    capabilities: ["audio-analog"]
+    coordinates:
+      x_mm: 86.0
+      y_mm: 17.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "20V DC"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 18.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "eth0"
+    label: "ETH0"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 85.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "eth1"
+    label: "ETH1 (PCIe)"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 132.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "eth2"
+    label: "ETH2 (PCIe)"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 152.0
+      y_mm: 16.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

@@ -1,0 +1,51 @@
+name: 📦 Hardware Blueprint Request / Submission
+description: Request or contribute a new 10-inch, 19-inch, 6-inch, or 3D-printed sub-module blueprint
+title: "[Blueprint]: <Manufacturer> <Model>"
+labels: ["hardware-catalog", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping expand `@rack-mcp/hardware-catalog`! Provide the physical specs below (or paste your YAML blueprint directly).
+  - type: input
+    id: manufacturer_model
+    attributes:
+      label: Manufacturer & Model
+      description: Full vendor and product name
+      placeholder: "e.g., MikroTik CRS310-8G+2S+IN or DeskPi RackMate T2"
+    validations:
+      required: true
+  - type: dropdown
+    id: mount_type
+    attributes:
+      label: Form Factor / Mount Type
+      options:
+        - rackmount-10 (10-Inch Mini-Rack)
+        - rackmount-19 (19-Inch Enterprise Rack)
+        - rackmount-6 (6-Inch Micro-Lab)
+        - modular-carrier (3D-Printed Carrier with Sub-Slots)
+        - sub-module (Mini-PC, Gateway, SBC Blade, Keystone, PSU Brick)
+    validations:
+      required: true
+  - type: input
+    id: dimensions
+    attributes:
+      label: Physical Dimensions (Width × Height × Depth in mm) & Weight (g)
+      description: Exact millimeter measurements from the datasheet
+      placeholder: "e.g., 200.0 × 44.0 × 206.0 mm, 1120 g (1U)"
+    validations:
+      required: true
+  - type: textarea
+    id: ports_and_power
+    attributes:
+      label: Ports, Power Draw (W), PoE Budget & Noise (dB(A))
+      description: Front/rear ports, power connector type (IEC-C14, DC-Barrel, USB-C, PoE-PD), max watts, and fan airflow/noise
+      placeholder: |
+        - Front: 8x 2.5G RJ45 + 2x 10G SFP+
+        - Rear: 1x DC-Barrel + 1x IEC-C14
+        - Max Draw: 34 W, Airflow: front-to-rear, Noise: 26 dB(A)
+  - type: textarea
+    id: links
+    attributes:
+      label: Official Datasheet or Printables / MakerWorld Link
+      placeholder: "https://..."

@@ -1,0 +1,42 @@
+{
+  "name": "@rack-mcp/cli",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "Unified CLI entry point (rack-mcp serve | validate | export) launching the RackArchitect MCP stdio server, WebSocket sidecar, and 3D Web-Viewer.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "rack-mcp": "./dist/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "dev": "node ./dist/bin.js --stdio --port 3100 --project ../../examples/10inch-homelab/rack.yaml"
+  },
+  "dependencies": {
+    "@rack-mcp/core-domain": "workspace:*",
+    "@rack-mcp/exporters": "workspace:*",
+    "@rack-mcp/hardware-catalog": "workspace:*",
+    "@rack-mcp/mcp-server": "workspace:*",
+    "@rack-mcp/web-viewer": "workspace:*",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.5"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "@rack-mcp/core-domain",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "Pure TypeScript/Zod 3D spatial coordinate math, AABB collision solver, PoE/power DAG analyzer, Stage-5 thermal/acoustic engine, and clamped Catmull-Rom 3D cable router.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.5"
+  }
+}

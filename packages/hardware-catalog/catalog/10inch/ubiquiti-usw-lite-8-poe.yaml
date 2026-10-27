@@ -1,0 +1,70 @@
+slug: "ubiquiti-usw-lite-8-poe"
+manufacturer: "Ubiquiti"
+model: "UniFi Switch Lite 8 PoE (USW-Lite-8-PoE)"
+category: "switch"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 200.0
+  height_mm: 31.0
+  depth_mm: 99.6
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 295
+power_and_thermal:
+  electrical_role: "pse-switch"
+  idle_watts: 4
+  max_system_watts: 8
+  poe_budget_watts: 52
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "PoE+ "
+    start_index: 1
+    count: 4
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "poe-out", "poe+", "poe-out-af", "poe-out-at"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 36.0
+      origin_y_mm: 15.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 16.0
+      pitch_y_mm: 0.0
+  - id_prefix: "eth"
+    label_prefix: "GbE "
+    start_index: 5
+    count: 4
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 106.0
+      origin_y_mm: 15.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 16.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "dc_in"
+    label: "54V DC"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 174.0
+      y_mm: 15.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#F3F4F6"
+  material_preset: "polycarbonate"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

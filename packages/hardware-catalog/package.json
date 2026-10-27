@@ -1,0 +1,35 @@
+{
+  "name": "@rack-mcp/hardware-catalog",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "Precision-measured YAML hardware blueprints (10-inch mini-racks, 19-inch enterprise racks, 3D-printed modular carriers, sub-modules) with port-matrix macro expansion.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "catalog"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "validate:catalog": "tsc -p tsconfig.build.json && node ./dist/validate-cli.js"
+  },
+  "dependencies": {
+    "@rack-mcp/core-domain": "workspace:*",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

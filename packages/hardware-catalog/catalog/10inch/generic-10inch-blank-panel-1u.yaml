@@ -1,0 +1,25 @@
+slug: "generic-10inch-blank-panel-1u"
+manufacturer: "Generic"
+model: "10-Inch 1U Steel Blanking Panel"
+category: "blank-panel"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 222.0
+  height_mm: 44.0
+  depth_mm: 10.0
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 1.5
+  rear_protrusion_mm: 0.0
+  weight_grams: 140
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "none"
+visuals:
+  chassis_color_hex: "#1F2937"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

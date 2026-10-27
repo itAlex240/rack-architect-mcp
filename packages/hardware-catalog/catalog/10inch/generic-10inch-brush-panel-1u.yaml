@@ -1,0 +1,26 @@
+slug: "generic-10inch-brush-panel-1u"
+manufacturer: "Generic"
+model: "10-Inch 1U Cable Management Brush Strip Panel"
+category: "brush-panel"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 222.0
+  height_mm: 44.0
+  depth_mm: 15.0
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 1.5
+  rear_protrusion_mm: 0.0
+  weight_grams: 160
+  has_cable_pass_through: true
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "passive-convection"
+visuals:
+  chassis_color_hex: "#111827"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

@@ -1,0 +1,6 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": ["itAlex240"],
+  "name": "rack_architect_mcp",
+  "description": "Agent-first Rack-as-Code planning, 5-stage physical/electrical/acoustic validation, parametric OpenSCAD/STL 3D-print generator, and live 2D/3D CAD visualization platform for 19-inch, 10-inch, and 6-inch racks."
+}

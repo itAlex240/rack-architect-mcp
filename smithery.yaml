@@ -1,0 +1,26 @@
+# Smithery.ai MCP Server Configuration
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      projectPath:
+        type: string
+        description: Path to the rack.yaml project file
+        default: examples/10inch-homelab/rack.yaml
+      sidecarPort:
+        type: number
+        description: Local HTTP/WebSocket sidecar port for the live 3D/2D Web-Viewer
+        default: 3100
+  commandFunction: |-
+    (config) => ({
+      command: 'node',
+      args: [
+        'packages/cli/dist/bin.js',
+        '--stdio',
+        '--port',
+        String(config.sidecarPort || 3100),
+        '--project',
+        config.projectPath || 'examples/10inch-homelab/rack.yaml'
+      ]
+    })

@@ -1,0 +1,34 @@
+{
+  "name": "@rack-mcp/exporters",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "Deterministic 2D CAD elevation SVG, 5-layer logical wiring schematic SVG (with VLAN/CIDR badges), Markdown/CSV BOM, binary glTF 2.0 (.glb), and parametric OpenSCAD (.scad) & ASCII .stl 3D-print generators.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rack-mcp/core-domain": "workspace:*",
+    "@rack-mcp/hardware-catalog": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "yaml": "^2.9.1"
+  }
+}

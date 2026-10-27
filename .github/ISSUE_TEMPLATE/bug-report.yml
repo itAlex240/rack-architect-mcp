@@ -1,0 +1,23 @@
+name: 🐛 Bug Report (Validation, Routing, Exporter, or 3D Viewer)
+description: Report a bug in 3D coordinate math, cable routing, SVG/STL export, or MCP server tools
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Clear description of the unexpected geometry, validation diagnostic, or UI behavior
+    validations:
+      required: true
+  - type: textarea
+    id: rack_yaml
+    attributes:
+      label: Minimal `rack.yaml` or MCP Tool Input
+      description: Paste the `rack.yaml` snippet or tool call that reproduces the issue
+      render: yaml
+  - type: input
+    id: environment
+    attributes:
+      label: Environment (OS, Node version, MCP Client / Browser)
+      placeholder: "e.g., Ubuntu 24.04 / Windows 11 WSL2, Node 22, Claude Desktop / Chrome 135"
