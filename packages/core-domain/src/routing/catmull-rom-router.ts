@@ -375,20 +375,29 @@ export function routeSingleCable(
       const zPeak = roundMm(-20.0 - Math.min(bundleIdx, 5) * 1.6);
       if (dx <= 36.0) {
         // Clean vertical arch between aligned ports (e.g. U7 Patch Panel <-> U8 Switch)
+        const b1 = vec3(p1.x, p1.y, roundMm(a1.z - 5.0));
+        const b2 = vec3(p2.x, p2.y, roundMm(a2.z - 5.0));
         const midA = vec3(
           roundMm((a1.x + a2.x) / 2 + offset.du * 0.25),
           roundMm((a1.y + a2.y) / 2),
           zPeak
         );
-        waypoints = [p1, a1, midA, a2, p2];
+        waypoints = [p1, a1, b1, midA, b2, a2, p2];
       } else {
         const lowerU = Math.min(fromDev.u_position, toDev.u_position);
-        const yBoundary = roundMm(lowerU * MM_PER_U + ((bundleIdx % 4) - 1.5) * 2.5);
+        const yBoundary =
+          fromDev.u_position === toDev.u_position
+            ? roundMm((lowerU - 1) * MM_PER_U + 5.5 + (bundleIdx % 3) * 2.0)
+            : roundMm(lowerU * MM_PER_U + ((bundleIdx % 4) - 1.5) * 2.5);
+        const b1 = vec3(p1.x, p1.y, zPeak);
+        const b2 = vec3(p2.x, p2.y, zPeak);
         waypoints = [
           p1,
           a1,
+          b1,
           vec3(p1.x, yBoundary, zPeak),
           vec3(p2.x, yBoundary, zPeak),
+          b2,
           a2,
           p2
         ];
@@ -396,46 +405,48 @@ export function routeSingleCable(
     } else {
       // Rear Same-U or Adjacent-U Jumper (e.g. U3 UCG-Max WAN -> U3 Keystone, U1 UPS -> U2 Rear PDU, U4 PVE1 <-> U5 PVE2 Ceph)
       const zClearPlane = roundMm(
-        Math.max(a1.z, a2.z) + 6.0 + Math.min(bundleIdx, 4) * 2.0
+        Math.max(a1.z, a2.z) + 10.0 + Math.min(bundleIdx, 4) * 2.5
       );
 
       if (dx <= 28.0 && dz <= 15.0) {
         // Vertically aligned rear ports at same depth (e.g. PVE-01 ETH2 <-> PVE-02 ETH2)
+        const b1 = vec3(p1.x, p1.y, roundMm(a1.z + 6.0));
+        const b2 = vec3(p2.x, p2.y, roundMm(a2.z + 6.0));
         const midRear = vec3(
           roundMm((a1.x + a2.x) / 2 + offset.du * 0.2),
           roundMm((a1.y + a2.y) / 2),
           zClearPlane
         );
-        waypoints = [p1, a1, midRear, a2, p2];
+        waypoints = [p1, a1, b1, midRear, b2, a2, p2];
       } else if (fromDev.u_position === toDev.u_position) {
-        // Same-U Rear Sub-Module Jumper (e.g. U3 UCG-Max Z=142mm -> U3 Keystone Z=28mm):
-        // Step out behind the deeper module first at (p1.x, yRunner, zClearPlane),
-        // then move horizontally into the open keystone bay at (p2.x, yRunner, zClearPlane),
-        // then step straight forward along -Z to a2 -> p2!
-        const yRunner = computeDeviceHorizontalRunnerY(
-          fromParent ?? fromDev,
-          p1.y,
-          p2.y,
-          bundleIdx,
-          geometry.total_height_mm
-        );
+        // Same-U Rear Sub-Module Jumper (e.g. U3 UCG-Max Z=127.6mm -> U3 Keystone Z=30mm):
+        // Step coaxially straight back from p1 to zClearPlane at p1.y (staying well above the carrier tray floor!),
+        // traverse horizontally at zClearPlane to (p2.x, p2.y, zClearPlane),
+        // then run straight forward coaxially along -Z into b2 -> a2 -> p2!
+        const b1 = vec3(p1.x, p1.y, zClearPlane);
+        const b2 = vec3(p2.x, p2.y, roundMm(Math.min(zClearPlane, a2.z + 10.0)));
         waypoints = [
           p1,
           a1,
-          vec3(p1.x, yRunner, zClearPlane),
-          vec3(p2.x, yRunner, zClearPlane),
+          b1,
           vec3(p2.x, p2.y, zClearPlane),
+          b2,
           a2,
           p2
         ];
       } else {
-        // Adjacent-U Rear Jumper with different Z depths (e.g. U1 UPS Z=190mm -> U2 Rear PDU Z=240mm):
-        // Reach zClearPlane (Z=264mm) at p1.y BEFORE rising to p2.y so the cable never clips the bottom of U2 PDU!
+        // Adjacent-U Rear Jumper with different Z depths (e.g. U1 UPS Z=185mm -> U2 Rear PDU Z=240mm):
+        // Step coaxially out to zClearPlane at (p1.x, p1.y) before moving to (p2.x, p2.y, zClearPlane),
+        // then enter p2 coaxially along -Z via b2 -> a2 -> p2.
+        const b1 = vec3(p1.x, p1.y, roundMm(Math.min(zClearPlane, a1.z + 10.0)));
+        const b2 = vec3(p2.x, p2.y, roundMm(Math.min(zClearPlane, a2.z + 10.0)));
         waypoints = [
           p1,
           a1,
+          b1,
           vec3(p1.x, p1.y, zClearPlane),
           vec3(p2.x, p2.y, zClearPlane),
+          b2,
           a2,
           p2
         ];
@@ -508,22 +519,26 @@ export function routeSingleCable(
 
     if (port1.world_face === 'front') {
       const zFrontDuct = roundMm(-18.0 - (bundleIdx % 4) * 2.0);
+      const b1 = vec3(p1.x, p1.y, zFrontDuct);
+      const b2 = vec3(p2.x, p2.y, zFrontDuct);
       waypoints = [
         p1,
         a1,
+        b1,
         vec3(p1.x, yRunner1, zFrontDuct),
         vec3(ductX, yRunner1, zFrontDuct),
         vec3(ductX, yRunner2, zFrontDuct),
         vec3(p2.x, yRunner2, zFrontDuct),
+        b2,
         a2,
         p2
       ];
     } else {
       // Rear Duct Route:
       // Determine maximum rear Z of intermediate front-mounted devices between U1 and U2
-      // so the vertical rear duct plane stays behind all front-mounted chassis (e.g. Z = 202..214mm),
+      // so the vertical rear duct plane stays behind all front-mounted chassis (Z = 204..214mm),
       // while depth transitions into shallower U bays (like U7 Patch Panel at Z=30mm or U8 Switch at Z=99mm)
-      // happen strictly at the target U's height!
+      // happen strictly at the target U's height and enter terminator boots coaxially along -Z!
       const minU = Math.min(fromDev.u_position, toDev.u_position);
       const maxU = Math.max(fromDev.u_position, toDev.u_position);
 
@@ -543,33 +558,64 @@ export function routeSingleCable(
 
       const zRearVerticalDuct = roundMm(
         Math.min(
-          geometry.rail_depth_mm - 8.0,
-          Math.max(maxFrontDeviceZInSpan + 14.0, 200.0) + (bundleIdx % 4) * 2.4
+          geometry.rail_depth_mm - 6.0,
+          Math.max(maxFrontDeviceZInSpan + 19.0, 204.0) + (bundleIdx % 5) * 2.5
         )
       );
 
-      const zPlane1 = roundMm(Math.max(a1.z, (fromParent ?? fromDev).chassis_box.max.z + 12.0));
-      const zPlane2 = roundMm(Math.max(a2.z, (toParent ?? toDev).chassis_box.max.z + 12.0));
+      const yDepart = roundMm(p1.y + ((bundleIdx % 5) - 2) * 1.5);
+      const yArrive = roundMm(p2.y + ((bundleIdx % 5) - 2) * 1.5);
 
-      waypoints = [
-        p1,
-        a1,
-        // 1. Step vertically to U-boundary runner at zPlane1 (clears neighboring sockets on fromDev!)
-        vec3(p1.x, yRunner1, zPlane1),
-        // 2. Run horizontally along U-boundary runner to side duct X
-        vec3(ductX, yRunner1, zPlane1),
-        // 3. Transition along side wall at yRunner1 to the main vertical rear duct Z
-        vec3(ductX, yRunner1, zRearVerticalDuct),
-        // 4. Pure vertical run in the rear side duct to target U's runner height yRunner2
-        vec3(ductX, yRunner2, zRearVerticalDuct),
-        // 5. Transition along side wall at yRunner2 into target U's depth plane zPlane2
-        vec3(ductX, yRunner2, zPlane2),
-        // 6. Run horizontally behind target device to p2.x
-        vec3(p2.x, yRunner2, zPlane2),
-        // 7. Step vertically to target port height and plug straight in
-        a2,
-        p2
-      ];
+      const zBehindRearRail = roundMm(a1.z + 8.0 + (bundleIdx % 4) * 2.5);
+      const departWaypoints: Vector3D[] =
+        a1.z > zRearVerticalDuct - 6.0
+          ? [
+              // Rear-rail device (e.g. Rear PDU at Z=240mm): step coaxially back behind the rear rail,
+              // step to runner Y, run horizontally behind the PDU to ductX, and travel vertically at zBehindRearRail
+              // to yArrive so it never passes through the PDU chassis (Z=185..242mm)!
+              vec3(p1.x, p1.y, zBehindRearRail),
+              vec3(p1.x, yRunner1, zBehindRearRail),
+              vec3(ductX, yRunner1, zBehindRearRail),
+              vec3(ductX, yArrive, zBehindRearRail)
+            ]
+          : [
+              // Front/mid-depth device with open rear space (e.g. UCG-Max at Z=127.6, Mini-PCs at Z=182, UPS at Z=185):
+              // Step coaxially straight back along +Z at port height all the way to zRearVerticalDuct (204..214mm),
+              // then traverse horizontally to the rear side duct (zero shelf clipping or under-tray loops!)
+              vec3(p1.x, p1.y, zRearVerticalDuct),
+              vec3(ductX, yDepart, zRearVerticalDuct)
+            ];
+
+      const arriveWaypoints: Vector3D[] =
+        a2.z >= zRearVerticalDuct - 70.0
+          ? [
+              // Deep/mid-depth target device (e.g. UCG-Max at Z=127.6, Mini-PCs at Z=182):
+              // Arrive at target port height in the rear duct, traverse horizontally at zRearVerticalDuct to p2.x,
+              // then go 100% straight forward coaxially along -Z into the terminator boot!
+              vec3(ductX, yArrive, zRearVerticalDuct),
+              vec3(p2.x, p2.y, zRearVerticalDuct),
+              vec3(p2.x, p2.y, roundMm(Math.min(zRearVerticalDuct, a2.z + 8.0)))
+            ]
+          : [
+              // Shallow target device (e.g. U7 Patch Panel at Z=30mm or U8 Switch at Z=99.4mm):
+              // Step forward along the side wall at target port height to a staggered approach depth (18..36mm behind boots),
+              // traverse horizontally behind the boots to (p2.x, p2.y, zApproach),
+              // then go 100% straight forward coaxially along -Z into the terminator boot!
+              vec3(ductX, yArrive, zRearVerticalDuct),
+              vec3(
+                ductX,
+                yArrive,
+                roundMm(a2.z + 18.0 + (bundleIdx % 5) * 4.5)
+              ),
+              vec3(
+                p2.x,
+                p2.y,
+                roundMm(a2.z + 18.0 + (bundleIdx % 5) * 4.5)
+              ),
+              vec3(p2.x, p2.y, roundMm(a2.z + 9.0))
+            ];
+
+      waypoints = [p1, a1, ...departWaypoints, ...arriveWaypoints, a2, p2];
     }
 
     const splinePoints = evaluateCentripetalCatmullRomSpline(waypoints, 32);
@@ -637,18 +683,18 @@ export function routeSingleCable(
       cable.preferred_portal_u ?? Math.max(1, Math.round(targetMeanU));
   }
 
-  // Pass through the open bristle slot of the brush panel (inset 42mm from panel edge so it passes
+  // Pass through the open bristle slot of the brush panel (inset 38mm from panel edge so it passes
   // cleanly through the black brush strip rather than the metal mounting ear!)
   const portalX = roundMm(
     isPower
-      ? 42.0 + bundleIdx * 4.5
-      : geometry.panel_width_mm - 42.0 - bundleIdx * 4.5
+      ? 38.0 + bundleIdx * 4.5
+      : geometry.panel_width_mm - 38.0 - bundleIdx * 4.5
   );
   const yPortal = roundMm((chosenPortalU - 0.5) * MM_PER_U + offset.dv * 0.35);
 
   const zFrontDuct = roundMm(-18.0 - (bundleIdx % 4) * 2.0);
   const zRearDuct = roundMm(
-    Math.min(geometry.rail_depth_mm - 12.0, 198.0 + (bundleIdx % 4) * 2.5)
+    Math.min(geometry.rail_depth_mm - 8.0, 206.0 + (bundleIdx % 4) * 2.5)
   );
 
   const yRunner1 = computeDeviceHorizontalRunnerY(
@@ -668,23 +714,47 @@ export function routeSingleCable(
 
   const startDuctZ = port1.world_face === 'front' ? zFrontDuct : zRearDuct;
   const endDuctZ = port2.world_face === 'front' ? zFrontDuct : zRearDuct;
-  const endZPlane =
-    port2.world_face === 'front'
-      ? zFrontDuct
-      : roundMm(Math.max(a2.z, (toParent ?? toDev).chassis_box.max.z + 12.0));
 
+  const b1 = vec3(p1.x, p1.y, startDuctZ);
+  const dStartRunner = vec3(p1.x, yRunner1, startDuctZ);
   const dStartEntry = vec3(portalX, yRunner1, startDuctZ);
-  const dPortalStart = vec3(portalX, yPortal, startDuctZ);
-  const dPortalEnd = vec3(portalX, yPortal, endDuctZ);
-  const dEndExit = vec3(portalX, yRunner2, endZPlane);
+  const dPortalStartOuter = vec3(portalX, yPortal, startDuctZ);
+  const dPortalBrushIn = vec3(
+    portalX,
+    yPortal,
+    port1.world_face === 'front' ? -2.0 : 17.0
+  );
+  const dPortalBrushOut = vec3(
+    portalX,
+    yPortal,
+    port1.world_face === 'front' ? 17.0 : -2.0
+  );
+  const dPortalEndOuter = vec3(portalX, yPortal, endDuctZ);
+
+  const endArriveWaypoints: Vector3D[] =
+    port2.world_face === 'front'
+      ? [
+          vec3(portalX, yRunner2, endDuctZ),
+          vec3(p2.x, yRunner2, endDuctZ),
+          vec3(p2.x, p2.y, endDuctZ)
+        ]
+      : [
+          vec3(portalX, p2.y, endDuctZ),
+          vec3(p2.x, p2.y, endDuctZ),
+          vec3(p2.x, p2.y, roundMm(Math.min(endDuctZ, a2.z + 10.0)))
+        ];
 
   const waypoints: Vector3D[] = [
     p1,
     a1,
+    b1,
+    dStartRunner,
     dStartEntry,
-    dPortalStart,
-    dPortalEnd,
-    dEndExit,
+    dPortalStartOuter,
+    dPortalBrushIn,
+    dPortalBrushOut,
+    dPortalEndOuter,
+    ...endArriveWaypoints,
     a2,
     p2
   ];

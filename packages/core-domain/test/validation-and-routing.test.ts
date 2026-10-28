@@ -617,8 +617,8 @@ describe('10-Inch Mini-Rack (8U, 260mm Depth) End-to-End Validation & 3D Routing
     expect(routeCross.route_case).toBe('cross-face-portal');
     expect(routeCross.assigned_ducts).toEqual(['FR', 'RR']);
     expect(routeCross.portal_u).toBe(2);
-    expect(routeCross.waypoints).toHaveLength(8);
-    expect(routeCross.spline_points.length).toBe(7 * 32 + 1);
+    expect(routeCross.waypoints).toHaveLength(14);
+    expect(routeCross.spline_points.length).toBe(13 * 32 + 1);
 
     // Verify required_length_mm = raw_arc_length_mm * 1.12 + 40 and commercial bin mapping
     for (const r of [route1, route2, routeCross]) {

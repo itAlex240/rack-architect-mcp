@@ -5,6 +5,15 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2026-10-28
+
+### Fixed & Improved
+- **Coaxial Terminator Boot Insertion & Zero-Clipping 3D Cable Routing (`@rack-mcp/core-domain` & `@rack-mcp/web-viewer`):**
+  - Added collinear post-boot approach waypoints (`b1`, `b2`) along the port normal across all 3 routing cases (`direct-vertical-patch`, `same-face-duct`, `cross-face-portal`) in [`catmull-rom-router.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/routing/catmull-rom-router.ts), ensuring every cable enters and exits its black strain-relief terminator cylinder 100% coaxially (`0.00mm` lateral kink at boot tips on `patch-u7`, `sw-u8`, `ucg-max`, and `pve-node-01`/`02`).
+  - Upgraded Case C (`cross-face-portal`) to a 14-waypoint orthogonal 3D path that steps down into the front U-boundary runner first, traverses straight horizontally through `brush-u6` (`Z = -2mm -> +17mm` at constant `Y = 244.475mm`), and drops vertically in the rear duct at `Z = 206mm` (`21mm` behind the `185mm` carrier shelves of `U5` and `U4`) so it never clips through `carrier-u5` or `carrier-u4`.
+  - Refined Rear Duct (`Case B`) and Same-U Rear Jumper (`Case A`) paths so cables step straight back into the rear duct (`Z = 204..214mm`) at port height before moving laterally, eliminating under-shelf loops beneath `carrier-u4` and floor clipping on `carrier-u3`.
+  - Inset 3D-printed modular carrier tray floors and side gussets in [`MountedDevice3D.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/canvas/MountedDevice3D.tsx) to `spec.W_aperture - 1.5mm` between the left/right rack rails, and extended the `brush-u6` bristle slot across both front and rear faces.
+
 ## [0.3.1] - 2026-10-28
 
 ### Fixed & Improved

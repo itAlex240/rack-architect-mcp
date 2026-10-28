@@ -251,6 +251,42 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     const projectInput = create10InchHomelabProjectInput();
     const scene = evaluate10InchHomelabScene();
 
+    // Verify all 18 cables in the 8U 10-Inch Homelab reference scene enter and exit
+    // their terminator boots coaxially (zero lateral kink at boot tip) and never clip
+    // through any 3D-printed carrier tray floor.
+    expect(scene.cable_routes).toHaveLength(18);
+    for (const route of scene.cable_routes) {
+      const sp = route.spline_points;
+      const p1 = sp[0]!;
+      const bootTip1 = sp[32]!;
+      const postBoot1 = sp[36]!;
+      const p2 = sp[sp.length - 1]!;
+      const bootTip2 = sp[sp.length - 33]!;
+      const preBoot2 = sp[sp.length - 37]!;
+
+      expect(Math.hypot(bootTip1.x - p1.x, bootTip1.y - p1.y)).toBeLessThan(0.05);
+      expect(Math.hypot(bootTip2.x - p2.x, bootTip2.y - p2.y)).toBeLessThan(0.05);
+      expect(Math.hypot(postBoot1.x - p1.x, postBoot1.y - p1.y)).toBeLessThan(0.5);
+      expect(Math.hypot(preBoot2.x - p2.x, preBoot2.y - p2.y)).toBeLessThan(0.5);
+
+      for (const dev of scene.geometry.devices) {
+        if (dev.blueprint.category === 'modular-carrier') {
+          const b = dev.chassis_box;
+          for (let i = 16; i < sp.length - 16; i++) {
+            const pt = sp[i]!;
+            const hitsCarrierFloor =
+              pt.x > b.min.x + 2 &&
+              pt.x < b.max.x - 2 &&
+              pt.z > b.min.z + 2 &&
+              pt.z < b.max.z - 2 &&
+              pt.y >= b.min.y - 1.5 &&
+              pt.y <= b.min.y + 4.0;
+            expect(hitsCarrierFloor).toBe(false);
+          }
+        }
+      }
+    }
+
     const yamlPath = resolve(exampleDir, 'rack.yaml');
     const elevationPath = resolve(exampleDir, 'elevation.svg');
     const wiringPath = resolve(exampleDir, 'wiring-schematic.svg');

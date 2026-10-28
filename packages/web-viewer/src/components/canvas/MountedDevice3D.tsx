@@ -156,9 +156,11 @@ export function MountedDevice3D({
       {/* Main Device Chassis (or Open L-Shaped 3D-Printed Tray for Modular Carriers) */}
       {isModularCarrier ? (
         <group onClick={handleClick}>
-          {/* 3.2mm Bottom Support Tray Floor */}
+          {/* 3.2mm Bottom Support Tray Floor (inset between left/right rack rails so side cable ducts stay open) */}
           <mesh position={[cx, box.min.y + 1.6, cz]}>
-            <boxGeometry args={[w, 3.2, d]} />
+            <boxGeometry
+              args={[Math.min(w, spec.W_aperture - 1.5), 3.2, d]}
+            />
             <meshStandardMaterial
               color={chassisColor}
               metalness={matParams.metalness}
@@ -170,8 +172,14 @@ export function MountedDevice3D({
               depthWrite={!xrayMode}
             />
           </mesh>
-          {/* Left & Right 3.5mm Structural Side Gussets */}
-          <mesh position={[box.min.x + 1.75, box.min.y + h * 0.28, cz]}>
+          {/* Left & Right 3.5mm Structural Side Gussets (aligned inside the rack rail aperture) */}
+          <mesh
+            position={[
+              cx - Math.min(w, spec.W_aperture - 1.5) / 2 + 1.75,
+              box.min.y + h * 0.28,
+              cz,
+            ]}
+          >
             <boxGeometry args={[3.5, h * 0.56, d]} />
             <meshStandardMaterial
               color={chassisColor}
@@ -184,7 +192,13 @@ export function MountedDevice3D({
               depthWrite={!xrayMode}
             />
           </mesh>
-          <mesh position={[box.max.x - 1.75, box.min.y + h * 0.28, cz]}>
+          <mesh
+            position={[
+              cx + Math.min(w, spec.W_aperture - 1.5) / 2 - 1.75,
+              box.min.y + h * 0.28,
+              cz,
+            ]}
+          >
             <boxGeometry args={[3.5, h * 0.56, d]} />
             <meshStandardMaterial
               color={chassisColor}
@@ -355,19 +369,18 @@ export function MountedDevice3D({
         </mesh>
       )}
 
-      {/* Brush-Panel Bristle Slot */}
+      {/* Brush-Panel Bristle Slot (spans front and rear faces so cables pass through bristles on both sides) */}
       {device.blueprint.category === 'brush-panel' && (
-        <mesh
-          position={[
-            cx,
-            cy,
-            (device.face === 'front' ? box.min.z - 0.6 : box.max.z + 0.6) +
-              offsetZ,
-          ]}
-        >
-          <boxGeometry args={[w - 22, h - 14, 2.2]} />
-          <meshStandardMaterial color="#020617" roughness={0.95} />
-        </mesh>
+        <group position={[cx, cy, cz + offsetZ]}>
+          <mesh>
+            <boxGeometry args={[w - 22, h - 14, d + 1.4]} />
+            <meshStandardMaterial color="#020617" roughness={0.95} />
+          </mesh>
+          <mesh>
+            <boxGeometry args={[w - 24, 1.2, d + 1.8]} />
+            <meshStandardMaterial color="#000000" roughness={1.0} />
+          </mesh>
+        </group>
       )}
 
       {/* Optional Plug Clearance Box (`B_clearance`) Wireframe */}
