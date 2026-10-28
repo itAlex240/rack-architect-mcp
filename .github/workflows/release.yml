@@ -81,6 +81,96 @@ jobs:
             examples/10inch-homelab/3dprint-10inch-lenovo-tiny-plus-2keystone.scad
             examples/10inch-homelab/3dprint-10inch-lenovo-tiny-plus-2keystone.stl
 
+      - name: Curate GitHub Releases Page (Keep Top 3 Recent Releases & Archive Older Ones)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          CURRENT_TAG: ${{ github.ref_name }}
+        run: |
+          node -e '
+            async function curateReleases() {
+              const repo = process.env.REPO;
+              const token = process.env.GITHUB_TOKEN;
+              const currentTag = process.env.CURRENT_TAG;
+              const headers = {
+                "Accept": "application/vnd.github+json",
+                "Authorization": `Bearer ${token}`,
+                "X-GitHub-Api-Version": "2022-11-28",
+                "User-Agent": "rack-architect-release-curator"
+              };
+
+              const res = await fetch(`https://api.github.com/repos/${repo}/releases?per_page=100`, { headers });
+              if (!res.ok) {
+                console.warn("Could not list releases:", res.status, await res.text());
+                return;
+              }
+              const releases = await res.json();
+              releases.sort((a, b) => {
+                if (a.tag_name === currentTag) return -1;
+                if (b.tag_name === currentTag) return 1;
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+              });
+
+              const KEEP_COUNT = 3;
+              const kept = releases.slice(0, KEEP_COUNT);
+              const toArchive = releases.slice(KEEP_COUNT);
+
+              // Collapse the repetitive Quick-Start guide on the #2 and #3 releases so the page stays compact
+              for (let i = 1; i < kept.length; i++) {
+                const rel = kept[i];
+                let body = rel.body || "";
+                if (!body.includes("<!-- COMPACTED_SECONDARY_RELEASE -->")) {
+                  const summaryHeader = `<details>\n<summary>📖 <b>Einsteiger-Anleitung & Asset-Erklärung aufklappen / Expand Quick-Start Guide (${rel.tag_name})</b></summary>\n\n`;
+                  if (body.includes("<!-- BEGIN_QUICKSTART_GUIDE -->") && body.includes("<!-- END_QUICKSTART_GUIDE -->")) {
+                    body = body
+                      .replace("<!-- BEGIN_QUICKSTART_GUIDE -->", `<!-- COMPACTED_SECONDARY_RELEASE -->\n${summaryHeader}`)
+                      .replace("<!-- END_QUICKSTART_GUIDE -->", "\n</details>");
+                  } else if (body.includes("## 🇩🇪 Anleitung")) {
+                    const splitIdx = body.indexOf("## 🇩🇪 Anleitung");
+                    body = `${body.slice(0, splitIdx)}<!-- COMPACTED_SECONDARY_RELEASE -->\n${summaryHeader}${body.slice(splitIdx)}\n</details>\n`;
+                  }
+                  // Also trim oversized legacy bullet lists in #2/#3 if > 3 bullets exist
+                  const lines = body.split("\n");
+                  const compactLines = [];
+                  let quoteBulletCount = 0;
+                  for (const line of lines) {
+                    if (line.startsWith("> - **")) {
+                      quoteBulletCount++;
+                      if (quoteBulletCount <= 2) {
+                        compactLines.push(line);
+                      } else if (quoteBulletCount === 3) {
+                        compactLines.push(`> - *Ältere Änderungen siehe [\`docs/RELEASE_ARCHIVE.md\`](https://github.com/${repo}/blob/main/docs/RELEASE_ARCHIVE.md) & [\`CHANGELOG.md\`](https://github.com/${repo}/blob/main/CHANGELOG.md).*`);
+                      }
+                    } else {
+                      compactLines.push(line);
+                    }
+                  }
+                  const updatedBody = compactLines.join("\n");
+                  if (updatedBody !== rel.body) {
+                    const patchRes = await fetch(`https://api.github.com/repos/${repo}/releases/${rel.id}`, {
+                      method: "PATCH",
+                      headers: { ...headers, "Content-Type": "application/json" },
+                      body: JSON.stringify({ body: updatedBody })
+                    });
+                    console.log(`Compacted secondary release ${rel.tag_name}: HTTP ${patchRes.status}`);
+                  }
+                }
+              }
+
+              // Delete older GitHub Release entries (> Top 3) while keeping their Git tags intact
+              for (const oldRel of toArchive) {
+                const delRes = await fetch(`https://api.github.com/repos/${repo}/releases/${oldRel.id}`, {
+                  method: "DELETE",
+                  headers
+                });
+                console.log(`Archived (removed from Releases feed, Git tag preserved) ${oldRel.tag_name}: HTTP ${delRes.status}`);
+              }
+            }
+            curateReleases().catch((err) => {
+              console.warn("Release curation warning:", err);
+            });
+          '
+
       - name: Publish Server to Official MCP Registry (registry.modelcontextprotocol.io)
         run: |
           set -euo pipefail

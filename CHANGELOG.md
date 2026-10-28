@@ -5,6 +5,13 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.5] - 2026-10-28
+
+### Added & Improved
+- **Automated GitHub Releases Page Curation (Keep Top 3 Recent Releases) & Release Archive (`.github/workflows/release.yml`, `docs/RELEASE_NOTES.md`, `docs/RELEASE_ARCHIVE.md`):**
+  - Added automated GitHub Releases curation to [`.github/workflows/release.yml`](file:///home/alexb/projects/rack-designer/.github/workflows/release.yml) so the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) always retains only the **3 most recent releases**, automatically collapses the Quick-Start tutorial into a `<details>` accordion on the 2nd and 3rd releases, and archives older release entries from the feed while preserving all Git tags (`v0.1.0`..`v0.4.2`).
+  - Restructured [`docs/RELEASE_NOTES.md`](file:///home/alexb/projects/rack-designer/docs/RELEASE_NOTES.md) to show only the **3 most recent version highlights** at the top with a collapsible `<details>` summary for older releases, and created [`docs/RELEASE_ARCHIVE.md`](file:///home/alexb/projects/rack-designer/docs/RELEASE_ARCHIVE.md) to house the complete historical release archive.
+
 ## [0.4.4] - 2026-10-28
 
 ### Added & Improved

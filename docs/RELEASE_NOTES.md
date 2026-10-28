@@ -1,25 +1,33 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.4.4` — 3D/2D Rack-Planer & 3D-Druck-Paket
+# 🏗️ RackArchitect MCP `v0.4.5` — 3D/2D Rack-Planer & 3D-Druck-Paket
 
-**Willkommen beim Release `v0.4.4` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.4.5` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Neu in Version `v0.4.4`:**
-> - **Echte Server-Rack-Schaltpläne (ANSI/TIA-942 & Homelab-Best-Practices), 1:1 Port-Alignment & 4 Praxis-Archetypen im `rack-architect` Skill:** KI-Agenten unterscheiden jetzt strikt zwischen **Nutzer-Souveränität** (wer genau weiß, was er will, behält zu 100 % die Oberhand) und **Beratungs-Modus** (wer nur eine grobe Idee hat, bekommt eines von 4 praxiserprobten Referenz-Racks nach echten TIA-942-, UniFi- und DeskPi-Schaltplänen statt zufällig zusammengewürfelter Hardware). Zudem richtet `plan_external_endpoints` Patch-Panel-Ports (`p1..p24`) und Switch-Ports (`eth1..eth24`) auf dem einreihigen `USW-Pro-Max-24-PoE` automatisch 1:1 vertikal untereinander aus — ohne überkreuzte Patchkabel.
-> - **Verständliche Geräte-Beschreibungen („Was ist dieses Gerät?") & 3D-Druck-Halterung für Desktop-Switches (`USW-Flex-2.5G-8-PoE`, `v0.4.3`):** Alle 30 Geräte im Katalog besitzen jetzt eine klare Beschreibung ihrer Aufgabe und Einbau-Art. Klickst du ein Gerät (z. B. `sw-core-flex25g`) im 3D-Rack an, siehst du sofort den echten Herstellernamen + Modell (`Ubiquiti UniFi Flex 2.5G PoE`), den Montage-Hinweis (`🖨️ Desktop-Gerät: benötigt 3D-Druck-Halterung / 1U-Fachboden`) und im 3D-Viewer sowie im Tab `BOM & 3D-Print` die passende 3D-gedruckte 10-Zoll-Aufnahmehalterung (`.SCAD` & `.STL`).
-> - **Kein horizontales Abschneiden mehr in der rechten Inspector-Sidebar & Top-Navigation (`v0.4.2`):** Das 2-spaltige `Ports (24)`-Grid sowie alle Telemetrie-, Geräte- und Hausverkabelungs-Karten in [`InspectorSidebar.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/InspectorSidebar.tsx) nutzen ab sofort striktes `minmax(0, 1fr)` mit `minWidth: 0` und Tooltip-Ellipsis, sodass lange Beschriftungen (`🏢 Primary Fiber ONT (ISP 1)`, `🏠 Wi-Fi 7 PoE++ AP #1`) niemals die rechte Spalte aus dem Bildschirm drücken. Zudem bleibt das `RackArchitect`-Logo in der `TopNavBar` durch `flexShrink: 0` auf jeder Bildschirmbreite vollständig sichtbar.
-> - **100 % kollisionsfreie 3D-Kabelführung (`0` Kabel-Überlappungen, `v0.4.1`):** Neuer 3D-Segment-Kollisions-Solver (`computeMinSplineClearanceMm`, `>= 6.2 mm` Mindestabstand zwischen allen Kabelachsen) im `@rack-mcp/core-domain`-Router. Obere und untere Switch-Port-Reihen (`USW-Pro-Max-24-PoE`, `UDM-Pro`, `Smart-UPS`), parallele SFP+-DAC-Kabel, vertikale Patch-Bögen (`U11`/`U12` <-> `U10`), WAN-Zuleitungen und Brush-Panel-Durchführungen laufen jetzt auf sauber getrennten 3D-Tiefenebenen (`7.0 mm` Raster) und zwischen den Buchsenspalten entlang — komplett ohne ineinander zu verschmelzen oder sich gegenseitig zu schneiden.
-> - **Haus- & Raum-Verkabelung (`plan_external_endpoints`) + Steck-für-Steck-Anleitung für Einsteiger (`v0.4.0`):** Externe Gebäudeleitungen (z. B. 10 PoE-Kameras, 5 WLAN Access Points, 5 Räume mit PC, Beamer, Laptop, Workstation oder Docking Station) kommen ab sofort realistisch von hinten aus dem Gebäudeschacht (`top-rear` / `bottom-rear`) direkt auf die **Rückseite des Patch-Panels** (ohne eine eigene Höheneinheit `U` im Rack zu verschwenden!). Vorne werden automatisch beschriftete Patchkabel zum Switch geplant — inklusive verständlicher **Steck-für-Steck-Anleitung** im 3D-Viewer, in der Sidebar und in der `BOM.md`.
-> - **Sichtbare 3D-Ports auf allen Switches/Gateways & realistisches 3D-Bürstenpanel:** Alle RJ45-, SFP+- und Strom-Buchsen (inkl. metallischem Rahmen und Link/PoE-LEDs) sitzen jetzt sichtbar auf der vordersten Frontplatte (`USW-Pro-Max-24-PoE`, `UDM-Pro`, `Smart-UPS`). Zudem bestehen Brush-Panels (`brush-panel`) in 3D jetzt aus einem offenen eloxierten Metallrahmen mit einzeln sichtbaren oberen und unteren Nylon-Bürstenfasern, die sich an den Kabeldurchführungen leicht öffnen.
-> - **Echte lokale MCP Engineering Workbench auf `localhost:3100` (`v0.3.3`):** Strikte Trennung zwischen GitHub-Demo und lokalem Arbeitsmodus (`New Empty Rack`, `Export to Disk`, echter Live-Feed externer MCP-Agenten).
-> - **Koaxiale Stecker-Einführung & 0.00 mm Shelf-Clipping im 3D-Viewer (`v0.3.2`):** Alle 18 Kabel führen exakt geradlinig (koaxial entlang der Buchsen-Normalen) in die schwarzen Knickschutz-Terminatoren ein, das Cross-Face-Kabel läuft horizontal durch die beidseitige Bürstenleiste auf `U6` und im hinteren Kabelkanal (`Z = 206 mm`) hinter den `U5`/`U4`-Trays entlang, und sämtliche 3D-Druck-Trays sitzen passgenau zwischen den linken und rechten Rackschienen.
-> - **Vollständiger Kabelbaum im 2D Side-Profile Depth Cutaway (`v0.3.1`):** In der 2D-Elevation (`SIDE-PROFILE DEPTH CUTAWAY`) werden sowohl im Live- als auch im Standalone-Modus alle 18 Vorder-, Rück- und Brush-Portal-Kabel inklusive L-Tray-Querschnitt und Stecker-Freiräumen dargestellt.
-> - **Komplettes „Precision Hardware & CAD Studio" UI/UX-Redesign (`v0.3.0`):** Ruhiges Carbon/Zinc-Farbschema (`#09090b` / `#121216`) im Stil von Linear, Ubiquiti UniFi Design Center und Shapr3D, schwebendes Bottom-Center 3D-CAD-Dock und einzeilige Studio-Topbar (`52px`).
+> **✨ Neu in den letzten 3 Versionen (`v0.4.3` – `v0.4.5`):**
+> - **Aufgeräumte GitHub-Releases-Seite & automatisches Release-Archiv (`v0.4.5`):** Die GitHub-Releases-Seite behält ab sofort automatisch nur noch die **3 aktuellsten Releases** aktiv im Feed (wobei die Einsteiger-Anleitung bei den beiden Vorgänger-Releases platzsparend eingeklappt wird). Alle älteren Versionen (`v0.1.0` – `v0.4.2`) sind übersichtlich in [`docs/RELEASE_ARCHIVE.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md) und [`CHANGELOG.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/CHANGELOG.md) archiviert.
+> - **Echte Server-Rack-Schaltpläne (ANSI/TIA-942 & Homelab-Best-Practices), 1:1 Port-Alignment & 4 Praxis-Archetypen (`v0.4.4`):** KI-Agenten unterscheiden im [`rack-architect` Skill](https://github.com/itAlex240/rack-architect-mcp/blob/main/skills/rack-architect/SKILL.md) strikt zwischen **Nutzer-Souveränität** (wer genau weiß, was er will, behält zu 100 % die Oberhand) und **Beratungs-Modus** (4 praxiserprobte Referenz-Racks nach echten TIA-942-, UniFi- und DeskPi-Schaltplänen). Zudem richtet `plan_external_endpoints` Patch-Panel-Ports (`p1..p24`) und Switch-Ports (`eth1..eth24`) auf dem einreihigen `USW-Pro-Max-24-PoE` automatisch 1:1 vertikal untereinander aus.
+> - **Verständliche Geräte-Beschreibungen („Was ist dieses Gerät?") & 3D-Druck-Halterung für Desktop-Switches (`v0.4.3`):** Alle 30 Geräte im Katalog zeigen im 3D-Viewer und in der Sidebar ihren echten Herstellernamen + Modell (`Ubiquiti UniFi Flex 2.5G PoE`), ihren Montage-Hinweis (`🖨️ Desktop-Gerät: benötigt 3D-Druck-Halterung / 1U-Fachboden`) sowie die druckfertige 10-Zoll-Aufnahmehalterung (`.SCAD` & `.STL`).
 
-*(🇬🇧 English Quick-Start Guide included below the German section!)*
+<details>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.4.2) im Release-Archiv anzeigen</b></summary>
+
+<br />
+
+- **`v0.4.2`** — Fix gegen horizontales Abschneiden in der rechten `InspectorSidebar` (`minmax(0, 1fr)`) & `TopNavBar`.
+- **`v0.4.1`** — 100 % kollisionsfreie 3D-Kabelführung (`0` Kabel-Überlappungen durch `computeMinSplineClearanceMm`).
+- **`v0.4.0`** — Externe Haus- & Raum-Verkabelung (`plan_external_endpoints`), sichtbare 3D-Ports & segmentiertes 3D-Bürstenpanel.
+- **`v0.3.0` – `v0.3.3`** — „Precision Hardware & CAD Studio" UI/UX-Redesign, lokale MCP-Workbench (`localhost:3100`) & koaxiale Spline-Steckereinführung.
+- **`v0.1.0` – `v0.2.0`** — Core-Domain, 5-Stufen-Validierung, 30 Hardware-Blueprints, SVG/BOM/GLB/OpenSCAD/STL-Exporter & MCP-Server.
+
+👉 Vollständige Historie: [**`docs/RELEASE_ARCHIVE.md`**](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md) · [**`CHANGELOG.md`**](https://github.com/itAlex240/rack-architect-mcp/blob/main/CHANGELOG.md)
+
+</details>
 
 </div>
+
+<!-- BEGIN_QUICKSTART_GUIDE -->
 
 ---
 
@@ -90,4 +98,6 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 # Öffne http://127.0.0.1:3100/
 ```
 
-Alle technischen Details zur 5-Stufen-Validierung, den 11 MCP-Tools und den 26 Diagnose-Codes findest du im [**Kompletten System-Handbuch (`docs/COMPLETE_SYSTEM_HANDBOOK.md`)**](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/COMPLETE_SYSTEM_HANDBOOK.md).
+Alle technischen Details zur 5-Stufen-Validierung, den 12 MCP-Tools und den 26 Diagnose-Codes findest du im [**Kompletten System-Handbuch (`docs/COMPLETE_SYSTEM_HANDBOOK.md`)**](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/COMPLETE_SYSTEM_HANDBOOK.md).
+
+<!-- END_QUICKSTART_GUIDE -->

@@ -156,5 +156,5 @@ Whenever publishing a release or pushing a completed feature/fix batch, **automa
    * `packages/mcp-server/src/mcp/server.ts` (`version: 'X.Y.Z'`).
    * `packages/web-viewer/src/index.ts` (`export const WEB_VIEWER_VERSION = 'X.Y.Z';`).
    * `CHANGELOG.md` (new `## [X.Y.Z] - YYYY-MM-DD` entry).
-   * `docs/RELEASE_NOTES.md` (update header `# 🏗️ RackArchitect MCP vX.Y.Z`, intro line, and the `> ✨ Neu in Version vX.Y.Z:` box so the GitHub Release page always matches the tag).
+   * `docs/RELEASE_NOTES.md` and `docs/RELEASE_ARCHIVE.md` (update header `# 🏗️ RackArchitect MCP vX.Y.Z`, keep **only the 3 most recent versions** in the `> ✨ Neu in den letzten 3 Versionen:` highlight box, and move any older version bullet into `docs/RELEASE_ARCHIVE.md` so the GitHub Release page never grows unboundedly).
    * Whenever hardware blueprints are added or modified in `packages/hardware-catalog/catalog/`, regenerate `packages/hardware-catalog/src/embedded-catalog.ts`, run `pnpm validate:catalog`, and update blueprint counts/tables in `README.md`, `packages/hardware-catalog/README.md`, `docs/COMPLETE_SYSTEM_HANDBOOK.md`, `skills/rack-architect/SKILL.md`, and `.agents/skills/rack-architect/SKILL.md`.
