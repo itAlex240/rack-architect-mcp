@@ -1,15 +1,15 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.3.2` — 3D/2D Rack-Planer & 3D-Druck-Paket
+# 🏗️ RackArchitect MCP `v0.3.3` — 3D/2D Rack-Planer & 3D-Druck-Paket
 
-**Willkommen beim Release `v0.3.2` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.3.3` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Neu in Version `v0.3.2`:**
-> - **Koaxiale Stecker-Einführung & 0.00 mm Shelf-Clipping im 3D-Viewer:** Alle 18 Kabel führen jetzt exakt geradlinig (koaxial entlang der Buchsen-Normalen) in die schwarzen Knickschutz-Terminatoren ein, das Cross-Face-Kabel läuft horizontal durch die beidseitige Bürstenleiste auf `U6` und im hinteren Kabelkanal (`Z = 206 mm`) hinter den `U5`/`U4`-Trays entlang, und sämtliche 3D-Druck-Trays sitzen passgenau zwischen den linken und rechten Rackschienen.
+> **✨ Neu in Version `v0.3.3`:**
+> - **Echte lokale MCP Engineering Workbench auf `localhost:3100` (Strikte Trennung von der GitHub-Demo):** Sobald der Web-Viewer lokal mit dem MCP-Sidecar verbunden ist (`MCP Live · rack.yaml`), verschwinden sämtliche Demo-Simulations-Buttons (`Simulate LLM Collision`, `Reset Demo`) und fest codierten Demo-Logs. Stattdessen bietet die lokale Workbench **`New Empty Rack` (`init_rack`)**, **`Export to Disk` (`export_deliverables`)**, einen **echten Live-Feed aller externen MCP-Agenten-Aufrufe** (mit Uhrzeit & `Clear`-Button) sowie nahtlose Multi-Prozess-Synchronisation über `stdio` und WebSocket.
+> - **Koaxiale Stecker-Einführung & 0.00 mm Shelf-Clipping im 3D-Viewer (`v0.3.2`):** Alle 18 Kabel führen exakt geradlinig (koaxial entlang der Buchsen-Normalen) in die schwarzen Knickschutz-Terminatoren ein, das Cross-Face-Kabel läuft horizontal durch die beidseitige Bürstenleiste auf `U6` und im hinteren Kabelkanal (`Z = 206 mm`) hinter den `U5`/`U4`-Trays entlang, und sämtliche 3D-Druck-Trays sitzen passgenau zwischen den linken und rechten Rackschienen.
 > - **Vollständiger Kabelbaum im 2D Side-Profile Depth Cutaway (`v0.3.1`):** In der 2D-Elevation (`SIDE-PROFILE DEPTH CUTAWAY`) werden sowohl im Live- als auch im Standalone-Modus alle 18 Vorder-, Rück- und Brush-Portal-Kabel inklusive L-Tray-Querschnitt und Stecker-Freiräumen dargestellt.
 > - **Komplettes „Precision Hardware & CAD Studio" UI/UX-Redesign (`v0.3.0`):** Ruhiges Carbon/Zinc-Farbschema (`#09090b` / `#121216`) im Stil von Linear, Ubiquiti UniFi Design Center und Shapr3D, schwebendes Bottom-Center 3D-CAD-Dock und einzeilige Studio-Topbar (`52px`).
-> - **Live MCP Agent Tool-Call Feed & Interaktiver KI-Selbstkorrektur-Replay:** Verfolge jeden MCP-Tool-Aufruf deiner KI live mit oder teste per 1-Klick (**`Sim Failure`** $\rightarrow$ **`Auto-Fix`**), wie die KI eine 3D-Stecker-Kollision (`PLUG_CLEARANCE_COLLISION`) selbstständig behebt!
 
 *(🇬🇧 English Quick-Start Guide included below the German section!)*
 

@@ -384,4 +384,67 @@ describe('@rack-mcp/mcp-server End-to-End Agentic Workflow & Sidecar Suite', () 
       await mcpInstance.close();
     }
   });
+
+  it('handles EADDRINUSE port fallback and synchronizes external stdio tool logs and mutations', async () => {
+    const tmpDir = createTempDir();
+    const projectPath = path.join(tmpDir, 'rack.yaml');
+    const primaryState = new ProjectStateManager({
+      projectPath,
+      watchFile: true
+    });
+    const primarySidecar = await startRackSidecarServer(primaryState, {
+      port: 0
+    });
+
+    // Spawn a secondary stdio-style process sharing the same projectPath and requesting the already-bound port
+    const secondaryState = new ProjectStateManager({
+      projectPath,
+      watchFile: false
+    });
+    const secondaryMcp = createRackMcpServer(secondaryState);
+    const secondarySidecar = await startRackSidecarServer(secondaryState, {
+      port: primarySidecar.port
+    });
+
+    try {
+      expect(secondarySidecar.port).toBeGreaterThan(0);
+      expect(secondarySidecar.port).not.toBe(primarySidecar.port);
+
+      // Secondary agent executes init_rack and mount_equipment
+      secondaryMcp.handlers.initRack({
+        project_name: 'External Agent Sync Test',
+        standard: '19inch',
+        u_height: 12,
+        rail_depth_mm: 400
+      });
+      secondaryMcp.handlers.mountEquipment({
+        instance_id: 'sw-ext-1',
+        blueprint_slug: 'ubiquiti-usw-aggregation',
+        hostname: 'core-agg-01',
+        u_position: 12,
+        face: 'front'
+      });
+
+      // Wait for file watcher debounce on primaryState
+      await new Promise((r) => setTimeout(r, 140));
+
+      expect(primaryState.getProject().project_name).toBe(
+        'External Agent Sync Test'
+      );
+      expect(
+        primaryState.getScene().geometry.devices_by_id.get('sw-ext-1')
+      ).toBeDefined();
+      expect(primaryState.getToolCallLog().length).toBeGreaterThanOrEqual(2);
+      expect(primaryState.getToolCallLog()[0]?.tool).toBe('mount_equipment');
+
+      // Clearing the tool log on primary persists empty log to disk
+      primaryState.clearToolCallLog();
+      expect(primaryState.getToolCallLog()).toHaveLength(0);
+    } finally {
+      primaryState.stopWatching();
+      await secondarySidecar.close();
+      await secondaryMcp.close();
+      await primarySidecar.close();
+    }
+  });
 });

@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import * as http from 'node:http';
 import * as path from 'node:path';
 import {
   createRackMcpServer,
@@ -85,6 +86,58 @@ export interface CliExecutionResult {
   readonly sidecarServer?: RackSidecarServer | undefined;
 }
 
+function discoverActiveSidecarProjectPath(
+  host: string,
+  port: number
+): Promise<string | undefined> {
+  if (port <= 0) {
+    return Promise.resolve(undefined);
+  }
+  return new Promise((resolve) => {
+    const req = http.get(
+      {
+        hostname: host,
+        port,
+        path: '/api/state',
+        timeout: 150
+      },
+      (res) => {
+        if (res.statusCode !== 200) {
+          res.resume();
+          resolve(undefined);
+          return;
+        }
+        const chunks: Buffer[] = [];
+        res.on('data', (chunk: Buffer) => chunks.push(chunk));
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(
+              Buffer.concat(chunks).toString('utf8')
+            ) as Record<string, unknown>;
+            if (
+              typeof parsed['projectPath'] === 'string' &&
+              parsed['projectPath'].length > 0
+            ) {
+              resolve(parsed['projectPath']);
+              return;
+            }
+          } catch {
+            // Ignore parse errors
+          }
+          resolve(undefined);
+        });
+      }
+    );
+    req.on('timeout', () => {
+      req.destroy();
+      resolve(undefined);
+    });
+    req.on('error', () => {
+      resolve(undefined);
+    });
+  });
+}
+
 /**
  * Executes the `rack-mcp` CLI command.
  * In `serve` (`--stdio`) mode, all human logs are written strictly to `process.stderr`
@@ -159,7 +212,16 @@ export async function runCli(
   }
 
   // Default: `serve` mode (MCP over stdio + HTTP/WebSocket Sidecar)
-  const resolvedProject = path.resolve(parsed.projectPath ?? 'rack.yaml');
+  const discoveredProjectPath =
+    parsed.projectPath === undefined
+      ? await discoverActiveSidecarProjectPath(
+          parsed.host ?? '127.0.0.1',
+          parsed.port
+        )
+      : undefined;
+  const resolvedProject = path.resolve(
+    parsed.projectPath ?? discoveredProjectPath ?? 'rack.yaml'
+  );
   const stateManager = new ProjectStateManager({
     projectPath: resolvedProject,
     watchFile: true

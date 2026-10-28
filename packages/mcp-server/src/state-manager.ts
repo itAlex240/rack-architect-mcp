@@ -80,6 +80,7 @@ export class ProjectStateManager {
   private readonly catalog: CatalogRegistry;
   private readonly projectPath: string | undefined;
   private readonly customCatalogDir: string | undefined;
+  private readonly toolLogPath: string | undefined;
   private readonly maxHistory: number;
 
   private readonly undoStack: RackProject[] = [];
@@ -89,8 +90,8 @@ export class ProjectStateManager {
 
   private watcher: fs.FSWatcher | undefined;
   private debounceTimer: ReturnType<typeof setTimeout> | undefined;
-  private isWritingLock = false;
   private lastWrittenYaml = '';
+  private lastWrittenToolLogJson = '';
 
   public constructor(options: ProjectStateManagerOptions = {}) {
     this.projectPath =
@@ -101,10 +102,15 @@ export class ProjectStateManager {
         : this.projectPath !== undefined
           ? path.join(path.dirname(this.projectPath), 'custom-catalog')
           : undefined;
+    this.toolLogPath =
+      this.projectPath !== undefined
+        ? path.join(path.dirname(this.projectPath), '.rack-mcp-tool-log.json')
+        : undefined;
     this.maxHistory = options.maxHistory ?? 50;
     this.catalog = options.catalog ?? new CatalogRegistry();
 
     this.loadExistingCustomCatalogFromDisk();
+    this.loadExistingToolLogFromDisk();
 
     if (options.initialProject !== undefined) {
       this.project = RackProjectSchema.parse(options.initialProject);
@@ -149,15 +155,80 @@ export class ProjectStateManager {
     }
   }
 
+  private loadExistingToolLogFromDisk(): boolean {
+    if (this.toolLogPath === undefined || !fs.existsSync(this.toolLogPath)) {
+      return false;
+    }
+    try {
+      const rawJson = fs.readFileSync(this.toolLogPath, 'utf8');
+      if (rawJson === this.lastWrittenToolLogJson) {
+        return false;
+      }
+      const parsed = JSON.parse(rawJson) as unknown;
+      if (!Array.isArray(parsed)) {
+        return false;
+      }
+      this.lastWrittenToolLogJson = rawJson;
+      this.toolCallLog.length = 0;
+      for (const item of parsed.slice(0, this.maxHistory)) {
+        if (
+          typeof item === 'object' &&
+          item !== null &&
+          typeof (item as Record<string, unknown>)['id'] === 'string' &&
+          typeof (item as Record<string, unknown>)['tool'] === 'string' &&
+          typeof (item as Record<string, unknown>)['summary'] === 'string'
+        ) {
+          const rec = item as Record<string, unknown>;
+          this.toolCallLog.push({
+            id: String(rec['id']),
+            timestamp:
+              typeof rec['timestamp'] === 'string'
+                ? rec['timestamp']
+                : new Date().toISOString(),
+            tool: String(rec['tool']),
+            summary: String(rec['summary']),
+            status: rec['status'] === 'INVALID' ? 'INVALID' : 'VALID',
+            errorCount:
+              typeof rec['errorCount'] === 'number' ? rec['errorCount'] : 0,
+            warningCount:
+              typeof rec['warningCount'] === 'number' ? rec['warningCount'] : 0
+          });
+        }
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private persistToolLogAtomically(): void {
+    if (this.toolLogPath === undefined) {
+      return;
+    }
+    try {
+      const dir = path.dirname(this.toolLogPath);
+      fs.mkdirSync(dir, { recursive: true });
+      const tmpPath = `${this.toolLogPath}.tmp`;
+      const jsonText = JSON.stringify(this.toolCallLog, null, 2);
+      this.lastWrittenToolLogJson = jsonText;
+      fs.writeFileSync(tmpPath, jsonText, 'utf8');
+      fs.renameSync(tmpPath, this.toolLogPath);
+    } catch {
+      // Ignore non-fatal tool log persistence errors
+    }
+  }
+
   public getCatalog(): CatalogRegistry {
     return this.catalog;
   }
 
   public getProject(): RackProject {
+    this.reloadFromDiskIfChanged();
     return this.project;
   }
 
   public getScene(): ComputedRackScene {
+    this.reloadFromDiskIfChanged();
     return this.scene;
   }
 
@@ -335,20 +406,13 @@ export class ProjectStateManager {
     const tmpPath = `${this.projectPath}.tmp`;
     const yamlText = this.getProjectYaml();
 
-    this.isWritingLock = true;
-    try {
-      this.lastWrittenYaml = yamlText;
-      fs.writeFileSync(tmpPath, yamlText, 'utf8');
-      fs.renameSync(tmpPath, this.projectPath);
-    } finally {
-      setTimeout(() => {
-        this.isWritingLock = false;
-      }, 60);
-    }
+    this.lastWrittenYaml = yamlText;
+    fs.writeFileSync(tmpPath, yamlText, 'utf8');
+    fs.renameSync(tmpPath, this.projectPath);
   }
 
   /**
-   * Starts watching `projectPath` for external changes made by a human in an IDE.
+   * Starts watching `projectPath` and `.rack-mcp-tool-log.json` for external changes made by a human in an IDE or an external stdio MCP agent process.
    */
   public startWatching(): void {
     if (this.projectPath === undefined || this.watcher !== undefined) {
@@ -356,13 +420,15 @@ export class ProjectStateManager {
     }
     const dir = path.dirname(this.projectPath);
     const targetFile = path.basename(this.projectPath);
+    const toolLogFile = '.rack-mcp-tool-log.json';
     fs.mkdirSync(dir, { recursive: true });
 
     this.watcher = fs.watch(dir, (_eventType, filename) => {
-      if (this.isWritingLock) {
-        return;
-      }
-      if (filename !== null && filename !== targetFile) {
+      if (
+        filename !== null &&
+        filename !== targetFile &&
+        filename !== toolLogFile
+      ) {
         return;
       }
       if (this.debounceTimer !== undefined) {
@@ -386,31 +452,38 @@ export class ProjectStateManager {
   }
 
   private reloadFromDiskIfChanged(): void {
-    if (
-      this.projectPath === undefined ||
-      this.isWritingLock ||
-      !fs.existsSync(this.projectPath)
-    ) {
+    if (this.projectPath === undefined) {
       return;
     }
     try {
-      const raw = fs.readFileSync(this.projectPath, 'utf8');
-      if (raw === this.lastWrittenYaml) {
-        return;
-      }
-      const parsed = YAML.parse(raw) as unknown;
-      const nextProject = RackProjectSchema.parse(parsed);
-      this.lastWrittenYaml = raw;
+      this.loadExistingCustomCatalogFromDisk();
+      const toolLogChanged = this.loadExistingToolLogFromDisk();
+      let projectChanged = false;
 
-      this.undoStack.push(structuredClone(this.project));
-      while (this.undoStack.length > this.maxHistory) {
-        this.undoStack.shift();
-      }
-      this.redoStack.length = 0;
+      if (fs.existsSync(this.projectPath)) {
+        const raw = fs.readFileSync(this.projectPath, 'utf8');
+        if (raw !== this.lastWrittenYaml) {
+          const parsed = YAML.parse(raw) as unknown;
+          const nextProject = RackProjectSchema.parse(parsed);
+          this.lastWrittenYaml = raw;
 
-      this.project = structuredClone(nextProject);
-      this.scene = evaluateRackScene(this.project, this.catalog.toRecord());
-      this.emitChange('external_file_change');
+          this.undoStack.push(structuredClone(this.project));
+          while (this.undoStack.length > this.maxHistory) {
+            this.undoStack.shift();
+          }
+          this.redoStack.length = 0;
+
+          this.project = structuredClone(nextProject);
+          this.scene = evaluateRackScene(this.project, this.catalog.toRecord());
+          projectChanged = true;
+        }
+      }
+
+      if (projectChanged) {
+        this.emitChange('external_file_change');
+      } else if (toolLogChanged) {
+        this.emitChange('tool_call');
+      }
     } catch {
       // Ignore partial writes or transient invalid YAML edits from external editors
     }
@@ -420,11 +493,18 @@ export class ProjectStateManager {
     return this.toolCallLog;
   }
 
+  public clearToolCallLog(): void {
+    this.toolCallLog.length = 0;
+    this.persistToolLogAtomically();
+    this.emitChange('tool_call');
+  }
+
   public recordToolCall(
     tool: string,
     summary: string,
     status: 'VALID' | 'INVALID'
   ): McpToolCallEntry {
+    this.loadExistingToolLogFromDisk();
     const entry: McpToolCallEntry = {
       id: `call-${this.toolCallLog.length + 1}-${Date.now()}`,
       timestamp: new Date().toISOString(),
@@ -438,6 +518,7 @@ export class ProjectStateManager {
     while (this.toolCallLog.length > this.maxHistory) {
       this.toolCallLog.pop();
     }
+    this.persistToolLogAtomically();
     this.emitChange('tool_call');
     return entry;
   }

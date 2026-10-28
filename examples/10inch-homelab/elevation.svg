@@ -1123,7 +1123,7 @@
   </g>
   <g data-view="rear-elevation" data-layer="rear-devices">
     <g data-instance-id="ups-u1" data-rear-view-role="front-device-rear-face">
-      <rect x="1252.8" y="1030.48" width="616" height="123.2" rx="2" fill="url(#grad-steel-dark)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1252.8" y="1030.48" width="616" height="123.2" rx="2" fill="url(#grad-steel-dark)" fill-opacity="0.88" stroke="#475569" stroke-width="1.2" />
       <text x="1258.8" y="1039.98" fill="#F8FAFC" font-size="8" font-weight="700">ups-core-01 (REAR FACE)</text>
     <g data-port-id="iec_out1" data-port-instance="ups-u1" data-port-face="rear" data-anchor-x="1818.4" data-anchor-y="1092.08" data-connector="iec-c13" data-connector-type="iec-c13" transform="translate(1818.4, 1092.08)">
       <polygon points="-15.68,-16.24 15.68,-16.24 25.2,-6.719999999999999 25.2,16.24 -25.2,16.24 -25.2,-6.719999999999999" fill="#090D16" stroke="#F97316" stroke-width="1.3" />
@@ -1223,11 +1223,12 @@
     </g>
     </g>
     <g data-instance-id="carrier-u3" data-rear-view-role="front-device-rear-face">
-      <rect x="1205.2" y="781.56" width="711.2" height="123.2" rx="2" fill="url(#grad-aluminum-silver)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1205.2" y="781.56" width="711.2" height="123.2" rx="2" fill="url(#grad-aluminum-silver)" fill-opacity="0.88" stroke="#475569" stroke-width="1.2" />
+      <rect x="1207.2" y="783.56" width="707.2" height="119.2" rx="2" fill="url(#carrier-infill)" stroke="#52525B" stroke-width="0.9" />
     </g>
     <g data-instance-id="ucg-max" data-rear-view-role="front-device-rear-face">
-      <rect x="1468.96" y="809.56" width="397.04" height="84" rx="2" fill="url(#grad-aluminum-silver)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
-      <text x="1474.96" y="819.06" fill="#0F172A" font-size="8" font-weight="700">gw-unifi-max (REAR FACE)</text>
+      <rect x="1468.96" y="809.56" width="397.04" height="84" rx="2" fill="url(#grad-aluminum-silver)" fill-opacity="0.88" stroke="#38BDF8" stroke-width="1.2" />
+      <text x="1474.96" y="819.06" fill="#0F172A" font-size="8" font-weight="700">gw-unifi-max</text>
     <g data-port-id="lan1" data-port-instance="ucg-max" data-port-face="rear" data-anchor-x="1796" data-anchor-y="854.36" data-connector="rj45" data-connector-type="rj45" transform="translate(1796, 854.36)">
       <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
       <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
@@ -1315,7 +1316,7 @@
     </g>
     </g>
     <g data-instance-id="ks-u3-wan" data-rear-view-role="front-device-rear-face">
-      <rect x="1395.6" y="817.96" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1395.6" y="817.96" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#38BDF8" stroke-width="1.2" />
     <g data-port-id="coupler" data-port-instance="ks-u3-wan" data-port-face="rear" data-anchor-x="1418" data-anchor-y="845.96" data-connector="rj45" data-connector-type="rj45" transform="translate(1418, 845.96)">
       <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
       <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
@@ -1334,7 +1335,7 @@
     </g>
     </g>
     <g data-instance-id="ks-u3-uplink" data-rear-view-role="front-device-rear-face">
-      <rect x="1334" y="817.96" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1334" y="817.96" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#38BDF8" stroke-width="1.2" />
     <g data-port-id="coupler" data-port-instance="ks-u3-uplink" data-port-face="rear" data-anchor-x="1356.4" data-anchor-y="845.96" data-connector="rj45" data-connector-type="rj45" transform="translate(1356.4, 845.96)">
       <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
       <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
@@ -1353,7 +1354,7 @@
     </g>
     </g>
     <g data-instance-id="ks-u3-aux" data-rear-view-role="front-device-rear-face">
-      <rect x="1272.4" y="817.96" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1272.4" y="817.96" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#38BDF8" stroke-width="1.2" />
     <g data-port-id="coupler" data-port-instance="ks-u3-aux" data-port-face="rear" data-anchor-x="1294.8" data-anchor-y="845.96" data-connector="rj45" data-connector-type="rj45" transform="translate(1294.8, 845.96)">
       <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
       <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
@@ -1372,11 +1373,12 @@
     </g>
     </g>
     <g data-instance-id="carrier-u4" data-rear-view-role="front-device-rear-face">
-      <rect x="1205.2" y="657.1" width="711.2" height="123.2" rx="2" fill="#18181B" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1205.2" y="657.1" width="711.2" height="123.2" rx="2" fill="#18181B" fill-opacity="0.88" stroke="#475569" stroke-width="1.2" />
+      <rect x="1207.2" y="659.1" width="707.2" height="119.2" rx="2" fill="url(#carrier-infill)" stroke="#52525B" stroke-width="0.9" />
     </g>
     <g data-instance-id="pve-node-01" data-rear-view-role="front-device-rear-face">
-      <rect x="1364.8" y="678.1" width="501.2" height="96.6" rx="2" fill="url(#grad-steel-dark)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
-      <text x="1370.8" y="687.6" fill="#F8FAFC" font-size="8" font-weight="700">pve-node-01 (REAR FACE)</text>
+      <rect x="1364.8" y="678.1" width="501.2" height="96.6" rx="2" fill="url(#grad-steel-dark)" fill-opacity="0.88" stroke="#38BDF8" stroke-width="1.2" />
+      <text x="1370.8" y="687.6" fill="#F8FAFC" font-size="8" font-weight="700">pve-node-01</text>
     <g data-port-id="dc_in" data-port-instance="pve-node-01" data-port-face="rear" data-anchor-x="1815.6" data-anchor-y="729.9" data-connector="dc-5525" data-connector-type="dc-5525" transform="translate(1815.6, 729.9)">
       <circle cx="0" cy="0" r="10.64" fill="#090D16" stroke="#FACC15" stroke-width="1.2" />
       <circle cx="0" cy="0" r="1.6" fill="#FACC15" />
@@ -1433,7 +1435,7 @@
     </g>
     </g>
     <g data-instance-id="ks-u4-eth1" data-rear-view-role="front-device-rear-face">
-      <rect x="1308.8" y="693.5" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1308.8" y="693.5" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#38BDF8" stroke-width="1.2" />
     <g data-port-id="coupler" data-port-instance="ks-u4-eth1" data-port-face="rear" data-anchor-x="1331.2" data-anchor-y="721.5" data-connector="rj45" data-connector-type="rj45" transform="translate(1331.2, 721.5)">
       <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
       <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
@@ -1452,7 +1454,7 @@
     </g>
     </g>
     <g data-instance-id="ks-u4-ceph" data-rear-view-role="front-device-rear-face">
-      <rect x="1255.6" y="693.5" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1255.6" y="693.5" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#38BDF8" stroke-width="1.2" />
     <g data-port-id="coupler" data-port-instance="ks-u4-ceph" data-port-face="rear" data-anchor-x="1278" data-anchor-y="721.5" data-connector="rj45" data-connector-type="rj45" transform="translate(1278, 721.5)">
       <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
       <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
@@ -1471,11 +1473,12 @@
     </g>
     </g>
     <g data-instance-id="carrier-u5" data-rear-view-role="front-device-rear-face">
-      <rect x="1205.2" y="532.64" width="711.2" height="123.2" rx="2" fill="#18181B" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1205.2" y="532.64" width="711.2" height="123.2" rx="2" fill="#18181B" fill-opacity="0.88" stroke="#475569" stroke-width="1.2" />
+      <rect x="1207.2" y="534.64" width="707.2" height="119.2" rx="2" fill="url(#carrier-infill)" stroke="#52525B" stroke-width="0.9" />
     </g>
     <g data-instance-id="pve-node-02" data-rear-view-role="front-device-rear-face">
-      <rect x="1364.8" y="553.64" width="501.2" height="96.6" rx="2" fill="url(#grad-steel-dark)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
-      <text x="1370.8" y="563.14" fill="#F8FAFC" font-size="8" font-weight="700">pve-node-02 (REAR FACE)</text>
+      <rect x="1364.8" y="553.64" width="501.2" height="96.6" rx="2" fill="url(#grad-steel-dark)" fill-opacity="0.88" stroke="#38BDF8" stroke-width="1.2" />
+      <text x="1370.8" y="563.14" fill="#F8FAFC" font-size="8" font-weight="700">pve-node-02</text>
     <g data-port-id="dc_in" data-port-instance="pve-node-02" data-port-face="rear" data-anchor-x="1815.6" data-anchor-y="605.44" data-connector="dc-5525" data-connector-type="dc-5525" transform="translate(1815.6, 605.44)">
       <circle cx="0" cy="0" r="10.64" fill="#090D16" stroke="#FACC15" stroke-width="1.2" />
       <circle cx="0" cy="0" r="1.6" fill="#FACC15" />
@@ -1532,7 +1535,7 @@
     </g>
     </g>
     <g data-instance-id="ks-u5-eth1" data-rear-view-role="front-device-rear-face">
-      <rect x="1308.8" y="569.04" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1308.8" y="569.04" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#38BDF8" stroke-width="1.2" />
     <g data-port-id="coupler" data-port-instance="ks-u5-eth1" data-port-face="rear" data-anchor-x="1331.2" data-anchor-y="597.04" data-connector="rj45" data-connector-type="rj45" transform="translate(1331.2, 597.04)">
       <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
       <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
@@ -1551,7 +1554,7 @@
     </g>
     </g>
     <g data-instance-id="ks-u5-ceph" data-rear-view-role="front-device-rear-face">
-      <rect x="1255.6" y="569.04" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1255.6" y="569.04" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#38BDF8" stroke-width="1.2" />
     <g data-port-id="coupler" data-port-instance="ks-u5-ceph" data-port-face="rear" data-anchor-x="1278" data-anchor-y="597.04" data-connector="rj45" data-connector-type="rj45" transform="translate(1278, 597.04)">
       <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
       <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
@@ -1570,7 +1573,7 @@
     </g>
     </g>
     <g data-instance-id="brush-u6" data-rear-view-role="front-device-rear-face">
-      <rect x="1250" y="408.18" width="621.6" height="123.2" rx="2" fill="url(#grad-steel-dark)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1250" y="408.18" width="621.6" height="123.2" rx="2" fill="url(#grad-steel-dark)" fill-opacity="0.88" stroke="#475569" stroke-width="1.2" />
       <rect x="1278" y="430.58" width="565.6" height="78.4" rx="2" fill="#050811" stroke="#374151" stroke-width="1.2" />
       <line x1="1282" y1="430.58" x2="1282" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
       <line x1="1286" y1="430.58" x2="1286" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
@@ -1715,7 +1718,7 @@
       <text x="1256" y="417.68" fill="#F8FAFC" font-size="8" font-weight="700">cable-brush-u6 (REAR FACE)</text>
     </g>
     <g data-instance-id="patch-u7" data-rear-view-role="front-device-rear-face">
-      <rect x="1250" y="283.72" width="621.6" height="123.2" rx="2" fill="url(#grad-steel-dark)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1250" y="283.72" width="621.6" height="123.2" rx="2" fill="url(#grad-steel-dark)" fill-opacity="0.88" stroke="#475569" stroke-width="1.2" />
       <text x="1256" y="293.22" fill="#F8FAFC" font-size="8" font-weight="700">patch-panel-u7 (REAR FACE)</text>
     <g data-port-id="p1" data-port-instance="patch-u7" data-port-face="rear" data-anchor-x="1843.6" data-anchor-y="345.32" data-connector="rj45" data-connector-type="rj45" transform="translate(1843.6, 345.32)">
       <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
@@ -1911,7 +1914,7 @@
     </g>
     </g>
     <g data-instance-id="sw-u8" data-rear-view-role="front-device-rear-face">
-      <rect x="1262.74" y="191.46" width="596.12" height="91" rx="2" fill="url(#grad-aluminum-silver)" fill-opacity="0.88" stroke="#475569" stroke-width="1.1" />
+      <rect x="1262.74" y="191.46" width="596.12" height="91" rx="2" fill="url(#grad-aluminum-silver)" fill-opacity="0.88" stroke="#475569" stroke-width="1.2" />
       <text x="1268.74" y="200.96" fill="#0F172A" font-size="8" font-weight="700">sw-core-flex25g (REAR FACE)</text>
     <g data-port-id="pwr_in" data-port-instance="sw-u8" data-port-face="rear" data-anchor-x="1412.4" data-anchor-y="237.66" data-connector="iec-c14" data-connector-type="iec-c14" transform="translate(1412.4, 237.66)">
       <polygon points="-15.68,-16.24 15.68,-16.24 25.2,-6.719999999999999 25.2,16.24 -25.2,16.24 -25.2,-6.719999999999999" fill="#090D16" stroke="#EF4444" stroke-width="1.3" />
@@ -2062,8 +2065,8 @@
     <text x="2750.56" y="263.26" fill="#7DD3FC" font-size="7.3" font-weight="600" text-anchor="middle">+85.6mm clear</text>
   </g>
   <g data-layer="cables" filter="url(#cable-shadow)">
-    <path data-cable-id="pwr-ups-to-pdu" data-cable-view="rear-halo" d="M 1818.4 1092.08 L 1818.4 1027.12 Q 1818.4 1021.62, 1812.9 1021.62 L 1742.7 1021.62 Q 1737.2 1021.62, 1737.2 1016.12 L 1737.2 967.62" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
-    <path data-cable-id="pwr-ups-to-pdu" data-cable-view="rear" data-start-anchor="ups-u1:iec_out1:rear" data-end-anchor="pdu-u2-rear:mains_in:rear" data-start-xy="1818.4,1092.08" data-end-xy="1737.2,967.62" d="M 1818.4 1092.08 L 1818.4 1027.12 Q 1818.4 1021.62, 1812.9 1021.62 L 1742.7 1021.62 Q 1737.2 1021.62, 1737.2 1016.12 L 1737.2 967.62" fill="none" stroke="#EF4444" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <path data-cable-id="pwr-ups-to-pdu" data-cable-view="rear-halo" d="M 1818.4 1092.08 L 1818.4 1027.52 Q 1818.4 1022.02, 1812.9 1022.02 L 1742.7 1022.02 Q 1737.2 1022.02, 1737.2 1016.52 L 1737.2 967.62" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="pwr-ups-to-pdu" data-cable-view="rear" data-start-anchor="ups-u1:iec_out1:rear" data-end-anchor="pdu-u2-rear:mains_in:rear" data-start-xy="1818.4,1092.08" data-end-xy="1737.2,967.62" d="M 1818.4 1092.08 L 1818.4 1027.52 Q 1818.4 1022.02, 1812.9 1022.02 L 1742.7 1022.02 Q 1737.2 1022.02, 1737.2 1016.52 L 1737.2 967.62" fill="none" stroke="#EF4444" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
     <circle class="cable-plug-endpoint" data-cable-id="pwr-ups-to-pdu" data-anchor-key="ups-u1:iec_out1:rear" cx="1818.4" cy="1092.08" r="3.6" fill="#EF4444" stroke="#090D16" stroke-width="1.4" />
     <circle class="cable-plug-endpoint" data-cable-id="pwr-ups-to-pdu" data-anchor-key="pdu-u2-rear:mains_in:rear" cx="1737.2" cy="967.62" r="3.6" fill="#EF4444" stroke="#090D16" stroke-width="1.4" />
     <path data-cable-id="pwr-ups-to-pdu" data-cable-view="side-halo" d="M 2716.4 1092.08 L 2843 1092.08 Q 2848 1092.08, 2848 1087.08 L 2848 972.62 Q 2848 967.62, 2853 967.62 L 2870.4 967.62" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
@@ -2078,8 +2081,8 @@
     <path data-cable-id="pwr-ups-to-sw" data-cable-view="side" data-start-xy="2716.4,1092.08" data-end-xy="2476.72,237.66" d="M 2716.4 1092.08 L 2853.64 1092.08 Q 2858.64 1092.08, 2858.64 1087.08 L 2858.64 242.66 Q 2858.64 237.66, 2853.64 237.66 L 2476.72 237.66" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
     <circle class="side-cable-plug" cx="2716.4" cy="1092.08" r="3.0" fill="#EF4444" stroke="#090D16" stroke-width="1.2" />
     <circle class="side-cable-plug" cx="2476.72" cy="237.66" r="3.0" fill="#EF4444" stroke="#090D16" stroke-width="1.2" />
-    <path data-cable-id="pwr-pdu-to-ucg" data-cable-view="rear-halo" d="M 1294.8 967.62 L 1294.8 906.46 Q 1294.8 900.96, 1300.3 900.96 L 1510.5 900.96 Q 1516 900.96, 1516 895.46 L 1516 854.36" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
-    <path data-cable-id="pwr-pdu-to-ucg" data-cable-view="rear" data-start-anchor="pdu-u2-rear:outlet1:rear" data-end-anchor="ucg-max:usbc_pwr:rear" data-start-xy="1294.8,967.62" data-end-xy="1516,854.36" d="M 1294.8 967.62 L 1294.8 906.46 Q 1294.8 900.96, 1300.3 900.96 L 1510.5 900.96 Q 1516 900.96, 1516 895.46 L 1516 854.36" fill="none" stroke="#F97316" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <path data-cable-id="pwr-pdu-to-ucg" data-cable-view="rear-halo" d="M 1294.8 967.62 L 1294.8 905.46 Q 1294.8 899.96, 1300.3 899.96 L 1510.5 899.96 Q 1516 899.96, 1516 894.46 L 1516 854.36" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="pwr-pdu-to-ucg" data-cable-view="rear" data-start-anchor="pdu-u2-rear:outlet1:rear" data-end-anchor="ucg-max:usbc_pwr:rear" data-start-xy="1294.8,967.62" data-end-xy="1516,854.36" d="M 1294.8 967.62 L 1294.8 905.46 Q 1294.8 899.96, 1300.3 899.96 L 1510.5 899.96 Q 1516 899.96, 1516 894.46 L 1516 854.36" fill="none" stroke="#F97316" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
     <circle class="cable-plug-endpoint" data-cable-id="pwr-pdu-to-ucg" data-anchor-key="pdu-u2-rear:outlet1:rear" cx="1294.8" cy="967.62" r="3.6" fill="#F97316" stroke="#090D16" stroke-width="1.4" />
     <circle class="cable-plug-endpoint" data-cable-id="pwr-pdu-to-ucg" data-anchor-key="ucg-max:usbc_pwr:rear" cx="1516" cy="854.36" r="3.6" fill="#F97316" stroke="#090D16" stroke-width="1.4" />
     <path data-cable-id="pwr-pdu-to-ucg" data-cable-view="side-halo" d="M 2870.4 967.62 L 2869.28 967.62 L 2869.28 859.36 Q 2869.28 854.36, 2864.28 854.36 L 2555.68 854.36" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
@@ -2150,66 +2153,66 @@
     <path data-cable-id="trunk-ucg-wan-to-ks" data-cable-view="side" data-start-xy="2555.68,854.36" data-end-xy="2282.4,845.96" d="M 2555.68 854.36 L 2594.08 854.36 Q 2599.08 854.36, 2599.08 849.36 L 2599.08 842.46 Q 2599.08 837.46, 2594.08 837.46 L 2285.97 837.46 Q 2282.4 837.46, 2282.4 841.03 L 2282.4 845.96" fill="none" stroke="#EC4899" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
     <circle class="side-cable-plug" cx="2555.68" cy="854.36" r="3.0" fill="#EC4899" stroke="#090D16" stroke-width="1.2" />
     <circle class="side-cable-plug" cx="2282.4" cy="845.96" r="3.0" fill="#EC4899" stroke="#090D16" stroke-width="1.2" />
-    <path data-cable-id="trunk-pve-ceph-direct" data-cable-view="rear-halo" d="M 1440.4 729.9 L 1440.4 665.14 Q 1440.4 659.64, 1440.4 654.14 L 1440.4 605.44" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
-    <path data-cable-id="trunk-pve-ceph-direct" data-cable-view="rear" data-start-anchor="pve-node-01:eth2:rear" data-end-anchor="pve-node-02:eth2:rear" data-start-xy="1440.4,729.9" data-end-xy="1440.4,605.44" d="M 1440.4 729.9 L 1440.4 665.14 Q 1440.4 659.64, 1440.4 654.14 L 1440.4 605.44" fill="none" stroke="#A855F7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <path data-cable-id="trunk-pve-ceph-direct" data-cable-view="rear-halo" d="M 1440.4 729.9 L 1440.4 605.44" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="trunk-pve-ceph-direct" data-cable-view="rear" data-start-anchor="pve-node-01:eth2:rear" data-end-anchor="pve-node-02:eth2:rear" data-start-xy="1440.4,729.9" data-end-xy="1440.4,605.44" d="M 1440.4 729.9 L 1440.4 605.44" fill="none" stroke="#A855F7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
     <circle class="cable-plug-endpoint" data-cable-id="trunk-pve-ceph-direct" data-anchor-key="pve-node-01:eth2:rear" cx="1440.4" cy="729.9" r="3.6" fill="#A855F7" stroke="#090D16" stroke-width="1.4" />
     <circle class="cable-plug-endpoint" data-cable-id="trunk-pve-ceph-direct" data-anchor-key="pve-node-02:eth2:rear" cx="1440.4" cy="605.44" r="3.6" fill="#A855F7" stroke="#090D16" stroke-width="1.4" />
     <path data-cable-id="trunk-pve-ceph-direct" data-cable-view="side-halo" d="M 2708 729.9 L 2960.04 729.9 Q 2965.04 729.9, 2965.04 724.9 L 2965.04 610.44 Q 2965.04 605.44, 2960.04 605.44 L 2708 605.44" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
     <path data-cable-id="trunk-pve-ceph-direct" data-cable-view="side" data-start-xy="2708,729.9" data-end-xy="2708,605.44" d="M 2708 729.9 L 2960.04 729.9 Q 2965.04 729.9, 2965.04 724.9 L 2965.04 610.44 Q 2965.04 605.44, 2960.04 605.44 L 2708 605.44" fill="none" stroke="#A855F7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
     <circle class="side-cable-plug" cx="2708" cy="729.9" r="3.0" fill="#A855F7" stroke="#090D16" stroke-width="1.2" />
     <circle class="side-cable-plug" cx="2708" cy="605.44" r="3.0" fill="#A855F7" stroke="#090D16" stroke-width="1.2" />
-    <path data-cable-id="patch-front-p1-sw1" data-cable-view="front-halo" d="M 424.8 345.32 L 424.8 294.76 Q 424.8 290.06, 429.5 290.06 L 431.3 290.06 Q 436 290.06, 436 285.36 L 436 237.66" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
-    <path data-cable-id="patch-front-p1-sw1" data-cable-view="front" data-start-anchor="patch-u7:p1:front" data-end-anchor="sw-u8:eth1:front" data-start-xy="424.8,345.32" data-end-xy="436,237.66" d="M 424.8 345.32 L 424.8 294.76 Q 424.8 290.06, 429.5 290.06 L 431.3 290.06 Q 436 290.06, 436 285.36 L 436 237.66" fill="none" stroke="#3B82F6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <path data-cable-id="patch-front-p1-sw1" data-cable-view="front-halo" d="M 424.8 345.32 L 424.8 287.16 Q 424.8 282.46, 429.5 282.46 L 431.3 282.46 Q 436 282.46, 436 277.76 L 436 237.66" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="patch-front-p1-sw1" data-cable-view="front" data-start-anchor="patch-u7:p1:front" data-end-anchor="sw-u8:eth1:front" data-start-xy="424.8,345.32" data-end-xy="436,237.66" d="M 424.8 345.32 L 424.8 287.16 Q 424.8 282.46, 429.5 282.46 L 431.3 282.46 Q 436 282.46, 436 277.76 L 436 237.66" fill="none" stroke="#3B82F6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
     <circle class="cable-plug-endpoint" data-cable-id="patch-front-p1-sw1" data-anchor-key="patch-u7:p1:front" cx="424.8" cy="345.32" r="3.6" fill="#3B82F6" stroke="#090D16" stroke-width="1.4" />
     <circle class="cable-plug-endpoint" data-cable-id="patch-front-p1-sw1" data-anchor-key="sw-u8:eth1:front" cx="436" cy="237.66" r="3.6" fill="#3B82F6" stroke="#090D16" stroke-width="1.4" />
     <path data-cable-id="patch-front-p1-sw1" data-cable-view="side-halo" d="M 2198.4 345.32 L 2158.6 345.32 Q 2153.6 345.32, 2153.6 340.32 L 2153.6 242.66 Q 2153.6 237.66, 2158.6 237.66 L 2198.4 237.66" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
     <path data-cable-id="patch-front-p1-sw1" data-cable-view="side" data-start-xy="2198.4,345.32" data-end-xy="2198.4,237.66" d="M 2198.4 345.32 L 2158.6 345.32 Q 2153.6 345.32, 2153.6 340.32 L 2153.6 242.66 Q 2153.6 237.66, 2158.6 237.66 L 2198.4 237.66" fill="none" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
     <circle class="side-cable-plug" cx="2198.4" cy="345.32" r="3.0" fill="#3B82F6" stroke="#090D16" stroke-width="1.2" />
     <circle class="side-cable-plug" cx="2198.4" cy="237.66" r="3.0" fill="#3B82F6" stroke="#090D16" stroke-width="1.2" />
-    <path data-cable-id="patch-front-p2-sw2" data-cable-view="front-halo" d="M 468.2 345.32 L 468.2 278.39 Q 468.2 274.86, 471.73 274.86 L 473.07 274.86 Q 476.6 274.86, 476.6 271.33 L 476.6 237.66" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
-    <path data-cable-id="patch-front-p2-sw2" data-cable-view="front" data-start-anchor="patch-u7:p2:front" data-end-anchor="sw-u8:eth2:front" data-start-xy="468.2,345.32" data-end-xy="476.6,237.66" d="M 468.2 345.32 L 468.2 278.39 Q 468.2 274.86, 471.73 274.86 L 473.07 274.86 Q 476.6 274.86, 476.6 271.33 L 476.6 237.66" fill="none" stroke="#10B981" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <path data-cable-id="patch-front-p2-sw2" data-cable-view="front-halo" d="M 468.2 345.32 L 468.2 288.39 Q 468.2 284.86, 471.73 284.86 L 473.07 284.86 Q 476.6 284.86, 476.6 281.33 L 476.6 237.66" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="patch-front-p2-sw2" data-cable-view="front" data-start-anchor="patch-u7:p2:front" data-end-anchor="sw-u8:eth2:front" data-start-xy="468.2,345.32" data-end-xy="476.6,237.66" d="M 468.2 345.32 L 468.2 288.39 Q 468.2 284.86, 471.73 284.86 L 473.07 284.86 Q 476.6 284.86, 476.6 281.33 L 476.6 237.66" fill="none" stroke="#10B981" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
     <circle class="cable-plug-endpoint" data-cable-id="patch-front-p2-sw2" data-anchor-key="patch-u7:p2:front" cx="468.2" cy="345.32" r="3.6" fill="#10B981" stroke="#090D16" stroke-width="1.4" />
     <circle class="cable-plug-endpoint" data-cable-id="patch-front-p2-sw2" data-anchor-key="sw-u8:eth2:front" cx="476.6" cy="237.66" r="3.6" fill="#10B981" stroke="#090D16" stroke-width="1.4" />
     <path data-cable-id="patch-front-p2-sw2" data-cable-view="side-halo" d="M 2198.4 345.32 L 2146.84 345.32 Q 2141.84 345.32, 2141.84 340.32 L 2141.84 242.66 Q 2141.84 237.66, 2146.84 237.66 L 2198.4 237.66" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
     <path data-cable-id="patch-front-p2-sw2" data-cable-view="side" data-start-xy="2198.4,345.32" data-end-xy="2198.4,237.66" d="M 2198.4 345.32 L 2146.84 345.32 Q 2141.84 345.32, 2141.84 340.32 L 2141.84 242.66 Q 2141.84 237.66, 2146.84 237.66 L 2198.4 237.66" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
     <circle class="side-cable-plug" cx="2198.4" cy="345.32" r="3.0" fill="#10B981" stroke="#090D16" stroke-width="1.2" />
     <circle class="side-cable-plug" cx="2198.4" cy="237.66" r="3.0" fill="#10B981" stroke="#090D16" stroke-width="1.2" />
-    <path data-cable-id="patch-front-p3-sw3" data-cable-view="front-halo" d="M 511.6 345.32 L 511.6 281.01 Q 511.6 278.66, 513.95 278.66 L 514.85 278.66 Q 517.2 278.66, 517.2 276.31 L 517.2 237.66" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
-    <path data-cable-id="patch-front-p3-sw3" data-cable-view="front" data-start-anchor="patch-u7:p3:front" data-end-anchor="sw-u8:eth3:front" data-start-xy="511.6,345.32" data-end-xy="517.2,237.66" d="M 511.6 345.32 L 511.6 281.01 Q 511.6 278.66, 513.95 278.66 L 514.85 278.66 Q 517.2 278.66, 517.2 276.31 L 517.2 237.66" fill="none" stroke="#10B981" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <path data-cable-id="patch-front-p3-sw3" data-cable-view="front-halo" d="M 511.6 345.32 L 511.6 289.61 Q 511.6 287.26, 513.95 287.26 L 514.85 287.26 Q 517.2 287.26, 517.2 284.91 L 517.2 237.66" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="patch-front-p3-sw3" data-cable-view="front" data-start-anchor="patch-u7:p3:front" data-end-anchor="sw-u8:eth3:front" data-start-xy="511.6,345.32" data-end-xy="517.2,237.66" d="M 511.6 345.32 L 511.6 289.61 Q 511.6 287.26, 513.95 287.26 L 514.85 287.26 Q 517.2 287.26, 517.2 284.91 L 517.2 237.66" fill="none" stroke="#10B981" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
     <circle class="cable-plug-endpoint" data-cable-id="patch-front-p3-sw3" data-anchor-key="patch-u7:p3:front" cx="511.6" cy="345.32" r="3.6" fill="#10B981" stroke="#090D16" stroke-width="1.4" />
     <circle class="cable-plug-endpoint" data-cable-id="patch-front-p3-sw3" data-anchor-key="sw-u8:eth3:front" cx="517.2" cy="237.66" r="3.6" fill="#10B981" stroke="#090D16" stroke-width="1.4" />
     <path data-cable-id="patch-front-p3-sw3" data-cable-view="side-halo" d="M 2198.4 345.32 L 2135.08 345.32 Q 2130.08 345.32, 2130.08 340.32 L 2130.08 242.66 Q 2130.08 237.66, 2135.08 237.66 L 2198.4 237.66" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
     <path data-cable-id="patch-front-p3-sw3" data-cable-view="side" data-start-xy="2198.4,345.32" data-end-xy="2198.4,237.66" d="M 2198.4 345.32 L 2135.08 345.32 Q 2130.08 345.32, 2130.08 340.32 L 2130.08 242.66 Q 2130.08 237.66, 2135.08 237.66 L 2198.4 237.66" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
     <circle class="side-cable-plug" cx="2198.4" cy="345.32" r="3.0" fill="#10B981" stroke="#090D16" stroke-width="1.2" />
     <circle class="side-cable-plug" cx="2198.4" cy="237.66" r="3.0" fill="#10B981" stroke="#090D16" stroke-width="1.2" />
-    <path data-cable-id="patch-front-p4-sw4" data-cable-view="front-halo" d="M 555 345.32 L 555 283.64 Q 555 282.46, 556.18 282.46 L 556.62 282.46 Q 557.8 282.46, 557.8 281.28 L 557.8 237.66" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
-    <path data-cable-id="patch-front-p4-sw4" data-cable-view="front" data-start-anchor="patch-u7:p4:front" data-end-anchor="sw-u8:eth4:front" data-start-xy="555,345.32" data-end-xy="557.8,237.66" d="M 555 345.32 L 555 283.64 Q 555 282.46, 556.18 282.46 L 556.62 282.46 Q 557.8 282.46, 557.8 281.28 L 557.8 237.66" fill="none" stroke="#6366F1" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <path data-cable-id="patch-front-p4-sw4" data-cable-view="front-halo" d="M 555 345.32 L 555 290.84 Q 555 289.66, 556.18 289.66 L 556.62 289.66 Q 557.8 289.66, 557.8 288.48 L 557.8 237.66" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="patch-front-p4-sw4" data-cable-view="front" data-start-anchor="patch-u7:p4:front" data-end-anchor="sw-u8:eth4:front" data-start-xy="555,345.32" data-end-xy="557.8,237.66" d="M 555 345.32 L 555 290.84 Q 555 289.66, 556.18 289.66 L 556.62 289.66 Q 557.8 289.66, 557.8 288.48 L 557.8 237.66" fill="none" stroke="#6366F1" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
     <circle class="cable-plug-endpoint" data-cable-id="patch-front-p4-sw4" data-anchor-key="patch-u7:p4:front" cx="555" cy="345.32" r="3.6" fill="#6366F1" stroke="#090D16" stroke-width="1.4" />
     <circle class="cable-plug-endpoint" data-cable-id="patch-front-p4-sw4" data-anchor-key="sw-u8:eth4:front" cx="557.8" cy="237.66" r="3.6" fill="#6366F1" stroke="#090D16" stroke-width="1.4" />
     <path data-cable-id="patch-front-p4-sw4" data-cable-view="side-halo" d="M 2198.4 345.32 L 2123.32 345.32 Q 2118.32 345.32, 2118.32 340.32 L 2118.32 242.66 Q 2118.32 237.66, 2123.32 237.66 L 2198.4 237.66" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
     <path data-cable-id="patch-front-p4-sw4" data-cable-view="side" data-start-xy="2198.4,345.32" data-end-xy="2198.4,237.66" d="M 2198.4 345.32 L 2123.32 345.32 Q 2118.32 345.32, 2118.32 340.32 L 2118.32 242.66 Q 2118.32 237.66, 2123.32 237.66 L 2198.4 237.66" fill="none" stroke="#6366F1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
     <circle class="side-cable-plug" cx="2198.4" cy="345.32" r="3.0" fill="#6366F1" stroke="#090D16" stroke-width="1.2" />
     <circle class="side-cable-plug" cx="2198.4" cy="237.66" r="3.0" fill="#6366F1" stroke="#090D16" stroke-width="1.2" />
-    <path data-cable-id="patch-front-p5-sw5" data-cable-view="front-halo" d="M 598.4 345.32 L 598.4 291.76 Q 598.4 286.26, 598.4 280.76 L 598.4 237.66" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
-    <path data-cable-id="patch-front-p5-sw5" data-cable-view="front" data-start-anchor="patch-u7:p5:front" data-end-anchor="sw-u8:eth5:front" data-start-xy="598.4,345.32" data-end-xy="598.4,237.66" d="M 598.4 345.32 L 598.4 291.76 Q 598.4 286.26, 598.4 280.76 L 598.4 237.66" fill="none" stroke="#6366F1" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <path data-cable-id="patch-front-p5-sw5" data-cable-view="front-halo" d="M 598.4 345.32 L 598.4 237.66" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="patch-front-p5-sw5" data-cable-view="front" data-start-anchor="patch-u7:p5:front" data-end-anchor="sw-u8:eth5:front" data-start-xy="598.4,345.32" data-end-xy="598.4,237.66" d="M 598.4 345.32 L 598.4 237.66" fill="none" stroke="#6366F1" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
     <circle class="cable-plug-endpoint" data-cable-id="patch-front-p5-sw5" data-anchor-key="patch-u7:p5:front" cx="598.4" cy="345.32" r="3.6" fill="#6366F1" stroke="#090D16" stroke-width="1.4" />
     <circle class="cable-plug-endpoint" data-cable-id="patch-front-p5-sw5" data-anchor-key="sw-u8:eth5:front" cx="598.4" cy="237.66" r="3.6" fill="#6366F1" stroke="#090D16" stroke-width="1.4" />
     <path data-cable-id="patch-front-p5-sw5" data-cable-view="side-halo" d="M 2198.4 345.32 L 2111.56 345.32 Q 2106.56 345.32, 2106.56 340.32 L 2106.56 242.66 Q 2106.56 237.66, 2111.56 237.66 L 2198.4 237.66" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
     <path data-cable-id="patch-front-p5-sw5" data-cable-view="side" data-start-xy="2198.4,345.32" data-end-xy="2198.4,237.66" d="M 2198.4 345.32 L 2111.56 345.32 Q 2106.56 345.32, 2106.56 340.32 L 2106.56 242.66 Q 2106.56 237.66, 2111.56 237.66 L 2198.4 237.66" fill="none" stroke="#6366F1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
     <circle class="side-cable-plug" cx="2198.4" cy="345.32" r="3.0" fill="#6366F1" stroke="#090D16" stroke-width="1.2" />
     <circle class="side-cable-plug" cx="2198.4" cy="237.66" r="3.0" fill="#6366F1" stroke="#090D16" stroke-width="1.2" />
-    <path data-cable-id="cross-sw6-to-ucg-lan2" data-cable-view="front-halo" d="M 639 237.66 L 639 244.04 Q 639 248.66, 643.62 248.66 L 1024.1 248.66 Q 1029.6 248.66, 1029.6 254.16 L 1029.6 457.65 Q 1029.6 463.15, 1024.1 463.15 L 962.4 463.15" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
-    <path data-cable-id="cross-sw6-to-ucg-lan2" data-cable-view="front" data-start-anchor="sw-u8:eth6:front" data-end-anchor="PORTAL:U6:front:cross-sw6-to-ucg-lan2" data-start-xy="639,237.66" data-end-xy="962.4,463.15" d="M 639 237.66 L 639 244.04 Q 639 248.66, 643.62 248.66 L 1024.1 248.66 Q 1029.6 248.66, 1029.6 254.16 L 1029.6 457.65 Q 1029.6 463.15, 1024.1 463.15 L 962.4 463.15" fill="none" stroke="#06B6D4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <path data-cable-id="cross-sw6-to-ucg-lan2" data-cable-view="front-halo" d="M 639 237.66 L 639 244.04 Q 639 248.66, 643.62 248.66 L 1024.1 248.66 Q 1029.6 248.66, 1029.6 254.16 L 1029.6 460.15 Q 1029.6 465.65, 1024.1 465.65 L 962.4 465.65" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="cross-sw6-to-ucg-lan2" data-cable-view="front" data-start-anchor="sw-u8:eth6:front" data-end-anchor="PORTAL:U6:front:cross-sw6-to-ucg-lan2" data-start-xy="639,237.66" data-end-xy="962.4,465.65" d="M 639 237.66 L 639 244.04 Q 639 248.66, 643.62 248.66 L 1024.1 248.66 Q 1029.6 248.66, 1029.6 254.16 L 1029.6 460.15 Q 1029.6 465.65, 1024.1 465.65 L 962.4 465.65" fill="none" stroke="#06B6D4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
     <circle class="cable-plug-endpoint" data-cable-id="cross-sw6-to-ucg-lan2" data-anchor-key="sw-u8:eth6:front" cx="639" cy="237.66" r="3.6" fill="#06B6D4" stroke="#090D16" stroke-width="1.4" />
-    <g data-portal-grommet="PORTAL:U6:front:cross-sw6-to-ucg-lan2" transform="translate(962.4, 463.15)">
+    <g data-portal-grommet="PORTAL:U6:front:cross-sw6-to-ucg-lan2" transform="translate(962.4, 465.65)">
       <rect x="-46" y="-8" width="54" height="16" rx="8" fill="#090D16" stroke="#06B6D4" stroke-width="1.4" />
       <circle cx="0" cy="0" r="4.2" fill="#06B6D4" stroke="#090D16" stroke-width="1.2" />
       <text x="-22" y="3" fill="#F8FAFC" font-size="7.2" font-weight="700" text-anchor="middle">●-&gt;REAR</text>
     </g>
-    <path data-cable-id="cross-sw6-to-ucg-lan2" data-cable-view="rear-halo" d="M 1306 463.15 L 1244.3 463.15 Q 1238.8 463.15, 1238.8 468.65 L 1238.8 859.86 Q 1238.8 865.36, 1244.3 865.36 L 1740.98 865.36 Q 1745.6 865.36, 1745.6 860.74 L 1745.6 854.36" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
-    <path data-cable-id="cross-sw6-to-ucg-lan2" data-cable-view="rear" data-start-anchor="PORTAL:U6:rear:cross-sw6-to-ucg-lan2" data-end-anchor="ucg-max:lan2:rear" data-start-xy="1306,463.15" data-end-xy="1745.6,854.36" d="M 1306 463.15 L 1244.3 463.15 Q 1238.8 463.15, 1238.8 468.65 L 1238.8 859.86 Q 1238.8 865.36, 1244.3 865.36 L 1740.98 865.36 Q 1745.6 865.36, 1745.6 860.74 L 1745.6 854.36" fill="none" stroke="#06B6D4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <path data-cable-id="cross-sw6-to-ucg-lan2" data-cable-view="rear-halo" d="M 1306 465.65 L 1244.3 465.65 Q 1238.8 465.65, 1238.8 471.15 L 1238.8 859.86 Q 1238.8 865.36, 1244.3 865.36 L 1740.98 865.36 Q 1745.6 865.36, 1745.6 860.74 L 1745.6 854.36" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="cross-sw6-to-ucg-lan2" data-cable-view="rear" data-start-anchor="PORTAL:U6:rear:cross-sw6-to-ucg-lan2" data-end-anchor="ucg-max:lan2:rear" data-start-xy="1306,465.65" data-end-xy="1745.6,854.36" d="M 1306 465.65 L 1244.3 465.65 Q 1238.8 465.65, 1238.8 471.15 L 1238.8 859.86 Q 1238.8 865.36, 1244.3 865.36 L 1740.98 865.36 Q 1745.6 865.36, 1745.6 860.74 L 1745.6 854.36" fill="none" stroke="#06B6D4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
     <circle class="cable-plug-endpoint" data-cable-id="cross-sw6-to-ucg-lan2" data-anchor-key="ucg-max:lan2:rear" cx="1745.6" cy="854.36" r="3.6" fill="#06B6D4" stroke="#090D16" stroke-width="1.4" />
-    <g data-portal-grommet="PORTAL:U6:rear:cross-sw6-to-ucg-lan2" transform="translate(1306, 463.15)">
+    <g data-portal-grommet="PORTAL:U6:rear:cross-sw6-to-ucg-lan2" transform="translate(1306, 465.65)">
       <rect x="-8" y="-8" width="58" height="16" rx="8" fill="#090D16" stroke="#06B6D4" stroke-width="1.4" />
       <circle cx="0" cy="0" r="4.2" fill="#06B6D4" stroke="#090D16" stroke-width="1.2" />
       <text x="25" y="3" fill="#F8FAFC" font-size="7.2" font-weight="700" text-anchor="middle">FRONT-&gt;●</text>

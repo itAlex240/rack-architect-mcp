@@ -604,6 +604,7 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
   let rearDataIdx = 0;
   let bridgeIdx = 0;
   let portalIdx = 0;
+  const portalCountByU = new Map<number, number>();
   let sideFrontIdx = 0;
   let sideRearIdx = 0;
 
@@ -636,20 +637,27 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
       const uDiff = Math.abs(a1.u - a2.u);
       let pts: Array<{ readonly x: number; readonly y: number }>;
       if (uDiff <= 1) {
-        const bIdx = bridgeIdx++;
-        const midY =
-          a1.u === a2.u
-            ? roundCentis(Math.max(a1.y, a2.y) + 11 + (bIdx % 4) * 3.2)
-            : roundCentis(
-                worldYToSvgY(Math.min(a1.u, a2.u) * MM_PER_U) +
-                  ((bIdx % 5) - 2) * 3.5,
-              );
-        pts = [
-          { x: a1.x, y: a1.y },
-          { x: a1.x, y: midY },
-          { x: a2.x, y: midY },
-          { x: a2.x, y: a2.y },
-        ];
+        if (a1.u !== a2.u && Math.abs(a1.x - a2.x) <= 2.0) {
+          pts = [
+            { x: a1.x, y: a1.y },
+            { x: a2.x, y: a2.y },
+          ];
+        } else {
+          const bIdx = bridgeIdx++;
+          const midY =
+            a1.u === a2.u
+              ? roundCentis(Math.max(a1.y, a2.y) + 11 + (bIdx % 4) * 3.2)
+              : roundCentis(
+                  worldYToSvgY(Math.min(a1.u, a2.u) * MM_PER_U) +
+                    ((bIdx % 7) - 3) * 2.4,
+                );
+          pts = [
+            { x: a1.x, y: a1.y },
+            { x: a1.x, y: midY },
+            { x: a2.x, y: midY },
+            { x: a2.x, y: a2.y },
+          ];
+        }
       } else {
         let channelX: number;
         let offsetPx: number;
@@ -695,16 +703,19 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
         `<circle cx="${a2.x}" cy="${a2.y}" r="3.2" fill="${cable.color_hex}" stroke="#09090B" stroke-width="1.2" />`,
       );
     } else {
-      // Cross-Face Cable via U6 Brush-Panel Portal Grommets
+      // Cross-Face Cable via Brush-Panel Portal Grommets
       const pIdx = portalIdx++;
       const portalU = route?.portal_u ?? 6;
+      const uPortalIdx = portalCountByU.get(portalU) ?? 0;
+      portalCountByU.set(portalU, uPortalIdx + 1);
       const portalSvgY = roundCentis(
-        worldYToSvgY((portalU - 0.5) * MM_PER_U) + ((pIdx % 3) - 1) * 5,
+        worldYToSvgY((portalU - 0.5) * MM_PER_U) +
+          (uPortalIdx % 2 === 0 ? -1 : 1) * 3.5,
       );
       const frontAnchor = f1 === 'front' ? a1 : a2;
       const rearAnchor = f1 === 'rear' ? a1 : a2;
       const frontPortalX = roundCentis(
-        frontOriginX + rackWidthPx - px(38) - pIdx * 22,
+        frontOriginX + rackWidthPx - px(38) - uPortalIdx * 68,
       );
       const frontChannelX = roundCentis(
         frontOriginX + rackWidthPx - px(12) - pIdx * 4.0,
@@ -729,7 +740,9 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
         `<circle cx="${frontPortalX}" cy="${portalSvgY}" r="4.0" fill="${cable.color_hex}" stroke="#09090B" stroke-width="1.2" />`,
       );
 
-      const rearPortalX = roundCentis(rearOriginX + px(38) + pIdx * 22);
+      const rearPortalX = roundCentis(
+        rearOriginX + px(38) + uPortalIdx * 68,
+      );
       const rearChannelX = roundCentis(rearOriginX + px(12) + pIdx * 4.0);
       const rearD = buildClientRoundedPath(
         [

@@ -30,6 +30,7 @@ export function AppDashboard() {
       <TopNavBar
         scene={state.scene}
         connectionMode={state.connectionMode}
+        projectPath={state.projectPath}
         activeTab={state.activeTab}
         catalogDrawerOpen={state.catalogDrawerOpen}
         undoAvailable={state.undoAvailable}
@@ -39,6 +40,8 @@ export function AppDashboard() {
           state.setCatalogDrawerOpen(!state.catalogDrawerOpen)
         }
         onImportProjectJson={state.importProjectJson}
+        onInitNewRack={state.initNewRack}
+        onExportDeliverablesToDisk={state.exportDeliverablesToDisk}
         onUndo={state.undo}
         onRedo={state.redo}
         onResetDemo={state.resetDemoScene}
@@ -136,6 +139,8 @@ export function AppDashboard() {
         {/* Right Telemetry, Validation & Selection Inspector Sidebar */}
         <InspectorSidebar
           scene={state.scene}
+          connectionMode={state.connectionMode}
+          projectPath={state.projectPath}
           mcpToolLog={state.mcpToolLog}
           selectedDeviceId={state.selectedDeviceId}
           selectedCableId={state.selectedCableId}
@@ -144,6 +149,7 @@ export function AppDashboard() {
           onMoveDeviceU={state.moveDeviceU}
           onRemoveDevice={state.removeEquipment}
           onDisconnectCable={state.disconnectCable}
+          onClearToolLog={state.clearMcpToolLog}
           onSimulateAgentStep={state.simulateAgentStep}
         />
       </div>

@@ -23,7 +23,9 @@ import type {
 export interface SidecarWsMessage {
   readonly type: 'INITIAL_STATE' | 'STATE_UPDATED' | 'COMMAND_RESULT' | 'ERROR';
   readonly reason?: StateChangeEvent['reason'] | undefined;
+  readonly projectPath?: string | null | undefined;
   readonly scene?: SerializedRackScene | undefined;
+  readonly blueprints?: readonly unknown[] | undefined;
   readonly undoAvailable?: number | undefined;
   readonly redoAvailable?: number | undefined;
   readonly toolCallLog?: readonly McpToolCallEntry[] | undefined;
@@ -45,7 +47,8 @@ export interface SidecarClientCommand {
     | 'disconnect_cables'
     | 'validate_rack'
     | 'export_deliverables'
-    | 'undo_redo';
+    | 'undo_redo'
+    | 'clear_tool_log';
   readonly args?: Record<string, unknown> | undefined;
 }
 
@@ -163,6 +166,7 @@ export async function startRackSidecarServer(
       if (req.method === 'GET' && pathname === '/api/state') {
         const history = stateManager.getHistoryCounts();
         const payload = {
+          projectPath: stateManager.getProjectPath() ?? null,
           scene: serializeRackScene(stateManager.getScene()),
           undoAvailable: history.undoAvailable,
           redoAvailable: history.redoAvailable,
@@ -259,6 +263,26 @@ export async function startRackSidecarServer(
     }
   });
 
+  await new Promise<void>((resolve, reject) => {
+    const onError = (err: NodeJS.ErrnoException) => {
+      if (err.code === 'EADDRINUSE' && requestedPort > 0) {
+        // Another sidecar instance is already serving port 3100; bind ephemeral port so stdio MCP agents never fail
+        httpServer.once('error', reject);
+        httpServer.listen(0, host, () => {
+          httpServer.removeListener('error', reject);
+          resolve();
+        });
+        return;
+      }
+      reject(err);
+    };
+    httpServer.once('error', onError);
+    httpServer.listen(requestedPort, host, () => {
+      httpServer.removeListener('error', onError);
+      resolve();
+    });
+  });
+
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
   wss.on('connection', (ws: WebSocket) => {
@@ -266,7 +290,9 @@ export async function startRackSidecarServer(
     const initialMsg: SidecarWsMessage = {
       type: 'INITIAL_STATE',
       reason: 'init',
+      projectPath: stateManager.getProjectPath() ?? null,
       scene: serializeRackScene(stateManager.getScene()),
+      blueprints: stateManager.getCatalog().getAllBlueprints(),
       undoAvailable: history.undoAvailable,
       redoAvailable: history.redoAvailable,
       toolCallLog: stateManager.getToolCallLog()
@@ -315,6 +341,10 @@ export async function startRackSidecarServer(
           case 'undo_redo':
             result = handlers.undoRedo(args);
             break;
+          case 'clear_tool_log':
+            stateManager.clearToolCallLog();
+            result = { cleared: true };
+            break;
           default: {
             const errReply: SidecarWsMessage = {
               type: 'ERROR',
@@ -345,7 +375,9 @@ export async function startRackSidecarServer(
     const broadcastMsg: SidecarWsMessage = {
       type: 'STATE_UPDATED',
       reason: event.reason,
+      projectPath: stateManager.getProjectPath() ?? null,
       scene: serializeRackScene(event.scene),
+      blueprints: stateManager.getCatalog().getAllBlueprints(),
       undoAvailable: event.undoAvailable,
       redoAvailable: event.redoAvailable,
       toolCallLog: event.toolCallLog
@@ -356,14 +388,6 @@ export async function startRackSidecarServer(
         client.send(serialized);
       }
     }
-  });
-
-  await new Promise<void>((resolve, reject) => {
-    httpServer.once('error', reject);
-    httpServer.listen(requestedPort, host, () => {
-      httpServer.removeListener('error', reject);
-      resolve();
-    });
   });
 
   const addressInfo = httpServer.address();

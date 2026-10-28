@@ -5,6 +5,19 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] - 2026-10-28
+
+### Added & Improved
+- **Dedicated Local MCP Engineering Workbench vs. Static GitHub Pages Demo (`@rack-mcp/web-viewer`, `@rack-mcp/mcp-server`, `@rack-mcp/cli`):**
+  - Strictly separated `standalone-demo` (GitHub Pages showcase) from `sidecar-live` (`http://127.0.0.1:3100` local engineering workspace) in [`TopNavBar.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/TopNavBar.tsx), [`InspectorSidebar.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/InspectorSidebar.tsx), and [`useRackState.ts`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/state/useRackState.ts):
+    - Removed hardcoded demo tool logs (`DEFAULT_STANDALONE_TOOL_LOG`) and fake collision-simulation buttons (`Simulate LLM Collision`, `1. Trigger Collision`, `2. LLM Self-Correction`, `Reset Demo`) when connected to a live local Sidecar server (`connectionMode === 'sidecar-live'`).
+    - Added live **`New Empty Rack` (`init_rack`)** popover, **`Export to Disk` (`export_deliverables`)** trigger, bound `rack.yaml` file indicator (`MCP Live · <file>`), chronological MCP tool-call timestamps (`HH:MM:SS`), **`Clear`** log action (`clear_tool_log`), and a clean `"Ready for External MCP Agent (rack_architect_mcp)"` waiting state.
+  - Added multi-process `stdio` + Sidecar synchronization across [`state-manager.ts`](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/state-manager.ts), [`sidecar-server.ts`](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/sidecar/sidecar-server.ts), and [`cli/src/index.ts`](file:///home/alexb/projects/rack-designer/packages/cli/src/index.ts):
+    - Automatic `EADDRINUSE` ephemeral port fallback (`port: 0`) when port `3100` is already bound by an active Web-Viewer sidecar, plus automatic active `projectPath` discovery from `http://127.0.0.1:3100/api/state` when `rack-mcp serve` is invoked without `--project`.
+    - Atomic disk persistence and live file-watcher synchronization of `.rack-mcp-tool-log.json` and `custom-catalog/*.yaml` alongside `rack.yaml` so any external LLM agent running over `stdio` or WebSocket streams its mutations, custom blueprints, and tool calls live into `http://127.0.0.1:3100`.
+- **400 mm Realistic 19-Inch Enterprise Network Cabinet & Non-Overlapping Portal Badges (`examples/19inch-enterprise`, `@rack-mcp/exporters`):**
+  - Updated [`examples/19inch-enterprise/rack.yaml`](file:///home/alexb/projects/rack-designer/examples/19inch-enterprise/rack.yaml) to a `400 mm` wall/compact network cabinet depth with a short-depth `290 mm` Li-Ion UPS (`apc-smart-ups-li-ion-short-depth-2u`) and zero same-U Front/Rear overlap, plus `68 px` horizontal spacing for Brush-Panel portal badges in [`elevation-svg.ts`](file:///home/alexb/projects/rack-designer/packages/exporters/src/elevation-svg.ts).
+
 ## [0.3.2] - 2026-10-28
 
 ### Fixed & Improved

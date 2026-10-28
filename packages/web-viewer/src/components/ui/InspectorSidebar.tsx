@@ -8,6 +8,8 @@ import { SparklesAiIcon, TerminalFeedIcon } from './Icons.js';
 
 export interface InspectorSidebarProps {
   readonly scene: SerializedRackScene;
+  readonly connectionMode?: 'sidecar-live' | 'standalone-demo' | undefined;
+  readonly projectPath?: string | null | undefined;
   readonly mcpToolLog?: readonly McpToolCallItem[] | undefined;
   readonly selectedDeviceId: string | null;
   readonly selectedCableId: string | null;
@@ -16,6 +18,7 @@ export interface InspectorSidebarProps {
   readonly onMoveDeviceU: (instanceId: string, newU: number) => void;
   readonly onRemoveDevice?: (instanceId: string) => void;
   readonly onDisconnectCable?: (cableId: string) => void;
+  readonly onClearToolLog?: (() => void) | undefined;
   readonly onSimulateAgentStep?:
     | ((stage: 'collision' | 'resolved') => void)
     | undefined;
@@ -25,6 +28,8 @@ type SidebarFilterTab = 'all' | 'inspector' | 'diagnostics' | 'agent';
 
 export function InspectorSidebar({
   scene,
+  connectionMode = 'standalone-demo',
+  projectPath,
   mcpToolLog = [],
   selectedDeviceId,
   selectedCableId,
@@ -33,6 +38,7 @@ export function InspectorSidebar({
   onMoveDeviceU,
   onRemoveDevice,
   onDisconnectCable,
+  onClearToolLog,
   onSimulateAgentStep,
 }: InspectorSidebarProps) {
   const [activeFilter, setActiveFilter] = useState<SidebarFilterTab>('all');
@@ -922,15 +928,57 @@ export function InspectorSidebar({
               <TerminalFeedIcon size={13} style={{ color: '#3B82F6' }} />
               <span>MCP AGENT TOOL-CALL FEED</span>
             </div>
-            <span
-              className="mono"
-              style={{ color: '#71717A', fontSize: '10.5px' }}
-            >
-              {mcpToolLog.length} Calls
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span
+                className="mono"
+                style={{ color: '#71717A', fontSize: '10.5px' }}
+              >
+                {mcpToolLog.length} Calls
+              </span>
+              {connectionMode === 'sidecar-live' &&
+                mcpToolLog.length > 0 &&
+                onClearToolLog && (
+                  <button
+                    type="button"
+                    data-testid="btn-clear-mcp-log"
+                    onClick={onClearToolLog}
+                    style={{
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      background: '#16161B',
+                      color: '#A1A1AA',
+                      fontSize: '9.5px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Clear
+                  </button>
+                )}
+            </div>
           </div>
 
-          {onSimulateAgentStep && (
+          {connectionMode === 'sidecar-live' && projectPath && (
+            <div
+              className="mono"
+              style={{
+                padding: '6px 9px',
+                borderRadius: '6px',
+                background: '#141418',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+                fontSize: '10px',
+                color: '#93C5FD',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+              title={projectPath}
+            >
+              Bound File: {projectPath}
+            </div>
+          )}
+
+          {connectionMode === 'standalone-demo' && onSimulateAgentStep && (
             <div
               style={{
                 display: 'grid',
@@ -986,58 +1034,106 @@ export function InspectorSidebar({
 
           {/* Full-Height Non-Clipped Timeline Cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {mcpToolLog.map((entry) => (
+            {mcpToolLog.length === 0 ? (
               <div
-                key={entry.id}
-                data-testid={`mcp-tool-call-${entry.tool}`}
+                data-testid="mcp-agent-empty-feed"
                 style={{
-                  padding: '9px 11px',
+                  padding: '12px',
                   borderRadius: '7px',
-                  background: '#15151A',
+                  background: '#141418',
                   border: '1px solid rgba(255, 255, 255, 0.07)',
-                  borderLeft:
-                    entry.status === 'VALID'
-                      ? '2.5px solid #10B981'
-                      : '2.5px solid #EF4444',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '4px',
+                  borderLeft: '2.5px solid #3B82F6',
+                  fontSize: '11px',
+                  color: '#A1A1AA',
+                  lineHeight: 1.45,
                 }}
               >
                 <div
-                  className="mono"
                   style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    fontSize: '10.5px',
+                    color: '#E4E4E7',
+                    fontWeight: 600,
+                    marginBottom: '4px',
                   }}
                 >
-                  <span style={{ fontWeight: 600, color: '#F4F4F5' }}>
-                    {entry.tool}()
-                  </span>
-                  <span
+                  Ready for External MCP Agent (`rack_architect_mcp`)
+                </div>
+                Connect your LLM agent via stdio or WebSocket to inspect live{' '}
+                <span className="mono">init_rack</span>,{' '}
+                <span className="mono">mount_equipment</span>,{' '}
+                <span className="mono">connect_cables</span>, and{' '}
+                <span className="mono">validate_rack</span> tool calls in real
+                time.
+              </div>
+            ) : (
+              mcpToolLog.map((entry) => {
+                const shortTime = entry.timestamp.includes('T')
+                  ? entry.timestamp.slice(11, 19)
+                  : entry.timestamp;
+                return (
+                  <div
+                    key={entry.id}
+                    data-testid={`mcp-tool-call-${entry.tool}`}
                     style={{
-                      fontSize: '9.5px',
-                      fontWeight: 600,
-                      color:
-                        entry.status === 'VALID' ? '#10B981' : '#EF4444',
+                      padding: '9px 11px',
+                      borderRadius: '7px',
+                      background: '#15151A',
+                      border: '1px solid rgba(255, 255, 255, 0.07)',
+                      borderLeft:
+                        entry.status === 'VALID'
+                          ? '2.5px solid #10B981'
+                          : '2.5px solid #EF4444',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
                     }}
                   >
-                    {entry.status}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    fontSize: '11px',
-                    color: '#A1A1AA',
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {entry.summary}
-                </div>
-              </div>
-            ))}
+                    <div
+                      className="mono"
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: '10.5px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                      >
+                        <span style={{ fontWeight: 600, color: '#F4F4F5' }}>
+                          {entry.tool}()
+                        </span>
+                        <span style={{ fontSize: '9.5px', color: '#71717A' }}>
+                          {shortTime}
+                        </span>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: '9.5px',
+                          fontWeight: 600,
+                          color:
+                            entry.status === 'VALID' ? '#10B981' : '#EF4444',
+                        }}
+                      >
+                        {entry.status}
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        fontSize: '11px',
+                        color: '#A1A1AA',
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {entry.summary}
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </section>
       )}

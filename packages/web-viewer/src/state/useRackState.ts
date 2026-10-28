@@ -110,8 +110,20 @@ const DEFAULT_STANDALONE_TOOL_LOG: readonly McpToolCallItem[] = [
   },
 ];
 
+export interface InitNewRackParams {
+  readonly project_name: string;
+  readonly standard: '10inch' | '19inch' | '6inch';
+  readonly u_height: number;
+  readonly rail_depth_mm: number;
+  readonly enclosure_type:
+    | 'open-frame'
+    | 'closed-glass-front'
+    | 'closed-vented-front';
+}
+
 export interface RackViewerState {
   readonly connectionMode: 'sidecar-live' | 'standalone-demo';
+  readonly projectPath: string | null;
   readonly scene: SerializedRackScene;
   readonly catalog: readonly HardwareBlueprint[];
   readonly mcpToolLog: readonly McpToolCallItem[];
@@ -161,6 +173,9 @@ export interface RackViewerState {
   ): void;
   disconnectCable(cableId: string): void;
   importProjectJson(rawJsonText: string): boolean;
+  initNewRack(params: InitNewRackParams): void;
+  exportDeliverablesToDisk(): void;
+  clearMcpToolLog(): void;
   simulateAgentStep(stage: 'collision' | 'resolved'): void;
   undo(): void;
   redo(): void;
@@ -174,7 +189,9 @@ interface SidecarWsIncoming {
     | 'RACK_SCENE_UPDATE'
     | 'COMMAND_RESULT'
     | 'ERROR';
+  readonly projectPath?: string | null | undefined;
   readonly scene?: SerializedRackScene | undefined;
+  readonly blueprints?: readonly HardwareBlueprint[] | undefined;
   readonly undoAvailable?: number | undefined;
   readonly redoAvailable?: number | undefined;
   readonly toolCallLog?: readonly McpToolCallItem[] | undefined;
@@ -196,6 +213,7 @@ export function useRackState(): RackViewerState {
   const [connectionMode, setConnectionMode] = useState<
     'sidecar-live' | 'standalone-demo'
   >('standalone-demo');
+  const [projectPath, setProjectPath] = useState<string | null>(null);
   const [scene, setScene] = useState<SerializedRackScene>(() =>
     evaluateStandaloneScene(initialInputRef.current),
   );
@@ -650,6 +668,95 @@ export function useRackState(): RackViewerState {
     [applyStandaloneMutation],
   );
 
+  const initNewRack = useCallback(
+    (params: InitNewRackParams) => {
+      if (
+        connectionMode === 'sidecar-live' &&
+        wsRef.current &&
+        wsRef.current.readyState === WebSocket.OPEN
+      ) {
+        wsRef.current.send(
+          JSON.stringify({
+            type: 'COMMAND',
+            tool: 'init_rack',
+            args: {
+              project_name: params.project_name,
+              standard: params.standard,
+              u_height: params.u_height,
+              rail_depth_mm: params.rail_depth_mm,
+              enclosure_type: params.enclosure_type,
+              front_door_clearance_mm: params.standard === '19inch' ? 55 : 45,
+              rear_clearance_mm: params.standard === '19inch' ? 60 : 40,
+            },
+          }),
+        );
+        setSelectedDeviceId(null);
+        setSelectedCableId(null);
+        return;
+      }
+
+      applyStandaloneMutation(() => ({
+        schema_version: '1.0',
+        project_name: params.project_name,
+        rack: {
+          standard: params.standard,
+          u_height: params.u_height,
+          rail_depth_mm: params.rail_depth_mm,
+          enclosure_type: params.enclosure_type,
+          front_door_clearance_mm: params.standard === '19inch' ? 55 : 45,
+          rear_clearance_mm: params.standard === '19inch' ? 60 : 40,
+        },
+        mounted_devices: [],
+        cables: [],
+      }));
+      setSelectedDeviceId(null);
+      setSelectedCableId(null);
+    },
+    [applyStandaloneMutation, connectionMode],
+  );
+
+  const exportDeliverablesToDisk = useCallback(() => {
+    if (
+      connectionMode === 'sidecar-live' &&
+      wsRef.current &&
+      wsRef.current.readyState === WebSocket.OPEN
+    ) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'COMMAND',
+          tool: 'export_deliverables',
+          args: {
+            formats: [
+              'elevation-svg',
+              'wiring-svg',
+              'bom-md',
+              'scene-glb',
+              'carrier-scad',
+              'carrier-stl',
+            ],
+          },
+        }),
+      );
+    }
+  }, [connectionMode]);
+
+  const clearMcpToolLog = useCallback(() => {
+    if (
+      connectionMode === 'sidecar-live' &&
+      wsRef.current &&
+      wsRef.current.readyState === WebSocket.OPEN
+    ) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'COMMAND',
+          tool: 'clear_tool_log',
+          args: {},
+        }),
+      );
+    }
+    setMcpToolLog([]);
+  }, [connectionMode]);
+
   const selectDevice = useCallback((instanceId: string | null) => {
     setSelectedDeviceId(instanceId);
     if (instanceId !== null) {
@@ -692,17 +799,19 @@ export function useRackState(): RackViewerState {
         ]);
         if (!cancelled && stateRes.ok) {
           const stateData = (await stateRes.json()) as {
+            projectPath?: string | null | undefined;
             scene: SerializedRackScene;
             undoAvailable: number;
             redoAvailable: number;
             toolCallLog?: readonly McpToolCallItem[] | undefined;
           };
           setScene(stateData.scene);
+          setProjectPath(stateData.projectPath ?? null);
           setUndoAvailable(stateData.undoAvailable);
           setRedoAvailable(stateData.redoAvailable);
-          if (Array.isArray(stateData.toolCallLog) && stateData.toolCallLog.length > 0) {
-            setMcpToolLog(stateData.toolCallLog);
-          }
+          setMcpToolLog(
+            Array.isArray(stateData.toolCallLog) ? stateData.toolCallLog : [],
+          );
           setConnectionMode('sidecar-live');
           await refreshSidecarExports(apiBase);
         }
@@ -741,9 +850,15 @@ export function useRackState(): RackViewerState {
               msg.scene
             ) {
               setScene(msg.scene);
+              if (msg.projectPath !== undefined) {
+                setProjectPath(msg.projectPath ?? null);
+              }
+              if (Array.isArray(msg.blueprints)) {
+                setCatalog(msg.blueprints);
+              }
               setUndoAvailable(msg.undoAvailable ?? 0);
               setRedoAvailable(msg.redoAvailable ?? 0);
-              if (Array.isArray(msg.toolCallLog) && msg.toolCallLog.length > 0) {
+              if (Array.isArray(msg.toolCallLog)) {
                 setMcpToolLog(msg.toolCallLog);
               }
               setElevationSvg(renderClientSideElevationSvg(msg.scene));
@@ -897,6 +1012,7 @@ export function useRackState(): RackViewerState {
 
   return {
     connectionMode,
+    projectPath,
     scene,
     catalog,
     mcpToolLog,
@@ -933,6 +1049,9 @@ export function useRackState(): RackViewerState {
     connectInteractiveCable,
     disconnectCable,
     importProjectJson,
+    initNewRack,
+    exportDeliverablesToDisk,
+    clearMcpToolLog,
     simulateAgentStep,
     undo,
     redo,

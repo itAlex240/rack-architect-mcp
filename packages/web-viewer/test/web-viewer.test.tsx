@@ -5,7 +5,9 @@ import {
   AppDashboard,
   computeDeviceExplodeOffsetZMm,
   evaluateStandaloneScene,
+  InspectorSidebar,
   renderClientSideElevationSvg,
+  TopNavBar,
 } from '../src/index.js';
 
 afterEach(() => {
@@ -193,5 +195,74 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     expect(screen.getByTestId('validation-status-pill').textContent).toContain(
       'VALID (0 ERRORS)',
     );
+  });
+
+  it('hides standalone demo simulation buttons and renders live MCP workbench controls in sidecar-live mode', () => {
+    const scene = evaluateStandaloneScene();
+    const initNewRackSpy = vi.fn();
+    const exportToDiskSpy = vi.fn();
+    const clearToolLogSpy = vi.fn();
+
+    render(
+      <div>
+        <TopNavBar
+          scene={scene}
+          connectionMode="sidecar-live"
+          projectPath="/workspace/examples/19inch-enterprise/rack.yaml"
+          activeTab="3d"
+          onSelectTab={vi.fn()}
+          undoAvailable={2}
+          redoAvailable={0}
+          onUndo={vi.fn()}
+          onRedo={vi.fn()}
+          onResetDemo={vi.fn()}
+          catalogDrawerOpen={false}
+          onToggleCatalogDrawer={vi.fn()}
+          onImportProjectJson={vi.fn()}
+          onSimulateAgentStep={vi.fn()}
+          onInitNewRack={initNewRackSpy}
+          onExportDeliverablesToDisk={exportToDiskSpy}
+        />
+        <InspectorSidebar
+          scene={scene}
+          connectionMode="sidecar-live"
+          projectPath="/workspace/examples/19inch-enterprise/rack.yaml"
+          selectedDeviceId={null}
+          selectedCableId={null}
+          mcpToolLog={[]}
+          onSelectDevice={vi.fn()}
+          onSelectCable={vi.fn()}
+          onMoveDeviceU={vi.fn()}
+          onRemoveDevice={vi.fn()}
+          onDisconnectCable={vi.fn()}
+          onSimulateAgentStep={vi.fn()}
+          onClearToolLog={clearToolLogSpy}
+        />
+      </div>,
+    );
+
+    // Fake demo simulation controls must NOT exist in sidecar-live mode
+    expect(screen.queryByTestId('btn-simulate-mcp-agent')).toBeNull();
+    expect(screen.queryByTestId('btn-reset-demo')).toBeNull();
+    expect(screen.queryByTestId('agent-sim-step-collision')).toBeNull();
+    expect(screen.queryByTestId('agent-sim-step-resolved')).toBeNull();
+
+    // Live MCP workbench controls MUST exist
+    expect(screen.getByTestId('connection-status-badge').textContent).toContain(
+      'MCP Live · 19inch-enterprise/rack.yaml',
+    );
+    expect(screen.getByTestId('btn-init-new-rack')).toBeDefined();
+    expect(screen.getByTestId('btn-export-disk')).toBeDefined();
+    expect(screen.getByTestId('mcp-agent-empty-feed').textContent).toContain(
+      'Ready for External MCP Agent',
+    );
+
+    fireEvent.click(screen.getByTestId('btn-export-disk'));
+    expect(exportToDiskSpy).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByTestId('btn-init-new-rack'));
+    expect(screen.getByTestId('new-rack-popover')).toBeDefined();
+    fireEvent.click(screen.getByTestId('btn-confirm-init-new-rack'));
+    expect(initNewRackSpy).toHaveBeenCalledTimes(1);
   });
 });

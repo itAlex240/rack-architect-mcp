@@ -1231,11 +1231,21 @@ export function generateElevationSvg(
     if (isRearMounted && dev.blueprint.geometry.ear_mount_style !== 'none') {
       renderRackEars(rearOriginX, ySvg, hSvg, bgHex);
     }
+    const isSubModule = dev.mount_target === 'carrier-slot';
+    const rearStroke = isRearMounted
+      ? '#F59E0B'
+      : isSubModule
+        ? '#38BDF8'
+        : '#475569';
     lines.push(
-      `      <rect x="${xSvg}" y="${ySvg}" width="${wSvg}" height="${hSvg}" rx="2" fill="${fillPaint}" fill-opacity="${opacity}" stroke="${isRearMounted ? '#F59E0B' : '#475569'}" stroke-width="${isRearMounted ? '1.6' : '1.1'}" />`,
+      `      <rect x="${xSvg}" y="${ySvg}" width="${wSvg}" height="${hSvg}" rx="2" fill="${fillPaint}" fill-opacity="${opacity}" stroke="${rearStroke}" stroke-width="${isRearMounted ? '1.6' : '1.2'}" />`,
     );
 
-    if (isBrushPanel) {
+    if (dev.blueprint.category === 'modular-carrier') {
+      lines.push(
+        `      <rect x="${roundCentis(xSvg + 2)}" y="${roundCentis(ySvg + 2)}" width="${roundCentis(wSvg - 4)}" height="${roundCentis(hSvg - 4)}" rx="2" fill="url(#carrier-infill)" stroke="#52525B" stroke-width="0.9" />`,
+      );
+    } else if (isBrushPanel) {
       const brushX = roundCentis(xSvg + px(10));
       const brushW = roundCentis(wSvg - px(20));
       const brushY = roundCentis(ySvg + px(8));
@@ -1251,8 +1261,11 @@ export function generateElevationSvg(
     }
 
     if (wSvg > px(40) && dev.blueprint.category !== 'modular-carrier') {
+      const rearTitle = isSubModule
+        ? (dev.hostname ?? dev.instance_id)
+        : `${dev.hostname ?? dev.instance_id} (${isRearMounted ? 'REAR MOUNT' : 'REAR FACE'})`;
       lines.push(
-        `      <text x="${roundCentis(xSvg + 6)}" y="${roundCentis(ySvg + 9.5)}" fill="${textHex}" font-size="8" font-weight="700">${escapeXml(dev.hostname ?? dev.instance_id)} (${isRearMounted ? 'REAR MOUNT' : 'REAR FACE'})</text>`,
+        `      <text x="${roundCentis(xSvg + 6)}" y="${roundCentis(ySvg + 9.5)}" fill="${textHex}" font-size="8" font-weight="700">${escapeXml(rearTitle)}</text>`,
       );
     }
 
@@ -1563,6 +1576,7 @@ export function generateElevationSvg(
     let rearDuctDataTrackIdx = 0;
     let adjacentBridgeTrackIdx = 0;
     let crossFacePortalIdx = 0;
+    const portalCountByU = new Map<number, number>();
     let sideFrontTrackIdx = 0;
     let sideRearTrackIdx = 0;
 
@@ -1644,22 +1658,40 @@ export function generateElevationSvg(
 
         let pts: Array<{ readonly x: number; readonly y: number }>;
         if (uDiff <= 1) {
-          // Adjacent-U patch bridge (e.g. U7 Patch Panel <-> U8 Switch)
-          const tIdx = adjacentBridgeTrackIdx++;
-          const lowerU = Math.min(startAnchor.uPosition, endAnchor.uPosition);
-          const uBoundarySvgY =
-            startAnchor.uPosition === endAnchor.uPosition
-              ? roundCentis(Math.max(startAnchor.y, endAnchor.y) + 12 + (tIdx % 4) * 3.5)
-              : roundCentis(
-                  worldYToSvgY(lowerU * MM_PER_U) + ((tIdx % 5) - 2) * 3.8,
-                );
+          // Adjacent-U patch bridge (e.g. U12 Trunk -> U11 Patch Panel or U11 Patch Panel -> U10 Switch)
+          if (
+            startAnchor.uPosition !== endAnchor.uPosition &&
+            Math.abs(startAnchor.x - endAnchor.x) <= 2.0
+          ) {
+            pts = [
+              { x: startAnchor.x, y: startAnchor.y },
+              { x: endAnchor.x, y: endAnchor.y },
+            ];
+          } else {
+            const tIdx = adjacentBridgeTrackIdx++;
+            const lowerU = Math.min(
+              startAnchor.uPosition,
+              endAnchor.uPosition,
+            );
+            const uBoundarySvgY =
+              startAnchor.uPosition === endAnchor.uPosition
+                ? roundCentis(
+                    Math.max(startAnchor.y, endAnchor.y) +
+                      12 +
+                      (tIdx % 4) * 3.5,
+                  )
+                : roundCentis(
+                    worldYToSvgY(lowerU * MM_PER_U) +
+                      ((tIdx % 7) - 3) * 2.4,
+                  );
 
-          pts = [
-            { x: startAnchor.x, y: startAnchor.y },
-            { x: startAnchor.x, y: uBoundarySvgY },
-            { x: endAnchor.x, y: uBoundarySvgY },
-            { x: endAnchor.x, y: endAnchor.y },
-          ];
+            pts = [
+              { x: startAnchor.x, y: startAnchor.y },
+              { x: startAnchor.x, y: uBoundarySvgY },
+              { x: endAnchor.x, y: uBoundarySvgY },
+              { x: endAnchor.x, y: endAnchor.y },
+            ];
+          }
         } else {
           // Multi-U Same-Face Duct Route (runs in dedicated vertical channel beside rail)
           let channelX: number;
@@ -1724,13 +1756,16 @@ export function generateElevationSvg(
         );
       } else if (fromFace !== toFace && startAnchor && endAnchor) {
         // -------------------------------------------------------------------
-        // CASE 2: Cross-Face Cable (`front <-> rear` through Brush-Panel Portal on U6)
+        // CASE 2: Cross-Face Cable (`front <-> rear` through Brush-Panel Portal)
         // Drawn as two connected halves meeting at a Brush-Panel Grommet Portal (`● -> REAR` / `FRONT -> ●`)
         // -------------------------------------------------------------------
         const pIdx = crossFacePortalIdx++;
         const portalU = route?.portal_u ?? 6;
+        const uPortalIdx = portalCountByU.get(portalU) ?? 0;
+        portalCountByU.set(portalU, uPortalIdx + 1);
         const portalSvgY = roundCentis(
-          worldYToSvgY((portalU - 0.5) * MM_PER_U) + ((pIdx % 3) - 1) * 6,
+          worldYToSvgY((portalU - 0.5) * MM_PER_U) +
+            ((uPortalIdx % 2 === 0 ? -1 : 1) * 3.5),
         );
 
         const frontAnchor = fromFace === 'front' ? startAnchor : endAnchor;
@@ -1739,7 +1774,7 @@ export function generateElevationSvg(
         const rearKey = fromFace === 'rear' ? fromKey : toKey;
 
         const frontPortalX = roundCentis(
-          frontOriginX + rackWidthPx - px(36) - pIdx * 24,
+          frontOriginX + rackWidthPx - px(36) - uPortalIdx * 68,
         );
         const frontPortalKey = `PORTAL:U${portalU}:front:${cable.cable_id}`;
         const frontChannelX = roundCentis(
@@ -1789,7 +1824,9 @@ export function generateElevationSvg(
         lines.push(`    </g>`);
 
         // 2b. Rear Half: rearPortalGrommet -> rearChannel -> rearAnchor
-        const rearPortalX = roundCentis(rearOriginX + px(36) + pIdx * 24);
+        const rearPortalX = roundCentis(
+          rearOriginX + px(36) + uPortalIdx * 68,
+        );
         const rearPortalKey = `PORTAL:U${portalU}:rear:${cable.cable_id}`;
         const rearChannelX = roundCentis(rearOriginX + px(12) + pIdx * 4.2);
 
