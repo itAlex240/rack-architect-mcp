@@ -1,0 +1,65 @@
+slug: "generic-6inch-usb-pd-pdu-4port"
+manufacturer: "MicroLab"
+model: "6-Inch 1U 200W 4-Port USB-C GaN PD + DC-5525 Micro-PDU"
+description: "Kompakte 6-Zoll 1U GaN-Stromverteilungseinheit (Micro-PDU, 200W Gesamtleistung) mit 4x USB-C Power-Delivery-Ausgängen (5V/9V/12V/15V/20V für Raspberry Pi 5, USW-Flex-Mini, GL.iNet Router & JetKVM/PiKVM), 1x 12V/20V DC-5525 Hohlstecker-Ausgang und rückseitigem IEC-C14 Kaltgeräte-Eingang."
+category: "pdu"
+mount_type: "rackmount-6"
+geometry:
+  u_height: 1.0
+  width_mm: 120.0
+  height_mm: 44.0
+  depth_mm: 52.0
+  ear_mount_style: "included-6inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 340
+power_and_thermal:
+  electrical_role: "pdu"
+  idle_watts: 2
+  max_system_watts: 8
+  pdu_capacity_watts: 200
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "usb_pd"
+    label_prefix: "USB-C PD "
+    start_index: 1
+    count: 4
+    face: "front"
+    connector_type: "usb-c"
+    direction: "output"
+    capabilities: ["usb-pd", "dc-power"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 40.0
+      origin_y_mm: 22.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 16.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "dc_out1"
+    label: "12V/20V DC Out"
+    face: "front"
+    connector_type: "dc-5525"
+    direction: "output"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 105.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "ac_in"
+    label: "IEC-C14 AC In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 60.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "coated-aluminum"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

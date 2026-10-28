@@ -145,7 +145,7 @@ Pre-generated reference files in [`examples/10inch-homelab/`](./examples/10inch-
 ## 🖥️ Live 3D Digital Twin & 2D CAD Web-Viewer (`127.0.0.1:3100`)
 
 - **Interactive Catalog & Cable Patch Builder (`+ Catalog & Cable Builder`):**
-  - Search all 30 hardware blueprints, filter by `10inch` / `19inch` / `sub-module`, select `Target U` + `FRONT/REAR`, and mount with 1 click.
+  - Search all 60 hardware blueprints, filter by `10inch` / `19inch` / `6inch` / `sub-module`, select `Target U` + `FRONT/REAR`, and mount with 1 click.
   - Patch 3D Catmull-Rom cables between any two ports with optional `VLAN ID` (`1..4094`) and `IP CIDR` (`10.10.20.0/24`) annotations.
 - **3D Engineering HUD:**
   - Camera Presets: `Perspective`, `Front Ortho`, `Rear Ortho`, `Left Cutaway`
@@ -172,7 +172,7 @@ Pre-generated reference files in [`examples/10inch-homelab/`](./examples/10inch-
 | Package | Description |
 | :--- | :--- |
 | [`@rack-mcp/core-domain`](./packages/core-domain) | Pure TypeScript/Zod schemas, 3D coordinate transformer, AABB collision solver, 5-stage validator, and clamped Catmull-Rom 3D spline router (zero Node/DOM dependencies). |
-| [`@rack-mcp/hardware-catalog`](./packages/hardware-catalog) | 30 YAML hardware blueprints (`10inch`, `19inch`, `carriers`, `sub-modules`), `port_groups` matrix expander, and catalog search/validator. |
+| [`@rack-mcp/hardware-catalog`](./packages/hardware-catalog) | 60 YAML hardware blueprints (`10inch`, `19inch`, `6inch`, `carriers`, `sub-modules`), `port_groups` matrix expander, and catalog search/validator. |
 | [`@rack-mcp/exporters`](./packages/exporters) | `elevation.svg`, `wiring-schematic.svg`, `BOM.md`, headless binary `.glb`, and parametric `.scad` & `.stl` 3D-print generators. |
 | [`@rack-mcp/mcp-server`](./packages/mcp-server) | MCP server (`stdio`), 11 tools, 4 resources, 2 prompts, 50-step Undo/Redo manager, and local HTTP/WebSocket sidecar (`:3100`). |
 | [`@rack-mcp/web-viewer`](./packages/web-viewer) | React 19 + Three.js (`@react-three/fiber`) live 3D/2D CAD studio, Catalog/Cable Builder Drawer, and W3C WebMCP integration. |

@@ -1,0 +1,202 @@
+schema_version: "1.0"
+project_name: 6U 6-Inch DeskMate Micro-Homelab (Pi 5 + OpenWrt + UniFi)
+rack:
+  standard: 6inch
+  u_height: 6
+  rail_depth_mm: 180
+  enclosure_type: open-frame
+  front_door_clearance_mm: 40
+  rear_clearance_mm: 50
+mounted_devices:
+  - instance_id: pdu-u1
+    blueprint_slug: generic-6inch-usb-pd-pdu-4port
+    hostname: pdu-gan-200w
+    u_position: 1
+    face: front
+    children: []
+  - instance_id: carrier-pi5-u2
+    blueprint_slug: 3dprint-6inch-rpi5-plus-keystone-carrier-1u
+    hostname: carrier-pi5-u2
+    u_position: 2
+    face: front
+    children:
+      - instance_id: pi5-docker-01
+        blueprint_slug: raspberry-pi-5-poe-hat
+        hostname: pi5-docker-node
+        slot_id: rpi5-bay-1
+      - instance_id: ks-u2-wan
+        blueprint_slug: keystone-rj45-cat6a-coupler
+        hostname: ISP-ONT-WAN
+        slot_id: keystone-1
+      - instance_id: ks-u2-lan
+        blueprint_slug: keystone-rj45-cat6a-coupler
+        hostname: PI5-GBE
+        slot_id: keystone-2
+  - instance_id: gw-beryl-u3
+    blueprint_slug: gl-inet-mt3000-beryl-ax-6inch
+    hostname: gw-beryl-ax
+    u_position: 3
+    face: front
+    children: []
+  - instance_id: brush-u4
+    blueprint_slug: generic-6inch-brush-panel-1u
+    hostname: brush-portal-u4
+    u_position: 4
+    face: front
+    children: []
+  - instance_id: patch-u5
+    blueprint_slug: generic-6inch-patch-panel-6port
+    hostname: patch-6p-u5
+    u_position: 5
+    face: front
+    children: []
+  - instance_id: sw-flex-u6
+    blueprint_slug: ubiquiti-usw-flex-mini-6inch
+    hostname: sw-flex-mini
+    u_position: 6
+    face: front
+    children: []
+cables:
+  - cable_id: pwr-pdu-to-beryl
+    cable_type: power-usb-c
+    color_hex: "#F97316"
+    label: 200W PDU USB-C PD1 -> Beryl AX Gateway
+    from:
+      instance_id: pdu-u1
+      port_id: usb_pd1
+      face: front
+    to:
+      instance_id: gw-beryl-u3
+      port_id: pwr_usb_c
+      face: rear
+  - cable_id: pwr-pdu-to-pi5
+    cable_type: power-usb-c
+    color_hex: "#F59E0B"
+    label: 200W PDU USB-C PD2 -> Raspberry Pi 5 (27W PD)
+    from:
+      instance_id: pdu-u1
+      port_id: usb_pd2
+      face: front
+    to:
+      instance_id: pi5-docker-01
+      port_id: usbc_pwr
+      face: rear
+  - cable_id: pwr-pdu-to-flex
+    cable_type: power-usb-c
+    color_hex: "#EF4444"
+    label: 200W PDU USB-C PD3 -> USW-Flex-Mini
+    from:
+      instance_id: pdu-u1
+      port_id: usb_pd3
+      face: front
+    to:
+      instance_id: sw-flex-u6
+      port_id: pwr_usb_c
+      face: rear
+  - cable_id: wan-ks-to-beryl
+    cable_type: cat6a
+    color_hex: "#EC4899"
+    label: ISP ONT Keystone (Front) -> Beryl AX 2.5G WAN
+    from:
+      instance_id: ks-u2-wan
+      port_id: coupler
+      face: front
+    to:
+      instance_id: gw-beryl-u3
+      port_id: wan1
+      face: rear
+  - cable_id: lan-beryl-to-patch1
+    cable_type: cat6a
+    color_hex: "#3B82F6"
+    label: Beryl AX LAN -> Patch P1 (Rear)
+    from:
+      instance_id: gw-beryl-u3
+      port_id: lan1
+      face: rear
+    to:
+      instance_id: patch-u5
+      port_id: p1
+      face: rear
+  - cable_id: lan-pi5-to-ks2
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Pi 5 GbE -> U2 Keystone 2 (Front)
+    from:
+      instance_id: pi5-docker-01
+      port_id: eth0
+      face: front
+    to:
+      instance_id: ks-u2-lan
+      port_id: coupler
+      face: front
+  - cable_id: trunk-ks2-to-patch2
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: U2 Keystone 2 (Rear) -> Patch P2 (Rear)
+    from:
+      instance_id: ks-u2-lan
+      port_id: coupler
+      face: rear
+    to:
+      instance_id: patch-u5
+      port_id: p2
+      face: rear
+  - cable_id: patch-p1-to-sw1
+    cable_type: cat6a
+    color_hex: "#3B82F6"
+    label: Patch P1 -> Flex Mini Port 1 (Gateway Uplink)
+    from:
+      instance_id: patch-u5
+      port_id: p1
+      face: front
+    to:
+      instance_id: sw-flex-u6
+      port_id: eth1
+      face: front
+  - cable_id: patch-p2-to-sw2
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Patch P2 -> Flex Mini Port 2 (Pi 5 Docker Node)
+    from:
+      instance_id: patch-u5
+      port_id: p2
+      face: front
+    to:
+      instance_id: sw-flex-u6
+      port_id: eth2
+      face: front
+  - cable_id: patch-p3-to-sw3
+    cable_type: cat6a
+    color_hex: "#0EA5E9"
+    label: Patch P3 -> Flex Mini Port 3 (Desk Workstation)
+    from:
+      instance_id: patch-u5
+      port_id: p3
+      face: front
+    to:
+      instance_id: sw-flex-u6
+      port_id: eth3
+      face: front
+external_endpoints:
+  - endpoint_id: ext-isp-ont
+    label: ISP Fiber ONT (Glasfaser-Modem)
+    room_or_zone: Wohnzimmer Glasfaser-APL
+    category: isp-wan-uplink
+    patch_panel_instance_id: ks-u2-wan
+    patch_panel_port_id: coupler
+    poe_draw_watts: 0
+    required_speed: 2.5gbe
+    entry_position: top-rear
+    color_hex: "#EC4899"
+    vlan_id: 900
+  - endpoint_id: ext-desk-pc
+    label: Desk Workstation Drop (1GbE LAN)
+    room_or_zone: Home Office Schreibtisch
+    category: workstation-dock
+    patch_panel_instance_id: patch-u5
+    patch_panel_port_id: p3
+    poe_draw_watts: 0
+    required_speed: 1gbe
+    entry_position: top-rear
+    color_hex: "#0EA5E9"
+    vlan_id: 10

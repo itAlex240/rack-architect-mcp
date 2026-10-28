@@ -1,0 +1,62 @@
+slug: "3dprint-19inch-dual-minipc-poe-carrier-1u"
+manufacturer: "Community 3D-Print"
+model: "19-Inch 1U Carrier for 2x 1L Proxmox Nodes + 1x PoE Pi5 Witness"
+description: "3D-druckbarer 19-Zoll 1U Hybrid-Carrier (PETG-CF / ASA) für 2x 1-Liter Proxmox Compute-Nodes (Dell OptiPlex Micro / Lenovo ThinkCentre Tiny / HP EliteDesk Mini) plus 1x Raspberry Pi 5 PoE+ Quorum-Witness-Slot auf einer einzigen Höheneinheit."
+category: "modular-carrier"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 482.6
+  height_mm: 44.0
+  depth_mm: 185.0
+  ear_mount_style: "flush-front"
+  front_protrusion_mm: 3.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 390
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "passive-convection"
+slots:
+  - slot_id: "mini-pc-bay-1"
+    accepted_slot_type: "mini-pc-1liter"
+    offset_mm:
+      x: 22.0
+      y: 3.5
+      z: 0.0
+    max_dimensions_mm:
+      width: 182.0
+      height: 38.0
+      depth: 185.0
+  - slot_id: "mini-pc-bay-2"
+    accepted_slot_type: "mini-pc-1liter"
+    offset_mm:
+      x: 212.0
+      y: 3.5
+      z: 0.0
+    max_dimensions_mm:
+      width: 182.0
+      height: 38.0
+      depth: 185.0
+  - slot_id: "pi-poe-bay-1"
+    accepted_slot_type: "sbc-rpi5"
+    offset_mm:
+      x: 400.0
+      y: 4.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 66.0
+      height: 38.0
+      depth: 120.0
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "3d-printed-petg"
+  has_oled_display: false
+  stl_mesh_path: "meshes/3dprint-19inch-dual-minipc-poe-carrier-1u.stl"
+printable_metadata:
+  filament_grams: 365
+  material_recommendation: "PETG-CF or ASA (30% Gyroid Infill, 4 Perimeters)"
+  heat_set_inserts: "8x M3x5x4mm brass inserts"
+  fasteners: "8x M3x12mm Socket Head + 4x M6 cage nuts"
+  printables_url: "https://www.printables.com/model/19inch-dual-minipc-pi5-poe-carrier"

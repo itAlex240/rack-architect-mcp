@@ -1,0 +1,27 @@
+slug: "generic-6inch-brush-panel-1u"
+manufacturer: "MicroRack"
+model: "6-Inch 1U Brush Strip Cable Pass-Through Panel"
+description: "6-Zoll 1U Bürstenleiste (Kabeldurchführung mit dichten Nylonborsten im eloxierten Stahlrahmen) für 6-Zoll Micro-Racks. Ermöglicht das saubere Durchführen von Patch- und Stromkabeln zwischen Vorder- und Rückseite."
+category: "brush-panel"
+mount_type: "rackmount-6"
+geometry:
+  u_height: 1.0
+  width_mm: 120.0
+  height_mm: 44.0
+  depth_mm: 15.0
+  ear_mount_style: "included-6inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 130
+  has_cable_pass_through: true
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "front-to-rear"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

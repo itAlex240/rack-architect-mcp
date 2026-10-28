@@ -1,0 +1,58 @@
+slug: "pikvm-v4-mini-ip-kvm"
+manufacturer: "PiKVM"
+model: "PiKVM V4 Mini Open-Source Out-of-Band IP-KVM"
+description: "Professionelles Open-Source Hardware-IP-KVM auf Basis des Raspberry Pi Compute Module 4 (120×24×68mm, eloxiertes Stahl-/Aluminiumgehäuse mit OLED-Statusanzeige). Ermöglicht vollständigen BIOS/UEFI-Fernzugriff, virtuelles USB-Boot-Medium und ATX-Power-Steuerung über das Netzwerk. Passt als Einschubmodul (`pikvm-v4-bay`) in den `3dprint-10inch-sbc-pikvm-carrier-1u`."
+category: "sbc"
+mount_type: "sub-module"
+slot_compatibility: "pikvm-v4-bay"
+geometry:
+  u_height: 0.55
+  width_mm: 120.0
+  height_mm: 24.0
+  depth_mm: 68.0
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 0.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 235
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 4
+  max_system_watts: 12
+  airflow: "passive-convection"
+ports:
+  - port_id: "eth0"
+    label: "1GbE Management"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 92.0
+      y_mm: 12.0
+      orientation: "upright"
+  - port_id: "usb_otg"
+    label: "USB-C KVM OTG"
+    face: "rear"
+    connector_type: "usb-c"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0"]
+    coordinates:
+      x_mm: 56.0
+      y_mm: 12.0
+      orientation: "upright"
+  - port_id: "pwr_usb_c"
+    label: "5V 3A USB-C In"
+    face: "rear"
+    connector_type: "usb-c"
+    direction: "input"
+    capabilities: ["usb-pd", "dc-power"]
+    coordinates:
+      x_mm: 24.0
+      y_mm: 12.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#1E293B"
+  material_preset: "coated-aluminum"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

@@ -1,0 +1,79 @@
+slug: "intel-nuc-13-pro-slim"
+manufacturer: "Intel"
+model: "NUC 13 Pro Slim (NUC13ANKi7, Core i7-1360P, 2.5GbE)"
+description: "Ultrakompakter 4x4-Zoll Mini-PC (117×37×112mm) mit 12-Kern Intel Core i7-1360P Prozessor, bis zu 64GB RAM, M.2 PCIe 4.0 NVMe SSD und Intel i226-V 2.5-Gbit/s Ethernet. Wird als Einschubmodul (`sub-module`) in den 3D-gedruckten 10-Zoll NUC-Träger (`3dprint-10inch-intel-nuc-plus-3keystone`) eingesetzt."
+category: "mini-pc"
+mount_type: "sub-module"
+slot_compatibility: "intel-nuc-4x4"
+geometry:
+  u_height: 0.85
+  width_mm: 117.0
+  height_mm: 37.0
+  depth_mm: 112.0
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 0.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 540
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 8
+  max_system_watts: 65
+  airflow: "front-to-rear"
+  noise_db_a: 26.0
+ports:
+  - port_id: "usb_front1"
+    label: "USB 3.2 Front 1"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 35.0
+      y_mm: 18.0
+      orientation: "upright"
+  - port_id: "usb_front2"
+    label: "USB 3.2 Front 2"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 55.0
+      y_mm: 18.0
+      orientation: "upright"
+  - port_id: "eth0"
+    label: "2.5GbE i226-V"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 68.0
+      y_mm: 18.0
+      orientation: "upright"
+  - port_id: "tb4_rear"
+    label: "Thunderbolt 4"
+    face: "rear"
+    connector_type: "usb-c"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 42.0
+      y_mm: 18.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "20V Barrel In"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 18.0
+      y_mm: 18.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

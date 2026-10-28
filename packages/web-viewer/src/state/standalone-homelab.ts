@@ -507,8 +507,39 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
 
     if (dev.face === 'front') {
       const x = roundCentis(frontOriginX + px(dev.chassis_box.min.x));
+      let extraFrontSvg = '';
+      if (dev.blueprint.category === 'nas') {
+        const slug = dev.blueprint.slug;
+        const bayCount =
+          slug.includes('8bay') || slug.includes('rs1221')
+            ? 8
+            : slug.includes('7bay') || slug.includes('unas')
+              ? 7
+              : 4;
+        const cols = 4;
+        const rows = bayCount > 4 ? 2 : 1;
+        const bayX0 = roundCentis(x + px(34));
+        const bayW = Math.max(px(50), w - px(52));
+        const bayY0 = roundCentis(y + px(7));
+        const bayH = Math.max(px(16), h - px(12));
+        const cellW = bayW / cols;
+        const cellH = bayH / rows;
+        const bayRects: string[] = [];
+        for (let bi = 0; bi < bayCount; bi++) {
+          const r = Math.floor(bi / cols);
+          const c = bi % cols;
+          const bx = roundCentis(bayX0 + c * cellW + 3);
+          const bw = roundCentis(cellW - 6);
+          const by = roundCentis(bayY0 + r * cellH + 2.5);
+          const bh = roundCentis(cellH - 5);
+          bayRects.push(
+            `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="1.5" fill="#18181B" stroke="#52525B" stroke-width="1" /><circle cx="${roundCentis(bx + bw - 5)}" cy="${roundCentis(by + 5)}" r="1.5" fill="#10B981" />`,
+          );
+        }
+        extraFrontSvg = bayRects.join('');
+      }
       lines.push(
-        `<g data-instance-id="${escapeXml(dev.instance_id)}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${dev.blueprint.visuals.chassis_color_hex}" stroke="${isSubModule ? '#3B82F6' : '#52525B'}" stroke-width="1.3" />${!isCarrier ? `<text x="${x + 6}" y="${y + 11}" fill="#E4E4E7" font-size="8.2" font-weight="700">${escapeXml(dev.hostname ?? dev.instance_id)}</text>` : ''}</g>`,
+        `<g data-instance-id="${escapeXml(dev.instance_id)}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${dev.blueprint.visuals.chassis_color_hex}" stroke="${isSubModule ? '#3B82F6' : '#52525B'}" stroke-width="1.3" />${extraFrontSvg}${!isCarrier ? `<text x="${x + 6}" y="${y + 11}" fill="#E4E4E7" font-size="8.2" font-weight="700">${escapeXml(dev.hostname ?? dev.instance_id)}</text>` : ''}</g>`,
       );
     }
 

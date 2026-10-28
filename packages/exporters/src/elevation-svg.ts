@@ -1062,30 +1062,93 @@ export function generateElevationSvg(
       renderRackEars(frontOriginX, ySvg, hSvg, bgHex);
     }
 
-    lines.push(
-      `      <rect x="${xSvg}" y="${ySvg}" width="${wSvg}" height="${hSvg}" rx="2.5" fill="${fillPaint}" stroke="#475569" stroke-width="1.6" />`,
-    );
-    if (dev.blueprint.category === 'modular-carrier') {
+    if (dev.blueprint.category === 'shelf') {
+      // Open L-Shaped Ventilated Cantilever Shelf (open top + 14mm lower lip with slots)
+      const lipH = Math.min(hSvg * 0.36, px(15));
+      const lipY = roundCentis(ySvg + hSvg - lipH);
       lines.push(
-        `      <rect x="${roundCentis(xSvg + 2)}" y="${roundCentis(ySvg + 2)}" width="${roundCentis(wSvg - 4)}" height="${roundCentis(hSvg - 4)}" rx="2" fill="url(#carrier-infill)" stroke="#52525B" stroke-width="0.9" />`,
+        `      <rect x="${xSvg}" y="${ySvg}" width="${wSvg}" height="${hSvg}" rx="2" fill="#09090B" fill-opacity="0.35" stroke="#3F3F46" stroke-width="1" stroke-dasharray="4,3" />`,
       );
-    } else if (dev.blueprint.category === 'brush-panel') {
-      const brushX = roundCentis(xSvg + px(10));
-      const brushW = roundCentis(wSvg - px(20));
-      const brushY = roundCentis(ySvg + px(8));
-      const brushH = roundCentis(hSvg - px(16));
       lines.push(
-        `      <rect x="${brushX}" y="${brushY}" width="${brushW}" height="${brushH}" rx="2" fill="#050811" stroke="#374151" stroke-width="1.2" />`,
+        `      <rect x="${xSvg}" y="${lipY}" width="${wSvg}" height="${lipH}" rx="1.5" fill="${fillPaint}" stroke="#52525B" stroke-width="1.4" />`,
       );
-      for (let bx = brushX + 4; bx < brushX + brushW - 2; bx += 4) {
+      const slotCount = 8;
+      const slotStep = (wSvg - px(32)) / slotCount;
+      for (let si = 0; si < slotCount; si++) {
+        const sx = roundCentis(xSvg + px(16) + si * slotStep + px(3));
+        const sw = Math.max(4, roundCentis(slotStep - px(6)));
         lines.push(
-          `      <line x1="${roundCentis(bx)}" y1="${brushY}" x2="${roundCentis(bx)}" y2="${roundCentis(brushY + brushH)}" stroke="#1E293B" stroke-width="1.2" />`,
+          `      <rect x="${sx}" y="${roundCentis(lipY + lipH * 0.3)}" width="${sw}" height="${roundCentis(lipH * 0.4)}" rx="1" fill="#09090B" stroke="#27272A" stroke-width="0.8" />`,
         );
       }
     } else {
       lines.push(
-        `      <rect x="${roundCentis(xSvg + 2.5)}" y="${roundCentis(ySvg + 2.5)}" width="${roundCentis(wSvg - 5)}" height="${roundCentis(hSvg - 5)}" rx="1.5" fill="none" stroke="#94A3B8" stroke-opacity="0.28" stroke-width="1" />`,
+        `      <rect x="${xSvg}" y="${ySvg}" width="${wSvg}" height="${hSvg}" rx="2.5" fill="${fillPaint}" stroke="#475569" stroke-width="1.6" />`,
       );
+      if (dev.blueprint.category === 'modular-carrier') {
+        lines.push(
+          `      <rect x="${roundCentis(xSvg + 2)}" y="${roundCentis(ySvg + 2)}" width="${roundCentis(wSvg - 4)}" height="${roundCentis(hSvg - 4)}" rx="2" fill="url(#carrier-infill)" stroke="#52525B" stroke-width="0.9" />`,
+        );
+      } else if (dev.blueprint.category === 'brush-panel') {
+        const brushX = roundCentis(xSvg + px(10));
+        const brushW = roundCentis(wSvg - px(20));
+        const brushY = roundCentis(ySvg + px(8));
+        const brushH = roundCentis(hSvg - px(16));
+        lines.push(
+          `      <rect x="${brushX}" y="${brushY}" width="${brushW}" height="${brushH}" rx="2" fill="#050811" stroke="#374151" stroke-width="1.2" />`,
+        );
+        for (let bx = brushX + 4; bx < brushX + brushW - 2; bx += 4) {
+          lines.push(
+            `      <line x1="${roundCentis(bx)}" y1="${brushY}" x2="${roundCentis(bx)}" y2="${roundCentis(brushY + brushH)}" stroke="#1E293B" stroke-width="1.2" />`,
+          );
+        }
+      } else if (dev.blueprint.category === 'nas') {
+        lines.push(
+          `      <rect x="${roundCentis(xSvg + 2.5)}" y="${roundCentis(ySvg + 2.5)}" width="${roundCentis(wSvg - 5)}" height="${roundCentis(hSvg - 5)}" rx="1.5" fill="none" stroke="#94A3B8" stroke-opacity="0.28" stroke-width="1" />`,
+        );
+        const slug = dev.blueprint.slug;
+        const bayCount =
+          slug.includes('8bay') || slug.includes('rs1221')
+            ? 8
+            : slug.includes('7bay') || slug.includes('unas')
+              ? 7
+              : 4;
+        const cols = 4;
+        const rows = bayCount > 4 ? 2 : 1;
+        const leftReserve = dev.blueprint.visuals.has_oled_display
+          ? px(36)
+          : px(14);
+        const rightReserve = dev.ports.some((p) => p.world_face === 'front')
+          ? px(30)
+          : px(14);
+        const bayAreaX = roundCentis(xSvg + leftReserve);
+        const bayAreaW = Math.max(px(60), wSvg - leftReserve - rightReserve);
+        const bayAreaY = roundCentis(ySvg + px(7));
+        const bayAreaH = Math.max(px(18), hSvg - px(12));
+        const cellW = bayAreaW / cols;
+        const cellH = bayAreaH / rows;
+        for (let bi = 0; bi < bayCount; bi++) {
+          const r = Math.floor(bi / cols);
+          const c = bi % cols;
+          const bx = roundCentis(bayAreaX + c * cellW + px(1.6));
+          const bw = roundCentis(cellW - px(3.2));
+          const by = roundCentis(bayAreaY + r * cellH + px(1.4));
+          const bh = roundCentis(cellH - px(2.8));
+          lines.push(
+            `      <rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="1.8" fill="#18181B" stroke="#52525B" stroke-width="1.1" />`,
+          );
+          lines.push(
+            `      <rect x="${roundCentis(bx + bw * 0.14)}" y="${roundCentis(by + bh * 0.36)}" width="${roundCentis(bw * 0.62)}" height="${Math.max(3, roundCentis(bh * 0.24))}" rx="1" fill="#27272A" stroke="#71717A" stroke-width="0.8" />`,
+          );
+          lines.push(
+            `      <circle cx="${roundCentis(bx + bw - px(3.2))}" cy="${roundCentis(by + px(3.2))}" r="1.8" fill="#10B981" />`,
+          );
+        }
+      } else {
+        lines.push(
+          `      <rect x="${roundCentis(xSvg + 2.5)}" y="${roundCentis(ySvg + 2.5)}" width="${roundCentis(wSvg - 5)}" height="${roundCentis(hSvg - 5)}" rx="1.5" fill="none" stroke="#94A3B8" stroke-opacity="0.28" stroke-width="1" />`,
+        );
+      }
     }
 
     if (dev.blueprint.visuals.has_oled_display) {

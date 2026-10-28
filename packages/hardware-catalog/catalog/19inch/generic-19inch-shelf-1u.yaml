@@ -1,0 +1,26 @@
+slug: "generic-19inch-shelf-1u"
+manufacturer: "Generic"
+model: "19-Inch 1U Ventilated Cantilever Equipment Shelf (250mm Depth)"
+description: "Perforierter 19-Zoll 1U Fachboden (Geräteablage aus 1,5mm pulverbeschichtetem Stahlblech, 250mm Tiefe, bis 25kg Traglast) zur Ablage von Glasfaser-ONTs, Kabelmodems, externen Festplatten, Netzteilen oder nicht-rackfähigen Desktop-Geräten."
+category: "shelf"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 442.4
+  height_mm: 44.0
+  depth_mm: 250.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 1.5
+  rear_protrusion_mm: 0.0
+  weight_grams: 1850
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "front-to-rear"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

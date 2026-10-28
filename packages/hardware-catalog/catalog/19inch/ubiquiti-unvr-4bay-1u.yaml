@@ -1,0 +1,58 @@
+slug: "ubiquiti-unvr-4bay-1u"
+manufacturer: "Ubiquiti"
+model: "UniFi Protect Network Video Recorder 4-Bay 1U (UNVR)"
+description: "Dedizierter 19-Zoll 1U Videoüberwachungs-Rekorder (UniFi Protect NVR) mit 4x Hot-Swap 3,5\"/2,5\" SATA-Laufwerksschächten (RAID 1 / RAID 5 / RAID 10 für bis zu 18x 4K-Kameras oder 60x Full-HD-Kameras), 1x 10G SFP+ Uplink und 1x 1GbE RJ45 Port."
+category: "nas"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 442.4
+  height_mm: 43.7
+  depth_mm: 325.1
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 4.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 5100
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 32
+  max_system_watts: 100
+  airflow: "front-to-rear"
+  noise_db_a: 34.0
+ports:
+  - port_id: "sfp_plus1"
+    label: "10G SFP+ Video Trunk"
+    face: "rear"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 340.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "eth1"
+    label: "1GbE RJ45 LAN"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 365.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "ac_in"
+    label: "100-240V AC"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 400.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#D1D5DB"
+  material_preset: "coated-aluminum"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

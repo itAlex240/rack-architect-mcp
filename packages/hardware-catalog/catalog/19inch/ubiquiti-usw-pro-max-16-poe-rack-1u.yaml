@@ -1,0 +1,75 @@
+slug: "ubiquiti-usw-pro-max-16-poe-rack-1u"
+manufacturer: "Ubiquiti"
+model: "UniFi Pro Max 16 PoE (USW-Pro-Max-16-PoE + 19\" 1U Rack Mount Kit)"
+description: "Ultraflacher 19-Zoll 1U Layer-3 Etherlighting PoE++ Switch (nur 160mm Einbautiefe, 180W PoE-Budget, lautlos) mit 4x 2.5GbE PoE++ Ports, 12x 1GbE PoE+ Ports, 2x 10G SFP+ Uplinks und 1,3\" Touchscreen im offiziellen 19-Zoll-Rackmount-Rahmen."
+category: "switch"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 442.4
+  height_mm: 43.7
+  depth_mm: 160.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 3.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 2800
+power_and_thermal:
+  electrical_role: "pse-switch"
+  idle_watts: 14
+  max_system_watts: 30
+  poe_budget_watts: 180
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "Port "
+    start_index: 1
+    count: 16
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t", "poe-out", "poe+", "poe-out-af", "poe-out-at", "poe-out-bt-type3"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 130.0
+      origin_y_mm: 22.0
+      columns: 16
+      rows: 1
+      pitch_x_mm: 14.5
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "sfp1"
+    label: "10G SFP+ 17"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 382.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "sfp2"
+    label: "10G SFP+ 18"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 404.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "ac_in"
+    label: "54V 210W AC/DC In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 400.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#D1D5DB"
+  material_preset: "coated-aluminum"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

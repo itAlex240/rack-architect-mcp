@@ -1,0 +1,55 @@
+slug: "brennenstuhl-19inch-pdu-8way-schuko-1u"
+manufacturer: "Brennenstuhl"
+model: "Alu-Line 19-Inch 1U 8-Way Schuko Socket Strip (PDU)"
+description: "Robuste 19-Zoll 1U 8-fach Schuko-Steckdosenleiste (PDU, mattschwarzes/silbernes Aluminiumprofil, bis 3500W / 16A) mit 8x um 45° gedrehten Schutzkontakt-Steckdosen und rückseitigem IEC-C14 Stromeingang zur Anbindung an eine 19-Zoll USV."
+category: "pdu"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 442.4
+  height_mm: 44.0
+  depth_mm: 54.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 890
+power_and_thermal:
+  electrical_role: "pdu"
+  idle_watts: 0
+  max_system_watts: 0
+  pdu_capacity_watts: 3500
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "outlet"
+    label_prefix: "Schuko "
+    start_index: 1
+    count: 8
+    face: "front"
+    connector_type: "schuko-cee7"
+    direction: "output"
+    capabilities: ["ac-mains"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 52.0
+      origin_y_mm: 22.0
+      columns: 8
+      rows: 1
+      pitch_x_mm: 46.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "ac_in"
+    label: "IEC-C14 Mains In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 410.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#374151"
+  material_preset: "coated-aluminum"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

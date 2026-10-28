@@ -1,0 +1,85 @@
+slug: "apc-smart-ups-li-ion-short-depth-2u"
+manufacturer: "APC"
+model: "Smart-UPS Li-Ion 1500VA Short-Depth Network RM 2U (SMTL1500RMI2UC)"
+description: "Kurztiefe 19-Zoll 2U Lithium-Ionen Enterprise-USV (APC Smart-UPS Short-Depth, 1500VA / 1200W, nur 290mm Einbautiefe) mit 6x IEC-C13 Ausgängen und 2x geregelten 20V-DC-Ausgängen — speziell für kompakte 400mm–450mm tiefe 19-Zoll-Wand- und Netzwerkschränke."
+category: "ups"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 2.0
+  width_mm: 442.4
+  height_mm: 86.0
+  depth_mm: 290.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 4.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 18500
+power_and_thermal:
+  electrical_role: "ups"
+  idle_watts: 15
+  max_system_watts: 35
+  ups_capacity_watts: 1200
+  airflow: "front-to-rear"
+port_groups:
+  - id_prefix: "iec_out"
+    label_prefix: "IEC OUT "
+    start_index: 1
+    count: 6
+    face: "rear"
+    connector_type: "iec-c13"
+    direction: "output"
+    capabilities: ["ac-mains"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 112.0
+      origin_y_mm: 28.0
+      columns: 3
+      rows: 2
+      pitch_x_mm: 38.0
+      pitch_y_mm: 28.0
+ports:
+  - port_id: "ac_in"
+    label: "Mains AC Input"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 52.0
+      y_mm: 43.0
+      orientation: "upright"
+  - port_id: "dc_out1"
+    label: "20V Regulated DC Out 1 (PVE1)"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "output"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 270.0
+      y_mm: 56.0
+      orientation: "upright"
+  - port_id: "dc_out2"
+    label: "20V Regulated DC Out 2 (PVE2)"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "output"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 306.0
+      y_mm: 56.0
+      orientation: "upright"
+  - port_id: "smartconnect_eth"
+    label: "SmartConnect Mgmt"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 365.0
+      y_mm: 43.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

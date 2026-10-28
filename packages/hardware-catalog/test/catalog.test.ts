@@ -9,16 +9,16 @@ import {
 import { validateCatalogDirectory } from '../src/validate-cli.js';
 
 describe('@rack-mcp/hardware-catalog', () => {
-  it('validates all 30 YAML hardware blueprints on disk with zero schema, port, or slot errors', () => {
+  it('validates all 60 YAML hardware blueprints on disk with zero schema, port, or slot errors', () => {
     const report = validateCatalogDirectory();
-    expect(report.totalFiles).toBe(30);
+    expect(report.totalFiles).toBe(60);
     expect(report.issues).toEqual([]);
-    expect(report.validFiles).toBe(30);
+    expect(report.validFiles).toBe(60);
   });
 
-  it('loads all 30 blueprints in CatalogRegistry with expanded port_groups', () => {
+  it('loads all 60 blueprints in CatalogRegistry with expanded port_groups', () => {
     const all = getAllBlueprints();
-    expect(all.length).toBe(30);
+    expect(all.length).toBe(60);
 
     const flex25g = getBlueprintBySlug('ubiquiti-usw-flex-2-5g-8-poe');
     expect(flex25g).toBeDefined();
@@ -83,7 +83,9 @@ describe('@rack-mcp/hardware-catalog', () => {
     // Filter by min_poe_budget_watts
     const highPoeSwitches = searchCatalog({ min_poe_budget_watts: 180 });
     expect(highPoeSwitches.map((b) => b.slug).sort()).toEqual([
+      'ubiquiti-udm-se',
       'ubiquiti-usw-flex-2-5g-8-poe',
+      'ubiquiti-usw-pro-max-16-poe-rack-1u',
       'ubiquiti-usw-pro-max-24-poe',
     ]);
 
@@ -91,9 +93,22 @@ describe('@rack-mcp/hardware-catalog', () => {
     const miniPcCompatible = searchCatalog({ accepted_slot_type: 'mini-pc-1liter' });
     expect(miniPcCompatible.map((b) => b.slug).sort()).toEqual([
       '3dprint-10inch-lenovo-tiny-plus-2keystone',
+      '3dprint-19inch-dual-minipc-poe-carrier-1u',
       '3dprint-19inch-triple-mini-pc-carrier',
       'dell-optiplex-7010-micro',
+      'hp-elitedesk-800-g6-mini',
       'lenovo-thinkcentre-m920q',
+      'zimaboard-832-2-5g-router-nas',
+    ]);
+
+    const sixInchGear = searchCatalog({ mount_type: '6inch' });
+    expect(sixInchGear.map((b) => b.slug).sort()).toEqual([
+      '3dprint-6inch-rpi5-plus-keystone-carrier-1u',
+      'generic-6inch-brush-panel-1u',
+      'generic-6inch-patch-panel-6port',
+      'generic-6inch-usb-pd-pdu-4port',
+      'gl-inet-mt3000-beryl-ax-6inch',
+      'ubiquiti-usw-flex-mini-6inch',
     ]);
 
     const jetkvmCompatible = searchCatalog({ accepted_slot_type: 'jetkvm-bay' });

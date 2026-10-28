@@ -1,0 +1,67 @@
+slug: "gl-inet-mt3000-beryl-ax-6inch"
+manufacturer: "GL.iNet"
+model: "GL-MT3000 Beryl AX OpenWrt 2.5G Security Gateway (6-Inch 1U)"
+description: "Kompaktes OpenWrt / WireGuard / OpenVPN Security-Gateway (120×34×83mm) mit 2.5GbE WAN-Port, 1GbE LAN-Port, USB 3.0 und Wi-Fi 6 für 6-Zoll Micro-Homelabs. Wird über USB-C (5V/3A PD) versorgt und sitzt in einer 3D-gedruckten 6-Zoll 1U Halterung."
+category: "router"
+mount_type: "rackmount-6"
+geometry:
+  u_height: 1.0
+  width_mm: 120.0
+  height_mm: 34.0
+  depth_mm: 83.0
+  ear_mount_style: "included-6inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 196
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 4
+  max_system_watts: 12
+  airflow: "front-to-rear"
+ports:
+  - port_id: "wan1"
+    label: "2.5GbE WAN"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 42.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "lan1"
+    label: "1GbE LAN"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 66.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "usb1"
+    label: "USB 3.0"
+    face: "rear"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0"]
+    coordinates:
+      x_mm: 92.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "pwr_usb_c"
+    label: "5V 3A USB-C In"
+    face: "rear"
+    connector_type: "usb-c"
+    direction: "input"
+    capabilities: ["usb-pd", "dc-power"]
+    coordinates:
+      x_mm: 18.0
+      y_mm: 16.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#1E293B"
+  material_preset: "polycarbonate"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

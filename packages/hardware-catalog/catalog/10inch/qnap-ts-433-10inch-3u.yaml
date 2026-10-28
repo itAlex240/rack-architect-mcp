@@ -1,0 +1,78 @@
+slug: "qnap-ts-433-10inch-3u"
+manufacturer: "QNAP"
+model: "TS-433 4-Bay 2.5GbE ARM NAS (10-Inch 3U Mount)"
+description: "Kompaktes 4-Bay 3,5-Zoll SATA-NAS (RAID 5 / RAID 6 / ZFS-Snapshots) mit Quad-Core Cortex-A55 Prozessor, integrierter NPU für KI-Fotoerkennung (QuMagie), 1x 2.5GbE RJ45 + 1x 1GbE RJ45 für SMB-Multichannel oder Link-Aggregation. Passt auf einem 10-Zoll 3U-Montagerahmen exakt in 10-Zoll-Racksab 240mm Tiefe."
+category: "nas"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 3.0
+  width_mm: 220.0
+  height_mm: 132.0
+  depth_mm: 219.0
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 4.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 2650
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 11
+  max_system_watts: 35
+  airflow: "front-to-rear"
+  noise_db_a: 21.5
+ports:
+  - port_id: "usb_front"
+    label: "USB 3.2 Copy"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 195.0
+      y_mm: 28.0
+      orientation: "upright"
+  - port_id: "lan1_25g"
+    label: "2.5GbE LAN 1"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 155.0
+      y_mm: 52.0
+      orientation: "upright"
+  - port_id: "lan2_1g"
+    label: "1GbE LAN 2"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 155.0
+      y_mm: 32.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "12V 90W DC In"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 185.0
+      y_mm: 24.0
+      orientation: "upright"
+  - port_id: "pwr_in"
+    label: "AC Power Brick In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 185.0
+      y_mm: 48.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#E2E8F0"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

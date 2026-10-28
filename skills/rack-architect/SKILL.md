@@ -231,7 +231,7 @@ Whenever the user asks you to design, modify, or audit a rack, execute these **6
      - `3dprint-10inch-dual-rpi5-plus-4keystone` (accepts 2× `sbc-rpi5` in `rpi-bay-1`..`2` + 4× `standard-keystone` in `keystone-1`..`4`)
      - `3dprint-19inch-triple-mini-pc-carrier` (accepts 3× `mini-pc-1liter` up to `145 mm` width in `mini-pc-bay-1`..`3`)
    - Then mount the child `sub-module` into that carrier using `parent_carrier_id` and `slot_id`.
-3. If the user owns hardware that is not among the 30 built-in blueprints, call `define_custom_blueprint` with exact millimeter dimensions (`width_mm`, `height_mm`, `depth_mm`), weight (`weight_grams`), power draw (`max_system_watts`), and `ports` before mounting it.
+3. If the user owns hardware that is not among the 60 built-in blueprints, call `define_custom_blueprint` with exact millimeter dimensions (`width_mm`, `height_mm`, `depth_mm`), weight (`weight_grams`), power draw (`max_system_watts`), and `ports` before mounting it.
 
 ### Phase 2: Rack Initialization (`init_rack`)
 1. Call `init_rack` with the target `standard` (`"10inch"`, `"19inch"`, or `"6inch"`), `u_height`, `rail_depth_mm`, and `enclosure_type` (`"open-frame"`, `"closed-glass-front"`, or `"closed-vented-front"`).
@@ -346,37 +346,67 @@ This deterministically writes:
 
 ---
 
-## 7. Built-In Hardware Catalog Quick Reference (30 Blueprints)
+## 7. Built-In Hardware Catalog Quick Reference (60 Blueprints)
 
 | Blueprint Slug | Form Factor / Mount | Category | U / Size (`W×H×D mm`) | Key Ports, Carrier Slots & Practical Role |
 | :--- | :--- | :--- | :--- | :--- |
 | `ubiquiti-usw-flex-2-5g-8-poe` | `rackmount-10` (3D-Print Cradle) | `switch` | `1U` (`212.9×32.5×99.4`) | `eth1`..`eth8` (2.5G PoE+ PSE, `196W`), `sfp1` (10G SFP+), `eth9` (10G), `pwr_in` · Compact 2.5G PoE++ core switch (requires 3D-printed 10" 1U PETG cradle) |
 | `ubiquiti-usw-lite-8-poe` | `rackmount-10` (3D-Print Cradle) | `switch` | `1U` (`200×31×99.6`) | `eth1`..`eth4` (1G PoE+ PSE, `52W`), `eth5`..`eth8` (1G), `dc_in` · Whisper-quiet starter PoE switch (requires 3D-printed 10" 1U PETG cradle) |
+| `ubiquiti-usw-ultra-60w` | `rackmount-10` (3D-Print Cradle) | `switch` | `1U` (`203×33×76`) | `eth1`..`eth7` (1G PoE+ PSE, `52W`), `eth8` (PoE-In/Uplink), `pwr_in` · Ultra-shallow 10" 8-Port PoE+ switch |
+| `ubiquiti-ucg-fiber` | `rackmount-10` (3D-Print Cradle) | `router` | `1U` (`212.8×30×127.6`) | `lan1`..`lan4` (2.5G PoE+ PSE, `30W`), `wan1` (10G RJ45), `sfp_wan`, `sfp_lan` (10G SFP+), `pwr_in`, OLED · 10G Fiber Cloud Gateway |
 | `mikrotik-crs310-8g-plus-2s-plus-in` | `rackmount-10` (Included Ears) | `switch` | `1U` (`200×44×206`) | `eth1`..`eth8` (2.5G RJ45), `sfp_plus1`..`sfp_plus2` (10G SFP+), `dc_in` · Native rackmount 2.5G/10G switch |
+| `mikrotik-crs309-1g-8s-plus-in` | `rackmount-10` (Included Ears) | `switch` | `1U` (`220×41×141`) | `sfp1`..`sfp8` (8× 10G SFP+), `eth1` (1G PoE-In), `console`, `dc_in1`, `pwr_in` · Fanless 10G SFP+ Aggregation Switch |
 | `mikrotik-rb5009upr-s-in` | `rackmount-10` (Included Ears) | `router` | `1U` (`220×44×125`) | `eth1` (2.5G PoE), `eth2`..`eth8` (1G PoE-out, `130W`), `sfp_plus1` (10G), `pwr_in` · Heavy-duty RouterOS PoE router |
 | `tp-link-tl-sg2210mp` | `rackmount-10` (Included Ears) | `switch` | `1U` (`220×44×180`) | `eth1`..`eth8` (1G PoE+ PSE, `150W`), `sfp1`..`sfp2` (SFP), `ac_in` · Native 10" 150W PoE+ switch with internal PSU |
+| `netgear-gs108pp-10inch-poe-plus` | `rackmount-10` (Included Ears) | `switch` | `1U` (`220×27×102`) | `eth1`..`eth8` (1G PoE+ PSE, `123W`), `dc_in`, `pwr_in` · Fanless metal 8-Port PoE+ switch |
 | `synology-ds224-plus-10inch-2u` | `rackmount-10` (Shelf/Tray) | `nas` | `2U` (`222×88×232.5`) | `lan1`, `lan2` (1G RJ45), `usb_front_1`, `usb_rear_1`, `dc_in` (`18W` active fan) · 2-Bay RAID NAS for backups & Plex |
+| `qnap-ts-433-10inch-3u` | `rackmount-10` (Shelf/Tray) | `nas` | `3U` (`220×132×219`) | `lan1_25g` (2.5GbE), `lan2_1g` (1GbE), `usb_front`, `dc_in`, `pwr_in` · 4-Bay Hot-Swap ARM NAS for 10" racks |
 | `deskpi-10inch-patch-panel-12port` | `rackmount-10` (Included Ears) | `patch-panel` | `1U` (`222×44×30`) | `p1`..`p12` (Cat6A passthrough couplers) · Top-of-Rack 10" patch panel (`1:1` aligned with 8/12-port switches) |
 | `digitus-10inch-pdu-4way-schuko` | `rackmount-10` (Included Ears) | `pdu` | `1U` (`220×44×55`) | `outlet1`..`outlet4` (`schuko-cee7`, `3600W`), `mains_in` · Rear 4-way power strip for Mini-PC & Gateway bricks |
+| `brennenstuhl-10inch-pdu-6way-iec-c13` | `rackmount-10` (Included Ears) | `pdu` | `1U` (`222×44×48`) | `iec_out1`..`iec_out6` (`iec-c13`, `2300W`), `ac_in` (`iec-c14`) · Ultra-shallow 6-way C13 PDU for 10" racks |
 | `cyberpower-10inch-ups-1u` | `rackmount-10` (Included Ears) | `ups` | `1U` (`220×44×185`) | `iec_out1`..`iec_out4` (`iec-c13`, `300W`), `ac_in` (`iec-c14`), OLED display · Mount at `U1` for low Center of Gravity |
 | `generic-10inch-brush-panel-1u` | `rackmount-10` (Included Ears) | `brush-panel` | `1U` (`222×44×15`) | Front-to-rear cable pass-through portal (`has_cable_pass_through: true`) · Mount 1 centrally (`U5`/`U6`) |
 | `generic-10inch-blank-panel-1u` | `rackmount-10` (Included Ears) | `blank-panel` | `1U` (`222×44×10`) | Solid steel airflow blanking panel for unused U-slots |
 | `generic-10inch-shelf-1u` | `rackmount-10` (Included Ears) | `shelf` | `1U` (`254×44×180`) | Vented 1U cantilever shelf (`shelf-tray-1` accepts `open-shelf-area`) for modems or non-rack devices |
 | `3dprint-10inch-lenovo-tiny-plus-2keystone` | `rackmount-10` (3D-Printed) | `modular-carrier` | `1U` (`254×44×185`) | Slots: `left-mini-pc-bay` (`mini-pc-1liter`), `keystone-1`, `keystone-2` |
+| `3dprint-10inch-intel-nuc-plus-3keystone` | `rackmount-10` (3D-Printed) | `modular-carrier` | `1U` (`254×44×125`) | Slots: `intel-nuc-bay` (`intel-nuc-4x4`), `keystone-1`..`keystone-3` |
+| `3dprint-10inch-sbc-pikvm-carrier-1u` | `rackmount-10` (3D-Printed) | `modular-carrier` | `1U` (`254×44×105`) | Slots: `rpi5-bay-1` (`sbc-rpi5`), `pikvm-bay` (`pikvm-v4-bay`), `keystone-1` |
 | `3dprint-10inch-ucg-ultra-plus-3keystone` | `rackmount-10` (3D-Printed) | `modular-carrier` | `1U` (`254×44×140`) | Slots: `gateway-bay` (`unifi-compact-gateway`), `keystone-1`..`keystone-3` |
 | `3dprint-10inch-rpi5-jetkvm-2keystone` | `rackmount-10` (3D-Printed) | `modular-carrier` | `1U` (`254×44×110`) | Slots: `rpi-bay-1` (`sbc-rpi5`), `jetkvm-bay-1` (`jetkvm-bay`), `keystone-1`..`2` |
 | `3dprint-10inch-dual-rpi5-plus-4keystone` | `rackmount-10` (3D-Printed) | `modular-carrier` | `1U` (`254×44×105`) | Slots: `rpi-bay-1`, `rpi-bay-2` (`sbc-rpi5`), `keystone-1`..`keystone-4` |
+| `3dprint-19inch-dual-minipc-poe-carrier-1u` | `rackmount-19` (3D-Printed) | `modular-carrier` | `1U` (`482.6×44×185`) | Slots: `mini-pc-bay-1`, `mini-pc-bay-2` (`mini-pc-1liter`), `pi-poe-bay-1` (`sbc-rpi5`) |
 | `3dprint-19inch-triple-mini-pc-carrier` | `rackmount-19` (3D-Printed) | `modular-carrier` | `1U` (`482.6×44×185`) | Slots: `mini-pc-bay-1`..`mini-pc-bay-3` (`mini-pc-1liter`, max width `145 mm`) |
+| `3dprint-6inch-rpi5-plus-keystone-carrier-1u` | `rackmount-6` (3D-Printed) | `modular-carrier` | `1U` (`152.4×44×105`) | Slots: `rpi5-bay-1` (`sbc-rpi5`), `keystone-1`, `keystone-2` (`standard-keystone`) |
 | `lenovo-thinkcentre-m920q` | `sub-module` (Needs Carrier) | `mini-pc` | `179×34.5×182` | Compat: `mini-pc-1liter` · Ports: `eth0` (1G), `eth1`..`eth2` (2.5G), `dc_in` (`dc-5525`) · Proxmox / OPNsense node |
+| `hp-elitedesk-800-g6-mini` | `sub-module` (Needs Carrier) | `mini-pc` | `177×34.2×175` | Compat: `mini-pc-1liter` · Ports: `eth0` (1G), `eth1` (2.5G Flex-IO), `usb_c_front`, `usb_a_front`, `dc_in` |
 | `dell-optiplex-7010-micro` | `sub-module` (Needs Carrier) | `mini-pc` | `178×36×182` | Compat: `mini-pc-1liter` · Ports: `eth0` (1G), `eth1` (2.5G), `dc_in` (`dc-5525`) · Low-power VM node |
+| `intel-nuc-13-pro-slim` | `sub-module` (Needs Carrier) | `mini-pc` | `117×37×112` | Compat: `intel-nuc-4x4` · Ports: `eth0` (2.5G i226-V), `tb4_rear`, `usb_front1`..`2`, `dc_in` |
+| `zimaboard-832-2-5g-router-nas` | `sub-module` (Needs Carrier) | `sbc` | `138.7×34.9×81.4` | Compat: `mini-pc-1liter` · Ports: `eth1`, `eth2` (Dual 2.5GbE), `usb3_1`, `dc_in` (`6W` fanless x86 micro-server) |
 | `ubiquiti-ucg-max` | `sub-module` (Needs Carrier) | `router` | `141.8×30×127.6` | Compat: `unifi-compact-gateway` · Ports: `lan1`..`lan4` (2.5G), `wan` (2.5G), `usbc_pwr` · 2.5G UniFi Gateway & NVR |
+| `pikvm-v4-mini-ip-kvm` | `sub-module` (Needs Carrier) | `sbc` | `120×24×68` | Compat: `pikvm-v4-bay` · Ports: `eth0` (1GbE), `usb_otg`, `pwr_usb_c`, OLED · CM4 Out-of-Band IP-KVM |
 | `jetkvm-smart-ip-kvm` | `sub-module` (Needs Carrier) | `compute-node` | `43×36×60` | Compat: `jetkvm-bay` · Ports: `eth0` (RJ45), `usb_c_pwr` (`4.5W`), OLED touchscreen · Out-of-Band BIOS IP-KVM |
 | `raspberry-pi-5-poe-hat` | `sub-module` (Needs Carrier) | `sbc` | `62×32×92` | Compat: `sbc-rpi5` · Ports: `eth0` (PoE-in PD `12W`), `usbc_pwr` · Home Assistant / Pi-hole / Quorum Witness |
 | `keystone-rj45-cat6a-coupler` | `sub-module` (Needs Carrier) | `keystone-module` | `16×20×30` | Compat: `standard-keystone` · Port: `coupler` (Cat6A passthrough coupler) |
+| `fortinet-fortigate-200f-ngfw-1u` | `rackmount-19` (Included Ears) | `router` | `1U` (`432×44×300`) | `wan1`..`wan2`, `dmz`, `mgmt`, `ha1`..`ha2`, `eth1`..`eth16`, `sfp_plus1`..`4` (10G), `ac_in1`..`2` · Enterprise NGFW |
 | `ubiquiti-udm-pro` | `rackmount-19` (Included Ears) | `router` | `1U` (`442.4×43.7×285.6`) | `eth1`..`eth8` (1G), `wan1` (2.5G), `sfp_wan2`, `sfp_lan11` (10G SFP+), `ac_in` · 19" Security Gateway & Protect NVR |
+| `ubiquiti-udm-se` | `rackmount-19` (Included Ears) | `router` | `1U` (`442.4×43.7×285.6`) | `eth1`..`eth8` (PoE+/PoE `180W`), `wan1` (2.5G), `sfp_wan2`, `sfp_lan11` (10G SFP+), `ac_in`, OLED · Special Edition Gateway |
+| `ubiquiti-unvr-4bay-1u` | `rackmount-19` (Included Ears) | `nas` | `1U` (`442.4×43.7×325.1`) | `sfp_plus1` (10G SFP+), `eth1` (1GbE), `ac_in` (`100W`) · 1U 4-Bay Hot-Swap UniFi Protect NVR |
+| `ubiquiti-usw-pro-max-16-poe-rack-1u` | `rackmount-19` (Included Ears) | `switch` | `1U` (`442.4×43.7×160`) | `eth1`..`eth12` (1G PoE+), `eth13`..`eth16` (2.5G PoE++), `sfp1`..`sfp2` (10G SFP+), `ac_in`, OLED · `180W` Etherlighting Switch |
 | `ubiquiti-usw-pro-max-24-poe` | `rackmount-19` (Included Ears) | `switch` | `1U` (`442.4×43.7×325`) | `eth1`..`eth24` (Single-Row 24× RJ45 PoE++/PoE+ PSE, `400W`), `sfp1`..`sfp2` (10G SFP+), `ac_in` · Aligns 1:1 with 24-Port Patch Panel |
 | `ubiquiti-usw-aggregation` | `rackmount-19` (Included Ears) | `switch` | `1U` (`442.4×43.7×120`) | `sfp1`..`sfp8` (8× 10G SFP+ L2 Aggregation), `ac_in`, OLED · High-speed 10G SFP+ DAC core backbone switch |
+| `mikrotik-ccr2004-16g-2s-plus` | `rackmount-19` (Included Ears) | `router` | `1U` (`443×44×210`) | `eth1`..`eth16` (1GbE), `sfp_plus1`..`2` (10G SFP+), `console`, `ac_in1`..`2`, LCD · Cloud Core Router with redundant PSUs |
+| `mikrotik-crs326-24g-2s-plus-rm` | `rackmount-19` (Included Ears) | `switch` | `1U` (`443×44×144`) | `eth1`..`eth24` (1GbE), `sfp_plus1`..`2` (10G SFP+), `console`, `ac_in` · Silent fanless 24-Port 19" switch |
 | `ubiquiti-unas-pro-2u` | `rackmount-19` (Included Ears) | `nas` | `2U` (`442.4×87.4×325.1`) | `eth1` (1G RJ45), `sfp_plus1` (10G SFP+), `ac_in` (`160W`), OLED touchscreen · 7-Bay 10G Enterprise NAS (`U3–U4`) |
+| `synology-rs1221-plus-2u` | `rackmount-19` (Included Ears) | `nas` | `2U` (`442.4×88×306.6`) | `lan1`..`lan4` (1GbE), `sfp_plus1`..`2` (10G SFP+), `console`, `ac_in` · Short-depth 2U 8-Bay Hot-Swap Enterprise NAS |
 | `generic-19inch-patch-panel-24port-cat6a` | `rackmount-19` (Included Ears) | `patch-panel` | `1U` (`482.6×44×35`) | `p1`..`p24` (24× Cat6A shielded passthrough couplers) · Mount at Top-of-Rack (`U_max`) directly above PoE switch |
 | `generic-19inch-brush-panel-1u` | `rackmount-19` (Included Ears) | `brush-panel` | `1U` (`482.6×44×18`) | 19-inch front-to-rear cable pass-through portal (`has_cable_pass_through: true`) · Mount 1 centrally (`U5`/`U6`) |
+| `generic-19inch-blank-panel-1u` | `rackmount-19` (Included Ears) | `blank-panel` | `1U` (`442.4×44×12`) | 19-inch 1U solid steel blanking panel for unused U-slots |
+| `generic-19inch-shelf-1u` | `rackmount-19` (Included Ears) | `shelf` | `1U` (`442.4×44×250`) | 19-inch 1U ventilated cantilever shelf (`250 mm` deep) |
+| `brennenstuhl-19inch-pdu-8way-schuko-1u` | `rackmount-19` (Included Ears) | `pdu` | `1U` (`442.4×44×54`) | `outlet1`..`outlet8` (`schuko-cee7`, `3680W`), `ac_in` (`iec-c14`) · 19" 8-way Schuko Alu-Line PDU |
+| `apc-smart-ups-li-ion-short-depth-2u` | `rackmount-19` (Included Ears) | `ups` | `2U` (`432×86×325`) | `iec_out1`..`iec_out6` (`iec-c13`, `1250W`), `dc_out1`..`2`, `ac_in`, `smartconnect_eth`, OLED · Short-depth 2U Li-Ion UPS |
 | `apc-smart-ups-1500-2u` | `rackmount-19` (Included Ears) | `ups` | `2U` (`432×86×477`) | `iec_out1`..`iec_out8` (`iec-c13`, `1000W`), `ac_in`, `smartconnect_eth`, OLED · Mount at `U1–U2` (`24 kg`, needs $\ge 500\text{ mm}$ depth) |
+| `ubiquiti-usw-flex-mini-6inch` | `rackmount-6` (3D-Print Cradle) | `switch` | `1U` (`107.2×21.2×70.2`) | `eth1` (PoE-In), `eth2`..`eth5` (1GbE), `pwr_usb_c` (`2.5W`) · 5-Port Managed GbE Switch for 6-inch micro-racks |
+| `gl-inet-mt3000-beryl-ax-6inch` | `rackmount-6` (3D-Print Cradle) | `router` | `1U` (`120×34×83`) | `wan1` (2.5GbE), `lan1` (1GbE), `usb1`, `pwr_usb_c` (`12W`) · OpenWrt Wi-Fi 6 / WireGuard Security Gateway for 6" racks |
+| `generic-6inch-patch-panel-6port` | `rackmount-6` (Included Ears) | `patch-panel` | `1U` (`120×44×30`) | `p1`..`p6` (6× Cat6A shielded passthrough couplers) · Top-of-Rack 6-inch patch panel |
+| `generic-6inch-usb-pd-pdu-4port` | `rackmount-6` (Included Ears) | `pdu` | `1U` (`120×44×52`) | `usb_pd1`..`usb_pd4` (`usb-c`, `200W`), `dc_out1` (`dc-5525`), `ac_in` (`iec-c14`), OLED · 6-inch USB-C GaN PD Micro-PDU |
+| `generic-6inch-brush-panel-1u` | `rackmount-6` (Included Ears) | `brush-panel` | `1U` (`120×44×15`) | 6-inch front-to-rear cable pass-through portal (`has_cable_pass_through: true`) |

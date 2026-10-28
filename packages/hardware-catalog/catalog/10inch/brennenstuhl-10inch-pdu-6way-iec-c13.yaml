@@ -1,0 +1,55 @@
+slug: "brennenstuhl-10inch-pdu-6way-iec-c13"
+manufacturer: "Brennenstuhl"
+model: "Alu-Line 10-Inch 1U 6-Way IEC-C13 PDU"
+description: "Flache 10-Zoll 1U Kaltgeräte-Steckdosenleiste (PDU, eloxiertes Aluminiumprofil, 48mm Bautiefe) mit 6x IEC-C13 Ausgängen und 1x rückseitigem IEC-C14 Stromeingang zur direkten Anbindung an eine USV. Ideal für enge 10-Zoll-Racks, da Kaltgerätestecker deutlich weniger Platz benötigen als große Schuko-Steckernetzteile."
+category: "pdu"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 222.0
+  height_mm: 44.0
+  depth_mm: 48.0
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 440
+power_and_thermal:
+  electrical_role: "pdu"
+  idle_watts: 0
+  max_system_watts: 0
+  pdu_capacity_watts: 2300
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "iec_out"
+    label_prefix: "C13 Outlet "
+    start_index: 1
+    count: 6
+    face: "front"
+    connector_type: "iec-c13"
+    direction: "output"
+    capabilities: ["ac-mains"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 26.0
+      origin_y_mm: 22.0
+      columns: 6
+      rows: 1
+      pitch_x_mm: 28.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "ac_in"
+    label: "IEC-C14 Mains In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 196.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#334155"
+  material_preset: "coated-aluminum"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

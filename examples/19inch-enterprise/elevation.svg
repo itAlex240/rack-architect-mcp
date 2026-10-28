@@ -554,6 +554,27 @@
       <rect x="1658.83" y="1157.88" width="44.45" height="244.72" rx="1.5" fill="#E5E7EB" stroke="#475569" stroke-width="1.2" />
       <rect x="408.28" y="1157.88" width="1238.72" height="244.72" rx="2.5" fill="url(#grad-aluminum-silver)" stroke="#475569" stroke-width="1.6" />
       <rect x="410.78" y="1160.38" width="1233.72" height="239.72" rx="1.5" fill="none" stroke="#94A3B8" stroke-opacity="0.28" stroke-width="1" />
+      <rect x="513.56" y="1181.4" width="265.72" height="97.72" rx="1.8" fill="#18181B" stroke="#52525B" stroke-width="1.1" />
+      <rect x="550.76" y="1216.58" width="164.75" height="23.45" rx="1" fill="#27272A" stroke="#71717A" stroke-width="0.8" />
+      <circle cx="770.32" cy="1190.36" r="1.8" fill="#10B981" />
+      <rect x="788.24" y="1181.4" width="265.72" height="97.72" rx="1.8" fill="#18181B" stroke="#52525B" stroke-width="1.1" />
+      <rect x="825.44" y="1216.58" width="164.75" height="23.45" rx="1" fill="#27272A" stroke="#71717A" stroke-width="0.8" />
+      <circle cx="1045" cy="1190.36" r="1.8" fill="#10B981" />
+      <rect x="1062.92" y="1181.4" width="265.72" height="97.72" rx="1.8" fill="#18181B" stroke="#52525B" stroke-width="1.1" />
+      <rect x="1100.12" y="1216.58" width="164.75" height="23.45" rx="1" fill="#27272A" stroke="#71717A" stroke-width="0.8" />
+      <circle cx="1319.68" cy="1190.36" r="1.8" fill="#10B981" />
+      <rect x="1337.6" y="1181.4" width="265.72" height="97.72" rx="1.8" fill="#18181B" stroke="#52525B" stroke-width="1.1" />
+      <rect x="1374.8" y="1216.58" width="164.75" height="23.45" rx="1" fill="#27272A" stroke="#71717A" stroke-width="0.8" />
+      <circle cx="1594.36" cy="1190.36" r="1.8" fill="#10B981" />
+      <rect x="513.56" y="1286.96" width="265.72" height="97.72" rx="1.8" fill="#18181B" stroke="#52525B" stroke-width="1.1" />
+      <rect x="550.76" y="1322.14" width="164.75" height="23.45" rx="1" fill="#27272A" stroke="#71717A" stroke-width="0.8" />
+      <circle cx="770.32" cy="1295.92" r="1.8" fill="#10B981" />
+      <rect x="788.24" y="1286.96" width="265.72" height="97.72" rx="1.8" fill="#18181B" stroke="#52525B" stroke-width="1.1" />
+      <rect x="825.44" y="1322.14" width="164.75" height="23.45" rx="1" fill="#27272A" stroke="#71717A" stroke-width="0.8" />
+      <circle cx="1045" cy="1295.92" r="1.8" fill="#10B981" />
+      <rect x="1062.92" y="1286.96" width="265.72" height="97.72" rx="1.8" fill="#18181B" stroke="#52525B" stroke-width="1.1" />
+      <rect x="1100.12" y="1322.14" width="164.75" height="23.45" rx="1" fill="#27272A" stroke="#71717A" stroke-width="0.8" />
+      <circle cx="1319.68" cy="1295.92" r="1.8" fill="#10B981" />
       <rect x="430.68" y="1174.68" width="50.4" height="30.8" rx="2" fill="#082F49" stroke="#38BDF8" stroke-width="1.2" />
       <line x1="434.68" y1="1187" x2="477.08" y2="1187" stroke="#38BDF8" stroke-width="1.4" />
       <line x1="434.68" y1="1196.86" x2="463.44" y2="1196.86" stroke="#7DD3FC" stroke-width="1.1" />

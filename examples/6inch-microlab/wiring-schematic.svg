@@ -1,0 +1,306 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1420 1200" width="1420" height="1200" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace">
+  <rect x="0" y="0" width="1420" height="1200" fill="#090D16" />
+  <text x="32" y="34" fill="#F8FAFC" font-size="17" font-weight="700">6U 6-Inch DeskMate Micro-Homelab (Pi 5 + OpenWrt + UniFi) — Hierarchical Power DAG &amp; Multi-Track Wiring Schematic</text>
+  <text x="32" y="54" fill="#94A3B8" font-size="11.5">Total System Draw: 34.5W | Total PoE Output: 0W | Routed Cables: 10 (16px Track Pitch, 8px Corner Rounding, 30px Port Pitch)</text>
+  <g data-section="power-poe-dag">
+    <rect x="24" y="76" width="1372" height="392" rx="8" fill="#0F172A" stroke="#1E293B" stroke-width="1.5" />
+    <text x="48" y="106" fill="#38BDF8" font-size="13.5" font-weight="700">SECTION 1: POWER &amp; PoE DISTRIBUTION TREE (MAINS / UPS → PDU &amp; PSE SWITCH → CONSUMERS)</text>
+    <text x="48" y="130" fill="#94A3B8" font-size="10.5" font-weight="700">TIER 1: MAINS / UPS BACKUP</text>
+    <text x="540" y="130" fill="#94A3B8" font-size="10.5" font-weight="700">TIER 2: DISTRIBUTION (PDU &amp; PoE PSE)</text>
+    <g data-power-node="pdu-u1" data-role="pdu">
+      <rect x="540" y="142" width="340" height="74" rx="6" fill="#1E293B" stroke="#10B981" stroke-width="1.6" />
+      <text x="552" y="162" fill="#F8FAFC" font-size="11" font-weight="700">pdu-gan-200w (pdu-u1)</text>
+      <text x="552" y="179" fill="#94A3B8" font-size="9.5">U1 FRONT • PDU • Own Draw: 2W Idle / 8W Max</text>
+      <rect x="552" y="192" width="120" height="8" rx="4" fill="#090D16" />
+      <rect x="552" y="192" width="20.76" height="8" rx="4" fill="#10B981" />
+      <text x="680" y="199" fill="#A7F3D0" font-size="9">PDU Load: 34.5W / 200W (17.3%)</text>
+    </g>
+    <text x="1032" y="130" fill="#94A3B8" font-size="10.5" font-weight="700">TIER 3: ACTIVE CONSUMERS &amp; PoE PDs</text>
+    <g data-power-node="pi5-docker-01" data-role="consumer">
+      <rect x="1032" y="142" width="340" height="74" rx="6" fill="#1E293B" stroke="#38BDF8" stroke-width="1.6" />
+      <text x="1044" y="162" fill="#F8FAFC" font-size="11" font-weight="700">pi5-docker-node (pi5-docker-01)</text>
+      <text x="1044" y="179" fill="#94A3B8" font-size="9.5">U2 FRONT • CONSUMER • Own Draw: 4.5W Idle / 12W Max</text>
+    </g>
+    <g data-power-node="gw-beryl-u3" data-role="consumer">
+      <rect x="1032" y="234" width="340" height="74" rx="6" fill="#1E293B" stroke="#38BDF8" stroke-width="1.6" />
+      <text x="1044" y="254" fill="#F8FAFC" font-size="11" font-weight="700">gw-beryl-ax (gw-beryl-u3)</text>
+      <text x="1044" y="271" fill="#94A3B8" font-size="9.5">U3 FRONT • CONSUMER • Own Draw: 4W Idle / 12W Max</text>
+    </g>
+    <g data-power-node="sw-flex-u6" data-role="consumer">
+      <rect x="1032" y="326" width="340" height="74" rx="6" fill="#1E293B" stroke="#38BDF8" stroke-width="1.6" />
+      <text x="1044" y="346" fill="#F8FAFC" font-size="11" font-weight="700">sw-flex-mini (sw-flex-u6)</text>
+      <text x="1044" y="363" fill="#94A3B8" font-size="9.5">U6 FRONT • CONSUMER • Own Draw: 1.5W Idle / 2.5W Max</text>
+    </g>
+    <path data-power-edge="pwr-pdu-to-beryl" d="M 880 166 L 930 166 Q 938 166 938 174 L 938 250 Q 938 258 946 258 L 1032 258" fill="none" stroke="#F97316" stroke-width="2" stroke-dasharray="4,2" opacity="0.88" />
+    <circle cx="880" cy="166" r="3" fill="#F97316" stroke="#090D16" stroke-width="1" />
+    <circle cx="1032" cy="258" r="3" fill="#F97316" stroke="#090D16" stroke-width="1" />
+    <path data-power-edge="pwr-pdu-to-pi5" d="M 880 176 L 1032 176" fill="none" stroke="#F59E0B" stroke-width="2" stroke-dasharray="4,2" opacity="0.88" />
+    <circle cx="880" cy="176" r="3" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
+    <circle cx="1032" cy="176" r="3" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
+    <path data-power-edge="pwr-pdu-to-flex" d="M 880 186 L 954 186 Q 962 186 962 194 L 962 362 Q 962 370 970 370 L 1032 370" fill="none" stroke="#EF4444" stroke-width="2" stroke-dasharray="4,2" opacity="0.88" />
+    <circle cx="880" cy="186" r="3" fill="#EF4444" stroke="#090D16" stroke-width="1" />
+    <circle cx="1032" cy="370" r="3" fill="#EF4444" stroke="#090D16" stroke-width="1" />
+  </g>
+  <g data-section="port-to-port-schematic">
+    <rect x="24" y="492" width="1372" height="668" rx="8" fill="#0F172A" stroke="#1E293B" stroke-width="1.5" />
+    <text x="48" y="522" fill="#38BDF8" font-size="13.5" font-weight="700">SECTION 2: PORT-TO-PORT NETWORK &amp; PATCH SCHEMATIC (MULTI-TRACK ORTHOGONAL CHANNEL ROUTER)</text>
+    <g data-schematic-device="pdu-u1">
+      <rect x="48" y="548" width="320" height="142" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+      <rect x="48" y="548" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+      <text x="60" y="565" fill="#F8FAFC" font-size="10.5" font-weight="700">pdu-gan-200w (pdu-u1)</text>
+      <text x="60" y="579" fill="#94A3B8" font-size="9">U1 FRONT • pdu</text>
+      <line x1="54" y1="588" x2="362" y2="588" stroke="#334155" stroke-width="0.6" />
+      <rect x="58" y="595.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="105" y="606" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">USB-C • USB-PD</text>
+      <rect data-pin-connector="usb-c" x="350" y="598" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="352.5" y1="601" x2="357.5" y2="601" stroke="#F59E0B" stroke-width="1" />
+      <text x="344" y="606.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="end">usb_pd1 [front]</text>
+      <circle data-pin-key="pwr-pdu-to-beryl:left" data-pin-x="368" data-pin-y="603" cx="368" cy="603" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+      <line x1="54" y1="618" x2="362" y2="618" stroke="#334155" stroke-width="0.6" />
+      <rect x="58" y="625.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="105" y="636" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">USB-C • USB-PD</text>
+      <rect data-pin-connector="usb-c" x="350" y="628" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="352.5" y1="631" x2="357.5" y2="631" stroke="#F59E0B" stroke-width="1" />
+      <text x="344" y="636.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="end">usb_pd2 [front]</text>
+      <circle data-pin-key="pwr-pdu-to-pi5:left" data-pin-x="368" data-pin-y="633" cx="368" cy="633" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+      <line x1="54" y1="648" x2="362" y2="648" stroke="#334155" stroke-width="0.6" />
+      <rect x="58" y="655.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="105" y="666" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">USB-C • USB-PD</text>
+      <rect data-pin-connector="usb-c" x="350" y="658" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="352.5" y1="661" x2="357.5" y2="661" stroke="#F59E0B" stroke-width="1" />
+      <text x="344" y="666.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="end">usb_pd3 [front]</text>
+      <circle data-pin-key="pwr-pdu-to-flex:left" data-pin-x="368" data-pin-y="663" cx="368" cy="663" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+    </g>
+    <g data-schematic-device="ks-u2-wan">
+      <rect x="48" y="710" width="320" height="82" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+      <rect x="48" y="710" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+      <text x="60" y="727" fill="#F8FAFC" font-size="10.5" font-weight="700">ISP-ONT-WAN (ks-u2-wan)</text>
+      <text x="60" y="741" fill="#94A3B8" font-size="9">U2 FRONT • keystone-module</text>
+      <line x1="54" y1="750" x2="362" y2="750" stroke="#334155" stroke-width="0.6" />
+      <rect x="58" y="757.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="105" y="768" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • PASSTHROU</text>
+      <rect data-pin-connector="rj45" x="350" y="760" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="352.5" y1="763" x2="357.5" y2="763" stroke="#F59E0B" stroke-width="1" />
+      <text x="344" y="768.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="end">coupler [front]</text>
+      <circle data-pin-key="wan-ks-to-beryl:left" data-pin-x="368" data-pin-y="765" cx="368" cy="765" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+    </g>
+    <g data-schematic-device="patch-u5">
+      <rect x="48" y="812" width="320" height="202" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+      <rect x="48" y="812" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+      <text x="60" y="829" fill="#F8FAFC" font-size="10.5" font-weight="700">patch-6p-u5 (patch-u5)</text>
+      <text x="60" y="843" fill="#94A3B8" font-size="9">U5 FRONT • patch-panel</text>
+      <line x1="54" y1="852" x2="362" y2="852" stroke="#334155" stroke-width="0.6" />
+      <rect x="58" y="859.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="105" y="870" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • PASSTHROU</text>
+      <rect data-pin-connector="rj45" x="350" y="862" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="352.5" y1="865" x2="357.5" y2="865" stroke="#F59E0B" stroke-width="1" />
+      <text x="344" y="870.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="end">p1 [rear]</text>
+      <circle data-pin-key="lan-beryl-to-patch1:left" data-pin-x="368" data-pin-y="867" cx="368" cy="867" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+      <line x1="54" y1="882" x2="362" y2="882" stroke="#334155" stroke-width="0.6" />
+      <rect x="58" y="889.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="105" y="900" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • PASSTHROU</text>
+      <rect data-pin-connector="rj45" x="350" y="892" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="352.5" y1="895" x2="357.5" y2="895" stroke="#F59E0B" stroke-width="1" />
+      <text x="344" y="900.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="end">p2 [rear]</text>
+      <circle data-pin-key="trunk-ks2-to-patch2:left" data-pin-x="368" data-pin-y="897" cx="368" cy="897" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+      <line x1="54" y1="912" x2="362" y2="912" stroke="#334155" stroke-width="0.6" />
+      <rect x="58" y="919.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="105" y="930" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • PASSTHROU</text>
+      <rect data-pin-connector="rj45" x="350" y="922" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="352.5" y1="925" x2="357.5" y2="925" stroke="#F59E0B" stroke-width="1" />
+      <text x="344" y="930.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="end">p1 [front]</text>
+      <circle data-pin-key="patch-p1-to-sw1:left" data-pin-x="368" data-pin-y="927" cx="368" cy="927" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+      <line x1="54" y1="942" x2="362" y2="942" stroke="#334155" stroke-width="0.6" />
+      <rect x="58" y="949.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="105" y="960" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • PASSTHROU</text>
+      <rect data-pin-connector="rj45" x="350" y="952" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="352.5" y1="955" x2="357.5" y2="955" stroke="#F59E0B" stroke-width="1" />
+      <text x="344" y="960.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="end">p2 [front]</text>
+      <circle data-pin-key="patch-p2-to-sw2:left" data-pin-x="368" data-pin-y="957" cx="368" cy="957" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+      <line x1="54" y1="972" x2="362" y2="972" stroke="#334155" stroke-width="0.6" />
+      <rect x="58" y="979.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="105" y="990" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • PASSTHROU</text>
+      <rect data-pin-connector="rj45" x="350" y="982" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="352.5" y1="985" x2="357.5" y2="985" stroke="#F59E0B" stroke-width="1" />
+      <text x="344" y="990.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="end">p3 [front]</text>
+      <circle data-pin-key="patch-p3-to-sw3:left" data-pin-x="368" data-pin-y="987" cx="368" cy="987" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+    </g>
+    <g data-schematic-device="pi5-docker-01">
+      <rect x="48" y="1034" width="320" height="82" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+      <rect x="48" y="1034" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+      <text x="60" y="1051" fill="#F8FAFC" font-size="10.5" font-weight="700">pi5-docker-node (pi5-docker-01)</text>
+      <text x="60" y="1065" fill="#94A3B8" font-size="9">U2 FRONT • sbc</text>
+      <line x1="54" y1="1074" x2="362" y2="1074" stroke="#334155" stroke-width="0.6" />
+      <rect x="58" y="1081.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="105" y="1092" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
+      <rect data-pin-connector="rj45" x="350" y="1084" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="352.5" y1="1087" x2="357.5" y2="1087" stroke="#F59E0B" stroke-width="1" />
+      <text x="344" y="1092.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="end">eth0 [front]</text>
+      <circle data-pin-key="lan-pi5-to-ks2:left" data-pin-x="368" data-pin-y="1089" cx="368" cy="1089" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+    </g>
+    <g data-schematic-device="gw-beryl-u3">
+      <rect x="848" y="548" width="320" height="142" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+      <rect x="848" y="548" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+      <text x="860" y="565" fill="#F8FAFC" font-size="10.5" font-weight="700">gw-beryl-ax (gw-beryl-u3)</text>
+      <text x="860" y="579" fill="#94A3B8" font-size="9">U3 FRONT • router</text>
+      <line x1="854" y1="588" x2="1162" y2="588" stroke="#334155" stroke-width="0.6" />
+      <rect x="1064" y="595.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="1111" y="606" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">USB-C • USB-PD</text>
+      <rect data-pin-connector="usb-c" x="856" y="598" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="858.5" y1="601" x2="863.5" y2="601" stroke="#F59E0B" stroke-width="1" />
+      <text x="872" y="606.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">pwr_usb_c [rear]</text>
+      <circle data-pin-key="pwr-pdu-to-beryl:right" data-pin-x="848" data-pin-y="603" cx="848" cy="603" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+      <line x1="854" y1="618" x2="1162" y2="618" stroke="#334155" stroke-width="0.6" />
+      <rect x="1064" y="625.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="1111" y="636" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
+      <rect data-pin-connector="rj45" x="856" y="628" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="858.5" y1="631" x2="863.5" y2="631" stroke="#F59E0B" stroke-width="1" />
+      <text x="872" y="636.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">wan1 [rear]</text>
+      <circle data-pin-key="wan-ks-to-beryl:right" data-pin-x="848" data-pin-y="633" cx="848" cy="633" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+      <line x1="854" y1="648" x2="1162" y2="648" stroke="#334155" stroke-width="0.6" />
+      <rect x="1064" y="655.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="1111" y="666" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
+      <rect data-pin-connector="rj45" x="856" y="658" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="858.5" y1="661" x2="863.5" y2="661" stroke="#F59E0B" stroke-width="1" />
+      <text x="872" y="666.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">lan1 [rear]</text>
+      <circle data-pin-key="lan-beryl-to-patch1:right" data-pin-x="848" data-pin-y="663" cx="848" cy="663" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+    </g>
+    <g data-schematic-device="pi5-docker-01">
+      <rect x="848" y="710" width="320" height="82" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+      <rect x="848" y="710" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+      <text x="860" y="727" fill="#F8FAFC" font-size="10.5" font-weight="700">pi5-docker-node (pi5-docker-01)</text>
+      <text x="860" y="741" fill="#94A3B8" font-size="9">U2 FRONT • sbc</text>
+      <line x1="854" y1="750" x2="1162" y2="750" stroke="#334155" stroke-width="0.6" />
+      <rect x="1064" y="757.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="1111" y="768" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">USB-C • USB-PD</text>
+      <rect data-pin-connector="usb-c" x="856" y="760" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="858.5" y1="763" x2="863.5" y2="763" stroke="#F59E0B" stroke-width="1" />
+      <text x="872" y="768.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">usbc_pwr [rear]</text>
+      <circle data-pin-key="pwr-pdu-to-pi5:right" data-pin-x="848" data-pin-y="765" cx="848" cy="765" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+    </g>
+    <g data-schematic-device="sw-flex-u6">
+      <rect x="848" y="812" width="320" height="172" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+      <rect x="848" y="812" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+      <text x="860" y="829" fill="#F8FAFC" font-size="10.5" font-weight="700">sw-flex-mini (sw-flex-u6)</text>
+      <text x="860" y="843" fill="#94A3B8" font-size="9">U6 FRONT • switch</text>
+      <line x1="854" y1="852" x2="1162" y2="852" stroke="#334155" stroke-width="0.6" />
+      <rect x="1064" y="859.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="1111" y="870" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">USB-C • USB-PD</text>
+      <rect data-pin-connector="usb-c" x="856" y="862" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="858.5" y1="865" x2="863.5" y2="865" stroke="#F59E0B" stroke-width="1" />
+      <text x="872" y="870.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">pwr_usb_c [rear]</text>
+      <circle data-pin-key="pwr-pdu-to-flex:right" data-pin-x="848" data-pin-y="867" cx="848" cy="867" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+      <line x1="854" y1="882" x2="1162" y2="882" stroke="#334155" stroke-width="0.6" />
+      <rect x="1064" y="889.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="1111" y="900" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
+      <rect data-pin-connector="rj45" x="856" y="892" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="858.5" y1="895" x2="863.5" y2="895" stroke="#F59E0B" stroke-width="1" />
+      <text x="872" y="900.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth1 [front]</text>
+      <circle data-pin-key="patch-p1-to-sw1:right" data-pin-x="848" data-pin-y="897" cx="848" cy="897" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+      <line x1="854" y1="912" x2="1162" y2="912" stroke="#334155" stroke-width="0.6" />
+      <rect x="1064" y="919.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="1111" y="930" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
+      <rect data-pin-connector="rj45" x="856" y="922" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="858.5" y1="925" x2="863.5" y2="925" stroke="#F59E0B" stroke-width="1" />
+      <text x="872" y="930.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth2 [front]</text>
+      <circle data-pin-key="patch-p2-to-sw2:right" data-pin-x="848" data-pin-y="927" cx="848" cy="927" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+      <line x1="854" y1="942" x2="1162" y2="942" stroke="#334155" stroke-width="0.6" />
+      <rect x="1064" y="949.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="1111" y="960" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
+      <rect data-pin-connector="rj45" x="856" y="952" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="858.5" y1="955" x2="863.5" y2="955" stroke="#F59E0B" stroke-width="1" />
+      <text x="872" y="960.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth3 [front]</text>
+      <circle data-pin-key="patch-p3-to-sw3:right" data-pin-x="848" data-pin-y="957" cx="848" cy="957" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+    </g>
+    <g data-schematic-device="ks-u2-lan">
+      <rect x="848" y="1004" width="320" height="112" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+      <rect x="848" y="1004" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+      <text x="860" y="1021" fill="#F8FAFC" font-size="10.5" font-weight="700">PI5-GBE (ks-u2-lan)</text>
+      <text x="860" y="1035" fill="#94A3B8" font-size="9">U2 FRONT • keystone-module</text>
+      <line x1="854" y1="1044" x2="1162" y2="1044" stroke="#334155" stroke-width="0.6" />
+      <rect x="1064" y="1051.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="1111" y="1062" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • PASSTHROU</text>
+      <rect data-pin-connector="rj45" x="856" y="1054" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="858.5" y1="1057" x2="863.5" y2="1057" stroke="#F59E0B" stroke-width="1" />
+      <text x="872" y="1062.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">coupler [front]</text>
+      <circle data-pin-key="lan-pi5-to-ks2:right" data-pin-x="848" data-pin-y="1059" cx="848" cy="1059" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+      <line x1="854" y1="1074" x2="1162" y2="1074" stroke="#334155" stroke-width="0.6" />
+      <rect x="1064" y="1081.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
+      <text x="1111" y="1092" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • PASSTHROU</text>
+      <rect data-pin-connector="rj45" x="856" y="1084" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
+      <line x1="858.5" y1="1087" x2="863.5" y2="1087" stroke="#F59E0B" stroke-width="1" />
+      <text x="872" y="1092.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">coupler [rear]</text>
+      <circle data-pin-key="trunk-ks2-to-patch2:right" data-pin-x="848" data-pin-y="1089" cx="848" cy="1089" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+    </g>
+    <g data-schematic-cable="pwr-pdu-to-beryl" data-track-index="0" data-channel-x="664" data-start-pin="368,603" data-end-pin="848,603" data-cable-type="power-usb-c">
+      <path d="M 368 603 L 848 603" fill="none" stroke="#F97316" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      <circle class="schematic-pin-plug" cx="368" cy="603" r="3.2" fill="#F97316" stroke="#090D16" stroke-width="1" />
+      <circle class="schematic-pin-plug" cx="848" cy="603" r="3.2" fill="#F97316" stroke="#090D16" stroke-width="1" />
+      <rect x="382" y="593.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#F97316" stroke-width="1.3" />
+      <text x="514" y="606.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">pwr-pdu-to-beryl | 0.75m USB-C PD</text>
+    </g>
+    <g data-schematic-cable="pwr-pdu-to-pi5" data-track-index="1" data-channel-x="680" data-start-pin="368,633" data-end-pin="848,765" data-cable-type="power-usb-c">
+      <path d="M 368 633 L 672 633 Q 680 633 680 641 L 680 757 Q 680 765 688 765 L 848 765" fill="none" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      <circle class="schematic-pin-plug" cx="368" cy="633" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
+      <circle class="schematic-pin-plug" cx="848" cy="765" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
+      <rect x="382" y="623.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#F59E0B" stroke-width="1.3" />
+      <text x="514" y="636.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">pwr-pdu-to-pi5 | 0.75m USB-C PD</text>
+    </g>
+    <g data-schematic-cable="pwr-pdu-to-flex" data-track-index="2" data-channel-x="696" data-start-pin="368,663" data-end-pin="848,867" data-cable-type="power-usb-c">
+      <path d="M 368 663 L 688 663 Q 696 663 696 671 L 696 859 Q 696 867 704 867 L 848 867" fill="none" stroke="#EF4444" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      <circle class="schematic-pin-plug" cx="368" cy="663" r="3.2" fill="#EF4444" stroke="#090D16" stroke-width="1" />
+      <circle class="schematic-pin-plug" cx="848" cy="867" r="3.2" fill="#EF4444" stroke="#090D16" stroke-width="1" />
+      <rect x="382" y="653.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#EF4444" stroke-width="1.3" />
+      <text x="514" y="666.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">pwr-pdu-to-flex | 0.75m USB-C PD</text>
+    </g>
+    <g data-schematic-cable="wan-ks-to-beryl" data-track-index="3" data-channel-x="712" data-start-pin="368,765" data-end-pin="848,633" data-cable-type="cat6a">
+      <path d="M 368 765 L 704 765 Q 712 765 712 757 L 712 641 Q 712 633 720 633 L 848 633" fill="none" stroke="#EC4899" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      <circle class="schematic-pin-plug" cx="368" cy="765" r="3.2" fill="#EC4899" stroke="#090D16" stroke-width="1" />
+      <circle class="schematic-pin-plug" cx="848" cy="633" r="3.2" fill="#EC4899" stroke="#090D16" stroke-width="1" />
+      <rect x="382" y="755.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#EC4899" stroke-width="1.3" />
+      <text x="514" y="768.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">wan-ks-to-beryl | 0.75m Cat6A</text>
+    </g>
+    <g data-schematic-cable="lan-beryl-to-patch1" data-track-index="4" data-channel-x="728" data-start-pin="368,867" data-end-pin="848,663" data-cable-type="cat6a">
+      <path d="M 368 867 L 720 867 Q 728 867 728 859 L 728 671 Q 728 663 736 663 L 848 663" fill="none" stroke="#3B82F6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      <circle class="schematic-pin-plug" cx="368" cy="867" r="3.2" fill="#3B82F6" stroke="#090D16" stroke-width="1" />
+      <circle class="schematic-pin-plug" cx="848" cy="663" r="3.2" fill="#3B82F6" stroke="#090D16" stroke-width="1" />
+      <rect x="382" y="857.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#3B82F6" stroke-width="1.3" />
+      <text x="514" y="870.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">lan-beryl-to-patch1 | 0.50m Cat6A</text>
+    </g>
+    <g data-schematic-cable="lan-pi5-to-ks2" data-track-index="5" data-channel-x="744" data-start-pin="368,1089" data-end-pin="848,1059" data-cable-type="cat6a">
+      <path d="M 368 1089 L 736 1089 Q 744 1089 744 1081 L 744 1067 Q 744 1059 752 1059 L 848 1059" fill="none" stroke="#10B981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      <circle class="schematic-pin-plug" cx="368" cy="1089" r="3.2" fill="#10B981" stroke="#090D16" stroke-width="1" />
+      <circle class="schematic-pin-plug" cx="848" cy="1059" r="3.2" fill="#10B981" stroke="#090D16" stroke-width="1" />
+      <rect x="382" y="1079.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#10B981" stroke-width="1.3" />
+      <text x="514" y="1092.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">lan-pi5-to-ks2 | 0.25m Cat6A</text>
+    </g>
+    <g data-schematic-cable="trunk-ks2-to-patch2" data-track-index="6" data-channel-x="760" data-start-pin="368,897" data-end-pin="848,1089" data-cable-type="cat6a">
+      <path d="M 368 897 L 752 897 Q 760 897 760 905 L 760 1081 Q 760 1089 768 1089 L 848 1089" fill="none" stroke="#10B981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      <circle class="schematic-pin-plug" cx="368" cy="897" r="3.2" fill="#10B981" stroke="#090D16" stroke-width="1" />
+      <circle class="schematic-pin-plug" cx="848" cy="1089" r="3.2" fill="#10B981" stroke="#090D16" stroke-width="1" />
+      <rect x="382" y="887.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#10B981" stroke-width="1.3" />
+      <text x="514" y="900.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">trunk-ks2-to-patch2 | 0.75m Cat6A</text>
+    </g>
+    <g data-schematic-cable="patch-p1-to-sw1" data-track-index="7" data-channel-x="776" data-start-pin="368,927" data-end-pin="848,897" data-cable-type="cat6a">
+      <path d="M 368 927 L 768 927 Q 776 927 776 919 L 776 905 Q 776 897 784 897 L 848 897" fill="none" stroke="#3B82F6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      <circle class="schematic-pin-plug" cx="368" cy="927" r="3.2" fill="#3B82F6" stroke="#090D16" stroke-width="1" />
+      <circle class="schematic-pin-plug" cx="848" cy="897" r="3.2" fill="#3B82F6" stroke="#090D16" stroke-width="1" />
+      <rect x="382" y="917.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#3B82F6" stroke-width="1.3" />
+      <text x="514" y="930.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">patch-p1-to-sw1 | 0.15m Cat6A</text>
+    </g>
+    <g data-schematic-cable="patch-p2-to-sw2" data-track-index="8" data-channel-x="792" data-start-pin="368,957" data-end-pin="848,927" data-cable-type="cat6a">
+      <path d="M 368 957 L 784 957 Q 792 957 792 949 L 792 935 Q 792 927 800 927 L 848 927" fill="none" stroke="#10B981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      <circle class="schematic-pin-plug" cx="368" cy="957" r="3.2" fill="#10B981" stroke="#090D16" stroke-width="1" />
+      <circle class="schematic-pin-plug" cx="848" cy="927" r="3.2" fill="#10B981" stroke="#090D16" stroke-width="1" />
+      <rect x="382" y="947.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#10B981" stroke-width="1.3" />
+      <text x="514" y="960.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">patch-p2-to-sw2 | 0.15m Cat6A</text>
+    </g>
+    <g data-schematic-cable="patch-p3-to-sw3" data-track-index="9" data-channel-x="808" data-start-pin="368,987" data-end-pin="848,957" data-cable-type="cat6a">
+      <path d="M 368 987 L 800 987 Q 808 987 808 979 L 808 965 Q 808 957 816 957 L 848 957" fill="none" stroke="#0EA5E9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      <circle class="schematic-pin-plug" cx="368" cy="987" r="3.2" fill="#0EA5E9" stroke="#090D16" stroke-width="1" />
+      <circle class="schematic-pin-plug" cx="848" cy="957" r="3.2" fill="#0EA5E9" stroke="#090D16" stroke-width="1" />
+      <rect x="382" y="977.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#0EA5E9" stroke-width="1.3" />
+      <text x="514" y="990.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">patch-p3-to-sw3 | 0.15m Cat6A</text>
+    </g>
+  </g>
+</svg>

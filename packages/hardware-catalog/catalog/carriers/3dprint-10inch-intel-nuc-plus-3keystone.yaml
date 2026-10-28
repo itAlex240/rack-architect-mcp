@@ -1,0 +1,72 @@
+slug: "3dprint-10inch-intel-nuc-plus-3keystone"
+manufacturer: "Printables Community"
+model: "10-Inch 1U Intel NUC (4x4 Slim) + 3x Keystone Modular Carrier"
+description: "3D-gedruckter 10-Zoll 1U Modulträger (PETG/ASA) mit einem passgenauen Einschub für einen kompakten 4x4-Zoll Mini-PC (z. B. Intel NUC 12/13 Pro Slim oder ASUS NUC 14 Pro) auf der linken Seite sowie drei Keystone-Aussparungen rechts, um den hinteren 2.5G-LAN-Port und zwei weitere Anschlüsse sauber nach vorne zu führen."
+category: "modular-carrier"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 254.0
+  height_mm: 44.0
+  depth_mm: 135.0
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 0.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 165
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "front-to-rear"
+slots:
+  - slot_id: "intel-nuc-bay"
+    accepted_slot_type: "intel-nuc-4x4"
+    offset_mm:
+      x: 18.0
+      y: 2.5
+      z: 0.0
+    max_dimensions_mm:
+      width: 122.0
+      height: 39.0
+      depth: 125.0
+  - slot_id: "keystone-1"
+    accepted_slot_type: "standard-keystone"
+    offset_mm:
+      x: 152.0
+      y: 12.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 16.5
+      height: 22.0
+      depth: 35.0
+  - slot_id: "keystone-2"
+    accepted_slot_type: "standard-keystone"
+    offset_mm:
+      x: 178.0
+      y: 12.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 16.5
+      height: 22.0
+      depth: 35.0
+  - slot_id: "keystone-3"
+    accepted_slot_type: "standard-keystone"
+    offset_mm:
+      x: 204.0
+      y: 12.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 16.5
+      height: 22.0
+      depth: 35.0
+visuals:
+  chassis_color_hex: "#27272A"
+  material_preset: "3d-printed-petg"
+  has_oled_display: false
+  stl_mesh_path: "meshes/3dprint-10inch-intel-nuc-plus-3keystone.stl"
+printable_metadata:
+  filament_grams: 165
+  material_recommendation: "PETG or ASA (25% Gyroid Infill, 4 Perimeters)"
+  heat_set_inserts: "4x M3x5x4mm Voron standard brass inserts"
+  fasteners: "4x M3x10mm BHCS + 4x M6 cage nuts"
+  printables_url: "https://www.printables.com/model/10inch-intel-nuc-3keystone"

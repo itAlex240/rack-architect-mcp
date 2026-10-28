@@ -1,0 +1,68 @@
+slug: "zimaboard-832-2-5g-router-nas"
+manufacturer: "IceWhale"
+model: "ZimaBoard 832 Single-Board x86 Micro-Server (Dual GbE / PCIe 2.5G)"
+description: "Lüfterloser x86-Einplatinen-Micro-Server (138,7×34,9×81,4mm, passives Aluminium-Kühlrippengehäuse, 0 dB(A)) mit Dual-Ethernet, 2x SATA-Ports und offenem PCIe-Slot für 2.5G/10G-NICs oder NVMe-Adapter. Passt als kompaktes Einschubmodul in `mini-pc-1liter` Träger und eignet sich ideal als lautloser OPNsense-Router, Pi-hole/AdGuard-Server oder Docker-Node."
+category: "sbc"
+mount_type: "sub-module"
+slot_compatibility: "mini-pc-1liter"
+geometry:
+  u_height: 0.8
+  width_mm: 138.7
+  height_mm: 34.9
+  depth_mm: 81.4
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 0.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 280
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 6
+  max_system_watts: 18
+  airflow: "passive-convection"
+ports:
+  - port_id: "eth0"
+    label: "LAN 1 (GbE/2.5G)"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 78.0
+      y_mm: 17.0
+      orientation: "upright"
+  - port_id: "eth1"
+    label: "LAN 2 (WAN/Trunk)"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 98.0
+      y_mm: 17.0
+      orientation: "upright"
+  - port_id: "usb1"
+    label: "USB 3.0"
+    face: "rear"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0"]
+    coordinates:
+      x_mm: 52.0
+      y_mm: 17.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "12V 3A DC In"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 22.0
+      y_mm: 17.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#27272A"
+  material_preset: "coated-aluminum"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

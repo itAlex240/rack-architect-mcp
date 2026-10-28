@@ -2,9 +2,10 @@
 
 Precision-measured YAML hardware blueprints and `port_groups` matrix expander for **RackArchitect MCP**.
 
-- **30 Included Blueprints:**
-  - `catalog/10inch/` — 12× 10-inch mini-rack switches (Ubiquiti, MikroTik, TP-Link), 2-bay NAS tray (Synology DS224+), patch panels, brush panels, PDUs, and 1U UPS
-  - `catalog/19inch/` — 8× 19-inch enterprise gateways, 10G SFP+ aggregation switches, 7-bay 2U NAS (UniFi UNAS Pro), 24-port patch panels, brush panels, and 2U UPS
-  - `catalog/carriers/` — 5× Parametric 3D-printed 1U modular carriers (`slots[]` + `printable_metadata`)
-  - `catalog/sub-modules/` — 5× Sub-U modules: Lenovo ThinkCentre M920q Tiny, Dell OptiPlex 7010 Micro, Ubiquiti UCG-Max, JetKVM Smart IP-KVM, Raspberry Pi 5 PoE HAT, and Keystone Cat6a couplers
+- **60 Validated Blueprints (`10inch`, `19inch`, `6inch`, `carriers`, `sub-modules`):**
+  - `catalog/10inch/` — 17× 10-inch mini-rack switches & gateways (`USW-Flex-2.5G-8-PoE`, `USW-Ultra-60W`, `UCG-Fiber`, `MikroTik CRS309-1G-8S+IN`, `RB5009UPr+S+IN`, `Netgear GS108PP`), 2-bay/4-bay NAS (`Synology DS224+`, `QNAP TS-433`), patch panels, brush panels, PDUs (`Digitus 4-Way Schuko`, `Brennenstuhl 6-Way IEC-C13`), and 1U UPS (`CyberPower 500VA`)
+  - `catalog/19inch/` — 19× 19-inch enterprise gateways & firewalls (`FortiGate 200F`, `UDM-Pro`, `UDM-SE`, `MikroTik CCR2004-16G-2S+`), 10G/PoE++ switches (`USW-Aggregation`, `USW-Pro-Max-24-PoE`, `USW-Pro-Max-16-PoE`, `MikroTik CRS326-24G-2S+RM`), hot-swap NAS/NVRs (`UniFi UNAS Pro 7-Bay`, `Synology RS1221+ 8-Bay`, `UniFi UNVR 4-Bay`), 24-port patch panels, brush/blanking panels, ventilated cantilever shelves, 8-way Schuko PDU, and 2U UPS (`APC Smart-UPS 1500VA Li-Ion`, `CyberPower PR1500ERT2U`)
+  - `catalog/6inch/` — 5× 6-inch micro-rack blueprints (`UniFi Switch Flex Mini`, `GL.iNet Beryl AX MT3000`, `6-Port Cat6A Patch Panel`, `200W 4-Port USB-C GaN PD + DC-5525 Micro-PDU`, `6-Inch 1U Brush Panel`)
+  - `catalog/carriers/` — 9× Parametric 3D-printed 1U modular carriers (`10inch`, `19inch`, and `6inch` with `slots[]` + `printable_metadata`)
+  - `catalog/sub-modules/` — 10× Sub-U compute & KVM modules: `Lenovo ThinkCentre M920q Tiny`, `HP EliteDesk 800 G6 Mini`, `Dell OptiPlex 7010 Micro`, `Intel NUC 13 Pro Slim`, `ZimaBoard 832`, `Ubiquiti UCG-Max`, `PiKVM V4 Mini`, `JetKVM`, `Raspberry Pi 5 PoE+ HAT`, and `Cat6A Keystone Couplers`
 - **Validation Command:** `pnpm validate:catalog`

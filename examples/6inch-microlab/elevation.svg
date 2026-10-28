@@ -1,0 +1,1332 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2717.44 1000.76" width="2717.44" height="1000.76" font-family="'JetBrains Mono', 'Inter', system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#060A12" />
+      <stop offset="100%" stop-color="#0B1120" />
+    </linearGradient>
+    <linearGradient id="grad-steel-dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#27272A" />
+      <stop offset="50%" stop-color="#18181B" />
+      <stop offset="100%" stop-color="#09090B" />
+    </linearGradient>
+    <linearGradient id="grad-aluminum-silver" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F8FAFC" />
+      <stop offset="50%" stop-color="#E2E8F0" />
+      <stop offset="100%" stop-color="#CBD5E1" />
+    </linearGradient>
+    <linearGradient id="grad-coated-gray" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#475569" />
+      <stop offset="100%" stop-color="#1E293B" />
+    </linearGradient>
+    <pattern id="collision-hatch" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#EF4444" fill-opacity="0.22" />
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#EF4444" stroke-width="3" />
+    </pattern>
+    <pattern id="carrier-infill" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="#18181B" />
+      <line x1="0" y1="0" x2="0" y2="8" stroke="#3F3F46" stroke-width="1.5" stroke-opacity="0.65" />
+      <line x1="0" y1="0" x2="8" y2="0" stroke="#27272A" stroke-width="1.0" stroke-opacity="0.55" />
+    </pattern>
+    <filter id="cable-shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.4" flood-color="#000000" flood-opacity="0.65" />
+    </filter>
+    <marker id="dim-arrow-end" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M 0 1 L 7 4 L 0 7 z" fill="#F87171" />
+    </marker>
+    <marker id="dim-arrow-start" markerWidth="8" markerHeight="8" refX="1" refY="4" orient="auto">
+      <path d="M 8 1 L 1 4 L 8 7 z" fill="#F87171" />
+    </marker>
+    <marker id="ok-arrow-end" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M 0 1 L 6 3.5 L 0 6 z" fill="#38BDF8" />
+    </marker>
+    <marker id="ok-arrow-start" markerWidth="7" markerHeight="7" refX="1" refY="3.5" orient="auto">
+      <path d="M 7 1 L 1 3.5 L 7 6 z" fill="#38BDF8" />
+    </marker>
+  </defs>
+  <rect width="2717.44" height="1000.76" fill="url(#bg-gradient)" />
+  <g data-layer="title-block">
+    <rect x="20" y="16" width="2677.44" height="88" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1.5" />
+    <text x="38" y="44" fill="#F8FAFC" font-size="19" font-weight="700" letter-spacing="0.4">6U 6-Inch DeskMate Micro-Homelab (Pi 5 + OpenWrt + UniFi) — CAD ELEVATION, PORT ANCHOR &amp; DEPTH CLEARANCE BLUEPRINT</text>
+    <text x="38" y="66" fill="#94A3B8" font-size="11.5">Standard: 6INCH (152.4mm Panel / 120.65mm Aperture) • Capacity: 6U (266.7mm) • Rail Depth: 180mm • Enclosure: open-frame • Scale: 2.8 px/mm</text>
+    <circle cx="43" cy="86" r="4.5" fill="#EF4444" />
+    <text x="52" y="90" fill="#CBD5E1" font-size="9.5" font-weight="600">AC Mains (IEC/Schuko)</text>
+    <circle cx="201.20000000000002" cy="86" r="4.5" fill="#F97316" />
+    <text x="210.20000000000002" y="90" fill="#CBD5E1" font-size="9.5" font-weight="600">USB-C PD 5V</text>
+    <circle cx="297.40000000000003" cy="86" r="4.5" fill="#F59E0B" />
+    <text x="306.40000000000003" y="90" fill="#CBD5E1" font-size="9.5" font-weight="600">20V DC Barrel</text>
+    <circle cx="406.00000000000006" cy="86" r="4.5" fill="#3B82F6" />
+    <text x="415.00000000000006" y="90" fill="#CBD5E1" font-size="9.5" font-weight="600">Gateway Trunk</text>
+    <circle cx="514.6000000000001" cy="86" r="4.5" fill="#10B981" />
+    <text x="523.6000000000001" y="90" fill="#CBD5E1" font-size="9.5" font-weight="600">2.5GbE Proxmox</text>
+    <circle cx="629.4000000000001" cy="86" r="4.5" fill="#6366F1" />
+    <text x="638.4000000000001" y="90" fill="#CBD5E1" font-size="9.5" font-weight="600">1GbE Mgmt</text>
+    <circle cx="713.2" cy="86" r="4.5" fill="#A855F7" />
+    <text x="722.2" y="90" fill="#CBD5E1" font-size="9.5" font-weight="600">2.5G Ceph Cluster</text>
+    <circle cx="846.6" cy="86" r="4.5" fill="#EC4899" />
+    <text x="855.6" y="90" fill="#CBD5E1" font-size="9.5" font-weight="600">WAN Feedthrough</text>
+    <circle cx="967.6" cy="86" r="4.5" fill="#06B6D4" />
+    <text x="976.6" y="90" fill="#CBD5E1" font-size="9.5" font-weight="600">Cross-Face Portal (U6)</text>
+    <rect x="2357.44" y="26" width="324" height="68" rx="5" fill="#090D16" stroke="#22C55E" stroke-width="1.5" />
+    <circle cx="2375.44" cy="44" r="5.5" fill="#22C55E" />
+    <text x="2389.44" y="48" fill="#22C55E" font-size="12.5" font-weight="700">STATUS: VALID (0 ERR, 0 WARN)</text>
+    <text x="2375.44" y="67" fill="#E2E8F0" font-size="10.5">Power: 34.5W • PoE: 0W / 0W</text>
+    <text x="2375.44" y="83" fill="#94A3B8" font-size="10">Mass: 1.3kg • CoG Y: 109.08mm • Cables: 10</text>
+  </g>
+  <g data-view="front-equipment-schedule" data-layer="left-equipment-callouts">
+    <text x="156" y="130" fill="#E2E8F0" font-size="12.5" font-weight="700" text-anchor="middle">EQUIPMENT SCHEDULE (U1..U6)</text>
+    <text x="156" y="146" fill="#64748B" font-size="9.5" text-anchor="middle">Hostnames, Models &amp; Sub-Module Slots</text>
+    <rect x="28" y="782.3" width="256" height="120.46" rx="4" fill="#0F172A" stroke="#334155" stroke-width="1.1" />
+    <line x1="284" y1="842.53" x2="308" y2="842.53" stroke="#475569" stroke-width="1" stroke-dasharray="3,2" />
+    <circle cx="284" cy="842.53" r="2.5" fill="#38BDF8" />
+    <text x="38" y="798.3" fill="#F8FAFC" font-size="9.8" font-weight="700">U1 [FRONT] pdu-gan-200w</text>
+    <text x="38" y="812.3" fill="#94A3B8" font-size="8.4">MicroLab 6-Inch 1U 200W 4-Port USB-C GaN P</text>
+    <rect x="28" y="657.84" width="256" height="120.46" rx="4" fill="#0F172A" stroke="#334155" stroke-width="1.1" />
+    <line x1="284" y1="718.07" x2="308" y2="718.07" stroke="#475569" stroke-width="1" stroke-dasharray="3,2" />
+    <circle cx="284" cy="718.07" r="2.5" fill="#38BDF8" />
+    <text x="38" y="673.84" fill="#F8FAFC" font-size="9.8" font-weight="700">U2 [FRONT] carrier-pi5-u2</text>
+    <text x="38" y="687.84" fill="#94A3B8" font-size="8.4">Slots: pi5-docker-node, ISP-ONT-WAN, PI5-G</text>
+    <rect x="28" y="533.38" width="256" height="120.46" rx="4" fill="#0F172A" stroke="#334155" stroke-width="1.1" />
+    <line x1="284" y1="593.61" x2="308" y2="593.61" stroke="#475569" stroke-width="1" stroke-dasharray="3,2" />
+    <circle cx="284" cy="593.61" r="2.5" fill="#38BDF8" />
+    <text x="38" y="549.38" fill="#F8FAFC" font-size="9.8" font-weight="700">U3 [FRONT] gw-beryl-ax</text>
+    <text x="38" y="563.38" fill="#94A3B8" font-size="8.4">GL.iNet GL-MT3000 Beryl AX OpenWrt 2.5G Se</text>
+    <rect x="28" y="408.92" width="256" height="120.46" rx="4" fill="#0F172A" stroke="#334155" stroke-width="1.1" />
+    <line x1="284" y1="469.15" x2="308" y2="469.15" stroke="#475569" stroke-width="1" stroke-dasharray="3,2" />
+    <circle cx="284" cy="469.15" r="2.5" fill="#38BDF8" />
+    <text x="38" y="424.92" fill="#F8FAFC" font-size="9.8" font-weight="700">U4 [FRONT] brush-portal-u4</text>
+    <text x="38" y="438.92" fill="#94A3B8" font-size="8.4">MicroRack 6-Inch 1U Brush Strip Cable Pass</text>
+    <rect x="28" y="284.46" width="256" height="120.46" rx="4" fill="#0F172A" stroke="#334155" stroke-width="1.1" />
+    <line x1="284" y1="344.69" x2="308" y2="344.69" stroke="#475569" stroke-width="1" stroke-dasharray="3,2" />
+    <circle cx="284" cy="344.69" r="2.5" fill="#38BDF8" />
+    <text x="38" y="300.46" fill="#F8FAFC" font-size="9.8" font-weight="700">U5 [FRONT] patch-6p-u5</text>
+    <text x="38" y="314.46" fill="#94A3B8" font-size="8.4">DeskPi / MicroRack 6-Inch 1U 6-Port Cat6A </text>
+    <rect x="28" y="160" width="256" height="120.46" rx="4" fill="#0F172A" stroke="#334155" stroke-width="1.1" />
+    <line x1="284" y1="220.23" x2="308" y2="220.23" stroke="#475569" stroke-width="1" stroke-dasharray="3,2" />
+    <circle cx="284" cy="220.23" r="2.5" fill="#38BDF8" />
+    <text x="38" y="176" fill="#F8FAFC" font-size="9.8" font-weight="700">U6 [FRONT] sw-flex-mini</text>
+    <text x="38" y="190" fill="#94A3B8" font-size="8.4">Ubiquiti UniFi Switch Flex Mini (USW-Flex-</text>
+  </g>
+  <g data-bay="FRONT ELEVATION (Z = 0 mm)">
+    <text x="565.36" y="130" fill="#E2E8F0" font-size="13.5" font-weight="700" text-anchor="middle">FRONT ELEVATION (Z = 0 mm)</text>
+    <text x="565.36" y="146" fill="#64748B" font-size="10.5" text-anchor="middle">X: Left (0) -&gt; Right (W_panel) | Y: U1 -&gt; U8</text>
+    <rect x="338" y="144" width="454.72" height="774.76" rx="6" fill="#090D16" stroke="#475569" stroke-width="2.2" />
+    <rect x="308" y="780.3" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="330" y="846.53" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U1</text>
+    <rect x="352" y="780.3" width="426.72" height="124.46" fill="#0F172A" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="308" y="655.84" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="330" y="722.07" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U2</text>
+    <rect x="352" y="655.84" width="426.72" height="124.46" fill="#162033" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="308" y="531.38" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="330" y="597.61" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U3</text>
+    <rect x="352" y="531.38" width="426.72" height="124.46" fill="#0F172A" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="308" y="406.92" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="330" y="473.15" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U4</text>
+    <rect x="352" y="406.92" width="426.72" height="124.46" fill="#162033" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="308" y="282.46" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="330" y="348.69" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U5</text>
+    <rect x="352" y="282.46" width="426.72" height="124.46" fill="#0F172A" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="308" y="158" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="330" y="224.23" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U6</text>
+    <rect x="352" y="158" width="426.72" height="124.46" fill="#162033" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="352" y="158" width="44.45" height="746.76" fill="#1E293B" fill-opacity="0.92" stroke="#475569" stroke-width="1.2" />
+    <rect x="734.27" y="158" width="44.45" height="746.76" fill="#1E293B" fill-opacity="0.92" stroke="#475569" stroke-width="1.2" />
+    <rect x="371.15" y="883.9" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="374.23" cy="886.98" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="372.23" y1="886.98" x2="376.23" y2="886.98" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="374.23" y1="884.98" x2="374.23" y2="888.98" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="753.42" y="883.9" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="756.5" cy="886.98" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="754.5" y1="886.98" x2="758.5" y2="886.98" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="756.5" y1="884.98" x2="756.5" y2="888.98" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="371.15" y="839.45" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="753.42" y="839.45" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="371.15" y="795" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="374.23" cy="798.08" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="372.23" y1="798.08" x2="376.23" y2="798.08" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="374.23" y1="796.08" x2="374.23" y2="800.08" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="753.42" y="795" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="756.5" cy="798.08" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="754.5" y1="798.08" x2="758.5" y2="798.08" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="756.5" y1="796.08" x2="756.5" y2="800.08" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="371.15" y="759.44" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="374.23" cy="762.52" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="372.23" y1="762.52" x2="376.23" y2="762.52" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="374.23" y1="760.52" x2="374.23" y2="764.52" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="753.42" y="759.44" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="756.5" cy="762.52" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="754.5" y1="762.52" x2="758.5" y2="762.52" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="756.5" y1="760.52" x2="756.5" y2="764.52" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="371.15" y="714.99" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="753.42" y="714.99" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="371.15" y="670.54" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="374.23" cy="673.62" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="372.23" y1="673.62" x2="376.23" y2="673.62" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="374.23" y1="671.62" x2="374.23" y2="675.62" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="753.42" y="670.54" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="756.5" cy="673.62" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="754.5" y1="673.62" x2="758.5" y2="673.62" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="756.5" y1="671.62" x2="756.5" y2="675.62" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="371.15" y="634.98" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="374.23" cy="638.06" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="372.23" y1="638.06" x2="376.23" y2="638.06" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="374.23" y1="636.06" x2="374.23" y2="640.06" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="753.42" y="634.98" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="756.5" cy="638.06" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="754.5" y1="638.06" x2="758.5" y2="638.06" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="756.5" y1="636.06" x2="756.5" y2="640.06" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="371.15" y="590.53" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="753.42" y="590.53" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="371.15" y="546.08" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="374.23" cy="549.16" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="372.23" y1="549.16" x2="376.23" y2="549.16" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="374.23" y1="547.16" x2="374.23" y2="551.16" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="753.42" y="546.08" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="756.5" cy="549.16" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="754.5" y1="549.16" x2="758.5" y2="549.16" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="756.5" y1="547.16" x2="756.5" y2="551.16" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="371.15" y="510.52" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="374.23" cy="513.6" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="372.23" y1="513.6" x2="376.23" y2="513.6" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="374.23" y1="511.6" x2="374.23" y2="515.6" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="753.42" y="510.52" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="756.5" cy="513.6" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="754.5" y1="513.6" x2="758.5" y2="513.6" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="756.5" y1="511.6" x2="756.5" y2="515.6" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="371.15" y="466.07" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="753.42" y="466.07" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="371.15" y="421.62" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="374.23" cy="424.7" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="372.23" y1="424.7" x2="376.23" y2="424.7" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="374.23" y1="422.7" x2="374.23" y2="426.7" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="753.42" y="421.62" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="756.5" cy="424.7" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="754.5" y1="424.7" x2="758.5" y2="424.7" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="756.5" y1="422.7" x2="756.5" y2="426.7" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="371.15" y="386.06" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="374.23" cy="389.14" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="372.23" y1="389.14" x2="376.23" y2="389.14" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="374.23" y1="387.14" x2="374.23" y2="391.14" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="753.42" y="386.06" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="756.5" cy="389.14" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="754.5" y1="389.14" x2="758.5" y2="389.14" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="756.5" y1="387.14" x2="756.5" y2="391.14" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="371.15" y="341.61" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="753.42" y="341.61" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="371.15" y="297.16" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="374.23" cy="300.24" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="372.23" y1="300.24" x2="376.23" y2="300.24" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="374.23" y1="298.24" x2="374.23" y2="302.24" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="753.42" y="297.16" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="756.5" cy="300.24" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="754.5" y1="300.24" x2="758.5" y2="300.24" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="756.5" y1="298.24" x2="756.5" y2="302.24" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="371.15" y="261.6" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="374.23" cy="264.68" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="372.23" y1="264.68" x2="376.23" y2="264.68" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="374.23" y1="262.68" x2="374.23" y2="266.68" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="753.42" y="261.6" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="756.5" cy="264.68" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="754.5" y1="264.68" x2="758.5" y2="264.68" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="756.5" y1="262.68" x2="756.5" y2="266.68" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="371.15" y="217.15" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="753.42" y="217.15" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="371.15" y="172.7" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="374.23" cy="175.78" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="372.23" y1="175.78" x2="376.23" y2="175.78" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="374.23" y1="173.78" x2="374.23" y2="177.78" stroke="#0F172A" stroke-width="0.9" />
+    <rect x="753.42" y="172.7" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <circle cx="756.5" cy="175.78" r="3.45" fill="#94A3B8" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="754.5" y1="175.78" x2="758.5" y2="175.78" stroke="#0F172A" stroke-width="0.9" />
+    <line x1="756.5" y1="173.78" x2="756.5" y2="177.78" stroke="#0F172A" stroke-width="0.9" />
+  </g>
+  <g data-bay="REAR ELEVATION (Z = 180 mm, MIRRORED X)">
+    <text x="1134.08" y="130" fill="#E2E8F0" font-size="13.5" font-weight="700" text-anchor="middle">REAR ELEVATION (Z = 180 mm, MIRRORED X)</text>
+    <text x="1134.08" y="146" fill="#64748B" font-size="10.5" text-anchor="middle">X_rear = W_panel - X_world (Looking at Rack Rear)</text>
+    <rect x="906.72" y="144" width="454.72" height="774.76" rx="6" fill="#090D16" stroke="#475569" stroke-width="2.2" />
+    <rect x="876.72" y="780.3" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="898.72" y="846.53" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U1</text>
+    <rect x="920.72" y="780.3" width="426.72" height="124.46" fill="#0F172A" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="876.72" y="655.84" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="898.72" y="722.07" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U2</text>
+    <rect x="920.72" y="655.84" width="426.72" height="124.46" fill="#162033" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="876.72" y="531.38" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="898.72" y="597.61" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U3</text>
+    <rect x="920.72" y="531.38" width="426.72" height="124.46" fill="#0F172A" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="876.72" y="406.92" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="898.72" y="473.15" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U4</text>
+    <rect x="920.72" y="406.92" width="426.72" height="124.46" fill="#162033" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="876.72" y="282.46" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="898.72" y="348.69" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U5</text>
+    <rect x="920.72" y="282.46" width="426.72" height="124.46" fill="#0F172A" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="876.72" y="158" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="898.72" y="224.23" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U6</text>
+    <rect x="920.72" y="158" width="426.72" height="124.46" fill="#162033" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="920.72" y="158" width="44.45" height="746.76" fill="#1E293B" fill-opacity="0.92" stroke="#475569" stroke-width="1.2" />
+    <rect x="1302.99" y="158" width="44.45" height="746.76" fill="#1E293B" fill-opacity="0.92" stroke="#475569" stroke-width="1.2" />
+    <rect x="939.87" y="883.9" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="883.9" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="839.45" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="839.45" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="795" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="795" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="759.44" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="759.44" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="714.99" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="714.99" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="670.54" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="670.54" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="634.98" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="634.98" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="590.53" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="590.53" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="546.08" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="546.08" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="510.52" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="510.52" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="466.07" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="466.07" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="421.62" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="421.62" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="386.06" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="386.06" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="341.61" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="341.61" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="297.16" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="297.16" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="261.6" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="261.6" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="217.15" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="217.15" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="939.87" y="172.7" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+    <rect x="1322.14" y="172.7" width="6.16" height="6.16" rx="0.8" fill="#060911" stroke="#64748B" stroke-width="0.9" />
+  </g>
+  <g data-bay="SIDE-PROFILE DEPTH CUTAWAY">
+    <text x="1867.44" y="130" fill="#E2E8F0" font-size="13.5" font-weight="700" text-anchor="middle">SIDE-PROFILE DEPTH CUTAWAY (Z-Y PLANE)</text>
+    <text x="1867.44" y="146" fill="#64748B" font-size="10.5" text-anchor="middle">Front Door (-40mm) • Front Rail (0mm) • Rear Rail (180mm)</text>
+    <rect x="1475.44" y="144" width="784" height="774.76" rx="6" fill="#090D16" stroke="#475569" stroke-width="2.2" />
+    <rect x="1445.44" y="780.3" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="1467.44" y="846.53" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U1</text>
+    <rect x="1489.44" y="780.3" width="756" height="124.46" fill="#0F172A" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="1445.44" y="655.84" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="1467.44" y="722.07" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U2</text>
+    <rect x="1489.44" y="655.84" width="756" height="124.46" fill="#162033" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="1445.44" y="531.38" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="1467.44" y="597.61" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U3</text>
+    <rect x="1489.44" y="531.38" width="756" height="124.46" fill="#0F172A" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="1445.44" y="406.92" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="1467.44" y="473.15" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U4</text>
+    <rect x="1489.44" y="406.92" width="756" height="124.46" fill="#162033" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="1445.44" y="282.46" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="1467.44" y="348.69" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U5</text>
+    <rect x="1489.44" y="282.46" width="756" height="124.46" fill="#0F172A" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+    <rect x="1445.44" y="158" width="44" height="124.46" fill="#0B1120" stroke="#1E293B" stroke-width="1" />
+    <text x="1467.44" y="224.23" fill="#94A3B8" font-size="10.5" font-weight="700" text-anchor="middle">U6</text>
+    <rect x="1489.44" y="158" width="756" height="124.46" fill="#162033" stroke="#334155" stroke-width="0.9" stroke-dasharray="4,3" />
+  </g>
+  <g data-view="front-elevation" data-layer="front-devices">
+    <g data-instance-id="pdu-u1" data-blueprint="generic-6inch-usb-pd-pdu-4port">
+      <rect x="352" y="781.56" width="44.45" height="123.2" rx="1.5" fill="#18181B" stroke="#475569" stroke-width="1.2" />
+      <rect x="734.27" y="781.56" width="44.45" height="123.2" rx="1.5" fill="#18181B" stroke="#475569" stroke-width="1.2" />
+      <rect x="397.36" y="781.56" width="336" height="123.2" rx="2.5" fill="url(#grad-coated-gray)" stroke="#475569" stroke-width="1.6" />
+      <rect x="399.86" y="784.06" width="331" height="118.2" rx="1.5" fill="none" stroke="#94A3B8" stroke-opacity="0.28" stroke-width="1" />
+      <rect x="419.76" y="798.36" width="50.4" height="30.8" rx="2" fill="#082F49" stroke="#38BDF8" stroke-width="1.2" />
+      <line x1="423.76" y1="810.68" x2="466.16" y2="810.68" stroke="#38BDF8" stroke-width="1.4" />
+      <line x1="423.76" y1="820.54" x2="452.52" y2="820.54" stroke="#7DD3FC" stroke-width="1.1" />
+      <text x="481.36" y="792.06" fill="#F8FAFC" font-size="8.2" font-weight="700">pdu-gan-200w [pdu-u1]</text>
+    <g data-port-id="usb_pd1" data-port-instance="pdu-u1" data-port-face="front" data-anchor-x="464" data-anchor-y="843.16" data-connector="usb-c" data-connector-type="usb-c" transform="translate(464, 843.16)">
+      <rect x="-11.76" y="-4.48" width="23.52" height="8.96" rx="4.48" fill="#090D16" stroke="#38BDF8" stroke-width="1.1" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">usb_</text>
+      <title>pdu-u1.usb_pd1 (USB-C PD 1 — usb-c)</title>
+    </g>
+    <g data-port-id="usb_pd2" data-port-instance="pdu-u1" data-port-face="front" data-anchor-x="508.8" data-anchor-y="843.16" data-connector="usb-c" data-connector-type="usb-c" transform="translate(508.8, 843.16)">
+      <rect x="-11.76" y="-4.48" width="23.52" height="8.96" rx="4.48" fill="#090D16" stroke="#38BDF8" stroke-width="1.1" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">usb_</text>
+      <title>pdu-u1.usb_pd2 (USB-C PD 2 — usb-c)</title>
+    </g>
+    <g data-port-id="usb_pd3" data-port-instance="pdu-u1" data-port-face="front" data-anchor-x="553.6" data-anchor-y="843.16" data-connector="usb-c" data-connector-type="usb-c" transform="translate(553.6, 843.16)">
+      <rect x="-11.76" y="-4.48" width="23.52" height="8.96" rx="4.48" fill="#090D16" stroke="#38BDF8" stroke-width="1.1" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">usb_</text>
+      <title>pdu-u1.usb_pd3 (USB-C PD 3 — usb-c)</title>
+    </g>
+    <g data-port-id="usb_pd4" data-port-instance="pdu-u1" data-port-face="front" data-anchor-x="598.4" data-anchor-y="843.16" data-connector="usb-c" data-connector-type="usb-c" transform="translate(598.4, 843.16)">
+      <rect x="-11.76" y="-4.48" width="23.52" height="8.96" rx="4.48" fill="#090D16" stroke="#38BDF8" stroke-width="1.1" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">usb_</text>
+      <title>pdu-u1.usb_pd4 (USB-C PD 4 — usb-c)</title>
+    </g>
+    <g data-port-id="dc_out1" data-port-instance="pdu-u1" data-port-face="front" data-anchor-x="646" data-anchor-y="843.16" data-connector="dc-5525" data-connector-type="dc-5525" transform="translate(646, 843.16)">
+      <circle cx="0" cy="0" r="10.64" fill="#090D16" stroke="#FACC15" stroke-width="1.2" />
+      <circle cx="0" cy="0" r="1.6" fill="#FACC15" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">dc_o</text>
+      <title>pdu-u1.dc_out1 (12V/20V DC Out — dc-5525)</title>
+    </g>
+    </g>
+    <g data-instance-id="carrier-pi5-u2" data-blueprint="3dprint-6inch-rpi5-plus-keystone-carrier-1u">
+      <rect x="352" y="657.1" width="44.45" height="123.2" rx="1.5" fill="#27272A" stroke="#475569" stroke-width="1.2" />
+      <rect x="734.27" y="657.1" width="44.45" height="123.2" rx="1.5" fill="#27272A" stroke="#475569" stroke-width="1.2" />
+      <rect x="352" y="657.1" width="426.72" height="123.2" rx="2.5" fill="#27272A" stroke="#475569" stroke-width="1.6" />
+      <rect x="354" y="659.1" width="422.72" height="119.2" rx="2" fill="url(#carrier-infill)" stroke="#52525B" stroke-width="0.9" />
+      <rect x="402.4" y="668.3" width="184.8" height="100.8" rx="2" fill="#090D16" fill-opacity="0.65" stroke="#64748B" stroke-width="1.1" stroke-dasharray="3,2" />
+      <rect x="604" y="685.1" width="46.2" height="61.6" rx="2" fill="#090D16" fill-opacity="0.65" stroke="#64748B" stroke-width="1.1" stroke-dasharray="3,2" />
+      <rect x="665.6" y="685.1" width="46.2" height="61.6" rx="2" fill="#090D16" fill-opacity="0.65" stroke="#64748B" stroke-width="1.1" stroke-dasharray="3,2" />
+      <g data-instance-id="pi5-docker-01" data-parent-carrier="carrier-pi5-u2" data-slot-id="rpi5-bay-1">
+        <rect x="402.4" y="679.5" width="173.6" height="89.6" rx="2" fill="#166534" stroke="#38BDF8" stroke-width="1.3" />
+        <text x="416.4" y="689.5" fill="#F8FAFC" font-size="8" font-weight="700">pi5-docker-node</text>
+    <g data-port-id="eth0" data-port-instance="pi5-docker-01" data-port-face="front" data-anchor-x="447.2" data-anchor-y="729.9" data-connector="rj45" data-connector-type="rj45" transform="translate(447.2, 729.9)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#F59E0B" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#F59E0B" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#F59E0B" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">0</text>
+      <title>pi5-docker-01.eth0 (GbE PoE — rj45)</title>
+    </g>
+    <g data-port-id="usb3_1" data-port-instance="pi5-docker-01" data-port-face="front" data-anchor-x="497.6" data-anchor-y="729.9" data-connector="usb-a" data-connector-type="usb-a" transform="translate(497.6, 729.9)">
+      <rect x="-15.4" y="-6.72" width="30.8" height="13.44" rx="0.8" fill="#090D16" stroke="#60A5FA" stroke-width="1.1" />
+      <rect x="-11.7" y="-2.02" width="23.41" height="4.7" fill="#2563EB" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">usb3</text>
+      <title>pi5-docker-01.usb3_1 (USB 3.0 — usb-a)</title>
+    </g>
+    <g data-port-id="usb2_1" data-port-instance="pi5-docker-01" data-port-face="front" data-anchor-x="542.4" data-anchor-y="729.9" data-connector="usb-a" data-connector-type="usb-a" transform="translate(542.4, 729.9)">
+      <rect x="-15.4" y="-6.72" width="30.8" height="13.44" rx="0.8" fill="#090D16" stroke="#60A5FA" stroke-width="1.1" />
+      <rect x="-11.7" y="-2.02" width="23.41" height="4.7" fill="#2563EB" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">usb2</text>
+      <title>pi5-docker-01.usb2_1 (USB 2.0 — usb-a)</title>
+    </g>
+      </g>
+      <g data-instance-id="ks-u2-wan" data-parent-carrier="carrier-pi5-u2" data-slot-id="keystone-1">
+        <rect x="604" y="690.7" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" stroke="#38BDF8" stroke-width="1.3" />
+    <g data-port-id="coupler" data-port-instance="ks-u2-wan" data-port-face="front" data-anchor-x="626.4" data-anchor-y="718.7" data-connector="rj45" data-connector-type="rj45" transform="translate(626.4, 718.7)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">coup</text>
+      <title>ks-u2-wan.coupler (RJ45 — rj45)</title>
+    </g>
+      </g>
+      <g data-instance-id="ks-u2-lan" data-parent-carrier="carrier-pi5-u2" data-slot-id="keystone-2">
+        <rect x="665.6" y="690.7" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" stroke="#38BDF8" stroke-width="1.3" />
+    <g data-port-id="coupler" data-port-instance="ks-u2-lan" data-port-face="front" data-anchor-x="688" data-anchor-y="718.7" data-connector="rj45" data-connector-type="rj45" transform="translate(688, 718.7)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">coup</text>
+      <title>ks-u2-lan.coupler (RJ45 — rj45)</title>
+    </g>
+      </g>
+    </g>
+    <g data-instance-id="gw-beryl-u3" data-blueprint="gl-inet-mt3000-beryl-ax-6inch">
+      <rect x="352" y="560.64" width="44.45" height="95.2" rx="1.5" fill="#1E293B" stroke="#475569" stroke-width="1.2" />
+      <rect x="734.27" y="560.64" width="44.45" height="95.2" rx="1.5" fill="#1E293B" stroke="#475569" stroke-width="1.2" />
+      <rect x="397.36" y="560.64" width="336" height="95.2" rx="2.5" fill="#1E293B" stroke="#475569" stroke-width="1.6" />
+      <rect x="399.86" y="563.14" width="331" height="90.2" rx="1.5" fill="none" stroke="#94A3B8" stroke-opacity="0.28" stroke-width="1" />
+      <text x="419.76" y="571.14" fill="#F8FAFC" font-size="8.2" font-weight="700">gw-beryl-ax [gw-beryl-u3]</text>
+    </g>
+    <g data-instance-id="brush-u4" data-blueprint="generic-6inch-brush-panel-1u">
+      <rect x="352" y="408.18" width="44.45" height="123.2" rx="1.5" fill="#18181B" stroke="#475569" stroke-width="1.2" />
+      <rect x="734.27" y="408.18" width="44.45" height="123.2" rx="1.5" fill="#18181B" stroke="#475569" stroke-width="1.2" />
+      <rect x="397.36" y="408.18" width="336" height="123.2" rx="2.5" fill="url(#grad-steel-dark)" stroke="#475569" stroke-width="1.6" />
+      <rect x="425.36" y="430.58" width="280" height="78.4" rx="2" fill="#050811" stroke="#374151" stroke-width="1.2" />
+      <line x1="429.36" y1="430.58" x2="429.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="433.36" y1="430.58" x2="433.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="437.36" y1="430.58" x2="437.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="441.36" y1="430.58" x2="441.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="445.36" y1="430.58" x2="445.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="449.36" y1="430.58" x2="449.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="453.36" y1="430.58" x2="453.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="457.36" y1="430.58" x2="457.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="461.36" y1="430.58" x2="461.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="465.36" y1="430.58" x2="465.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="469.36" y1="430.58" x2="469.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="473.36" y1="430.58" x2="473.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="477.36" y1="430.58" x2="477.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="481.36" y1="430.58" x2="481.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="485.36" y1="430.58" x2="485.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="489.36" y1="430.58" x2="489.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="493.36" y1="430.58" x2="493.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="497.36" y1="430.58" x2="497.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="501.36" y1="430.58" x2="501.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="505.36" y1="430.58" x2="505.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="509.36" y1="430.58" x2="509.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="513.36" y1="430.58" x2="513.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="517.36" y1="430.58" x2="517.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="521.36" y1="430.58" x2="521.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="525.36" y1="430.58" x2="525.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="529.36" y1="430.58" x2="529.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="533.36" y1="430.58" x2="533.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="537.36" y1="430.58" x2="537.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="541.36" y1="430.58" x2="541.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="545.36" y1="430.58" x2="545.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="549.36" y1="430.58" x2="549.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="553.36" y1="430.58" x2="553.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="557.36" y1="430.58" x2="557.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="561.36" y1="430.58" x2="561.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="565.36" y1="430.58" x2="565.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="569.36" y1="430.58" x2="569.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="573.36" y1="430.58" x2="573.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="577.36" y1="430.58" x2="577.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="581.36" y1="430.58" x2="581.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="585.36" y1="430.58" x2="585.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="589.36" y1="430.58" x2="589.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="593.36" y1="430.58" x2="593.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="597.36" y1="430.58" x2="597.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="601.36" y1="430.58" x2="601.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="605.36" y1="430.58" x2="605.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="609.36" y1="430.58" x2="609.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="613.36" y1="430.58" x2="613.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="617.36" y1="430.58" x2="617.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="621.36" y1="430.58" x2="621.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="625.36" y1="430.58" x2="625.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="629.36" y1="430.58" x2="629.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="633.36" y1="430.58" x2="633.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="637.36" y1="430.58" x2="637.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="641.36" y1="430.58" x2="641.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="645.36" y1="430.58" x2="645.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="649.36" y1="430.58" x2="649.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="653.36" y1="430.58" x2="653.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="657.36" y1="430.58" x2="657.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="661.36" y1="430.58" x2="661.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="665.36" y1="430.58" x2="665.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="669.36" y1="430.58" x2="669.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="673.36" y1="430.58" x2="673.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="677.36" y1="430.58" x2="677.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="681.36" y1="430.58" x2="681.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="685.36" y1="430.58" x2="685.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="689.36" y1="430.58" x2="689.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="693.36" y1="430.58" x2="693.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="697.36" y1="430.58" x2="697.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="701.36" y1="430.58" x2="701.36" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <text x="419.76" y="418.68" fill="#F8FAFC" font-size="8.2" font-weight="700">brush-portal-u4 [brush-u4]</text>
+    </g>
+    <g data-instance-id="patch-u5" data-blueprint="generic-6inch-patch-panel-6port">
+      <rect x="352" y="283.72" width="44.45" height="123.2" rx="1.5" fill="#111827" stroke="#475569" stroke-width="1.2" />
+      <rect x="734.27" y="283.72" width="44.45" height="123.2" rx="1.5" fill="#111827" stroke="#475569" stroke-width="1.2" />
+      <rect x="397.36" y="283.72" width="336" height="123.2" rx="2.5" fill="url(#grad-steel-dark)" stroke="#475569" stroke-width="1.6" />
+      <rect x="399.86" y="286.22" width="331" height="118.2" rx="1.5" fill="none" stroke="#94A3B8" stroke-opacity="0.28" stroke-width="1" />
+      <text x="419.76" y="294.22" fill="#F8FAFC" font-size="8.2" font-weight="700">patch-6p-u5 [patch-u5]</text>
+    <g data-port-id="p1" data-port-instance="patch-u5" data-port-face="front" data-anchor-x="403.8" data-anchor-y="345.32" data-connector="rj45" data-connector-type="rj45" transform="translate(403.8, 345.32)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">1</text>
+      <title>patch-u5.p1 (Port 1 — rj45)</title>
+    </g>
+    <g data-port-id="p2" data-port-instance="patch-u5" data-port-face="front" data-anchor-x="450" data-anchor-y="345.32" data-connector="rj45" data-connector-type="rj45" transform="translate(450, 345.32)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">2</text>
+      <title>patch-u5.p2 (Port 2 — rj45)</title>
+    </g>
+    <g data-port-id="p3" data-port-instance="patch-u5" data-port-face="front" data-anchor-x="496.2" data-anchor-y="345.32" data-connector="rj45" data-connector-type="rj45" transform="translate(496.2, 345.32)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">3</text>
+      <title>patch-u5.p3 (Port 3 — rj45)</title>
+    </g>
+    <g data-port-id="p4" data-port-instance="patch-u5" data-port-face="front" data-anchor-x="542.4" data-anchor-y="345.32" data-connector="rj45" data-connector-type="rj45" transform="translate(542.4, 345.32)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">4</text>
+      <title>patch-u5.p4 (Port 4 — rj45)</title>
+    </g>
+    <g data-port-id="p5" data-port-instance="patch-u5" data-port-face="front" data-anchor-x="588.6" data-anchor-y="345.32" data-connector="rj45" data-connector-type="rj45" transform="translate(588.6, 345.32)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">5</text>
+      <title>patch-u5.p5 (Port 5 — rj45)</title>
+    </g>
+    <g data-port-id="p6" data-port-instance="patch-u5" data-port-face="front" data-anchor-x="634.8" data-anchor-y="345.32" data-connector="rj45" data-connector-type="rj45" transform="translate(634.8, 345.32)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">6</text>
+      <title>patch-u5.p6 (Port 6 — rj45)</title>
+    </g>
+    </g>
+    <g data-instance-id="sw-flex-u6" data-blueprint="ubiquiti-usw-flex-mini-6inch">
+      <rect x="352" y="223.1" width="44.45" height="59.36" rx="1.5" fill="#E5E7EB" stroke="#475569" stroke-width="1.2" />
+      <rect x="734.27" y="223.1" width="44.45" height="59.36" rx="1.5" fill="#E5E7EB" stroke="#475569" stroke-width="1.2" />
+      <rect x="415.28" y="223.1" width="300.16" height="59.36" rx="2.5" fill="url(#grad-aluminum-silver)" stroke="#475569" stroke-width="1.6" />
+      <rect x="417.78" y="225.6" width="295.16" height="54.36" rx="1.5" fill="none" stroke="#94A3B8" stroke-opacity="0.28" stroke-width="1" />
+      <text x="437.68" y="233.6" fill="#0F172A" font-size="8.2" font-weight="700">sw-flex-mini [sw-flex-u6]</text>
+    <g data-port-id="eth2" data-port-instance="sw-flex-u6" data-port-face="front" data-anchor-x="451.4" data-anchor-y="252.78" data-connector="rj45" data-connector-type="rj45" transform="translate(451.4, 252.78)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">2</text>
+      <title>sw-flex-u6.eth2 (Port 2 — rj45)</title>
+    </g>
+    <g data-port-id="eth3" data-port-instance="sw-flex-u6" data-port-face="front" data-anchor-x="500.4" data-anchor-y="252.78" data-connector="rj45" data-connector-type="rj45" transform="translate(500.4, 252.78)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">3</text>
+      <title>sw-flex-u6.eth3 (Port 3 — rj45)</title>
+    </g>
+    <g data-port-id="eth4" data-port-instance="sw-flex-u6" data-port-face="front" data-anchor-x="549.4" data-anchor-y="252.78" data-connector="rj45" data-connector-type="rj45" transform="translate(549.4, 252.78)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">4</text>
+      <title>sw-flex-u6.eth4 (Port 4 — rj45)</title>
+    </g>
+    <g data-port-id="eth5" data-port-instance="sw-flex-u6" data-port-face="front" data-anchor-x="598.4" data-anchor-y="252.78" data-connector="rj45" data-connector-type="rj45" transform="translate(598.4, 252.78)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">5</text>
+      <title>sw-flex-u6.eth5 (Port 5 — rj45)</title>
+    </g>
+    <g data-port-id="eth1" data-port-instance="sw-flex-u6" data-port-face="front" data-anchor-x="402.4" data-anchor-y="252.78" data-connector="rj45" data-connector-type="rj45" transform="translate(402.4, 252.78)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#F59E0B" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#F59E0B" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#F59E0B" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">1</text>
+      <title>sw-flex-u6.eth1 (Port 1 (PoE-In) — rj45)</title>
+    </g>
+    </g>
+  </g>
+  <g data-view="rear-elevation" data-layer="rear-devices">
+    <g data-instance-id="pdu-u1" data-rear-view-role="front-device-rear-face">
+      <rect x="966.08" y="781.56" width="336" height="123.2" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#475569" stroke-width="1.2" />
+      <text x="972.08" y="791.06" fill="#F8FAFC" font-size="8" font-weight="700">pdu-gan-200w (REAR FACE)</text>
+    <g data-port-id="ac_in" data-port-instance="pdu-u1" data-port-face="rear" data-anchor-x="1179.44" data-anchor-y="843.16" data-connector="iec-c14" data-connector-type="iec-c14" transform="translate(1179.44, 843.16)">
+      <polygon points="-15.68,-16.24 15.68,-16.24 25.2,-6.719999999999999 25.2,16.24 -25.2,16.24 -25.2,-6.719999999999999" fill="#090D16" stroke="#EF4444" stroke-width="1.3" />
+      <rect x="-16.38" y="-3.36" width="5.04" height="11.2" fill="#CBD5E1" />
+      <rect x="-2.52" y="-8.93" width="5.04" height="11.2" fill="#FBBF24" />
+      <rect x="11.34" y="-3.36" width="5.04" height="11.2" fill="#CBD5E1" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">ac_i</text>
+      <title>pdu-u1.ac_in (IEC-C14 AC In — iec-c14)</title>
+    </g>
+    </g>
+    <g data-instance-id="carrier-pi5-u2" data-rear-view-role="front-device-rear-face">
+      <rect x="920.72" y="657.1" width="426.72" height="123.2" rx="2" fill="#27272A" fill-opacity="0.88" stroke="#475569" stroke-width="1.2" />
+      <rect x="922.72" y="659.1" width="422.72" height="119.2" rx="2" fill="url(#carrier-infill)" stroke="#52525B" stroke-width="0.9" />
+    </g>
+    <g data-instance-id="pi5-docker-01" data-rear-view-role="front-device-rear-face">
+      <rect x="1123.44" y="679.5" width="173.6" height="89.6" rx="2" fill="#166534" fill-opacity="0.88" stroke="#38BDF8" stroke-width="1.2" />
+      <text x="1129.44" y="689" fill="#F8FAFC" font-size="8" font-weight="700">pi5-docker-node</text>
+    <g data-port-id="usbc_pwr" data-port-instance="pi5-docker-01" data-port-face="rear" data-anchor-x="1241.04" data-anchor-y="741.1" data-connector="usb-c" data-connector-type="usb-c" transform="translate(1241.04, 741.1)">
+      <rect x="-11.76" y="-4.48" width="23.52" height="8.96" rx="4.48" fill="#090D16" stroke="#38BDF8" stroke-width="1.1" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">usbc</text>
+      <title>pi5-docker-01.usbc_pwr (5V USB-C — usb-c)</title>
+    </g>
+    </g>
+    <g data-instance-id="ks-u2-wan" data-rear-view-role="front-device-rear-face">
+      <rect x="1050.64" y="690.7" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#38BDF8" stroke-width="1.2" />
+    <g data-port-id="coupler" data-port-instance="ks-u2-wan" data-port-face="rear" data-anchor-x="1073.04" data-anchor-y="718.7" data-connector="rj45" data-connector-type="rj45" transform="translate(1073.04, 718.7)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">coup</text>
+      <title>ks-u2-wan.coupler (RJ45 — rj45)</title>
+    </g>
+    </g>
+    <g data-instance-id="ks-u2-lan" data-rear-view-role="front-device-rear-face">
+      <rect x="989.04" y="690.7" width="44.8" height="56" rx="2" fill="url(#grad-coated-gray)" fill-opacity="0.88" stroke="#38BDF8" stroke-width="1.2" />
+    <g data-port-id="coupler" data-port-instance="ks-u2-lan" data-port-face="rear" data-anchor-x="1011.44" data-anchor-y="718.7" data-connector="rj45" data-connector-type="rj45" transform="translate(1011.44, 718.7)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">coup</text>
+      <title>ks-u2-lan.coupler (RJ45 — rj45)</title>
+    </g>
+    </g>
+    <g data-instance-id="gw-beryl-u3" data-rear-view-role="front-device-rear-face">
+      <rect x="966.08" y="560.64" width="336" height="95.2" rx="2" fill="#1E293B" fill-opacity="0.88" stroke="#475569" stroke-width="1.2" />
+      <text x="972.08" y="570.14" fill="#F8FAFC" font-size="8" font-weight="700">gw-beryl-ax (REAR FACE)</text>
+    <g data-port-id="wan1" data-port-instance="gw-beryl-u3" data-port-face="rear" data-anchor-x="1229.84" data-anchor-y="611.04" data-connector="rj45" data-connector-type="rj45" transform="translate(1229.84, 611.04)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">wan1</text>
+      <title>gw-beryl-u3.wan1 (2.5GbE WAN — rj45)</title>
+    </g>
+    <g data-port-id="lan1" data-port-instance="gw-beryl-u3" data-port-face="rear" data-anchor-x="1162.64" data-anchor-y="611.04" data-connector="rj45" data-connector-type="rj45" transform="translate(1162.64, 611.04)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">1</text>
+      <title>gw-beryl-u3.lan1 (1GbE LAN — rj45)</title>
+    </g>
+    <g data-port-id="usb1" data-port-instance="gw-beryl-u3" data-port-face="rear" data-anchor-x="1089.84" data-anchor-y="611.04" data-connector="usb-a" data-connector-type="usb-a" transform="translate(1089.84, 611.04)">
+      <rect x="-15.4" y="-6.72" width="30.8" height="13.44" rx="0.8" fill="#090D16" stroke="#60A5FA" stroke-width="1.1" />
+      <rect x="-11.7" y="-2.02" width="23.41" height="4.7" fill="#2563EB" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">usb1</text>
+      <title>gw-beryl-u3.usb1 (USB 3.0 — usb-a)</title>
+    </g>
+    <g data-port-id="pwr_usb_c" data-port-instance="gw-beryl-u3" data-port-face="rear" data-anchor-x="1297.04" data-anchor-y="611.04" data-connector="usb-c" data-connector-type="usb-c" transform="translate(1297.04, 611.04)">
+      <rect x="-11.76" y="-4.48" width="23.52" height="8.96" rx="4.48" fill="#090D16" stroke="#38BDF8" stroke-width="1.1" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">pwr_</text>
+      <title>gw-beryl-u3.pwr_usb_c (5V 3A USB-C In — usb-c)</title>
+    </g>
+    </g>
+    <g data-instance-id="brush-u4" data-rear-view-role="front-device-rear-face">
+      <rect x="966.08" y="408.18" width="336" height="123.2" rx="2" fill="url(#grad-steel-dark)" fill-opacity="0.88" stroke="#475569" stroke-width="1.2" />
+      <rect x="994.08" y="430.58" width="280" height="78.4" rx="2" fill="#050811" stroke="#374151" stroke-width="1.2" />
+      <line x1="998.08" y1="430.58" x2="998.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1002.08" y1="430.58" x2="1002.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1006.08" y1="430.58" x2="1006.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1010.08" y1="430.58" x2="1010.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1014.08" y1="430.58" x2="1014.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1018.08" y1="430.58" x2="1018.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1022.08" y1="430.58" x2="1022.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1026.08" y1="430.58" x2="1026.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1030.08" y1="430.58" x2="1030.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1034.08" y1="430.58" x2="1034.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1038.08" y1="430.58" x2="1038.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1042.08" y1="430.58" x2="1042.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1046.08" y1="430.58" x2="1046.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1050.08" y1="430.58" x2="1050.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1054.08" y1="430.58" x2="1054.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1058.08" y1="430.58" x2="1058.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1062.08" y1="430.58" x2="1062.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1066.08" y1="430.58" x2="1066.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1070.08" y1="430.58" x2="1070.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1074.08" y1="430.58" x2="1074.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1078.08" y1="430.58" x2="1078.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1082.08" y1="430.58" x2="1082.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1086.08" y1="430.58" x2="1086.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1090.08" y1="430.58" x2="1090.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1094.08" y1="430.58" x2="1094.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1098.08" y1="430.58" x2="1098.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1102.08" y1="430.58" x2="1102.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1106.08" y1="430.58" x2="1106.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1110.08" y1="430.58" x2="1110.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1114.08" y1="430.58" x2="1114.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1118.08" y1="430.58" x2="1118.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1122.08" y1="430.58" x2="1122.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1126.08" y1="430.58" x2="1126.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1130.08" y1="430.58" x2="1130.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1134.08" y1="430.58" x2="1134.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1138.08" y1="430.58" x2="1138.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1142.08" y1="430.58" x2="1142.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1146.08" y1="430.58" x2="1146.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1150.08" y1="430.58" x2="1150.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1154.08" y1="430.58" x2="1154.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1158.08" y1="430.58" x2="1158.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1162.08" y1="430.58" x2="1162.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1166.08" y1="430.58" x2="1166.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1170.08" y1="430.58" x2="1170.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1174.08" y1="430.58" x2="1174.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1178.08" y1="430.58" x2="1178.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1182.08" y1="430.58" x2="1182.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1186.08" y1="430.58" x2="1186.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1190.08" y1="430.58" x2="1190.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1194.08" y1="430.58" x2="1194.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1198.08" y1="430.58" x2="1198.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1202.08" y1="430.58" x2="1202.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1206.08" y1="430.58" x2="1206.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1210.08" y1="430.58" x2="1210.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1214.08" y1="430.58" x2="1214.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1218.08" y1="430.58" x2="1218.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1222.08" y1="430.58" x2="1222.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1226.08" y1="430.58" x2="1226.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1230.08" y1="430.58" x2="1230.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1234.08" y1="430.58" x2="1234.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1238.08" y1="430.58" x2="1238.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1242.08" y1="430.58" x2="1242.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1246.08" y1="430.58" x2="1246.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1250.08" y1="430.58" x2="1250.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1254.08" y1="430.58" x2="1254.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1258.08" y1="430.58" x2="1258.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1262.08" y1="430.58" x2="1262.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1266.08" y1="430.58" x2="1266.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <line x1="1270.08" y1="430.58" x2="1270.08" y2="508.98" stroke="#1E293B" stroke-width="1.2" />
+      <text x="972.08" y="417.68" fill="#F8FAFC" font-size="8" font-weight="700">brush-portal-u4 (REAR FACE)</text>
+    </g>
+    <g data-instance-id="patch-u5" data-rear-view-role="front-device-rear-face">
+      <rect x="966.08" y="283.72" width="336" height="123.2" rx="2" fill="url(#grad-steel-dark)" fill-opacity="0.88" stroke="#475569" stroke-width="1.2" />
+      <text x="972.08" y="293.22" fill="#F8FAFC" font-size="8" font-weight="700">patch-6p-u5 (REAR FACE)</text>
+    <g data-port-id="p1" data-port-instance="patch-u5" data-port-face="rear" data-anchor-x="1295.64" data-anchor-y="345.32" data-connector="rj45" data-connector-type="rj45" transform="translate(1295.64, 345.32)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">1</text>
+      <title>patch-u5.p1 (Port 1 — rj45)</title>
+    </g>
+    <g data-port-id="p2" data-port-instance="patch-u5" data-port-face="rear" data-anchor-x="1249.44" data-anchor-y="345.32" data-connector="rj45" data-connector-type="rj45" transform="translate(1249.44, 345.32)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">2</text>
+      <title>patch-u5.p2 (Port 2 — rj45)</title>
+    </g>
+    <g data-port-id="p3" data-port-instance="patch-u5" data-port-face="rear" data-anchor-x="1203.24" data-anchor-y="345.32" data-connector="rj45" data-connector-type="rj45" transform="translate(1203.24, 345.32)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">3</text>
+      <title>patch-u5.p3 (Port 3 — rj45)</title>
+    </g>
+    <g data-port-id="p4" data-port-instance="patch-u5" data-port-face="rear" data-anchor-x="1157.04" data-anchor-y="345.32" data-connector="rj45" data-connector-type="rj45" transform="translate(1157.04, 345.32)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">4</text>
+      <title>patch-u5.p4 (Port 4 — rj45)</title>
+    </g>
+    <g data-port-id="p5" data-port-instance="patch-u5" data-port-face="rear" data-anchor-x="1110.84" data-anchor-y="345.32" data-connector="rj45" data-connector-type="rj45" transform="translate(1110.84, 345.32)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">5</text>
+      <title>patch-u5.p5 (Port 5 — rj45)</title>
+    </g>
+    <g data-port-id="p6" data-port-instance="patch-u5" data-port-face="rear" data-anchor-x="1064.64" data-anchor-y="345.32" data-connector="rj45" data-connector-type="rj45" transform="translate(1064.64, 345.32)">
+      <rect x="-16.52" y="-13.44" width="33.04" height="26.88" rx="1.2" fill="#090D16" stroke="#94A3B8" stroke-width="1.2" />
+      <rect x="-7" y="-16.52" width="14" height="6.16" fill="#090D16" stroke="#94A3B8" stroke-width="1" />
+      <line x1="-11.23" y1="-4.7" x2="-11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-8.02" y1="-4.7" x2="-8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-4.81" y1="-4.7" x2="-4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="-1.6" y1="-4.7" x2="-1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="1.6" y1="-4.7" x2="1.6" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">6</text>
+      <title>patch-u5.p6 (Port 6 — rj45)</title>
+    </g>
+    </g>
+    <g data-instance-id="sw-flex-u6" data-rear-view-role="front-device-rear-face">
+      <rect x="984" y="223.1" width="300.16" height="59.36" rx="2" fill="url(#grad-aluminum-silver)" fill-opacity="0.88" stroke="#475569" stroke-width="1.2" />
+      <text x="990" y="232.6" fill="#0F172A" font-size="8" font-weight="700">sw-flex-mini (REAR FACE)</text>
+    <g data-port-id="pwr_usb_c" data-port-instance="sw-flex-u6" data-port-face="rear" data-anchor-x="1101.04" data-anchor-y="252.78" data-connector="usb-c" data-connector-type="usb-c" transform="translate(1101.04, 252.78)">
+      <rect x="-11.76" y="-4.48" width="23.52" height="8.96" rx="4.48" fill="#090D16" stroke="#38BDF8" stroke-width="1.1" />
+      <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">pwr_</text>
+      <title>sw-flex-u6.pwr_usb_c (5V 1A USB-C In — usb-c)</title>
+    </g>
+    </g>
+  </g>
+  <g data-view="side-cutaway" data-layer="side-cutaway-details">
+    <line x1="1601.44" y1="158" x2="1601.44" y2="904.76" stroke="#1E293B" stroke-width="0.9" stroke-dasharray="2,4" />
+    <line x1="1601.44" y1="904.76" x2="1601.44" y2="910.76" stroke="#64748B" stroke-width="1.2" />
+    <text x="1601.44" y="921.76" fill="#64748B" font-size="8" font-weight="600" text-anchor="middle">0mm</text>
+    <line x1="1741.44" y1="158" x2="1741.44" y2="904.76" stroke="#1E293B" stroke-width="0.9" stroke-dasharray="2,4" />
+    <line x1="1741.44" y1="904.76" x2="1741.44" y2="910.76" stroke="#64748B" stroke-width="1.2" />
+    <text x="1741.44" y="921.76" fill="#64748B" font-size="8" font-weight="600" text-anchor="middle">50mm</text>
+    <line x1="1881.44" y1="158" x2="1881.44" y2="904.76" stroke="#1E293B" stroke-width="0.9" stroke-dasharray="2,4" />
+    <line x1="1881.44" y1="904.76" x2="1881.44" y2="910.76" stroke="#64748B" stroke-width="1.2" />
+    <text x="1881.44" y="921.76" fill="#64748B" font-size="8" font-weight="600" text-anchor="middle">100mm</text>
+    <line x1="2021.44" y1="158" x2="2021.44" y2="904.76" stroke="#1E293B" stroke-width="0.9" stroke-dasharray="2,4" />
+    <line x1="2021.44" y1="904.76" x2="2021.44" y2="910.76" stroke="#64748B" stroke-width="1.2" />
+    <text x="2021.44" y="921.76" fill="#64748B" font-size="8" font-weight="600" text-anchor="middle">150mm</text>
+    <line x1="2161.44" y1="158" x2="2161.44" y2="904.76" stroke="#1E293B" stroke-width="0.9" stroke-dasharray="2,4" />
+    <line x1="2161.44" y1="904.76" x2="2161.44" y2="910.76" stroke="#64748B" stroke-width="1.2" />
+    <text x="2161.44" y="921.76" fill="#64748B" font-size="8" font-weight="600" text-anchor="middle">200mm</text>
+    <line x1="2105.44" y1="158" x2="2105.44" y2="904.76" stroke="#1E293B" stroke-width="0.9" stroke-dasharray="2,4" />
+    <line x1="2105.44" y1="904.76" x2="2105.44" y2="910.76" stroke="#64748B" stroke-width="1.2" />
+    <text x="2105.44" y="921.76" fill="#64748B" font-size="8" font-weight="600" text-anchor="middle">180mm</text>
+    <line x1="2245.44" y1="158" x2="2245.44" y2="904.76" stroke="#1E293B" stroke-width="0.9" stroke-dasharray="2,4" />
+    <line x1="2245.44" y1="904.76" x2="2245.44" y2="910.76" stroke="#64748B" stroke-width="1.2" />
+    <text x="2245.44" y="921.76" fill="#64748B" font-size="8" font-weight="600" text-anchor="middle">230mm</text>
+    <rect x="1601.44" y="158" width="9.8" height="746.76" fill="#334155" stroke="#94A3B8" stroke-width="1.2" />
+    <text x="1603.44" y="935.76" fill="#CBD5E1" font-size="9" font-weight="700">Z=0mm (Front Rail)</text>
+    <rect x="2095.64" y="158" width="9.8" height="746.76" fill="#334155" stroke="#94A3B8" stroke-width="1.2" />
+    <text x="2103.44" y="935.76" fill="#CBD5E1" font-size="9" font-weight="700" text-anchor="end">Z=180mm (Rear Rail)</text>
+    <g data-side-instance-id="pdu-u1">
+      <rect x="1595.84" y="782.56" width="151.2" height="121.2" rx="2.5" fill="url(#grad-coated-gray)" fill-opacity="0.90" stroke="#64748B" stroke-width="1.4" />
+      <rect x="1598.34" y="785.06" width="146.2" height="116.2" rx="1.5" fill="none" stroke="#94A3B8" stroke-opacity="0.22" stroke-width="0.9" />
+      <rect x="1601.84" y="787.56" width="139.2" height="26" rx="3" fill="#090D16" fill-opacity="0.78" stroke="#64748B" stroke-opacity="0.45" stroke-width="0.8" />
+      <text x="1607.84" y="798.56" fill="#F8FAFC" font-size="8.5" font-weight="700">pdu-gan-200w (54mm)</text>
+      <text x="1607.84" y="809.56" fill="#94A3B8" font-size="7.3">MicroLab 6-Inch 1U 200W 4-Port USB-C GaN</text>
+      <rect x="1511.84" y="820.76" width="89.6" height="44.8" rx="2" fill="#F59E0B" fill-opacity="0.22" stroke="#F59E0B" stroke-width="1.2" stroke-dasharray="3,2" />
+      <text x="1556.64" y="845.76" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+32mm (3x)</text>
+    </g>
+    <g data-side-instance-id="carrier-pi5-u2">
+      <rect x="1601.44" y="657.1" width="16.8" height="123.2" rx="1.5" fill="url(#carrier-infill)" stroke="#52525B" stroke-width="1.1" />
+      <rect x="1601.44" y="767.7" width="294" height="12.6" rx="1.5" fill="url(#carrier-infill)" stroke="#52525B" stroke-width="1.1" />
+    </g>
+    <g data-side-instance-id="pi5-docker-01">
+      <rect x="1595.84" y="682.5" width="263.2" height="72.6" rx="2.5" fill="#166534" fill-opacity="0.96" stroke="#38BDF8" stroke-width="1.4" />
+      <rect x="1598.34" y="685" width="258.2" height="67.6" rx="1.5" fill="none" stroke="#94A3B8" stroke-opacity="0.22" stroke-width="0.9" />
+      <rect x="1601.84" y="687.5" width="215" height="26" rx="3" fill="#090D16" fill-opacity="0.78" stroke="#38BDF8" stroke-opacity="0.45" stroke-width="0.8" />
+      <text x="1607.84" y="698.5" fill="#F8FAFC" font-size="8.5" font-weight="700">pi5-docker-node (94mm)</text>
+      <text x="1607.84" y="709.5" fill="#94A3B8" font-size="7.3">Slot in carrier-pi5-u2 • Z: -2..92mm</text>
+      <rect x="1503.44" y="707.5" width="98" height="44.8" rx="2" fill="#F59E0B" fill-opacity="0.22" stroke="#F59E0B" stroke-width="1.2" stroke-dasharray="3,2" />
+      <text x="1552.44" y="732.5" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+35mm</text>
+      <rect x="1859.04" y="718.7" width="89.6" height="44.8" rx="2" fill="#F59E0B" fill-opacity="0.22" stroke="#F59E0B" stroke-width="1.2" stroke-dasharray="3,2" />
+      <text x="1903.84" y="743.7" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+32mm</text>
+    </g>
+    <g data-side-instance-id="gw-beryl-u3">
+      <rect x="1595.84" y="561.64" width="238" height="93.2" rx="2.5" fill="#1E293B" fill-opacity="0.90" stroke="#64748B" stroke-width="1.4" />
+      <rect x="1598.34" y="564.14" width="233" height="88.2" rx="1.5" fill="none" stroke="#94A3B8" stroke-opacity="0.22" stroke-width="0.9" />
+      <rect x="1601.84" y="566.64" width="215" height="26" rx="3" fill="#090D16" fill-opacity="0.78" stroke="#64748B" stroke-opacity="0.45" stroke-width="0.8" />
+      <text x="1607.84" y="577.64" fill="#F8FAFC" font-size="8.5" font-weight="700">gw-beryl-ax (85mm)</text>
+      <text x="1607.84" y="588.64" fill="#94A3B8" font-size="7.3">GL.iNet GL-MT3000 Beryl AX OpenWrt 2.5G </text>
+      <rect x="1833.84" y="588.64" width="98" height="44.8" rx="2" fill="#F59E0B" fill-opacity="0.22" stroke="#F59E0B" stroke-width="1.2" stroke-dasharray="3,2" />
+      <text x="1882.84" y="613.64" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+35mm (3x)</text>
+    </g>
+    <g data-side-instance-id="brush-u4">
+      <rect x="1595.84" y="408.18" width="47.6" height="123.2" rx="2" fill="url(#grad-steel-dark)" stroke="#475569" stroke-width="1.3" />
+      <rect x="1597.84" y="416.18" width="43.6" height="107.2" rx="1" fill="#050811" stroke="#38BDF8" stroke-width="0.9" stroke-dasharray="2,2" />
+      <text x="1651.44" y="422.18" fill="#94A3B8" font-size="8" font-weight="700">brush-portal-u4 (Brush Portal)</text>
+    </g>
+    <g data-side-instance-id="patch-u5">
+      <rect x="1595.84" y="284.72" width="89.6" height="121.2" rx="2.5" fill="url(#grad-steel-dark)" fill-opacity="0.90" stroke="#64748B" stroke-width="1.4" />
+      <rect x="1598.34" y="287.22" width="84.6" height="116.2" rx="1.5" fill="none" stroke="#94A3B8" stroke-opacity="0.22" stroke-width="0.9" />
+      <rect x="1601.84" y="289.72" width="77.6" height="26" rx="3" fill="#090D16" fill-opacity="0.78" stroke="#64748B" stroke-opacity="0.45" stroke-width="0.8" />
+      <text x="1607.84" y="300.72" fill="#F8FAFC" font-size="8.5" font-weight="700">patch-6p-u5 (32mm)</text>
+      <text x="1607.84" y="311.72" fill="#94A3B8" font-size="7.3">DeskPi / MicroRack 6-Inch 1U 6-Port Cat6</text>
+      <rect x="1503.44" y="322.92" width="98" height="44.8" rx="2" fill="#F59E0B" fill-opacity="0.22" stroke="#F59E0B" stroke-width="1.2" stroke-dasharray="3,2" />
+      <text x="1552.44" y="347.92" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+35mm (3x)</text>
+      <rect x="1685.44" y="322.92" width="98" height="44.8" rx="2" fill="#F59E0B" fill-opacity="0.22" stroke="#F59E0B" stroke-width="1.2" stroke-dasharray="3,2" />
+      <text x="1734.44" y="347.92" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+35mm (2x)</text>
+    </g>
+    <g data-side-instance-id="sw-flex-u6">
+      <rect x="1597.24" y="224.1" width="200.76" height="57.36" rx="2.5" fill="url(#grad-aluminum-silver)" fill-opacity="0.90" stroke="#64748B" stroke-width="1.4" />
+      <rect x="1599.74" y="226.6" width="195.76" height="52.36" rx="1.5" fill="none" stroke="#94A3B8" stroke-opacity="0.22" stroke-width="0.9" />
+      <rect x="1603.24" y="229.1" width="188.76" height="26" rx="3" fill="#090D16" fill-opacity="0.78" stroke="#64748B" stroke-opacity="0.45" stroke-width="0.8" />
+      <text x="1609.24" y="240.1" fill="#F8FAFC" font-size="8.5" font-weight="700">sw-flex-mini (71.7mm)</text>
+      <text x="1609.24" y="251.1" fill="#94A3B8" font-size="7.3">Ubiquiti UniFi Switch Flex Mini (USW-Fle</text>
+      <rect x="1503.44" y="230.38" width="98" height="44.8" rx="2" fill="#F59E0B" fill-opacity="0.22" stroke="#F59E0B" stroke-width="1.2" stroke-dasharray="3,2" />
+      <text x="1552.44" y="255.38" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+35mm (3x)</text>
+      <rect x="1798" y="230.38" width="89.6" height="44.8" rx="2" fill="#F59E0B" fill-opacity="0.22" stroke="#F59E0B" stroke-width="1.2" stroke-dasharray="3,2" />
+      <text x="1842.8" y="255.38" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+32mm</text>
+    </g>
+    <line x1="1747.04" y1="883.76" x2="2105.44" y2="883.76" stroke="#38BDF8" stroke-width="1.1" stroke-dasharray="3,2" marker-start="url(#ok-arrow-start)" marker-end="url(#ok-arrow-end)" />
+    <rect x="1892.24" y="876.76" width="68" height="12" rx="3" fill="#090D16" stroke="#1E293B" stroke-width="0.8" />
+    <text x="1926.24" y="885.56" fill="#7DD3FC" font-size="7.3" font-weight="600" text-anchor="middle">+128mm clear</text>
+    <line x1="1948.64" y1="759.3" x2="2105.44" y2="759.3" stroke="#38BDF8" stroke-width="1.1" stroke-dasharray="3,2" marker-start="url(#ok-arrow-start)" marker-end="url(#ok-arrow-end)" />
+    <rect x="1993.04" y="752.3" width="68" height="12" rx="3" fill="#090D16" stroke="#1E293B" stroke-width="0.8" />
+    <text x="2027.04" y="761.1" fill="#7DD3FC" font-size="7.3" font-weight="600" text-anchor="middle">+56mm clear</text>
+    <line x1="1931.84" y1="634.84" x2="2105.44" y2="634.84" stroke="#38BDF8" stroke-width="1.1" stroke-dasharray="3,2" marker-start="url(#ok-arrow-start)" marker-end="url(#ok-arrow-end)" />
+    <rect x="1984.64" y="627.84" width="68" height="12" rx="3" fill="#090D16" stroke="#1E293B" stroke-width="0.8" />
+    <text x="2018.64" y="636.64" fill="#7DD3FC" font-size="7.3" font-weight="600" text-anchor="middle">+62mm clear</text>
+    <line x1="1643.44" y1="510.38" x2="2105.44" y2="510.38" stroke="#38BDF8" stroke-width="1.1" stroke-dasharray="3,2" marker-start="url(#ok-arrow-start)" marker-end="url(#ok-arrow-end)" />
+    <rect x="1840.44" y="503.38" width="68" height="12" rx="3" fill="#090D16" stroke="#1E293B" stroke-width="0.8" />
+    <text x="1874.44" y="512.18" fill="#7DD3FC" font-size="7.3" font-weight="600" text-anchor="middle">+165mm clear</text>
+    <line x1="1783.44" y1="385.92" x2="2105.44" y2="385.92" stroke="#38BDF8" stroke-width="1.1" stroke-dasharray="3,2" marker-start="url(#ok-arrow-start)" marker-end="url(#ok-arrow-end)" />
+    <rect x="1910.44" y="378.92" width="68" height="12" rx="3" fill="#090D16" stroke="#1E293B" stroke-width="0.8" />
+    <text x="1944.44" y="387.72" fill="#7DD3FC" font-size="7.3" font-weight="600" text-anchor="middle">+115mm clear</text>
+    <line x1="1887.6" y1="261.46" x2="2105.44" y2="261.46" stroke="#38BDF8" stroke-width="1.1" stroke-dasharray="3,2" marker-start="url(#ok-arrow-start)" marker-end="url(#ok-arrow-end)" />
+    <rect x="1962.52" y="254.46" width="68" height="12" rx="3" fill="#090D16" stroke="#1E293B" stroke-width="0.8" />
+    <text x="1996.52" y="263.26" fill="#7DD3FC" font-size="7.3" font-weight="600" text-anchor="middle">+77.8mm clear</text>
+  </g>
+  <g data-layer="cables" filter="url(#cable-shadow)">
+    <path data-cable-id="pwr-pdu-to-beryl" data-cable-view="front-halo" d="M 464 843.16 L 464 849.54 Q 464 854.16, 468.62 854.16 L 739.62 854.16 Q 745.12 854.16, 745.12 848.66 L 745.12 471.15 Q 745.12 465.65, 739.62 465.65 L 677.92 465.65" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="pwr-pdu-to-beryl" data-cable-view="front" data-start-anchor="pdu-u1:usb_pd1:front" data-end-anchor="PORTAL:U4:front:pwr-pdu-to-beryl" data-start-xy="464,843.16" data-end-xy="677.92,465.65" d="M 464 843.16 L 464 849.54 Q 464 854.16, 468.62 854.16 L 739.62 854.16 Q 745.12 854.16, 745.12 848.66 L 745.12 471.15 Q 745.12 465.65, 739.62 465.65 L 677.92 465.65" fill="none" stroke="#F97316" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="pwr-pdu-to-beryl" data-anchor-key="pdu-u1:usb_pd1:front" cx="464" cy="843.16" r="3.6" fill="#F97316" stroke="#090D16" stroke-width="1.4" />
+    <g data-portal-grommet="PORTAL:U4:front:pwr-pdu-to-beryl" transform="translate(677.92, 465.65)">
+      <rect x="-46" y="-8" width="54" height="16" rx="8" fill="#090D16" stroke="#F97316" stroke-width="1.4" />
+      <circle cx="0" cy="0" r="4.2" fill="#F97316" stroke="#090D16" stroke-width="1.2" />
+      <text x="-22" y="3" fill="#F8FAFC" font-size="7.2" font-weight="700" text-anchor="middle">●-&gt;REAR</text>
+    </g>
+    <path data-cable-id="pwr-pdu-to-beryl" data-cable-view="rear-halo" d="M 1021.52 465.65 L 959.82 465.65 Q 954.32 465.65, 954.32 471.15 L 954.32 616.54 Q 954.32 622.04, 959.82 622.04 L 1292.42 622.04 Q 1297.04 622.04, 1297.04 617.42 L 1297.04 611.04" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="pwr-pdu-to-beryl" data-cable-view="rear" data-start-anchor="PORTAL:U4:rear:pwr-pdu-to-beryl" data-end-anchor="gw-beryl-u3:pwr_usb_c:rear" data-start-xy="1021.52,465.65" data-end-xy="1297.04,611.04" d="M 1021.52 465.65 L 959.82 465.65 Q 954.32 465.65, 954.32 471.15 L 954.32 616.54 Q 954.32 622.04, 959.82 622.04 L 1292.42 622.04 Q 1297.04 622.04, 1297.04 617.42 L 1297.04 611.04" fill="none" stroke="#F97316" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="pwr-pdu-to-beryl" data-anchor-key="gw-beryl-u3:pwr_usb_c:rear" cx="1297.04" cy="611.04" r="3.6" fill="#F97316" stroke="#090D16" stroke-width="1.4" />
+    <g data-portal-grommet="PORTAL:U4:rear:pwr-pdu-to-beryl" transform="translate(1021.52, 465.65)">
+      <rect x="-8" y="-8" width="58" height="16" rx="8" fill="#090D16" stroke="#F97316" stroke-width="1.4" />
+      <circle cx="0" cy="0" r="4.2" fill="#F97316" stroke="#090D16" stroke-width="1.2" />
+      <text x="25" y="3" fill="#F8FAFC" font-size="7.2" font-weight="700" text-anchor="middle">FRONT-&gt;●</text>
+    </g>
+    <path data-cable-id="pwr-pdu-to-beryl" data-cable-view="side-halo" d="M 1601.44 843.16 L 1539.24 843.16 Q 1534.24 843.16, 1534.24 838.16 L 1534.24 474.15 Q 1534.24 469.15, 1539.24 469.15 L 2145.24 469.15 Q 2150.24 469.15, 2150.24 474.15 L 2150.24 606.04 Q 2150.24 611.04, 2145.24 611.04 L 1833.84 611.04" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="pwr-pdu-to-beryl" data-cable-view="side" data-start-xy="1601.44,843.16" data-end-xy="1833.84,611.04" d="M 1601.44 843.16 L 1539.24 843.16 Q 1534.24 843.16, 1534.24 838.16 L 1534.24 474.15 Q 1534.24 469.15, 1539.24 469.15 L 2145.24 469.15 Q 2150.24 469.15, 2150.24 474.15 L 2150.24 606.04 Q 2150.24 611.04, 2145.24 611.04 L 1833.84 611.04" fill="none" stroke="#F97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="1601.44" cy="843.16" r="3.0" fill="#F97316" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="1833.84" cy="611.04" r="3.0" fill="#F97316" stroke="#090D16" stroke-width="1.2" />
+    <path data-cable-id="pwr-pdu-to-pi5" data-cable-view="front-halo" d="M 508.8 843.16 L 508.8 849.54 Q 508.8 854.16, 513.42 854.16 L 735.42 854.16 Q 740.92 854.16, 740.92 848.66 L 740.92 478.15 Q 740.92 472.65, 735.42 472.65 L 609.92 472.65" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="pwr-pdu-to-pi5" data-cable-view="front" data-start-anchor="pdu-u1:usb_pd2:front" data-end-anchor="PORTAL:U4:front:pwr-pdu-to-pi5" data-start-xy="508.8,843.16" data-end-xy="609.92,472.65" d="M 508.8 843.16 L 508.8 849.54 Q 508.8 854.16, 513.42 854.16 L 735.42 854.16 Q 740.92 854.16, 740.92 848.66 L 740.92 478.15 Q 740.92 472.65, 735.42 472.65 L 609.92 472.65" fill="none" stroke="#F59E0B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="pwr-pdu-to-pi5" data-anchor-key="pdu-u1:usb_pd2:front" cx="508.8" cy="843.16" r="3.6" fill="#F59E0B" stroke="#090D16" stroke-width="1.4" />
+    <g data-portal-grommet="PORTAL:U4:front:pwr-pdu-to-pi5" transform="translate(609.92, 472.65)">
+      <rect x="-46" y="-8" width="54" height="16" rx="8" fill="#090D16" stroke="#F59E0B" stroke-width="1.4" />
+      <circle cx="0" cy="0" r="4.2" fill="#F59E0B" stroke="#090D16" stroke-width="1.2" />
+      <text x="-22" y="3" fill="#F8FAFC" font-size="7.2" font-weight="700" text-anchor="middle">●-&gt;REAR</text>
+    </g>
+    <path data-cable-id="pwr-pdu-to-pi5" data-cable-view="rear-halo" d="M 1089.52 472.65 L 964.02 472.65 Q 958.52 472.65, 958.52 478.15 L 958.52 746.6 Q 958.52 752.1, 964.02 752.1 L 1236.42 752.1 Q 1241.04 752.1, 1241.04 747.48 L 1241.04 741.1" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="pwr-pdu-to-pi5" data-cable-view="rear" data-start-anchor="PORTAL:U4:rear:pwr-pdu-to-pi5" data-end-anchor="pi5-docker-01:usbc_pwr:rear" data-start-xy="1089.52,472.65" data-end-xy="1241.04,741.1" d="M 1089.52 472.65 L 964.02 472.65 Q 958.52 472.65, 958.52 478.15 L 958.52 746.6 Q 958.52 752.1, 964.02 752.1 L 1236.42 752.1 Q 1241.04 752.1, 1241.04 747.48 L 1241.04 741.1" fill="none" stroke="#F59E0B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="pwr-pdu-to-pi5" data-anchor-key="pi5-docker-01:usbc_pwr:rear" cx="1241.04" cy="741.1" r="3.6" fill="#F59E0B" stroke="#090D16" stroke-width="1.4" />
+    <g data-portal-grommet="PORTAL:U4:rear:pwr-pdu-to-pi5" transform="translate(1089.52, 472.65)">
+      <rect x="-8" y="-8" width="58" height="16" rx="8" fill="#090D16" stroke="#F59E0B" stroke-width="1.4" />
+      <circle cx="0" cy="0" r="4.2" fill="#F59E0B" stroke="#090D16" stroke-width="1.2" />
+      <text x="25" y="3" fill="#F8FAFC" font-size="7.2" font-weight="700" text-anchor="middle">FRONT-&gt;●</text>
+    </g>
+    <path data-cable-id="pwr-pdu-to-pi5" data-cable-view="side-halo" d="M 1601.44 843.16 L 1539.24 843.16 Q 1534.24 843.16, 1534.24 838.16 L 1534.24 474.15 Q 1534.24 469.15, 1539.24 469.15 L 2145.24 469.15 Q 2150.24 469.15, 2150.24 474.15 L 2150.24 736.1 Q 2150.24 741.1, 2145.24 741.1 L 1859.04 741.1" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="pwr-pdu-to-pi5" data-cable-view="side" data-start-xy="1601.44,843.16" data-end-xy="1859.04,741.1" d="M 1601.44 843.16 L 1539.24 843.16 Q 1534.24 843.16, 1534.24 838.16 L 1534.24 474.15 Q 1534.24 469.15, 1539.24 469.15 L 2145.24 469.15 Q 2150.24 469.15, 2150.24 474.15 L 2150.24 736.1 Q 2150.24 741.1, 2145.24 741.1 L 1859.04 741.1" fill="none" stroke="#F59E0B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="1601.44" cy="843.16" r="3.0" fill="#F59E0B" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="1859.04" cy="741.1" r="3.0" fill="#F59E0B" stroke="#090D16" stroke-width="1.2" />
+    <path data-cable-id="pwr-pdu-to-flex" data-cable-view="front-halo" d="M 553.6 843.16 L 553.6 849.54 Q 553.6 854.16, 558.22 854.16 L 731.22 854.16 Q 736.72 854.16, 736.72 848.66 L 736.72 471.15 Q 736.72 465.65, 731.22 465.65 L 541.92 465.65" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="pwr-pdu-to-flex" data-cable-view="front" data-start-anchor="pdu-u1:usb_pd3:front" data-end-anchor="PORTAL:U4:front:pwr-pdu-to-flex" data-start-xy="553.6,843.16" data-end-xy="541.92,465.65" d="M 553.6 843.16 L 553.6 849.54 Q 553.6 854.16, 558.22 854.16 L 731.22 854.16 Q 736.72 854.16, 736.72 848.66 L 736.72 471.15 Q 736.72 465.65, 731.22 465.65 L 541.92 465.65" fill="none" stroke="#EF4444" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="pwr-pdu-to-flex" data-anchor-key="pdu-u1:usb_pd3:front" cx="553.6" cy="843.16" r="3.6" fill="#EF4444" stroke="#090D16" stroke-width="1.4" />
+    <g data-portal-grommet="PORTAL:U4:front:pwr-pdu-to-flex" transform="translate(541.92, 465.65)">
+      <rect x="-46" y="-8" width="54" height="16" rx="8" fill="#090D16" stroke="#EF4444" stroke-width="1.4" />
+      <circle cx="0" cy="0" r="4.2" fill="#EF4444" stroke="#090D16" stroke-width="1.2" />
+      <text x="-22" y="3" fill="#F8FAFC" font-size="7.2" font-weight="700" text-anchor="middle">●-&gt;REAR</text>
+    </g>
+    <path data-cable-id="pwr-pdu-to-flex" data-cable-view="rear-halo" d="M 1157.52 465.65 L 968.22 465.65 Q 962.72 465.65, 962.72 460.15 L 962.72 269.28 Q 962.72 263.78, 968.22 263.78 L 1096.42 263.78 Q 1101.04 263.78, 1101.04 259.16 L 1101.04 252.78" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="pwr-pdu-to-flex" data-cable-view="rear" data-start-anchor="PORTAL:U4:rear:pwr-pdu-to-flex" data-end-anchor="sw-flex-u6:pwr_usb_c:rear" data-start-xy="1157.52,465.65" data-end-xy="1101.04,252.78" d="M 1157.52 465.65 L 968.22 465.65 Q 962.72 465.65, 962.72 460.15 L 962.72 269.28 Q 962.72 263.78, 968.22 263.78 L 1096.42 263.78 Q 1101.04 263.78, 1101.04 259.16 L 1101.04 252.78" fill="none" stroke="#EF4444" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="pwr-pdu-to-flex" data-anchor-key="sw-flex-u6:pwr_usb_c:rear" cx="1101.04" cy="252.78" r="3.6" fill="#EF4444" stroke="#090D16" stroke-width="1.4" />
+    <g data-portal-grommet="PORTAL:U4:rear:pwr-pdu-to-flex" transform="translate(1157.52, 465.65)">
+      <rect x="-8" y="-8" width="58" height="16" rx="8" fill="#090D16" stroke="#EF4444" stroke-width="1.4" />
+      <circle cx="0" cy="0" r="4.2" fill="#EF4444" stroke="#090D16" stroke-width="1.2" />
+      <text x="25" y="3" fill="#F8FAFC" font-size="7.2" font-weight="700" text-anchor="middle">FRONT-&gt;●</text>
+    </g>
+    <path data-cable-id="pwr-pdu-to-flex" data-cable-view="side-halo" d="M 1601.44 843.16 L 1539.24 843.16 Q 1534.24 843.16, 1534.24 838.16 L 1534.24 474.15 Q 1534.24 469.15, 1539.24 469.15 L 2145.24 469.15 Q 2150.24 469.15, 2150.24 464.15 L 2150.24 257.78 Q 2150.24 252.78, 2145.24 252.78 L 1798 252.78" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="pwr-pdu-to-flex" data-cable-view="side" data-start-xy="1601.44,843.16" data-end-xy="1798,252.78" d="M 1601.44 843.16 L 1539.24 843.16 Q 1534.24 843.16, 1534.24 838.16 L 1534.24 474.15 Q 1534.24 469.15, 1539.24 469.15 L 2145.24 469.15 Q 2150.24 469.15, 2150.24 464.15 L 2150.24 257.78 Q 2150.24 252.78, 2145.24 252.78 L 1798 252.78" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="1601.44" cy="843.16" r="3.0" fill="#EF4444" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="1798" cy="252.78" r="3.0" fill="#EF4444" stroke="#090D16" stroke-width="1.2" />
+    <path data-cable-id="wan-ks-to-beryl" data-cable-view="front-halo" d="M 626.4 718.7 L 626.4 725.08 Q 626.4 729.7, 631.02 729.7 L 727.02 729.7 Q 732.52 729.7, 732.52 724.2 L 732.52 478.15 Q 732.52 472.65, 727.02 472.65 L 473.92 472.65" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="wan-ks-to-beryl" data-cable-view="front" data-start-anchor="ks-u2-wan:coupler:front" data-end-anchor="PORTAL:U4:front:wan-ks-to-beryl" data-start-xy="626.4,718.7" data-end-xy="473.92,472.65" d="M 626.4 718.7 L 626.4 725.08 Q 626.4 729.7, 631.02 729.7 L 727.02 729.7 Q 732.52 729.7, 732.52 724.2 L 732.52 478.15 Q 732.52 472.65, 727.02 472.65 L 473.92 472.65" fill="none" stroke="#EC4899" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="wan-ks-to-beryl" data-anchor-key="ks-u2-wan:coupler:front" cx="626.4" cy="718.7" r="3.6" fill="#EC4899" stroke="#090D16" stroke-width="1.4" />
+    <g data-portal-grommet="PORTAL:U4:front:wan-ks-to-beryl" transform="translate(473.92, 472.65)">
+      <rect x="-46" y="-8" width="54" height="16" rx="8" fill="#090D16" stroke="#EC4899" stroke-width="1.4" />
+      <circle cx="0" cy="0" r="4.2" fill="#EC4899" stroke="#090D16" stroke-width="1.2" />
+      <text x="-22" y="3" fill="#F8FAFC" font-size="7.2" font-weight="700" text-anchor="middle">●-&gt;REAR</text>
+    </g>
+    <path data-cable-id="wan-ks-to-beryl" data-cable-view="rear-halo" d="M 1225.52 472.65 L 972.42 472.65 Q 966.92 472.65, 966.92 478.15 L 966.92 616.54 Q 966.92 622.04, 972.42 622.04 L 1225.22 622.04 Q 1229.84 622.04, 1229.84 617.42 L 1229.84 611.04" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="wan-ks-to-beryl" data-cable-view="rear" data-start-anchor="PORTAL:U4:rear:wan-ks-to-beryl" data-end-anchor="gw-beryl-u3:wan1:rear" data-start-xy="1225.52,472.65" data-end-xy="1229.84,611.04" d="M 1225.52 472.65 L 972.42 472.65 Q 966.92 472.65, 966.92 478.15 L 966.92 616.54 Q 966.92 622.04, 972.42 622.04 L 1225.22 622.04 Q 1229.84 622.04, 1229.84 617.42 L 1229.84 611.04" fill="none" stroke="#EC4899" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="wan-ks-to-beryl" data-anchor-key="gw-beryl-u3:wan1:rear" cx="1229.84" cy="611.04" r="3.6" fill="#EC4899" stroke="#090D16" stroke-width="1.4" />
+    <g data-portal-grommet="PORTAL:U4:rear:wan-ks-to-beryl" transform="translate(1225.52, 472.65)">
+      <rect x="-8" y="-8" width="58" height="16" rx="8" fill="#090D16" stroke="#EC4899" stroke-width="1.4" />
+      <circle cx="0" cy="0" r="4.2" fill="#EC4899" stroke="#090D16" stroke-width="1.2" />
+      <text x="25" y="3" fill="#F8FAFC" font-size="7.2" font-weight="700" text-anchor="middle">FRONT-&gt;●</text>
+    </g>
+    <path data-cable-id="wan-ks-to-beryl" data-cable-view="side-halo" d="M 1601.44 718.7 L 1539.24 718.7 Q 1534.24 718.7, 1534.24 713.7 L 1534.24 474.15 Q 1534.24 469.15, 1539.24 469.15 L 2145.24 469.15 Q 2150.24 469.15, 2150.24 474.15 L 2150.24 606.04 Q 2150.24 611.04, 2145.24 611.04 L 1833.84 611.04" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="wan-ks-to-beryl" data-cable-view="side" data-start-xy="1601.44,718.7" data-end-xy="1833.84,611.04" d="M 1601.44 718.7 L 1539.24 718.7 Q 1534.24 718.7, 1534.24 713.7 L 1534.24 474.15 Q 1534.24 469.15, 1539.24 469.15 L 2145.24 469.15 Q 2150.24 469.15, 2150.24 474.15 L 2150.24 606.04 Q 2150.24 611.04, 2145.24 611.04 L 1833.84 611.04" fill="none" stroke="#EC4899" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="1601.44" cy="718.7" r="3.0" fill="#EC4899" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="1833.84" cy="611.04" r="3.0" fill="#EC4899" stroke="#090D16" stroke-width="1.2" />
+    <path data-cable-id="lan-beryl-to-patch1" data-cable-view="rear-halo" d="M 1162.64 611.04 L 1162.64 613.04 L 1311.14 613.04 Q 1316.64 613.04, 1316.64 607.54 L 1316.64 352.82 Q 1316.64 347.32, 1311.14 347.32 L 1295.64 347.32 L 1295.64 345.32" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="lan-beryl-to-patch1" data-cable-view="rear" data-start-anchor="gw-beryl-u3:lan1:rear" data-end-anchor="patch-u5:p1:rear" data-start-xy="1162.64,611.04" data-end-xy="1295.64,345.32" d="M 1162.64 611.04 L 1162.64 613.04 L 1311.14 613.04 Q 1316.64 613.04, 1316.64 607.54 L 1316.64 352.82 Q 1316.64 347.32, 1311.14 347.32 L 1295.64 347.32 L 1295.64 345.32" fill="none" stroke="#3B82F6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="lan-beryl-to-patch1" data-anchor-key="gw-beryl-u3:lan1:rear" cx="1162.64" cy="611.04" r="3.6" fill="#3B82F6" stroke="#090D16" stroke-width="1.4" />
+    <circle class="cable-plug-endpoint" data-cable-id="lan-beryl-to-patch1" data-anchor-key="patch-u5:p1:rear" cx="1295.64" cy="345.32" r="3.6" fill="#3B82F6" stroke="#090D16" stroke-width="1.4" />
+    <path data-cable-id="lan-beryl-to-patch1" data-cable-view="side-halo" d="M 1833.84 611.04 L 2078.04 611.04 Q 2083.04 611.04, 2083.04 606.04 L 2083.04 350.32 Q 2083.04 345.32, 2078.04 345.32 L 1685.44 345.32" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="lan-beryl-to-patch1" data-cable-view="side" data-start-xy="1833.84,611.04" data-end-xy="1685.44,345.32" d="M 1833.84 611.04 L 2078.04 611.04 Q 2083.04 611.04, 2083.04 606.04 L 2083.04 350.32 Q 2083.04 345.32, 2078.04 345.32 L 1685.44 345.32" fill="none" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="1833.84" cy="611.04" r="3.0" fill="#3B82F6" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="1685.44" cy="345.32" r="3.0" fill="#3B82F6" stroke="#090D16" stroke-width="1.2" />
+    <path data-cable-id="lan-pi5-to-ks2" data-cable-view="front-halo" d="M 447.2 729.9 L 447.2 736.86 Q 447.2 741.9, 452.24 741.9 L 682.5 741.9 Q 688 741.9, 688 736.4 L 688 718.7" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="lan-pi5-to-ks2" data-cable-view="front" data-start-anchor="pi5-docker-01:eth0:front" data-end-anchor="ks-u2-lan:coupler:front" data-start-xy="447.2,729.9" data-end-xy="688,718.7" d="M 447.2 729.9 L 447.2 736.86 Q 447.2 741.9, 452.24 741.9 L 682.5 741.9 Q 688 741.9, 688 736.4 L 688 718.7" fill="none" stroke="#10B981" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="lan-pi5-to-ks2" data-anchor-key="pi5-docker-01:eth0:front" cx="447.2" cy="729.9" r="3.6" fill="#10B981" stroke="#090D16" stroke-width="1.4" />
+    <circle class="cable-plug-endpoint" data-cable-id="lan-pi5-to-ks2" data-anchor-key="ks-u2-lan:coupler:front" cx="688" cy="718.7" r="3.6" fill="#10B981" stroke="#090D16" stroke-width="1.4" />
+    <path data-cable-id="lan-pi5-to-ks2" data-cable-view="side-halo" d="M 1601.44 729.9 L 1561.34 729.9 Q 1556.64 729.9, 1556.64 725.2 L 1556.64 723.4 Q 1556.64 718.7, 1561.34 718.7 L 1601.44 718.7" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="lan-pi5-to-ks2" data-cable-view="side" data-start-xy="1601.44,729.9" data-end-xy="1601.44,718.7" d="M 1601.44 729.9 L 1561.34 729.9 Q 1556.64 729.9, 1556.64 725.2 L 1556.64 723.4 Q 1556.64 718.7, 1561.34 718.7 L 1601.44 718.7" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="1601.44" cy="729.9" r="3.0" fill="#10B981" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="1601.44" cy="718.7" r="3.0" fill="#10B981" stroke="#090D16" stroke-width="1.2" />
+    <path data-cable-id="trunk-ks2-to-patch2" data-cable-view="rear-halo" d="M 1011.44 718.7 L 1011.44 721.72 Q 1011.44 723.9, 1013.62 723.9 L 1306.94 723.9 Q 1312.44 723.9, 1312.44 718.4 L 1312.44 356.02 Q 1312.44 350.52, 1306.94 350.52 L 1251.62 350.52 Q 1249.44 350.52, 1249.44 348.34 L 1249.44 345.32" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="trunk-ks2-to-patch2" data-cable-view="rear" data-start-anchor="ks-u2-lan:coupler:rear" data-end-anchor="patch-u5:p2:rear" data-start-xy="1011.44,718.7" data-end-xy="1249.44,345.32" d="M 1011.44 718.7 L 1011.44 721.72 Q 1011.44 723.9, 1013.62 723.9 L 1306.94 723.9 Q 1312.44 723.9, 1312.44 718.4 L 1312.44 356.02 Q 1312.44 350.52, 1306.94 350.52 L 1251.62 350.52 Q 1249.44 350.52, 1249.44 348.34 L 1249.44 345.32" fill="none" stroke="#10B981" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="trunk-ks2-to-patch2" data-anchor-key="ks-u2-lan:coupler:rear" cx="1011.44" cy="718.7" r="3.6" fill="#10B981" stroke="#090D16" stroke-width="1.4" />
+    <circle class="cable-plug-endpoint" data-cable-id="trunk-ks2-to-patch2" data-anchor-key="patch-u5:p2:rear" cx="1249.44" cy="345.32" r="3.6" fill="#10B981" stroke="#090D16" stroke-width="1.4" />
+    <path data-cable-id="trunk-ks2-to-patch2" data-cable-view="side-halo" d="M 1685.44 718.7 L 2088.68 718.7 Q 2093.68 718.7, 2093.68 713.7 L 2093.68 350.32 Q 2093.68 345.32, 2088.68 345.32 L 1685.44 345.32" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="trunk-ks2-to-patch2" data-cable-view="side" data-start-xy="1685.44,718.7" data-end-xy="1685.44,345.32" d="M 1685.44 718.7 L 2088.68 718.7 Q 2093.68 718.7, 2093.68 713.7 L 2093.68 350.32 Q 2093.68 345.32, 2088.68 345.32 L 1685.44 345.32" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="1685.44" cy="718.7" r="3.0" fill="#10B981" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="1685.44" cy="345.32" r="3.0" fill="#10B981" stroke="#090D16" stroke-width="1.2" />
+    <path data-cable-id="patch-p1-to-sw1" data-cable-view="front-halo" d="M 403.8 345.32 L 402.4 252.78" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="patch-p1-to-sw1" data-cable-view="front" data-start-anchor="patch-u5:p1:front" data-end-anchor="sw-flex-u6:eth1:front" data-start-xy="403.8,345.32" data-end-xy="402.4,252.78" d="M 403.8 345.32 L 402.4 252.78" fill="none" stroke="#3B82F6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-p1-to-sw1" data-anchor-key="patch-u5:p1:front" cx="403.8" cy="345.32" r="3.6" fill="#3B82F6" stroke="#090D16" stroke-width="1.4" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-p1-to-sw1" data-anchor-key="sw-flex-u6:eth1:front" cx="402.4" cy="252.78" r="3.6" fill="#3B82F6" stroke="#090D16" stroke-width="1.4" />
+    <path data-cable-id="patch-p1-to-sw1" data-cable-view="side-halo" d="M 1601.44 345.32 L 1549.88 345.32 Q 1544.88 345.32, 1544.88 340.32 L 1544.88 257.78 Q 1544.88 252.78, 1549.88 252.78 L 1601.44 252.78" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="patch-p1-to-sw1" data-cable-view="side" data-start-xy="1601.44,345.32" data-end-xy="1601.44,252.78" d="M 1601.44 345.32 L 1549.88 345.32 Q 1544.88 345.32, 1544.88 340.32 L 1544.88 257.78 Q 1544.88 252.78, 1549.88 252.78 L 1601.44 252.78" fill="none" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="1601.44" cy="345.32" r="3.0" fill="#3B82F6" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="1601.44" cy="252.78" r="3.0" fill="#3B82F6" stroke="#090D16" stroke-width="1.2" />
+    <path data-cable-id="patch-p2-to-sw2" data-cable-view="front-halo" d="M 450 345.32 L 451.4 252.78" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="patch-p2-to-sw2" data-cable-view="front" data-start-anchor="patch-u5:p2:front" data-end-anchor="sw-flex-u6:eth2:front" data-start-xy="450,345.32" data-end-xy="451.4,252.78" d="M 450 345.32 L 451.4 252.78" fill="none" stroke="#10B981" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-p2-to-sw2" data-anchor-key="patch-u5:p2:front" cx="450" cy="345.32" r="3.6" fill="#10B981" stroke="#090D16" stroke-width="1.4" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-p2-to-sw2" data-anchor-key="sw-flex-u6:eth2:front" cx="451.4" cy="252.78" r="3.6" fill="#10B981" stroke="#090D16" stroke-width="1.4" />
+    <path data-cable-id="patch-p2-to-sw2" data-cable-view="side-halo" d="M 1601.44 345.32 L 1538.12 345.32 Q 1533.12 345.32, 1533.12 340.32 L 1533.12 257.78 Q 1533.12 252.78, 1538.12 252.78 L 1601.44 252.78" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="patch-p2-to-sw2" data-cable-view="side" data-start-xy="1601.44,345.32" data-end-xy="1601.44,252.78" d="M 1601.44 345.32 L 1538.12 345.32 Q 1533.12 345.32, 1533.12 340.32 L 1533.12 257.78 Q 1533.12 252.78, 1538.12 252.78 L 1601.44 252.78" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="1601.44" cy="345.32" r="3.0" fill="#10B981" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="1601.44" cy="252.78" r="3.0" fill="#10B981" stroke="#090D16" stroke-width="1.2" />
+    <path data-cable-id="patch-p3-to-sw3" data-cable-view="front-halo" d="M 496.2 345.32 L 496.2 279.42 Q 496.2 277.66, 497.96 277.66 L 498.64 277.66 Q 500.4 277.66, 500.4 275.9 L 500.4 252.78" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="patch-p3-to-sw3" data-cable-view="front" data-start-anchor="patch-u5:p3:front" data-end-anchor="sw-flex-u6:eth3:front" data-start-xy="496.2,345.32" data-end-xy="500.4,252.78" d="M 496.2 345.32 L 496.2 279.42 Q 496.2 277.66, 497.96 277.66 L 498.64 277.66 Q 500.4 277.66, 500.4 275.9 L 500.4 252.78" fill="none" stroke="#0EA5E9" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-p3-to-sw3" data-anchor-key="patch-u5:p3:front" cx="496.2" cy="345.32" r="3.6" fill="#0EA5E9" stroke="#090D16" stroke-width="1.4" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-p3-to-sw3" data-anchor-key="sw-flex-u6:eth3:front" cx="500.4" cy="252.78" r="3.6" fill="#0EA5E9" stroke="#090D16" stroke-width="1.4" />
+    <path data-cable-id="patch-p3-to-sw3" data-cable-view="side-halo" d="M 1601.44 345.32 L 1526.36 345.32 Q 1521.36 345.32, 1521.36 340.32 L 1521.36 257.78 Q 1521.36 252.78, 1526.36 252.78 L 1601.44 252.78" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="patch-p3-to-sw3" data-cable-view="side" data-start-xy="1601.44,345.32" data-end-xy="1601.44,252.78" d="M 1601.44 345.32 L 1526.36 345.32 Q 1521.36 345.32, 1521.36 340.32 L 1521.36 257.78 Q 1521.36 252.78, 1526.36 252.78 L 1601.44 252.78" fill="none" stroke="#0EA5E9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="1601.44" cy="345.32" r="3.0" fill="#0EA5E9" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="1601.44" cy="252.78" r="3.0" fill="#0EA5E9" stroke="#090D16" stroke-width="1.2" />
+  </g>
+  <g data-view="front-callout-legend" data-layer="callout-legend">
+    <rect x="2311.44" y="144" width="370" height="774.76" rx="6" fill="#090D16" stroke="#334155" stroke-width="1.6" />
+    <text x="2327.44" y="172" fill="#F8FAFC" font-size="12" font-weight="700">PORT &amp; CABLE CALLOUT LEGEND</text>
+    <text x="2327.44" y="188" fill="#94A3B8" font-size="9.5">Deterministic PortAnchorRegistry Mapping (20 Active Endpoints)</text>
+    <line x1="2323.44" y1="196" x2="2669.44" y2="196" stroke="#1E293B" stroke-width="1" />
+    <circle cx="2335.44" cy="208.5" r="7.5" fill="#0F172A" stroke="#F97316" stroke-width="1.3" />
+    <text x="2335.44" y="211.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">1</text>
+    <text x="2349.44" y="212" fill="#E2E8F0" font-size="8.8" font-weight="600">pdu-u1:usb_pd1 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="2509.44" y="212" fill="#94A3B8" font-size="8.3">-&gt; gw-beryl-u3:pwr_usb_c [pwr-pdu-to-beryl]</text>
+    <circle cx="2335.44" cy="227.5" r="7.5" fill="#0F172A" stroke="#F97316" stroke-width="1.3" />
+    <text x="2335.44" y="230.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">2</text>
+    <text x="2349.44" y="231" fill="#E2E8F0" font-size="8.8" font-weight="600">gw-beryl-u3:pwr_usb_c <tspan fill="#64748B">(rear)</tspan></text>
+    <text x="2509.44" y="231" fill="#94A3B8" font-size="8.3">-&gt; pdu-u1:usb_pd1 [pwr-pdu-to-beryl]</text>
+    <circle cx="2335.44" cy="246.5" r="7.5" fill="#0F172A" stroke="#F59E0B" stroke-width="1.3" />
+    <text x="2335.44" y="249.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">3</text>
+    <text x="2349.44" y="250" fill="#E2E8F0" font-size="8.8" font-weight="600">pdu-u1:usb_pd2 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="2509.44" y="250" fill="#94A3B8" font-size="8.3">-&gt; pi5-docker-01:usbc_pwr [pwr-pdu-to-pi5]</text>
+    <circle cx="2335.44" cy="265.5" r="7.5" fill="#0F172A" stroke="#F59E0B" stroke-width="1.3" />
+    <text x="2335.44" y="268.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">4</text>
+    <text x="2349.44" y="269" fill="#E2E8F0" font-size="8.8" font-weight="600">pi5-docker-01:usbc_pwr <tspan fill="#64748B">(rear)</tspan></text>
+    <text x="2509.44" y="269" fill="#94A3B8" font-size="8.3">-&gt; pdu-u1:usb_pd2 [pwr-pdu-to-pi5]</text>
+    <circle cx="2335.44" cy="284.5" r="7.5" fill="#0F172A" stroke="#EF4444" stroke-width="1.3" />
+    <text x="2335.44" y="287.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">5</text>
+    <text x="2349.44" y="288" fill="#E2E8F0" font-size="8.8" font-weight="600">pdu-u1:usb_pd3 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="2509.44" y="288" fill="#94A3B8" font-size="8.3">-&gt; sw-flex-u6:pwr_usb_c [pwr-pdu-to-flex]</text>
+    <circle cx="2335.44" cy="303.5" r="7.5" fill="#0F172A" stroke="#EF4444" stroke-width="1.3" />
+    <text x="2335.44" y="306.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">6</text>
+    <text x="2349.44" y="307" fill="#E2E8F0" font-size="8.8" font-weight="600">sw-flex-u6:pwr_usb_c <tspan fill="#64748B">(rear)</tspan></text>
+    <text x="2509.44" y="307" fill="#94A3B8" font-size="8.3">-&gt; pdu-u1:usb_pd3 [pwr-pdu-to-flex]</text>
+    <circle cx="2335.44" cy="322.5" r="7.5" fill="#0F172A" stroke="#EC4899" stroke-width="1.3" />
+    <text x="2335.44" y="325.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">7</text>
+    <text x="2349.44" y="326" fill="#E2E8F0" font-size="8.8" font-weight="600">ks-u2-wan:coupler <tspan fill="#64748B">(front)</tspan></text>
+    <text x="2509.44" y="326" fill="#94A3B8" font-size="8.3">-&gt; gw-beryl-u3:wan1 [wan-ks-to-beryl]</text>
+    <circle cx="2335.44" cy="341.5" r="7.5" fill="#0F172A" stroke="#EC4899" stroke-width="1.3" />
+    <text x="2335.44" y="344.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">8</text>
+    <text x="2349.44" y="345" fill="#E2E8F0" font-size="8.8" font-weight="600">gw-beryl-u3:wan1 <tspan fill="#64748B">(rear)</tspan></text>
+    <text x="2509.44" y="345" fill="#94A3B8" font-size="8.3">-&gt; ks-u2-wan:coupler [wan-ks-to-beryl]</text>
+    <circle cx="2335.44" cy="360.5" r="7.5" fill="#0F172A" stroke="#3B82F6" stroke-width="1.3" />
+    <text x="2335.44" y="363.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">9</text>
+    <text x="2349.44" y="364" fill="#E2E8F0" font-size="8.8" font-weight="600">gw-beryl-u3:lan1 <tspan fill="#64748B">(rear)</tspan></text>
+    <text x="2509.44" y="364" fill="#94A3B8" font-size="8.3">-&gt; patch-u5:p1 [lan-beryl-to-patch1]</text>
+    <circle cx="2335.44" cy="379.5" r="7.5" fill="#0F172A" stroke="#3B82F6" stroke-width="1.3" />
+    <text x="2335.44" y="382.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">10</text>
+    <text x="2349.44" y="383" fill="#E2E8F0" font-size="8.8" font-weight="600">patch-u5:p1 <tspan fill="#64748B">(rear)</tspan></text>
+    <text x="2509.44" y="383" fill="#94A3B8" font-size="8.3">-&gt; gw-beryl-u3:lan1 [lan-beryl-to-patch1]</text>
+    <circle cx="2335.44" cy="398.5" r="7.5" fill="#0F172A" stroke="#10B981" stroke-width="1.3" />
+    <text x="2335.44" y="401.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">11</text>
+    <text x="2349.44" y="402" fill="#E2E8F0" font-size="8.8" font-weight="600">pi5-docker-01:eth0 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="2509.44" y="402" fill="#94A3B8" font-size="8.3">-&gt; ks-u2-lan:coupler [lan-pi5-to-ks2]</text>
+    <circle cx="2335.44" cy="417.5" r="7.5" fill="#0F172A" stroke="#10B981" stroke-width="1.3" />
+    <text x="2335.44" y="420.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">12</text>
+    <text x="2349.44" y="421" fill="#E2E8F0" font-size="8.8" font-weight="600">ks-u2-lan:coupler <tspan fill="#64748B">(front)</tspan></text>
+    <text x="2509.44" y="421" fill="#94A3B8" font-size="8.3">-&gt; pi5-docker-01:eth0 [lan-pi5-to-ks2]</text>
+    <circle cx="2335.44" cy="436.5" r="7.5" fill="#0F172A" stroke="#10B981" stroke-width="1.3" />
+    <text x="2335.44" y="439.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">13</text>
+    <text x="2349.44" y="440" fill="#E2E8F0" font-size="8.8" font-weight="600">ks-u2-lan:coupler <tspan fill="#64748B">(rear)</tspan></text>
+    <text x="2509.44" y="440" fill="#94A3B8" font-size="8.3">-&gt; patch-u5:p2 [trunk-ks2-to-patch2]</text>
+    <circle cx="2335.44" cy="455.5" r="7.5" fill="#0F172A" stroke="#10B981" stroke-width="1.3" />
+    <text x="2335.44" y="458.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">14</text>
+    <text x="2349.44" y="459" fill="#E2E8F0" font-size="8.8" font-weight="600">patch-u5:p2 <tspan fill="#64748B">(rear)</tspan></text>
+    <text x="2509.44" y="459" fill="#94A3B8" font-size="8.3">-&gt; ks-u2-lan:coupler [trunk-ks2-to-patch2]</text>
+    <circle cx="2335.44" cy="474.5" r="7.5" fill="#0F172A" stroke="#3B82F6" stroke-width="1.3" />
+    <text x="2335.44" y="477.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">15</text>
+    <text x="2349.44" y="478" fill="#E2E8F0" font-size="8.8" font-weight="600">patch-u5:p1 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="2509.44" y="478" fill="#94A3B8" font-size="8.3">-&gt; sw-flex-u6:eth1 [patch-p1-to-sw1]</text>
+    <circle cx="2335.44" cy="493.5" r="7.5" fill="#0F172A" stroke="#3B82F6" stroke-width="1.3" />
+    <text x="2335.44" y="496.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">16</text>
+    <text x="2349.44" y="497" fill="#E2E8F0" font-size="8.8" font-weight="600">sw-flex-u6:eth1 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="2509.44" y="497" fill="#94A3B8" font-size="8.3">-&gt; patch-u5:p1 [patch-p1-to-sw1]</text>
+    <circle cx="2335.44" cy="512.5" r="7.5" fill="#0F172A" stroke="#10B981" stroke-width="1.3" />
+    <text x="2335.44" y="515.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">17</text>
+    <text x="2349.44" y="516" fill="#E2E8F0" font-size="8.8" font-weight="600">patch-u5:p2 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="2509.44" y="516" fill="#94A3B8" font-size="8.3">-&gt; sw-flex-u6:eth2 [patch-p2-to-sw2]</text>
+    <circle cx="2335.44" cy="531.5" r="7.5" fill="#0F172A" stroke="#10B981" stroke-width="1.3" />
+    <text x="2335.44" y="534.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">18</text>
+    <text x="2349.44" y="535" fill="#E2E8F0" font-size="8.8" font-weight="600">sw-flex-u6:eth2 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="2509.44" y="535" fill="#94A3B8" font-size="8.3">-&gt; patch-u5:p2 [patch-p2-to-sw2]</text>
+    <circle cx="2335.44" cy="550.5" r="7.5" fill="#0F172A" stroke="#0EA5E9" stroke-width="1.3" />
+    <text x="2335.44" y="553.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">19</text>
+    <text x="2349.44" y="554" fill="#E2E8F0" font-size="8.8" font-weight="600">patch-u5:p3 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="2509.44" y="554" fill="#94A3B8" font-size="8.3">-&gt; sw-flex-u6:eth3 [patch-p3-to-sw3]</text>
+    <circle cx="2335.44" cy="569.5" r="7.5" fill="#0F172A" stroke="#0EA5E9" stroke-width="1.3" />
+    <text x="2335.44" y="572.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">20</text>
+    <text x="2349.44" y="573" fill="#E2E8F0" font-size="8.8" font-weight="600">sw-flex-u6:eth3 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="2509.44" y="573" fill="#94A3B8" font-size="8.3">-&gt; patch-u5:p3 [patch-p3-to-sw3]</text>
+  </g>
+</svg>

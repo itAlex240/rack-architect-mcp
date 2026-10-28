@@ -1,0 +1,62 @@
+slug: "3dprint-6inch-rpi5-plus-keystone-carrier-1u"
+manufacturer: "Printables Community"
+model: "6-Inch 1U Raspberry Pi 5 + 2x Keystone Micro-Carrier"
+description: "3D-gedruckter 6-Zoll 1U Modulträger (PETG/ASA, 152,4mm Gesamtbreite) mit einem Einschub für einen Raspberry Pi 5 (inkl. PoE+ HAT) auf der linken Seite sowie zwei Keystone-Slots rechts. Ideal für ultrakompakte 6-Zoll Schreibtisch-Racks."
+category: "modular-carrier"
+mount_type: "rackmount-6"
+geometry:
+  u_height: 1.0
+  width_mm: 152.4
+  height_mm: 44.0
+  depth_mm: 105.0
+  ear_mount_style: "included-6inch-ears"
+  front_protrusion_mm: 0.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 110
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "front-to-rear"
+slots:
+  - slot_id: "rpi5-bay-1"
+    accepted_slot_type: "sbc-rpi5"
+    offset_mm:
+      x: 18.0
+      y: 4.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 66.0
+      height: 36.0
+      depth: 100.0
+  - slot_id: "keystone-1"
+    accepted_slot_type: "standard-keystone"
+    offset_mm:
+      x: 90.0
+      y: 12.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 16.5
+      height: 22.0
+      depth: 35.0
+  - slot_id: "keystone-2"
+    accepted_slot_type: "standard-keystone"
+    offset_mm:
+      x: 112.0
+      y: 12.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 16.5
+      height: 22.0
+      depth: 35.0
+visuals:
+  chassis_color_hex: "#27272A"
+  material_preset: "3d-printed-petg"
+  has_oled_display: false
+  stl_mesh_path: "meshes/3dprint-6inch-rpi5-plus-keystone-carrier-1u.stl"
+printable_metadata:
+  filament_grams: 110
+  material_recommendation: "PETG or ASA (25% Gyroid Infill, 4 Perimeters)"
+  heat_set_inserts: "4x M2.5x4mm brass inserts"
+  fasteners: "4x M2.5x8mm SHCS + 4x M6 cage nuts"
+  printables_url: "https://www.printables.com/model/6inch-rpi5-2keystone-carrier"

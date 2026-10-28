@@ -1,0 +1,65 @@
+slug: "ubiquiti-usw-ultra-60w"
+manufacturer: "Ubiquiti"
+model: "UniFi Switch Ultra 60W (USW-Ultra-60W)"
+description: "Ultrakompakter 8-Port Gigabit Layer-2 PoE+ Switch (52W PoE-Budget mit mitgeliefertem 60W AC-Netzteil, bis 202W via PoE++ Input) mit 7x GbE PoE+ Ausgangsports und 1x GbE PoE++/AC-Eingangsport. Sitzt im 10-Zoll-Rack in einer 3D-gedruckten 1U-PETG-Aufnahmehalterung (Cradle, 76mm Bautiefe — passt selbst in extrem flache Wandgehäuse)."
+category: "switch"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 203.0
+  height_mm: 33.0
+  depth_mm: 76.0
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 320
+power_and_thermal:
+  electrical_role: "pse-switch"
+  idle_watts: 4
+  max_system_watts: 9
+  poe_budget_watts: 52
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "PoE+ Port "
+    start_index: 1
+    count: 7
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "poe-out", "poe+", "poe-out-af", "poe-out-at"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 28.0
+      origin_y_mm: 16.5
+      columns: 7
+      rows: 1
+      pitch_x_mm: 18.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "eth8"
+    label: "Port 8 (PoE++ In)"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "poe-in-bt-type4", "poe-in-bt-type3", "poe-in-at"]
+    coordinates:
+      x_mm: 168.0
+      y_mm: 16.5
+      orientation: "upright"
+  - port_id: "pwr_in"
+    label: "54V 60W DC In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 170.0
+      y_mm: 16.5
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#E5E7EB"
+  material_preset: "polycarbonate"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

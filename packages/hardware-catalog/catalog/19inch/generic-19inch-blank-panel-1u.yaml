@@ -1,0 +1,26 @@
+slug: "generic-19inch-blank-panel-1u"
+manufacturer: "Generic"
+model: "19-Inch 1U Steel Blanking Panel (Airflow Baffle)"
+description: "19-Zoll 1U Blindplatte aus mattschwarz pulverbeschichtetem Stahlblech. Verschließt freie Höheneinheiten zur optischen Aufwertung und verhindert thermischen Kurzschluss (Rückströmen warmer Abluft auf die kalte Vorderseite)."
+category: "blank-panel"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 442.4
+  height_mm: 44.0
+  depth_mm: 12.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 1.5
+  rear_protrusion_mm: 0.0
+  weight_grams: 340
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "none"
+visuals:
+  chassis_color_hex: "#1F2937"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

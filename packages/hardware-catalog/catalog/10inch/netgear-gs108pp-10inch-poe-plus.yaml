@@ -1,0 +1,65 @@
+slug: "netgear-gs108pp-10inch-poe-plus"
+manufacturer: "Netgear"
+model: "ProSAFE GS108PP 8-Port Gigabit PoE+ Switch (123W, 10-Inch Mount)"
+description: "Lüfterloser 8-Port Gigabit High-Power PoE+ Switch im robusten dunkelblauen Metallgehäuse (123W PoE-Gesamtbudget, 8x 802.3at/af PoE+ Ports bis 30W pro Port). Passt mit 10-Zoll-Montagewinkeln direkt in eine 1U-Etage eines 10-Zoll-Mini-Racks."
+category: "switch"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 220.0
+  height_mm: 27.0
+  depth_mm: 102.0
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 600
+power_and_thermal:
+  electrical_role: "pse-switch"
+  idle_watts: 5
+  max_system_watts: 12
+  poe_budget_watts: 123
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "PoE+ "
+    start_index: 1
+    count: 8
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "poe-out", "poe+", "poe-out-af", "poe-out-at"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 42.0
+      origin_y_mm: 13.5
+      columns: 8
+      rows: 1
+      pitch_x_mm: 18.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "dc_in"
+    label: "54V 130W DC In"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 165.0
+      y_mm: 13.5
+      orientation: "upright"
+  - port_id: "pwr_in"
+    label: "AC Power Brick In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 192.0
+      y_mm: 13.5
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#1E293B"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

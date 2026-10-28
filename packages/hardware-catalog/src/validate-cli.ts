@@ -16,7 +16,7 @@ export interface DiskCatalogValidationReport {
 export function validateCatalogDirectory(catalogRootDir?: string): DiskCatalogValidationReport {
   const currentDir = dirname(fileURLToPath(import.meta.url));
   const rootDir = catalogRootDir ?? resolve(currentDir, '..', 'catalog');
-  const subdirs = ['10inch', '19inch', 'carriers', 'sub-modules'] as const;
+  const subdirs = ['10inch', '19inch', '6inch', 'carriers', 'sub-modules'] as const;
 
   const issues: BlueprintIntegrityIssue[] = [];
   let totalFiles = 0;

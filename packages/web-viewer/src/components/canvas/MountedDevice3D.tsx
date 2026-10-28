@@ -74,6 +74,8 @@ export function MountedDevice3D({
   const matParams = getMaterialParams(device.blueprint.visuals.material_preset);
   const chassisColor = device.blueprint.visuals.chassis_color_hex;
   const isBrushPanel = device.blueprint.category === 'brush-panel';
+  const isShelf = device.blueprint.category === 'shelf';
+  const isNas = device.blueprint.category === 'nas';
   const isDesktopSwitchWithPrintedCradle =
     device.mount_target === 'rack-unit' &&
     device.blueprint.visuals.material_preset === 'polycarbonate' &&
@@ -394,6 +396,68 @@ export function MountedDevice3D({
             return items;
           })()}
         </group>
+      ) : isShelf ? (
+        /* Open L-Shaped Ventilated Cantilever Equipment Shelf */
+        <group onClick={handleClick}>
+          {/* 3.2mm Bottom Tray Floor */}
+          <mesh position={[cx, box.min.y + 1.6, cz]}>
+            <boxGeometry args={[w, 3.2, d]} />
+            <meshStandardMaterial
+              color={chassisColor}
+              metalness={matParams.metalness}
+              roughness={matParams.roughness}
+              emissive={isSelected ? '#3B82F6' : '#000000'}
+              emissiveIntensity={isSelected ? 0.18 : 0}
+              transparent={xrayMode}
+              opacity={xrayMode ? 0.16 : 1.0}
+              depthWrite={!xrayMode}
+            />
+          </mesh>
+          {/* 14mm Front Retaining Lip */}
+          <mesh
+            position={[
+              cx,
+              box.min.y + 7.0,
+              (device.face === 'front' ? box.min.z + 2.0 : box.max.z - 2.0) +
+                offsetZ,
+            ]}
+          >
+            <boxGeometry args={[w, 14.0, 4.0]} />
+            <meshStandardMaterial
+              color={chassisColor}
+              metalness={matParams.metalness}
+              roughness={matParams.roughness}
+              emissive={isSelected ? '#3B82F6' : '#000000'}
+              emissiveIntensity={isSelected ? 0.18 : 0}
+              transparent={xrayMode}
+              opacity={xrayMode ? 0.16 : 1.0}
+              depthWrite={!xrayMode}
+            />
+          </mesh>
+          {/* Left & Right Side Support Flanges */}
+          <mesh position={[box.min.x + 1.8, box.min.y + h * 0.35, cz]}>
+            <boxGeometry args={[3.6, h * 0.7, d]} />
+            <meshStandardMaterial
+              color={chassisColor}
+              metalness={matParams.metalness}
+              roughness={matParams.roughness}
+              transparent={xrayMode}
+              opacity={xrayMode ? 0.16 : 1.0}
+              depthWrite={!xrayMode}
+            />
+          </mesh>
+          <mesh position={[box.max.x - 1.8, box.min.y + h * 0.35, cz]}>
+            <boxGeometry args={[3.6, h * 0.7, d]} />
+            <meshStandardMaterial
+              color={chassisColor}
+              metalness={matParams.metalness}
+              roughness={matParams.roughness}
+              transparent={xrayMode}
+              opacity={xrayMode ? 0.16 : 1.0}
+              depthWrite={!xrayMode}
+            />
+          </mesh>
+        </group>
       ) : (
         <mesh position={[cx, cy, cz]} onClick={handleClick}>
           <boxGeometry args={[w, h, d]} />
@@ -410,8 +474,87 @@ export function MountedDevice3D({
         </mesh>
       )}
 
+      {/* Hot-Swap HDD Drive Bays for NAS / NVR Storage Appliances */}
+      {isNas &&
+        (() => {
+          const slug = device.blueprint.slug;
+          const bayCount = slug.includes('8bay') || slug.includes('rs1221')
+            ? 8
+            : slug.includes('unas-pro')
+              ? 7
+              : slug.includes('4bay') || slug.includes('433')
+                ? 4
+                : 2;
+          const rows = bayCount >= 8 && h >= 70 ? 2 : 1;
+          const cols = Math.ceil(bayCount / rows);
+          const leftMargin = device.blueprint.visuals.has_oled_display ? 42 : 18;
+          const rightMargin = 22;
+          const usableW = Math.max(40, w - leftMargin - rightMargin);
+          const usableH = Math.max(18, h - 14);
+          const pitchX = usableW / cols;
+          const pitchY = usableH / rows;
+          const bayW = Math.max(12, pitchX * 0.84);
+          const bayH = Math.max(10, pitchY * 0.78);
+          const bayFaceZ =
+            (device.face === 'front' ? box.min.z - 1.2 : box.max.z + 1.2) +
+            offsetZ;
+
+          const sleds = [];
+          for (let idx = 0; idx < bayCount; idx++) {
+            const r = Math.floor(idx / cols);
+            const c = idx % cols;
+            const bx = box.min.x + leftMargin + (c + 0.5) * pitchX;
+            const by = box.min.y + 7 + (r + 0.5) * pitchY;
+            sleds.push(
+              <group key={`hdd-sled-${idx}`}>
+                {/* Dark Drive Caddy Bezel */}
+                <mesh position={[bx, by, bayFaceZ]}>
+                  <boxGeometry args={[bayW, bayH, 1.4]} />
+                  <meshStandardMaterial
+                    color="#18181B"
+                    metalness={0.45}
+                    roughness={0.55}
+                  />
+                </mesh>
+                {/* Brushed Aluminum Release Handle Bar */}
+                <mesh
+                  position={[
+                    bx - bayW * 0.08,
+                    by,
+                    bayFaceZ + (device.face === 'front' ? -0.6 : 0.6),
+                  ]}
+                >
+                  <boxGeometry args={[bayW * 0.68, Math.min(6, bayH * 0.32), 0.9]} />
+                  <meshStandardMaterial
+                    color="#71717A"
+                    metalness={0.75}
+                    roughness={0.28}
+                  />
+                </mesh>
+                {/* Drive Activity LED */}
+                <mesh
+                  position={[
+                    bx + bayW * 0.36,
+                    by + bayH * 0.26,
+                    bayFaceZ + (device.face === 'front' ? -0.6 : 0.6),
+                  ]}
+                >
+                  <boxGeometry args={[1.8, 1.8, 0.8]} />
+                  <meshStandardMaterial
+                    color="#10B981"
+                    emissive="#10B981"
+                    emissiveIntensity={0.85}
+                  />
+                </mesh>
+              </group>,
+            );
+          }
+          return <group onClick={handleClick}>{sleds}</group>;
+        })()}
+
       {/* Recessed Front Faceplate Bezel & Power Status LED */}
       {!isModularCarrier &&
+        !isShelf &&
         device.blueprint.category !== 'keystone-module' &&
         device.blueprint.category !== 'brush-panel' && (
           <>

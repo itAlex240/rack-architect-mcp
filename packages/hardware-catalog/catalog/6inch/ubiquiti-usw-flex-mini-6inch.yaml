@@ -1,0 +1,64 @@
+slug: "ubiquiti-usw-flex-mini-6inch"
+manufacturer: "Ubiquiti"
+model: "UniFi Switch Flex Mini (USW-Flex-Mini, 6-Inch 1U Mount)"
+description: "Ultrakompakter 5-Port Gigabit Managed Switch (107,2×21,2×70,2mm, lautlos) für 6-Zoll Micro-Racks. Kann wahlweise über Port 1 per 802.3af/at PoE-In oder über den rückseitigen 5V USB-C Anschluss mit Strom versorgt werden und sitzt im 6-Zoll-Rack in einer 3D-gedruckten 1U-PETG-Aufnahmehalterung."
+category: "switch"
+mount_type: "rackmount-6"
+geometry:
+  u_height: 1.0
+  width_mm: 107.2
+  height_mm: 21.2
+  depth_mm: 70.2
+  ear_mount_style: "included-6inch-ears"
+  front_protrusion_mm: 1.5
+  rear_protrusion_mm: 0.0
+  weight_grams: 150
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 1.5
+  max_system_watts: 2.5
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "Port "
+    start_index: 2
+    count: 4
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 35.5
+      origin_y_mm: 10.6
+      columns: 4
+      rows: 1
+      pitch_x_mm: 17.5
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "eth1"
+    label: "Port 1 (PoE-In)"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "poe-in-af", "poe-in-at"]
+    coordinates:
+      x_mm: 18.0
+      y_mm: 10.6
+      orientation: "upright"
+  - port_id: "pwr_usb_c"
+    label: "5V 1A USB-C In"
+    face: "rear"
+    connector_type: "usb-c"
+    direction: "input"
+    capabilities: ["usb-pd", "dc-power"]
+    coordinates:
+      x_mm: 88.0
+      y_mm: 10.6
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#E5E7EB"
+  material_preset: "polycarbonate"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

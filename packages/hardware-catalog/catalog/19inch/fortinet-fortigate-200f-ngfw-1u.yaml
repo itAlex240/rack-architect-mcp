@@ -1,0 +1,118 @@
+slug: "fortinet-fortigate-200f-ngfw-1u"
+manufacturer: "Fortinet"
+model: "FortiGate 200F Enterprise Next-Gen Firewall (1U)"
+description: "19-Zoll 1U Enterprise Next-Generation Firewall (FortiGate 200F) mit NP6XLite/CP9 Security-Prozessoren, Dual-2.5G-WAN, HA-Heartbeat-Port, 10G SFP+ Core-Uplinks, Hardware-beschleunigtem IPS/SSL-Inspection und redundanter Stromversorgung."
+category: "router"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 442.4
+  height_mm: 43.7
+  depth_mm: 280.0
+  ear_mount_style: "flush-front"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 4300
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 38
+  max_system_watts: 68
+  airflow: "front-to-rear"
+  noise_db_a: 39.0
+ports:
+  - port_id: "wan1"
+    label: "WAN1 (Primary Fiber ONT 2.5G)"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 48.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "wan2"
+    label: "WAN2 (Backup Cable/5G 2.5G)"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 68.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "ha1"
+    label: "HA Heartbeat"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 92.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "eth1"
+    label: "LAN1 Mgmt"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 125.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "eth2"
+    label: "LAN2 DMZ"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 145.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "eth8"
+    label: "LAN8 Shadow Sync"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 265.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "sfp_plus1"
+    label: "10G SFP+ Core Trunk 1"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 360.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "sfp_plus2"
+    label: "10G SFP+ Core Trunk 2"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 384.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "ac_in"
+    label: "AC Mains In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 60.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#DC2626"
+  material_preset: "matte-black-steel"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

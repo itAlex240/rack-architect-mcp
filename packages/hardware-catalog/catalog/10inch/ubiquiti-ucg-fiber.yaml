@@ -1,0 +1,85 @@
+slug: "ubiquiti-ucg-fiber"
+manufacturer: "Ubiquiti"
+model: "UniFi Cloud Gateway Fiber (UCG-Fiber)"
+description: "Hochleistungs-10G-Glasfaser- & 2.5G-Cloud-Gateway mit 5 Gbit/s IDS/IPS-Routing, 4x 2.5GbE RJ45 LAN (davon 1x PoE+ Out), 1x 10GbE RJ45 WAN, 2x 10G SFP+ Ports (WAN/LAN) und integriertem NVMe-Steckplatz für UniFi Protect Kameras. Sitzt im 10-Zoll-Rack passgenau in einer 3D-gedruckten 1U-PETG-Aufnahmehalterung."
+category: "router"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 212.8
+  height_mm: 30.0
+  depth_mm: 127.6
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 680
+power_and_thermal:
+  electrical_role: "pse-switch"
+  idle_watts: 11
+  max_system_watts: 25
+  poe_budget_watts: 30
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "lan"
+    label_prefix: "2.5G LAN "
+    start_index: 1
+    count: 4
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t", "poe-out", "poe+", "poe-out-at"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 58.0
+      origin_y_mm: 15.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 16.5
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "wan1"
+    label: "10G RJ45 WAN"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t", "10gbase-t"]
+    coordinates:
+      x_mm: 132.0
+      y_mm: 15.0
+      orientation: "upright"
+  - port_id: "sfp_wan"
+    label: "10G SFP+ WAN"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-lr", "10gbase-dac"]
+    coordinates:
+      x_mm: 160.0
+      y_mm: 15.0
+      orientation: "upright"
+  - port_id: "sfp_lan"
+    label: "10G SFP+ LAN"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-lr", "10gbase-dac"]
+    coordinates:
+      x_mm: 184.0
+      y_mm: 15.0
+      orientation: "upright"
+  - port_id: "pwr_in"
+    label: "54V DC / AC Input"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 180.0
+      y_mm: 15.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#E5E7EB"
+  material_preset: "polycarbonate"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

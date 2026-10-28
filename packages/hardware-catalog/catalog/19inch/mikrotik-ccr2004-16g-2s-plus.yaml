@@ -1,0 +1,95 @@
+slug: "mikrotik-ccr2004-16g-2s-plus"
+manufacturer: "MikroTik"
+model: "Cloud Core Router CCR2004-16G-2S+ (16x 1GbE + 2x 10G SFP+)"
+description: "19-Zoll 1U Enterprise Cloud Core Router (CCR2004-16G-2S+) mit 4-Kern 64-Bit ARMv8 Prozessor (Amazon Annapurna Labs Alpine v2, 1,7 GHz), 4 GB DDR4 RAM, 16x 1GbE RJ45 Ports, 2x 10G SFP+ Slots und doppelt redundanten Hot-Swap AC-Netzteilen."
+category: "router"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 443.0
+  height_mm: 44.0
+  depth_mm: 210.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 1780
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 22
+  max_system_watts: 48
+  airflow: "front-to-rear"
+  noise_db_a: 31.0
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "GE "
+    start_index: 1
+    count: 16
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 95.0
+      origin_y_mm: 22.0
+      columns: 16
+      rows: 1
+      pitch_x_mm: 15.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "sfp_plus1"
+    label: "10G SFP+ 1"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-lr", "10gbase-dac"]
+    coordinates:
+      x_mm: 350.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "sfp_plus2"
+    label: "10G SFP+ 2"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-lr", "10gbase-dac"]
+    coordinates:
+      x_mm: 374.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "console"
+    label: "RJ45 Console"
+    face: "front"
+    connector_type: "rj45-serial-console"
+    direction: "bidirectional"
+    capabilities: ["serial-rs232"]
+    coordinates:
+      x_mm: 405.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "ac_in1"
+    label: "PSU 1 AC In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 360.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "ac_in2"
+    label: "PSU 2 AC In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 405.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#E5E7EB"
+  material_preset: "coated-aluminum"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

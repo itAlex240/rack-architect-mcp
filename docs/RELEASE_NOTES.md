@@ -1,20 +1,21 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.4.8` — 3D/2D Rack Planner, CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v0.4.9` — 3D/2D Rack Planner, CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v0.4.8`!**  
+**Welcome to RackArchitect MCP `v0.4.9`!**  
 Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via MCP — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
-> **✨ What's New in the Last 3 Releases (`v0.4.6` – `v0.4.8`):**
+> **✨ What's New in the Last 3 Releases (`v0.4.7` – `v0.4.9`):**
+> - **30 New Hardware Blueprints Across 10-Inch, 19-Inch & 6-Inch Racks — Catalog Doubled to 60 Parts (`v0.4.9`):** Added **12 new 10-inch & sub-module parts** (`USW-Ultra-60W`, `UCG-Fiber` 10G, `CRS309-1G-8S+IN`, `QNAP TS-433` 4-Bay 3U NAS, `Brennenstuhl 6-Way IEC-C13 PDU`, `Netgear GS108PP`, `HP EliteDesk 800 G6 Mini`, `Intel NUC 13 Pro`, `ZimaBoard 832`, `PiKVM v4 Mini`, + 2 new 3D-print carriers), **12 new 19-inch parts** (`UDM-SE`, `UNVR 4-Bay 1U`, `USW-Pro-Max-16-PoE`, `CRS326-24G-2S+RM`, `CCR2004-16G-2S+`, `Synology RS1221+` 8-Bay 2U NAS, `FortiGate 200F`, `APC Short-Depth Li-Ion 2U UPS`, `Brennenstuhl 8-Way Schuko PDU`, `19" Cantilever Shelf`, `19" Blank Panel`, `19" Dual Mini-PC Carrier`), and **6 new 6-inch micro-rack parts** (`USW-Flex-Mini`, `GL.iNet Beryl AX`, `6-Port Patch Panel`, `200W USB-C PD GaN PDU`, `6" Brush Panel`, `6" RPi5+Keystone Carrier`, plus `examples/6inch-microlab/`), complete with 3D/2D multi-bay hot-swap NAS sleds and ventilated cantilever shelves.
 > - **Shortest-Direct Monotonic 3D Cable Routing by Default & Optional Side-Duct Mode (`v0.4.8`):** Cables now take the **shortest collision-free monotonic orthogonal L-bend / 1-step path** between ports by default (`routing_mode: "shortest-direct"`), eliminating pointless horizontal zig-zags out to the side walls and back (`20%–55%` shorter cable paths and lower BOM cable costs while preserving `>= 6.50 mm` 3D centerline clearance). Users or AI agents who explicitly want a side-channel route can set `routing_mode: "left-duct"` or `"right-duct"`.
 > - **English-First, German-Second Release Notes, Archive & Changelog Consistency (`v0.4.7`):** Unified [`docs/RELEASE_NOTES.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_NOTES.md), [`docs/RELEASE_ARCHIVE.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md), [`CHANGELOG.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/CHANGELOG.md), and the GitHub Releases page so **English is always presented first (primary)** followed by the **complete German version (secondary)**, matching the main `README.md`.
-> - **Zero Cable-Through-Rail Penetration & De Casteljau Corner Fillets (`v0.4.6`):** Vertical cable ducts are strictly bounded within the inner EIA-310 rack aperture (`X >= 21.875 mm`, `0` hits against the 4 vertical mounting rails and 4 corner posts). A convex-hull-bounded De Casteljau quadratic Bezier corner fillet solver eliminates all outward 90° corner overshoot (`0.0000 mm` overshoot), keeps internal rear LAN/power cables inside the rack frame, and routes incoming `top-rear` building drops cleanly below the top steel roof plate.
 
 <details>
-<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.4.5) in the Release Archive</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.4.6) in the Release Archive</b></summary>
 
 <br />
 
+- **`v0.4.6`** — Zero cable-through-rail penetration, convex-hull De Casteljau corner fillets & clean rear/top conduit routing.
 - **`v0.4.5`** — Automated GitHub Releases page curation (retaining top 3 releases) & [`docs/RELEASE_ARCHIVE.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md).
 - **`v0.4.4`** — Real-world ANSI/TIA-942 & Homelab schematics, 1:1 vertical port alignment (`p1..p24 <-> eth1..eth24`) & 4 use-case archetypes in `SKILL.md`.
 - **`v0.4.3`** — Human-readable device descriptions ("What is this device?"), full Manufacturer + Model titles & 3D-printed desktop switch adapter cradles (`USW-Flex-2.5G-8-PoE`).
@@ -85,19 +86,20 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v0.4.8` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.4.9` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.4.6` – `v0.4.8`):**
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.4.7` – `v0.4.9`):**
+> - **30 neue Hardware-Blueprints für 10-Zoll-, 19-Zoll- & 6-Zoll-Racks — Verdopplung des Katalogs auf 60 Teile (`v0.4.9`):** Neu hinzugekommen sind **12 Teile für 10-Zoll-Racks & Sub-Module** (`USW-Ultra-60W`, `UCG-Fiber` 10G, `CRS309-1G-8S+IN`, `QNAP TS-433` 4-Bay 3U NAS, `Brennenstuhl 6-fach IEC-C13 PDU`, `Netgear GS108PP`, `HP EliteDesk 800 G6 Mini`, `Intel NUC 13 Pro`, `ZimaBoard 832`, `PiKVM v4 Mini` + 2 neue 3D-Druck-Carrier), **12 Teile für 19-Zoll-Racks** (`UDM-SE`, `UNVR 4-Bay 1U`, `USW-Pro-Max-16-PoE`, `CRS326-24G-2S+RM`, `CCR2004-16G-2S+`, `Synology RS1221+` 8-Bay 2U NAS, `FortiGate 200F`, `APC Short-Depth Li-Ion 2U USV`, `Brennenstuhl 8-fach Schuko PDU`, `19" Fachboden`, `19" Blindpanel`, `19" Dual-Mini-PC-Carrier`) sowie **6 Teile für 6-Zoll-Micro-Racks** (`USW-Flex-Mini`, `GL.iNet Beryl AX`, `6-Port Patchpanel`, `200W USB-C PD GaN-Leiste`, `6" Bürstenleiste`, `6" RPi5+Keystone Carrier` inkl. Referenzprojekt `examples/6inch-microlab/`) samt detaillierter 3D/2D-Darstellung für Hot-Swap-Laufwerksschächte und L-Fachböden.
 > - **Kürzeste, sinnvolle & kollisionsfreie 3D-Kabelführung als Standard (`v0.4.8`):** Kabel werden ab sofort standardmäßig auf dem **kürzesten monotonen orthogonalen Weg (`routing_mode: "shortest-direct"`)** direkt zwischen den Ports verlegt — ohne unnötiges Hin-und-her-Zickzack bis an die linke/rechte Außenwand (`20 %–55 %` kürzere Kabellängen und günstigere Kabel-Stückliste bei gleichzeitig `>= 6,50 mm` Kollisionsabstand). Wer bewusst über den linken oder rechten Seitenkanal routen möchte, kann optional `routing_mode: "left-duct"` oder `"right-duct"` angeben.
 > - **Einheitliche Struktur „Englisch zuerst, Deutsch danach" in allen Releases & Changelogs (`v0.4.7`):** [`docs/RELEASE_NOTES.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_NOTES.md), [`docs/RELEASE_ARCHIVE.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md), [`CHANGELOG.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/CHANGELOG.md) und die GitHub-Releases-Seite zeigen ab sofort konsistent zuerst die englische Version und direkt darunter die deutsche Version — exakt passend zur GitHub-Hauptseite (`README.md`).
-> - **Kein Kabel-Clipping durch den Rack-Rahmen mehr & De-Casteljau-Kurven-Fillets (`v0.4.6`):** Alle vertikalen Kabelschächte liegen ab sofort garantiert innerhalb der lichten EIA-310-Öffnung (`X >= 21.875 mm`, `0` Treffer an den 4 vertikalen Montageschienen und Eckpfosten). Eine konvex-hüllen-beschränkte De-Casteljau-Kurvenberechnung verhindert jedes Überschwingen an 90°-Knickpunkten (`0.00 mm` Overshoot), hält interne Rückseiten-Kabel komplett innerhalb des Rack-Rahmens und führt externe Haus-Kabel (`top-rear`) sauber unterhalb des Dachblechs ins Patchpanel.
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.4.5) auf Deutsch anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.4.6) auf Deutsch anzeigen</b></summary>
 
 <br />
 
+- **`v0.4.6`** — Kein Kabel-Clipping durch den Rack-Rahmen mehr, De-Casteljau-Kurven-Fillets & saubere Dach-/Rückseiten-Kabelführung.
 - **`v0.4.5`** — Automatische Bereinigung der GitHub-Releases-Seite (Top 3 Releases) & [`docs/RELEASE_ARCHIVE.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md).
 - **`v0.4.4`** — Echte Server-Rack-Schaltpläne (ANSI/TIA-942 & Homelab-Best-Practices), 1:1 Port-Alignment (`p1..p24 <-> eth1..eth24`) & 4 Praxis-Archetypen im `rack-architect` Skill.
 - **`v0.4.3`** — Verständliche Geräte-Beschreibungen („Was ist dieses Gerät?"), echter Hersteller + Modellname & 3D-Druck-Halterung für Desktop-Switches (`USW-Flex-2.5G-8-PoE`).
