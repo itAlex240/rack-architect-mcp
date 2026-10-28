@@ -1,20 +1,103 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.4.6` — 3D/2D Rack-Planer & 3D-Druck-Paket
+# 🏗️ RackArchitect MCP `v0.4.7` — 3D/2D Rack Planner, CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Willkommen beim Release `v0.4.6` von RackArchitect MCP!**  
-Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
+**Welcome to RackArchitect MCP `v0.4.7`!**  
+Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via MCP — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
-> **✨ Neu in den letzten 3 Versionen (`v0.4.4` – `v0.4.6`):**
-> - **Kein Kabel-Clipping durch den Rack-Rahmen mehr & De-Casteljau-Kurven-Fillets (`v0.4.6`):** Alle vertikalen Kabelschächte liegen ab sofort garantiert innerhalb der lichten EIA-310-Öffnung (`X >= 21.875 mm`, `0` Treffer an den 4 vertikalen Montageschienen und Eckpfosten). Eine konvex-hüllen-beschränkte De-Casteljau-Kurvenberechnung verhindert jedes Überschwingen an 90°-Knickpunkten (`0.00 mm` Overshoot), hält interne Rückseiten-Kabel komplett innerhalb des Rack-Rahmens und führt externe Haus-Kabel (`top-rear`) sauber unterhalb des Dachblechs ins Patchpanel.
-> - **Aufgeräumte GitHub-Releases-Seite & automatisches Release-Archiv (`v0.4.5`):** Die GitHub-Releases-Seite behält automatisch nur noch die **3 aktuellsten Releases** aktiv im Feed (wobei die Einsteiger-Anleitung bei den beiden Vorgänger-Releases platzsparend eingeklappt wird). Alle älteren Versionen (`v0.1.0` – `v0.4.3`) sind übersichtlich in [`docs/RELEASE_ARCHIVE.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md) und [`CHANGELOG.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/CHANGELOG.md) archiviert.
-> - **Echte Server-Rack-Schaltpläne (ANSI/TIA-942 & Homelab-Best-Practices), 1:1 Port-Alignment & 4 Praxis-Archetypen (`v0.4.4`):** KI-Agenten unterscheiden im [`rack-architect` Skill](https://github.com/itAlex240/rack-architect-mcp/blob/main/skills/rack-architect/SKILL.md) strikt zwischen **Nutzer-Souveränität** (wer genau weiß, was er will, behält zu 100 % die Oberhand) und **Beratungs-Modus** (4 praxiserprobte Referenz-Racks nach echten TIA-942-, UniFi- und DeskPi-Schaltplänen). Zudem richtet `plan_external_endpoints` Patch-Panel-Ports (`p1..p24`) und Switch-Ports (`eth1..eth24`) automatisch 1:1 vertikal untereinander aus.
+> **✨ What's New in the Last 3 Releases (`v0.4.5` – `v0.4.7`):**
+> - **English-First, German-Second Release Notes, Archive & Changelog Consistency (`v0.4.7`):** Unified [`docs/RELEASE_NOTES.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_NOTES.md), [`docs/RELEASE_ARCHIVE.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md), [`CHANGELOG.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/CHANGELOG.md), and the GitHub Releases page so **English is always presented first (primary)** followed by the **complete German version (secondary)**, matching the main `README.md`.
+> - **Zero Cable-Through-Rail Penetration & De Casteljau Corner Fillets (`v0.4.6`):** Vertical cable ducts are strictly bounded within the inner EIA-310 rack aperture (`X >= 21.875 mm`, `0` hits against the 4 vertical mounting rails and 4 corner posts). A convex-hull-bounded De Casteljau quadratic Bezier corner fillet solver eliminates all outward 90° corner overshoot (`0.0000 mm` overshoot), keeps internal rear LAN/power cables inside the rack frame, and routes incoming `top-rear` building drops cleanly below the top steel roof plate.
+> - **Automated GitHub Releases Page Curation & Release Archive (`v0.4.5`):** The GitHub Releases page automatically retains only the **3 most recent releases** in the active feed (collapsing the Quick-Start guide on the 2nd and 3rd releases into an accordion). All earlier versions (`v0.1.0` – `v0.4.4`) are archived in [`docs/RELEASE_ARCHIVE.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md) and [`CHANGELOG.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/CHANGELOG.md).
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.4.3) im Release-Archiv anzeigen</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.4.4) in the Release Archive</b></summary>
 
 <br />
 
+- **`v0.4.4`** — Real-world ANSI/TIA-942 & Homelab schematics, 1:1 vertical port alignment (`p1..p24 <-> eth1..eth24`) & 4 use-case archetypes in `SKILL.md`.
+- **`v0.4.3`** — Human-readable device descriptions ("What is this device?"), full Manufacturer + Model titles & 3D-printed desktop switch adapter cradles (`USW-Flex-2.5G-8-PoE`).
+- **`v0.4.2`** — Eliminated horizontal text clipping in the right `InspectorSidebar` (`minmax(0, 1fr)`) and `TopNavBar`.
+- **`v0.4.1`** — 100% collision-free 3D cable routing (`0` cable-to-cable interpenetrations via `computeMinSplineClearanceMm`).
+- **`v0.4.0`** — External building/room cable drops (`plan_external_endpoints`), visible 3D ports on protruding faceplates & segmented 3D nylon brush panels.
+- **`v0.3.0` – `v0.3.3`** — "Precision Hardware & CAD Studio" UI/UX redesign, dedicated local MCP Engineering Workbench (`localhost:3100`) & coaxial plug entry splines.
+- **`v0.1.0` – `v0.2.0`** — Core domain engine, 5-stage validation solver, 30 hardware blueprints, SVG/BOM/GLB/OpenSCAD/STL exporters & MCP server.
+
+👉 Full History: [**`docs/RELEASE_ARCHIVE.md`**](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md) · [**`CHANGELOG.md`**](https://github.com/itAlex240/rack-architect-mcp/blob/main/CHANGELOG.md)
+
+</details>
+
+</div>
+
+<!-- BEGIN_QUICKSTART_GUIDE -->
+
+---
+
+## 🇬🇧 English Quick-Start Guide (Zero Installation Required!)
+
+### 🌐 Option 1: Try the 3D/2D Rack Planner Directly in Your Browser
+You **do not need to download or install anything**. Simply click this link:
+
+> ### 👉 [**Click Here: Launch the Interactive 3D/2D Rack Planner in Your Browser**](https://italex240.github.io/rack-architect-mcp/)
+
+**What can you do with your mouse?**
+1. **Orbit & Zoom in 3D:** Hold the **left mouse button** to rotate around the rack from any angle, and use the **scroll wheel** to zoom in on ports and cables.
+2. **Look Inside (`X-Ray` & `Explode`):** Use the bottom dock to toggle **`X-Ray Chassis`** (makes enclosures translucent) or drag the **`Explode Z`** slider (separates front and rear equipment so every internal plug is visible).
+3. **Mount Your Own Gear & Route Cables:** Click **`+ Catalog & Cable Builder`** in the top-left corner:
+   - Pick any device (Mini-PC, switch, PDU, UPS, or 3D-printed carrier), choose a rack unit (`U1`–`U8`), and click **`+ Mount`**.
+   - The engine immediately checks for depth collisions, power/PoE budgets, and thermal constraints!
+4. **Switch Between 3D, CAD Blueprints & BOM:** Use the top-center switcher to view:
+   - **`3D Digital Twin`** (Interactive 3D view)
+   - **`2D Elevation CAD`** (True-to-scale Front, Rear & Side Z-Depth Cutaway drawing)
+   - **`2D Wiring Schematic`** (Color-coded Pin-to-Pin cable wiring diagram)
+   - **`BOM & 3D-Print Hub`** (Complete shopping list + 1-click `.STL` / `.SCAD` downloads for your 3D printer)
+
+---
+
+### 📦 Option 2: What Are the 9 Downloadable Files Under "Assets" Below?
+
+At the very bottom of this release page under **"Assets"**, you will find **9 ready-to-use files**. Here is what each file is for:
+
+| File Under "Assets" | Who Is It For? | What Is It & How Do I Open It? |
+| :--- | :--- | :--- |
+| 🖨️ **`3dprint-10inch-lenovo-tiny-plus-2keystone.stl`** | **3D Printer Owners** | **Ready-to-print 3D bracket** for a 1-Liter Mini-PC (Lenovo ThinkCentre M920q / Dell Micro) + 2 Keystone ports in a 10-inch rack. Drag directly into **Bambu Studio**, **OrcaSlicer**, **PrusaSlicer**, or **Cura** and print! *(Tip: PETG/ASA filament, lay flat on the front faceplate, zero supports required).* |
+| 🖨️ **`3dprint-10inch-ucg-ultra-plus-3keystone.stl`** | **3D Printer Owners** | **Ready-to-print 3D bracket** for a Ubiquiti UniFi Cloud Gateway (`UCG-Max` / `UCG-Ultra`) + 3 Keystone ports in a 10-inch rack. Open directly in your slicer and print! |
+| 🔧 **`...scad` (2 files)** | **Makers & CAD Users** | Parametric **[OpenSCAD](https://openscad.org/) source files** for the two 3D-printed brackets if you want to customize wall thickness or hole tolerances. |
+| 📐 **`elevation.svg`** | **Everyone (CAD Plan)** | **True-to-scale 2D CAD Elevation Plan** (Front view, Rear view, and Side Z-depth cutaway). Simply **double-click** after downloading — it opens in any web browser (Chrome, Edge, Firefox, Safari) with infinite crisp zoom. |
+| 🔌 **`wiring-schematic.svg`** | **Everyone (Wiring Plan)** | **Pin-to-Pin Cable Wiring Diagram.** Shows with color-coded lines exactly which power and network cable plugs into which socket. **Double-click to open in any browser.** |
+| 🛒 **`BOM.md`** | **Shopping & Parts List** | **Complete Bill of Materials** (opens in any text/Markdown editor). Lists all devices, required screws (`M6` cage nuts, `M3` fasteners), 3D-print filament weight in grams, and **exact commercial cable lengths**. |
+| 🧊 **`rack-scene.glb`** | **3D Viewers / Blender** | Complete **3D model of the populated rack** as a single binary glTF file. Open in Windows/macOS 3D viewers, PowerPoint, or **Blender**. |
+| 📄 **`rack.yaml`** | **Project Save File** | Declarative YAML source file defining the complete 8U reference homelab rack. |
+
+---
+
+### 💻 For Developers, Docker & AI Agents (Claude Desktop / Cursor / Antigravity)
+
+```bash
+# Run locally in 10 seconds with Docker:
+docker build -t rack-architect-mcp https://github.com/itAlex240/rack-architect-mcp.git
+docker run --rm -p 3100:3100 rack-architect-mcp
+# Open http://127.0.0.1:3100/
+```
+
+---
+
+## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
+
+**Willkommen beim Release `v0.4.7` von RackArchitect MCP!**  
+Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
+
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.4.5` – `v0.4.7`):**
+> - **Einheitliche Struktur „Englisch zuerst, Deutsch danach" in allen Releases & Changelogs (`v0.4.7`):** [`docs/RELEASE_NOTES.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_NOTES.md), [`docs/RELEASE_ARCHIVE.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md), [`CHANGELOG.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/CHANGELOG.md) und die GitHub-Releases-Seite zeigen ab sofort konsistent zuerst die englische Version und direkt darunter die deutsche Version — exakt passend zur GitHub-Hauptseite (`README.md`).
+> - **Kein Kabel-Clipping durch den Rack-Rahmen mehr & De-Casteljau-Kurven-Fillets (`v0.4.6`):** Alle vertikalen Kabelschächte liegen ab sofort garantiert innerhalb der lichten EIA-310-Öffnung (`X >= 21.875 mm`, `0` Treffer an den 4 vertikalen Montageschienen und Eckpfosten). Eine konvex-hüllen-beschränkte De-Casteljau-Kurvenberechnung verhindert jedes Überschwingen an 90°-Knickpunkten (`0.00 mm` Overshoot), hält interne Rückseiten-Kabel komplett innerhalb des Rack-Rahmens und führt externe Haus-Kabel (`top-rear`) sauber unterhalb des Dachblechs ins Patchpanel.
+> - **Aufgeräumte GitHub-Releases-Seite & automatisches Release-Archiv (`v0.4.5`):** Die GitHub-Releases-Seite behält automatisch nur noch die **3 aktuellsten Releases** aktiv im Feed (wobei die Einsteiger-Anleitung bei den beiden Vorgänger-Releases platzsparend eingeklappt wird). Alle älteren Versionen (`v0.1.0` – `v0.4.4`) sind übersichtlich in [`docs/RELEASE_ARCHIVE.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md) und [`CHANGELOG.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/CHANGELOG.md) archiviert.
+
+<details>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.4.4) auf Deutsch anzeigen</b></summary>
+
+<br />
+
+- **`v0.4.4`** — Echte Server-Rack-Schaltpläne (ANSI/TIA-942 & Homelab-Best-Practices), 1:1 Port-Alignment (`p1..p24 <-> eth1..eth24`) & 4 Praxis-Archetypen im `rack-architect` Skill.
 - **`v0.4.3`** — Verständliche Geräte-Beschreibungen („Was ist dieses Gerät?"), echter Hersteller + Modellname & 3D-Druck-Halterung für Desktop-Switches (`USW-Flex-2.5G-8-PoE`).
 - **`v0.4.2`** — Fix gegen horizontales Abschneiden in der rechten `InspectorSidebar` (`minmax(0, 1fr)`) & `TopNavBar`.
 - **`v0.4.1`** — 100 % kollisionsfreie 3D-Kabelführung (`0` Kabel-Überlappungen durch `computeMinSplineClearanceMm`).
@@ -26,78 +109,27 @@ Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Net
 
 </details>
 
-</div>
-
-<!-- BEGIN_QUICKSTART_GUIDE -->
-
----
-
-## 🇩🇪 Anleitung für Einsteiger & Nicht-Techniker (Ohne Installation!)
-
-### 🌐 Möglichkeit 1: Ich möchte das 3D-Rack einfach im Browser anschauen & ausprobieren
-Du musst **nichts herunterladen und nichts installieren**. Klicke einfach auf diesen Link:
+### 🌐 Möglichkeit 1: 3D-Rack direkt im Browser anschauen & ausprobieren (Ohne Installation)
 
 > ### 👉 [**Hier klicken: Interaktiven 3D/2D Rack-Planer im Browser starten**](https://italex240.github.io/rack-architect-mcp/)
 
-**Was kann ich dort mit der Maus machen?**
 1. **3D-Schrank frei drehen:** Halte die **linke Maustaste** gedrückt und bewege die Maus, um von allen Seiten in den Serverschrank zu schauen. Mit dem **Mausrad** zoomst du hinein.
 2. **Ins Innere schauen (`X-Ray` & `Explode`):** Unten im Bild findest du den Knopf **`X-Ray Chassis`** (macht die Gehäuse durchsichtig wie beim Röntgen) und den Schieberegler **`Explode Z`** (zieht Vorder- und Rückseite auseinander, damit man alle Stecker sieht).
-3. **Eigene Geräte & Kabel einbauen:** Klicke ganz oben links auf den blauen Knopf **`+ Catalog & Cable Builder`**:
-   - Wähle ein Gerät aus der Liste (z. B. Mini-PC, Switch oder Steckdosenleiste), suche dir eine Etage (`U1` bis `U8`) aus und klicke auf **`+ Mount`**.
-   - Das Programm prüft sofort automatisch, ob alles vom Platz, Strom und den Steckern her zusammenpasst!
-4. **Fertige Baupläne & Stückliste ansehen:** Über die Knöpfe ganz oben in der Mitte wechselst du zwischen:
-   - **`3D Digital Twin`** (3D-Ansicht)
-   - **`2D Elevation CAD`** (Technischer Bauplan von Vorne, Hinten und der Seite)
-   - **`2D Wiring Schematic`** (Übersichtlicher Kabel-Steckplan: Welches Kabel gehört in welche Buchse?)
-   - **`BOM & 3D-Print Hub`** (Deine fertige Einkaufsliste + 1-Klick-Downloads für deinen 3D-Drucker)
+3. **Eigene Geräte & Kabel einbauen:** Klicke ganz oben links auf den blauen Knopf **`+ Catalog & Cable Builder`**, wähle ein Gerät und klicke auf **`+ Mount`**.
+4. **Fertige Baupläne & Stückliste ansehen:** Wechsle oben zwischen **`3D Digital Twin`**, **`2D Elevation CAD`**, **`2D Wiring Schematic`** und **`BOM & 3D-Print Hub`**.
 
----
-
-### 📦 Möglichkeit 2: Wofür sind die 9 Download-Dateien ganz unten unter „Assets"?
-
-Ganz unten auf dieser Seite unter der Überschrift **„Assets"** findest du **9 fertige Dateien zum direkten Herunterladen**. Hier ist für jede Datei genau erklärt, was du damit machst:
+### 📦 Möglichkeit 2: Erklärung der 9 Download-Dateien unten unter „Assets"
 
 | Datei unten bei „Assets" | Für wen? | Was ist das & wie öffne ich es? |
 | :--- | :--- | :--- |
-| 🖨️ **`3dprint-10inch-lenovo-tiny-plus-2keystone.stl`** | **3D-Drucker-Besitzer** | **Druckfertige 3D-Halterung** für einen Lenovo ThinkCentre Mini-PC + 2 Netzwerk-Buchsen (für 10-Zoll-Racks). Einfach herunterladen und direkt in dein 3D-Druck-Programm (**Bambu Studio**, **OrcaSlicer**, **PrusaSlicer** oder **Cura**) ziehen und drucken! *(Tipp: PETG-Filament, flach auf die Vorderseite legen, keine Stützstruktur nötig).* |
-| 🖨️ **`3dprint-10inch-ucg-ultra-plus-3keystone.stl`** | **3D-Drucker-Besitzer** | **Druckfertige 3D-Halterung** für ein Ubiquiti UniFi Cloud Gateway (`UCG-Max` / `UCG-Ultra`) + 3 Netzwerk-Buchsen im 10-Zoll-Rack. Ebenfalls direkt im Slicer öffnen und losdrucken! |
-| 🔧 **`...scad` (2 Dateien)** | **Bastler & CAD-Nutzer** | Die offenen **OpenSCAD-Konstruktionsdateien** zu den beiden 3D-Druck-Halterungen. Wenn du mit dem kostenlosen Programm [OpenSCAD](https://openscad.org/) Wandstärken oder Lochmaße anpassen willst, öffnest du diese Datei. |
-| 📐 **`elevation.svg`** | **Jeder (Bauplan)** | **Der maßstabsgetreue 2D-Bauplan** (Vorderansicht, Rückansicht und Seitenansicht). Nach dem Herunterladen einfach **doppelt anklicken** — die Datei öffnet sich in deinem normalen Internet-Browser (Chrome, Edge, Firefox, Safari) und lässt sich gestochen scharf zoomen oder ausdrucken. |
-| 🔌 **`wiring-schematic.svg`** | **Jeder (Steckplan)** | **Der Kabel-Steckplan.** Zeigt dir auf einen Blick mit farbigen Linien, welches Strom- und Netzwerkkabel von welchem Gerät in welchen Anschluss gesteckt wird. Einfach per **Doppelklick im Browser öffnen**. |
-| 🛒 **`BOM.md`** | **Einkaufs- & Stückliste** | **Deine komplette Einkaufs- und Materialliste** (Textdatei, öffnet sich in jedem Texteditor oder Markdown-Programm). Listet alle Geräte, benötigten Schrauben (`M6`-Käfigmuttern, `M3`-Schrauben), Gramm-Anzahl für den 3D-Drucker und die **exakten Kabellängen** auf. |
-| 🧊 **`rack-scene.glb`** | **3D-Ansicht auf PC/Mac** | Das komplette **3D-Modell des gefüllten Racks** als einzelne Datei. Kann unter Windows/Mac mit jedem 3D-Betrachter, in PowerPoint oder in **Blender** geöffnet werden. |
-| 📄 **`rack.yaml`** | **Projekt-Speicherdatei** | Die Textdatei, in der dieses komplette 8-Etagen-Beispiel-Rack gespeichert ist. |
-
----
-
-## 🇬🇧 English Quick-Start Guide (For Everyone!)
-
-### 🌐 Option 1: Try the 3D/2D Rack Planner Directly in Your Browser (Zero Install)
-You don't need to install anything to explore, modify, or export the rack:
-
-> ### 👉 [**Click Here to Open the Live 3D/2D Browser Studio**](https://italex240.github.io/rack-architect-mcp/)
-
-- **Rotate & Inspect in 3D:** Left-click and drag to orbit around the rack, toggle **`X-Ray Chassis`** to see inside the 3D-printed carriers, or slide **`Explode Z`** to separate front and rear equipment.
-- **Mount Gear & Route Cables:** Click **`+ Catalog & Cable Builder`** in the top-left corner to mount new switches/mini-PCs or patch 3D cables between ports.
-- **Download Blueprints:** Switch to **`2D Elevation CAD`**, **`2D Wiring Schematic`**, or **`BOM & 3D-Print Hub`** at the top bar to download `.SVG`, `BOM.md`, `.GLB`, `.SCAD`, and `.STL` files.
-
-### 📦 Option 2: What Are the 9 Downloadable Files Under "Assets" Below?
-- 🖨️ **`.stl` files (`3dprint-10inch-...stl`):** **Ready-to-print 3D models** for 10-inch rack carriers (Lenovo Tiny M920q + 2 Keystones, and UniFi UCG-Max/Ultra + 3 Keystones). Drop straight into **Bambu Studio**, **OrcaSlicer**, or **PrusaSlicer** (print face-down in PETG/ASA, no supports needed).
-- 🔧 **`.scad` files:** Parametric [OpenSCAD](https://openscad.org/) source files if you want to customize wall thickness or slot dimensions.
-- 📐 **`elevation.svg` & `wiring-schematic.svg`:** High-resolution CAD drawings (Front, Rear, Side Z-Depth Cutaway, and Pin-to-Pin Wiring Plan). Double-click to open in any web browser!
-- 🛒 **`BOM.md`:** Complete Bill of Materials (devices, exact cable lengths in `mm`, filament weight in `g`, and `M6`/`M3` fasteners).
-- 🧊 **`rack-scene.glb`:** Full 3D model of the populated rack (open in Blender or any glTF viewer).
-
----
-
-## 💻 Für Entwickler, Docker & KI-Agenten (Claude Desktop / Cursor / Antigravity)
-
-```bash
-# Mit Docker in 10 Sekunden lokal starten:
-docker build -t rack-architect-mcp https://github.com/itAlex240/rack-architect-mcp.git
-docker run --rm -p 3100:3100 rack-architect-mcp
-# Öffne http://127.0.0.1:3100/
-```
+| 🖨️ **`3dprint-10inch-lenovo-tiny-plus-2keystone.stl`** | **3D-Drucker-Besitzer** | **Druckfertige 3D-Halterung** für einen Lenovo ThinkCentre Mini-PC + 2 Netzwerk-Buchsen (für 10-Zoll-Racks). Direkt in **Bambu Studio**, **OrcaSlicer**, **PrusaSlicer** oder **Cura** ziehen und drucken! *(Tipp: PETG-Filament, flach auf die Vorderseite legen, keine Stützstruktur nötig).* |
+| 🖨️ **`3dprint-10inch-ucg-ultra-plus-3keystone.stl`** | **3D-Drucker-Besitzer** | **Druckfertige 3D-Halterung** für ein Ubiquiti UniFi Cloud Gateway (`UCG-Max` / `UCG-Ultra`) + 3 Netzwerk-Buchsen im 10-Zoll-Rack. |
+| 🔧 **`...scad` (2 Dateien)** | **Bastler & CAD-Nutzer** | Offene **[OpenSCAD](https://openscad.org/)-Konstruktionsdateien** zum Anpassen von Wandstärken oder Lochmaßen. |
+| 📐 **`elevation.svg`** | **Jeder (Bauplan)** | **Maßstabsgetreuer 2D-Bauplan** (Vorderansicht, Rückansicht, Seitenansicht). Einfach **doppelt anklicken** zum Öffnen im Browser. |
+| 🔌 **`wiring-schematic.svg`** | **Jeder (Steckplan)** | **Kabel-Steckplan.** Zeigt mit farbigen Linien, welches Kabel in welchen Anschluss gehört. Per **Doppelklick im Browser öffnen**. |
+| 🛒 **`BOM.md`** | **Einkaufs- & Stückliste** | **Komplette Einkaufs- und Materialliste** (Geräte, Schrauben, Filament-Gramm und **exakte Kabellängen**). |
+| 🧊 **`rack-scene.glb`** | **3D-Ansicht auf PC/Mac** | Komplettes **3D-Modell des gefüllten Racks** für 3D-Betrachter oder **Blender**. |
+| 📄 **`rack.yaml`** | **Projekt-Speicherdatei** | Textdatei, in der dieses komplette 8-Etagen-Beispiel-Rack gespeichert ist. |
 
 Alle technischen Details zur 5-Stufen-Validierung, den 12 MCP-Tools und den 26 Diagnose-Codes findest du im [**Kompletten System-Handbuch (`docs/COMPLETE_SYSTEM_HANDBOOK.md`)**](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/COMPLETE_SYSTEM_HANDBOOK.md).
 

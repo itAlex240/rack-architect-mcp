@@ -66,7 +66,7 @@ jobs:
       - name: Create GitHub Release with Beginner-Friendly Guide & CAD/3D-Print Assets
         uses: softprops/action-gh-release@v2
         with:
-          name: "🏗️ RackArchitect MCP ${{ github.ref_name }} — 3D/2D Rack-Planer, Baupläne & 3D-Druck-Dateien (.STL)"
+          name: "🏗️ RackArchitect MCP ${{ github.ref_name }} — 3D/2D Rack Planner, CAD Blueprints & 3D-Print Files (.STL)"
           body_path: docs/RELEASE_NOTES.md
           generate_release_notes: false
           files: |
@@ -111,49 +111,42 @@ jobs:
                 return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
               });
 
+              const fs = require("fs");
+              const templateNotes = fs.readFileSync("docs/RELEASE_NOTES.md", "utf8");
               const KEEP_COUNT = 3;
               const kept = releases.slice(0, KEEP_COUNT);
               const toArchive = releases.slice(KEEP_COUNT);
 
-              // Collapse the repetitive Quick-Start guide on the #2 and #3 releases so the page stays compact
+              // Collapse the repetitive Quick-Start guide on the #2 and #3 releases and ensure English-First -> German-Second consistency
               for (let i = 1; i < kept.length; i++) {
                 const rel = kept[i];
+                const expectedName = `🏗️ RackArchitect MCP ${rel.tag_name} — 3D/2D Rack Planner, CAD Blueprints & 3D-Print Files (.STL)`;
                 let body = rel.body || "";
+                const isLegacyGermanFirst = body.includes("Willkommen beim Release") && (!body.includes("Welcome to RackArchitect MCP") || body.indexOf("Willkommen beim Release") < body.indexOf("Welcome to RackArchitect MCP"));
+                if (isLegacyGermanFirst) {
+                  body = templateNotes.replaceAll(currentTag, rel.tag_name);
+                }
                 if (!body.includes("<!-- COMPACTED_SECONDARY_RELEASE -->")) {
-                  const summaryHeader = `<details>\n<summary>📖 <b>Einsteiger-Anleitung & Asset-Erklärung aufklappen / Expand Quick-Start Guide (${rel.tag_name})</b></summary>\n\n`;
+                  const summaryHeader = `<details>\n<summary>📖 <b>Expand Quick-Start Guide & German Release Notes / Einsteiger-Anleitung & deutsche Version aufklappen (${rel.tag_name})</b></summary>\n\n`;
                   if (body.includes("<!-- BEGIN_QUICKSTART_GUIDE -->") && body.includes("<!-- END_QUICKSTART_GUIDE -->")) {
                     body = body
                       .replace("<!-- BEGIN_QUICKSTART_GUIDE -->", `<!-- COMPACTED_SECONDARY_RELEASE -->\n${summaryHeader}`)
                       .replace("<!-- END_QUICKSTART_GUIDE -->", "\n</details>");
+                  } else if (body.includes("## 🇬🇧 English Quick-Start Guide")) {
+                    const splitIdx = body.indexOf("## 🇬🇧 English Quick-Start Guide");
+                    body = `${body.slice(0, splitIdx)}<!-- COMPACTED_SECONDARY_RELEASE -->\n${summaryHeader}${body.slice(splitIdx)}\n</details>\n`;
                   } else if (body.includes("## 🇩🇪 Anleitung")) {
                     const splitIdx = body.indexOf("## 🇩🇪 Anleitung");
                     body = `${body.slice(0, splitIdx)}<!-- COMPACTED_SECONDARY_RELEASE -->\n${summaryHeader}${body.slice(splitIdx)}\n</details>\n`;
                   }
-                  // Also trim oversized legacy bullet lists in #2/#3 if > 3 bullets exist
-                  const lines = body.split("\n");
-                  const compactLines = [];
-                  let quoteBulletCount = 0;
-                  for (const line of lines) {
-                    if (line.startsWith("> - **")) {
-                      quoteBulletCount++;
-                      if (quoteBulletCount <= 2) {
-                        compactLines.push(line);
-                      } else if (quoteBulletCount === 3) {
-                        compactLines.push(`> - *Ältere Änderungen siehe [\`docs/RELEASE_ARCHIVE.md\`](https://github.com/${repo}/blob/main/docs/RELEASE_ARCHIVE.md) & [\`CHANGELOG.md\`](https://github.com/${repo}/blob/main/CHANGELOG.md).*`);
-                      }
-                    } else {
-                      compactLines.push(line);
-                    }
-                  }
-                  const updatedBody = compactLines.join("\n");
-                  if (updatedBody !== rel.body) {
-                    const patchRes = await fetch(`https://api.github.com/repos/${repo}/releases/${rel.id}`, {
-                      method: "PATCH",
-                      headers: { ...headers, "Content-Type": "application/json" },
-                      body: JSON.stringify({ body: updatedBody })
-                    });
-                    console.log(`Compacted secondary release ${rel.tag_name}: HTTP ${patchRes.status}`);
-                  }
+                }
+                if (body !== rel.body || rel.name !== expectedName) {
+                  const patchRes = await fetch(`https://api.github.com/repos/${repo}/releases/${rel.id}`, {
+                    method: "PATCH",
+                    headers: { ...headers, "Content-Type": "application/json" },
+                    body: JSON.stringify({ name: expectedName, body })
+                  });
+                  console.log(`Updated & compacted secondary release ${rel.tag_name}: HTTP ${patchRes.status}`);
                 }
               }
 

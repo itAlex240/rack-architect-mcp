@@ -1,13 +1,23 @@
 # Changelog
 
-All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented in this file.
+All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in this file (**English first, followed by the German summary / Deutsche Zusammenfassung**).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.7] - 2026-10-28
+
+### Added & Improved (🇬🇧 English)
+- **Consistent English-First, German-Second Release Notes, Archive & Changelog Structure (`docs/RELEASE_NOTES.md`, `docs/RELEASE_ARCHIVE.md`, `CHANGELOG.md`, `.github/workflows/release.yml`):**
+  - Unified [`docs/RELEASE_NOTES.md`](file:///home/alexb/projects/rack-designer/docs/RELEASE_NOTES.md), [`docs/RELEASE_ARCHIVE.md`](file:///home/alexb/projects/rack-designer/docs/RELEASE_ARCHIVE.md), [`CHANGELOG.md`](file:///home/alexb/projects/rack-designer/CHANGELOG.md), and the automated GitHub Releases curation workflow in [`.github/workflows/release.yml`](file:///home/alexb/projects/rack-designer/.github/workflows/release.yml) so **English always appears first (primary)** followed by the **complete German version (secondary)**, matching the repository's main `README.md` without switching languages back and forth.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Einheitliche Reihenfolge „Englisch zuerst, Deutsch danach" auf der GitHub-Releases-Seite, im Release-Archiv und im Changelog:**
+  - [`docs/RELEASE_NOTES.md`](file:///home/alexb/projects/rack-designer/docs/RELEASE_NOTES.md), [`docs/RELEASE_ARCHIVE.md`](file:///home/alexb/projects/rack-designer/docs/RELEASE_ARCHIVE.md), [`CHANGELOG.md`](file:///home/alexb/projects/rack-designer/CHANGELOG.md) sowie der Release-Workflow [`.github/workflows/release.yml`](file:///home/alexb/projects/rack-designer/.github/workflows/release.yml) folgen nun durchgehend derselben Struktur wie die GitHub-Hauptseite (`README.md`): Zuerst die vollständige englische Version (Release-Highlights, Quick-Start-Guide, Asset-Tabelle), direkt gefolgt von der vollständigen deutschen Version.
+
 ## [0.4.6] - 2026-10-28
 
-### Fixed
+### Fixed (🇬🇧 English)
 - **Zero Cable-Through-Rack-Rail / Frame Penetration, Convex-Hull-Bounded De Casteljau Corner Fillets & Clean Rear/Top Conduit Routing (`@rack-mcp/core-domain`, `@rack-mcp/web-viewer`):**
   - Replaced outward-bulging Barry-Goldman Catmull-Rom corner interpolation in [`catmull-rom-router.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/routing/catmull-rom-router.ts) (`evaluateCentripetalCatmullRomSpline`) with **De Casteljau quadratic Bezier inner corner fillets** ($C^1/C^2$ continuous), mathematically guaranteeing **0.0000 mm outward corner overshoot** and zero S-wave oscillation along straight duct runs while preserving exact endpoint clamping (`splinePoints[0] === P_start`, `splinePoints[last] === P_end`).
   - Shifted vertical side-duct margins from `[5.5, 12.5, 19.5]` to `[railWidth + 6.0, railWidth + 12.5, railWidth + 19.0]` (`[21.875, 28.375, 34.875] mm` on 10"/19" racks) and clamped `computePortRiserX` so cables **never pass through the 4 vertical EIA-310 mounting rails (`X ∈ [0, 15.875 mm]` / `[W - 15.875, W]`) or the 4 corner posts**.
@@ -15,12 +25,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated `ExternalBuildingDrops3D` in [`RackSceneCanvas.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/canvas/RackSceneCanvas.tsx) so the rear building cable trunk collar and drop tubes sit strictly inside the upper rear aperture below the top steel roof plate (`Y <= totalHeightMm - 7.5 mm`) and above the lower switch chassis (`Y >= portY`), eliminating both roof-plate and switch-chassis clipping.
   - Aligned 10G SFP+ DAC ports (`sfp4..sfp8`) and left/right PoE/Proxmox ports (`eth2`, `eth23`, `eth24`) in [`examples/19inch-enterprise/rack.yaml`](file:///home/alexb/projects/rack-designer/examples/19inch-enterprise/rack.yaml) so all core SFP+ trunks route as short vertical C-arches (`|dX| <= 48 mm`) and left/right bay cables stay on their respective side of the rack.
 
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Kein Kabel-Clipping durch den Rack-Rahmen mehr, De-Casteljau-Kurven-Fillets & saubere Dach-/Rückseiten-Kabelführung:**
+  - Alle vertikalen Kabelschächte liegen nun innerhalb der lichten EIA-310-Öffnung (`X >= 21,875 mm`, `0` Treffer an den 4 vertikalen Montageschienen und Eckpfosten).
+  - Konvex-hüllen-beschränkte De-Casteljau-Bezier-Innenbögen verhindern jedes Überschwingen an 90°-Ecken (`0,0000 mm` Overshoot), halten interne Rückseiten-Kabel komplett im Rack-Rahmen und führen externe Haus-Kabel (`top-rear`) sauber unterhalb des Dachblechs ins Patchpanel.
+
 ## [0.4.5] - 2026-10-28
 
-### Added & Improved
+### Added & Improved (🇬🇧 English)
 - **Automated GitHub Releases Page Curation (Keep Top 3 Recent Releases) & Release Archive (`.github/workflows/release.yml`, `docs/RELEASE_NOTES.md`, `docs/RELEASE_ARCHIVE.md`):**
   - Added automated GitHub Releases curation to [`.github/workflows/release.yml`](file:///home/alexb/projects/rack-designer/.github/workflows/release.yml) so the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) always retains only the **3 most recent releases**, automatically collapses the Quick-Start tutorial into a `<details>` accordion on the 2nd and 3rd releases, and archives older release entries from the feed while preserving all Git tags (`v0.1.0`..`v0.4.2`).
   - Restructured [`docs/RELEASE_NOTES.md`](file:///home/alexb/projects/rack-designer/docs/RELEASE_NOTES.md) to show only the **3 most recent version highlights** at the top with a collapsible `<details>` summary for older releases, and created [`docs/RELEASE_ARCHIVE.md`](file:///home/alexb/projects/rack-designer/docs/RELEASE_ARCHIVE.md) to house the complete historical release archive.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Automatische Bereinigung der GitHub-Releases-Seite (Top 3 Releases) & Release-Archiv (`docs/RELEASE_ARCHIVE.md`):**
+  - Die GitHub-Releases-Seite behält automatisch nur die 3 aktuellsten Versionen aktiv im Feed, klappt die Einsteiger-Anleitung bei den beiden älteren Releases platzsparend ein und archiviert ältere Releases in `docs/RELEASE_ARCHIVE.md`.
 
 ## [0.4.4] - 2026-10-28
 
