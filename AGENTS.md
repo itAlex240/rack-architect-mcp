@@ -133,6 +133,12 @@ Every contribution across all packages MUST adhere to these zero-compromise engi
    * Never throw raw exceptions from tool `execute()` handlers (exception messages are not forwarded to the agent); always return structured diagnostic objects.
 4. **3D Canvas & HiDPI Rendering:**
    * Manage canvas sizing via a single `ResizeObserver` outside the render/`onpaint` loop using `devicePixelContentBoxSize` (falling back to `Math.round(entry.contentRect.width * window.devicePixelRatio)`) to prevent blurriness and memory leaks.
+5. **Precision Hardware & CAD Studio Design System & Color Palette (Mandatory Anti-Vibecode UI Rules):**
+   * Every UI change in `@rack-mcp/web-viewer` MUST strictly follow [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) and [`packages/web-viewer/src/styles/studio.css`](packages/web-viewer/src/styles/studio.css) (inspired by Linear, Ubiquiti UniFi Design Center, and Shapr3D):
+     * **Neutral Carbon/Zinc Surfaces Only:** Use `--bg-canvas: #09090b`, `--bg-surface: #0e0e11`, `--bg-panel: #121216`, `--bg-elevated: #18181d`, `--bg-glass: rgba(18, 18, 22, 0.86)` (`backdrop-filter: blur(14px)`), and `1px` translucent hairline borders (`--border-hairline: rgba(255, 255, 255, 0.07)`). **NEVER** reintroduce blue-slate navy backgrounds (`#090D16`, `#0F172A`, `#1E293B`).
+     * **Typography & `tabular-nums`:** Use `--text-primary: #F4F4F5`, `--text-secondary: #A1A1AA`, `--text-muted: #71717A`, and enforce `font-variant-numeric: tabular-nums` (`.mono`) on all physical dimensions (`mm`, `U`, `W`, `dBA`).
+     * **Restricted Semantic Accents (No Neon Box Borders):** Never wrap entire cards or sidebars in neon borders (`#38BDF8`, `#A855F7`, `#EF4444`). Use `1px solid rgba(255, 255, 255, 0.07)` for card outlines and indicate status/severity exclusively via `6px` status dots, `2.5px solid` left accent bars (`borderLeft`), or subtle `10%–12%` opacity pill badges (`#10B981` OK, `#F59E0B` Warning, `#EF4444` Error, `#3B82F6` Selection, `#A855F7` Agent).
+     * **Spatial Layout & Iconography Invariants:** Keep `TopNavBar` strictly single-line (`52px`, `whiteSpace: 'nowrap'`), keep `FloatingHudToolbar` anchored as a bottom-center CAD dock (`bottom: 18px`), keep `InspectorSidebar` as a single vertical scroll container with the sticky `All | Element | Checks | MCP` filter bar (never add nested `maxHeight` scroll traps), and always use `1.5px`-stroke vector SVG icons from `packages/web-viewer/src/components/ui/Icons.tsx` instead of emojis.
 
 ---
 
