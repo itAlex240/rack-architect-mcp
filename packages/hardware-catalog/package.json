@@ -1,6 +1,6 @@
 {
   "name": "@rack-mcp/hardware-catalog",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
   "description": "Precision-measured YAML hardware blueprints (10-inch mini-racks, 19-inch enterprise racks, 3D-printed modular carriers, sub-modules) with port-matrix macro expansion.",
   "type": "module",
@@ -31,5 +31,6 @@
   },
   "devDependencies": {
     "typescript": "^5.7.2"
-  }
+  },
+  "mcpName": "io.github.itAlex240/rack-architect-mcp"
 }

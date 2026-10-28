@@ -7,11 +7,14 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   release:
     name: Build & Attach Reference CAD Deliverables
     runs-on: ubuntu-latest
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.1
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,6 +40,28 @@ jobs:
       - name: Generate Reference CAD Deliverables (SVG, BOM, GLB, OpenSCAD, STL)
         run: pnpm export:demo
 
+      - name: Build MCPB Bundle (rack-architect-mcp.mcpb) and Update server.json SHA-256
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          tar -czf rack-architect-mcp.mcpb \
+            package.json README.md LICENSE server.json \
+            packages/core-domain/package.json packages/core-domain/dist \
+            packages/hardware-catalog/package.json packages/hardware-catalog/dist \
+            packages/exporters/package.json packages/exporters/dist \
+            packages/mcp-server/package.json packages/mcp-server/dist \
+            packages/web-viewer/package.json packages/web-viewer/dist \
+            packages/cli/package.json packages/cli/dist
+          SHA256="$(sha256sum rack-architect-mcp.mcpb | awk '{print $1}')"
+          node -e '
+            const fs = require("fs");
+            const s = JSON.parse(fs.readFileSync("server.json", "utf8"));
+            s.version = process.argv[1];
+            s.packages[0].identifier = `https://github.com/itAlex240/rack-architect-mcp/releases/download/v${process.argv[1]}/rack-architect-mcp.mcpb`;
+            s.packages[0].fileSha256 = process.argv[2];
+            fs.writeFileSync("server.json", JSON.stringify(s, null, 2) + "\n", "utf8");
+          ' "$VERSION" "$SHA256"
+
       - name: Create GitHub Release with Beginner-Friendly Guide & CAD/3D-Print Assets
         uses: softprops/action-gh-release@v2
         with:
@@ -44,6 +69,7 @@ jobs:
           body_path: docs/RELEASE_NOTES.md
           generate_release_notes: false
           files: |
+            rack-architect-mcp.mcpb
             examples/10inch-homelab/rack.yaml
             examples/10inch-homelab/elevation.svg
             examples/10inch-homelab/wiring-schematic.svg
@@ -53,3 +79,14 @@ jobs:
             examples/10inch-homelab/3dprint-10inch-ucg-ultra-plus-3keystone.stl
             examples/10inch-homelab/3dprint-10inch-lenovo-tiny-plus-2keystone.scad
             examples/10inch-homelab/3dprint-10inch-lenovo-tiny-plus-2keystone.stl
+
+      - name: Publish Server to Official MCP Registry (registry.modelcontextprotocol.io)
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error \
+            "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz" \
+            | tar xz mcp-publisher
+          chmod +x ./mcp-publisher
+          ./mcp-publisher validate
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish

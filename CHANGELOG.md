@@ -5,6 +5,13 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2026-10-28
+
+### Added
+- **Official Anthropic MCP Registry (`registry.modelcontextprotocol.io`) Integration:**
+  - Added canonical `server.json` (`io.github.itAlex240/rack-architect-mcp`) and `mcpName` verification fields across workspace packages.
+  - Upgraded `.github/workflows/release.yml` to build the `.mcpb` release bundle (`rack-architect-mcp.mcpb`), compute its SHA-256 digest, and automatically publish new versions to `https://registry.modelcontextprotocol.io` via GitHub Actions OIDC (`mcp-publisher login github-oidc`).
+
 ## [0.1.2] - 2026-10-28
 
 ### Added

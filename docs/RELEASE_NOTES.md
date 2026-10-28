@@ -1,13 +1,14 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.1.2` — 3D/2D Rack-Planer & 3D-Druck-Paket
+# 🏗️ RackArchitect MCP `v0.1.3` — 3D/2D Rack-Planer & 3D-Druck-Paket
 
-**Willkommen beim Release `v0.1.2` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.1.3` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Neu in Version `v0.1.2`:**
-> - **Hardware-Katalog auf 30 hochdetaillierte Geräte erweitert (+10 neue Blueprints):** Neu dabei sind u. a. **Ubiquiti UniFi UNAS Pro (7-Bay 2U 10G NAS)**, **UniFi Switch Aggregation (8× 10G SFP+)**, **MikroTik CRS310-8G+2S+IN (8× 2.5G + 2× 10G SFP+)**, **TP-Link Omada TL-SG2210MP (150W PoE+)**, **Synology DiskStation DS224+ (10-Zoll 2U NAS-Tray)**, **Dell OptiPlex 7010 Micro (Dual-NIC Proxmox Node)**, **JetKVM Smart IP-KVM (mit OLED-Touchscreen)**, **19-Zoll 24-Port Cat6A Patchpanel**, **19-Zoll Bürstenleiste** sowie ein neuer **3D-druckbarer 10-Zoll-Träger für Raspberry Pi 5 + JetKVM + 2× Keystone (`3dprint-10inch-rpi5-jetkvm-2keystone`)**.
-> - **Offizieller, kostenloser Open-Source Agent Skill (`SKILL.md`):** Direkt installierbar in Claude Code, Cursor, Copilot, Windsurf & Antigravity (`npx skills add itAlex240/rack-architect-mcp`).
+> **✨ Neu in Version `v0.1.3`:**
+> - **Offizielle MCP Registry (`registry.modelcontextprotocol.io`) & `.mcpb` Bundle:** Vollständige Integration in die offizielle Anthropic MCP Registry (`io.github.itAlex240/rack-architect-mcp`) mit automatischer OIDC-Veröffentlichung über GitHub Actions.
+> - **Hardware-Katalog mit 30 hochdetaillierten Geräten:** Inklusive **Ubiquiti UniFi UNAS Pro (7-Bay 2U 10G NAS)**, **UniFi Switch Aggregation (8× 10G SFP+)**, **MikroTik CRS310-8G+2S+IN (8× 2.5G + 2× 10G SFP+)**, **TP-Link Omada TL-SG2210MP (150W PoE+)**, **Synology DiskStation DS224+ (10-Zoll 2U NAS-Tray)**, **Dell OptiPlex 7010 Micro**, **JetKVM Smart IP-KVM**, **19-Zoll 24-Port Cat6A Patchpanel**, **19-Zoll Bürstenleiste** sowie **3D-druckbarem 10-Zoll-Träger für Raspberry Pi 5 + JetKVM + 2× Keystone (`3dprint-10inch-rpi5-jetkvm-2keystone`)**.
+> - **Offizieller Open-Source Agent Skill (`SKILL.md`):** Direkt installierbar in Claude Code, Cursor, Copilot, Windsurf & Antigravity (`npx skills add itAlex240/rack-architect-mcp`).
 > - **100 % wasserdichte 2-Manifold `.STL`-Dateien (`0` Slicer-Warnungen):** Alle 6 seitlichen `EIA-310` M6-Rack-Langlöcher (`10.0 × 6.5 mm`), das `+0.35 mm` 3D-Druck-Spaltmaß, die eingeschmolzenen Führungsschienen und das Boden-Lüftungsgitter sind direkt im `.stl`-Mesh enthalten.
 
 *(🇬🇧 English Quick-Start Guide included below the German section!)*

@@ -1,6 +1,6 @@
 {
   "name": "@rack-mcp/web-viewer",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
   "description": "Interactive React 19 + Three.js 3D Digital Twin, 2D SVG CAD Inspector, Hardware Catalog & Cable Patch Builder, BOM/3D-Print Hub, and W3C WebMCP integration.",
   "type": "module",
@@ -43,5 +43,6 @@
     "typescript": "^5.7.2",
     "vite": "^6.2.0",
     "webmcp-types": "^0.1.10"
-  }
+  },
+  "mcpName": "io.github.itAlex240/rack-architect-mcp"
 }

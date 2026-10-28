@@ -1,6 +1,6 @@
 {
   "name": "@rack-mcp/mcp-server",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
   "description": "Model Context Protocol (MCP) server over stdio, 50-step atomic Undo/Redo state manager, and local WebSocket/REST sidecar server for RackArchitect MCP.",
   "type": "module",
@@ -36,5 +36,6 @@
     "@types/ws": "^8.18.2",
     "typescript": "^5.7.2",
     "vitest": "^4.1.12"
-  }
+  },
+  "mcpName": "io.github.itAlex240/rack-architect-mcp"
 }
