@@ -1,6 +1,7 @@
 slug: "ubiquiti-unas-pro-2u"
 manufacturer: "Ubiquiti"
 model: "UniFi UNAS Pro (7-Bay 2U 10G SFP+ Rackmount NAS)"
+description: "19-Zoll 2U 7-Bay Rackmount-NAS (UniFi UNAS Pro) mit 10G SFP+ Uplink und Touchscreen für hochperformanten Netzwerkspeicher, SMB-Freigaben und Proxmox-Backups."
 category: "nas"
 mount_type: "rackmount-19"
 geometry:

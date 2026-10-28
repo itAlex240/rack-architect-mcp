@@ -1,6 +1,7 @@
 slug: "ubiquiti-usw-flex-2-5g-8-poe"
 manufacturer: "Ubiquiti"
 model: "UniFi Flex 2.5G PoE (USW-Flex-2.5G-8-PoE)"
+description: "Kompakter 8-Port 2.5-Gbit/s PoE++ Switch (bis 196W PoE-Budget) mit 10G SFP+ & 10G RJ45 Uplink-Port zur Versorgung von Access Points, Kameras und Mini-PCs. Wichtiger Montage-Hinweis: Von Haus aus ein reines Desktop-/Wandgerät aus Polycarbonat (212.9×32.5×99.4mm ohne eigene Rack-Ohren) — sitzt im 10-Zoll-Rack daher in einer 3D-gedruckten 1U-PETG-Aufnahmehalterung (Cradle) oder auf einem 1U-Fachboden."
 category: "switch"
 mount_type: "rackmount-10"
 geometry:

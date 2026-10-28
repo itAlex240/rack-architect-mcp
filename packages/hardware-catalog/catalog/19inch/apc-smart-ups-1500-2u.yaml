@@ -1,6 +1,7 @@
 slug: "apc-smart-ups-1500-2u"
 manufacturer: "APC"
 model: "Smart-UPS 1500VA LCD RM 2U (SMT1500RMI2UC)"
+description: "Enterprise 19-Zoll 2U Line-Interactive USV (APC Smart-UPS 1500VA / 1000W, 477mm Tiefe) mit LCD-Statusdisplay und 8x IEC-C13 Batterieausgängen für tiefe Serverschränke (ab 600mm Schranktiefe)."
 category: "ups"
 mount_type: "rackmount-19"
 geometry:

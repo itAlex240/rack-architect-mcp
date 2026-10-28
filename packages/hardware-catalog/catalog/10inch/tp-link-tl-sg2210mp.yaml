@@ -1,6 +1,7 @@
 slug: "tp-link-tl-sg2210mp"
 manufacturer: "TP-Link"
 model: "Omada JetStream TL-SG2210MP (8x 1G PoE+ 150W + 2x SFP)"
+description: "Managed 10-Zoll/19-Zoll PoE+ Switch (Omada JetStream TL-SG2210MP) im Metallgehäuse mit 8x Gigabit PoE+ Ports (150W PoE-Budget) und 2x Gigabit SFP-Slots inklusive Metall-Rackwinkeln."
 category: "switch"
 mount_type: "rackmount-10"
 geometry:

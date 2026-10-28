@@ -360,6 +360,12 @@ export const HardwareBlueprintSchema = z
       .describe('Unique lowercase kebab-case hardware identifier (vendor-model-variant).'),
     manufacturer: z.string().min(1).describe('Hardware manufacturer name.'),
     model: z.string().min(1).describe('Hardware model name or part number.'),
+    description: z
+      .string()
+      .optional()
+      .describe(
+        'Human-readable explanation of what the device is, its role in the rack, and its physical mounting method (e.g. native rack ears vs. 3D-printed carrier/cradle).'
+      ),
     category: HardwareCategorySchema,
     mount_type: MountTypeSchema,
     slot_compatibility: z

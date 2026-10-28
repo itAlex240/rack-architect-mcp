@@ -1,6 +1,7 @@
 slug: fortinet-fortigate-200f-ngfw-1u
 manufacturer: Fortinet
 model: FortiGate 200F Enterprise Next-Gen Firewall (1U)
+description: "19-Zoll 1U Enterprise Next-Generation Firewall (FortiGate 200F) mit Dual-2.5G-WAN, 10G SFP+ Core-Uplinks, Hardware-beschleunigtem IPS/SSL-Inspection und redundanten Netzteilen."
 category: router
 mount_type: rackmount-19
 geometry:

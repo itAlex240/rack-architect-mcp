@@ -36,12 +36,15 @@ export function BomAndExportsView({
 }: BomAndExportsViewProps) {
   const printableDevices = scene.geometry.devices.filter(
     (d) =>
-      d.blueprint.printable_metadata !== undefined &&
-      d.blueprint.printable_metadata !== null,
+      (d.blueprint.printable_metadata !== undefined &&
+        d.blueprint.printable_metadata !== null) ||
+      (d.mount_target === 'rack-unit' &&
+        d.blueprint.visuals.material_preset === 'polycarbonate' &&
+        d.blueprint.geometry.height_mm < 38.0),
   );
   const totalFilamentGrams = printableDevices.reduce(
     (sum, d) =>
-      sum + (d.blueprint.printable_metadata?.filament_grams ?? 0),
+      sum + (d.blueprint.printable_metadata?.filament_grams ?? 95),
     0,
   );
 
@@ -269,7 +272,21 @@ export function BomAndExportsView({
                   </span>
                 </td>
                 <td style={{ padding: '8px', color: '#E4E4E7' }}>
-                  {dev.blueprint.manufacturer} {dev.blueprint.model}
+                  <div style={{ fontWeight: 600 }}>
+                    {dev.blueprint.manufacturer} {dev.blueprint.model}
+                  </div>
+                  {dev.blueprint.description && (
+                    <div
+                      style={{
+                        fontSize: '11px',
+                        color: '#A1A1AA',
+                        marginTop: '3px',
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {dev.blueprint.description}
+                    </div>
+                  )}
                 </td>
                 <td className="mono" style={{ padding: '8px', color: '#A1A1AA' }}>
                   {dev.blueprint.geometry.width_mm} ×{' '}
@@ -332,7 +349,11 @@ export function BomAndExportsView({
           </thead>
           <tbody>
             {printableDevices.map((dev) => {
-              const pm = dev.blueprint.printable_metadata!;
+              const pm = dev.blueprint.printable_metadata ?? {
+                material_recommendation: 'PETG / ABS',
+                filament_grams: 95,
+                fasteners: '4x M6 Cage Nuts (3D-Printed 10" Cradle)',
+              };
               return (
                 <tr
                   key={dev.instance_id}

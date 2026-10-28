@@ -983,8 +983,31 @@ export function generateClientSideCarrierOpenScad(
   const apertureWidthMm = roundCentis(spec.W_aperture);
   const holePitchXMm = roundCentis(spec.W_holes);
   const panelHeightMm = roundCentis(
-    blueprint.geometry.height_mm || uCount * MM_PER_U - 0.75,
+    blueprint.slots.length === 0 && blueprint.geometry.height_mm < 38.0
+      ? uCount * MM_PER_U - 0.75
+      : blueprint.geometry.height_mm || uCount * MM_PER_U - 0.75,
   );
+  const effectiveSlots =
+    blueprint.slots.length > 0
+      ? blueprint.slots
+      : blueprint.geometry.height_mm < 38.0
+        ? [
+            {
+              slot_id: `${blueprint.slug}-cradle-bay`,
+              accepted_slot_type: 'desktop-switch-cradle',
+              offset_mm: {
+                x: roundCentis((panelWidthMm - blueprint.geometry.width_mm) / 2),
+                y: 3.2,
+                z: 0,
+              },
+              max_dimensions_mm: {
+                width: blueprint.geometry.width_mm,
+                height: blueprint.geometry.height_mm,
+                depth: blueprint.geometry.depth_mm,
+              },
+            },
+          ]
+        : [];
   const trayDepthMm = roundCentis(Math.max(40, blueprint.geometry.depth_mm));
   const earWidthMm = roundCentis((panelWidthMm - apertureWidthMm) / 2);
 
@@ -1030,7 +1053,7 @@ export function generateClientSideCarrierOpenScad(
   lines.push(`}`);
   lines.push(``);
   lines.push(`module slot_bay_cutouts() {`);
-  for (const slot of blueprint.slots) {
+  for (const slot of effectiveSlots) {
     lines.push(
       `  translate([${roundCentis(slot.offset_mm.x)} - print_tolerance_mm, ${roundCentis(slot.offset_mm.y)} - print_tolerance_mm, -1.0]) cube([${roundCentis(slot.max_dimensions_mm.width)} + 2 * print_tolerance_mm, ${roundCentis(slot.max_dimensions_mm.height)} + 2 * print_tolerance_mm, faceplate_thickness_mm + 2.0]);`,
     );
@@ -1038,7 +1061,7 @@ export function generateClientSideCarrierOpenScad(
   lines.push(`}`);
   lines.push(``);
   lines.push(`module slot_retention_rails() {`);
-  for (const slot of blueprint.slots) {
+  for (const slot of effectiveSlots) {
     if (slot.accepted_slot_type === 'standard-keystone') continue;
     const sx = roundCentis(slot.offset_mm.x);
     const sy = roundCentis(slot.offset_mm.y);
@@ -1126,8 +1149,31 @@ export function generateClientSideCarrierStl(
   const apertureWidthMm = roundCentis(spec.W_aperture);
   const holePitchXMm = roundCentis(spec.W_holes);
   const panelHeightMm = roundCentis(
-    blueprint.geometry.height_mm || uCount * MM_PER_U - 0.75,
+    blueprint.slots.length === 0 && blueprint.geometry.height_mm < 38.0
+      ? uCount * MM_PER_U - 0.75
+      : blueprint.geometry.height_mm || uCount * MM_PER_U - 0.75,
   );
+  const effectiveSlots =
+    blueprint.slots.length > 0
+      ? blueprint.slots
+      : blueprint.geometry.height_mm < 38.0
+        ? [
+            {
+              slot_id: `${blueprint.slug}-cradle-bay`,
+              accepted_slot_type: 'desktop-switch-cradle',
+              offset_mm: {
+                x: roundCentis((panelWidthMm - blueprint.geometry.width_mm) / 2),
+                y: 3.2,
+                z: 0,
+              },
+              max_dimensions_mm: {
+                width: blueprint.geometry.width_mm,
+                height: blueprint.geometry.height_mm,
+                depth: blueprint.geometry.depth_mm,
+              },
+            },
+          ]
+        : [];
   const faceplateThicknessMm = 4.2;
   const trayFloorThicknessMm = 3.2;
   const sideGussetThicknessMm = 3.5;
@@ -1205,7 +1251,7 @@ export function generateClientSideCarrierStl(
 
   const slotCutoutBoxes: ClientBox3DMm[] = [];
   const railBoxes: ClientBox3DMm[] = [];
-  for (const slot of blueprint.slots) {
+  for (const slot of effectiveSlots) {
     const sx0 = roundCentis(
       Math.max(earWidthMm + 1.0, slot.offset_mm.x - printToleranceMm),
     );

@@ -1,6 +1,7 @@
 slug: "lenovo-thinkcentre-m920q"
 manufacturer: "Lenovo"
 model: "ThinkCentre M920q Tiny (with Dual-Port PCIe NIC)"
+description: "Beliebter 1-Liter Homelab- & Enterprise-Mini-PC (Lenovo ThinkCentre M920q Tiny) mit PCIe-Riser-Slot für eine zusätzliche Dual-Port 2.5GbE-Netzwerkkarte (insgesamt 3x RJ45). Wird als Sub-Modul in einen 3D-gedruckten 1U-Carrier eingeschoben."
 category: "mini-pc"
 mount_type: "sub-module"
 slot_compatibility: "mini-pc-1liter"

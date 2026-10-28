@@ -1,6 +1,7 @@
 slug: "mikrotik-crs310-8g-plus-2s-plus-in"
 manufacturer: "MikroTik"
 model: "CRS310-8G+2S+IN (8x 2.5G RJ45 + 2x 10G SFP+ Switch)"
+description: "Managed 8-Port 2.5-Gbit/s RJ45 + 2-Port 10G SFP+ Switch im Metallgehäuse. Wird inklusive passender Rack-Montagewinkel geliefert und eignet sich als schneller 2.5G/10G Core-Switch für 10-Zoll- und 19-Zoll-Racks."
 category: "switch"
 mount_type: "rackmount-10"
 geometry:

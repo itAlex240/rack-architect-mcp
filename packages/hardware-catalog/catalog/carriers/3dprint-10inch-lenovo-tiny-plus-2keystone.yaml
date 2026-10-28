@@ -1,6 +1,7 @@
 slug: "3dprint-10inch-lenovo-tiny-plus-2keystone"
 manufacturer: "Community 3D-Print"
 model: "10-Inch 1U Carrier for Lenovo Tiny + 2x Keystone"
+description: "3D-druckbarer 10-Zoll 1U Modulträger (PETG/ABS, offenes L-Tray) für 1x 1-Liter Mini-PC (Lenovo ThinkCentre Tiny / Dell OptiPlex Micro / HP EliteDesk Mini) plus 2x RJ45-Keystone-Buchsen rechts daneben."
 category: "modular-carrier"
 mount_type: "rackmount-10"
 geometry:

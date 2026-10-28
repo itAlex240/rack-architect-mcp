@@ -1,6 +1,7 @@
 slug: "raspberry-pi-5-poe-hat"
 manufacturer: "Raspberry Pi"
 model: "Raspberry Pi 5 (8GB) with Official PoE+ HAT"
+description: "Raspberry Pi 5 (8GB) Einplatinencomputer mit offiziellem PoE+ HAT. Bezieht Strom und Netzwerk über ein einziges PoE-Netzwerkkabel an der Vorderseite — ideal als Proxmox-Quorum-Witness, Pi-hole DNS oder Monitoring-Node."
 category: "sbc"
 mount_type: "sub-module"
 slot_compatibility: "sbc-rpi5"

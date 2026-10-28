@@ -1,6 +1,7 @@
 slug: "generic-19inch-patch-panel-24port-cat6a"
 manufacturer: "Generic"
 model: "19-Inch 1U 24-Port Cat6A Shielded Passthrough Patch Panel"
+description: "Geschirmtes 19-Zoll 1U 24-Port Cat6A Durchgangs-Patchpanel (10G-fähig). Nimmt auf der Rückseite bis zu 24 ankommende Gebäude-/Raumleitungen (Kameras, Access Points, Bürodosen) auf und verbindet sie vorne per kurzem Patchkabel mit dem Switch."
 category: "patch-panel"
 mount_type: "rackmount-19"
 is_passthrough_coupler: true

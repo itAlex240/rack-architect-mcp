@@ -1,6 +1,7 @@
 slug: "cyberpower-10inch-ups-1u"
 manufacturer: "CyberPower"
 model: "10-Inch Compact Lithium UPS 500VA/300W 1U"
+description: "Kompakte 10-Zoll 1U Unterbrechungsfreie Stromversorgung (USV, 500VA / 300W Lithium) mit 4x IEC-C13 Batterie-Ausgängen hinten. Schützt das gesamte Mini-Rack bei Stromausfall und versorgt die hintere Steckdosenleiste (PDU) sowie das PoE-Netzteil."
 category: "ups"
 mount_type: "rackmount-10"
 geometry:

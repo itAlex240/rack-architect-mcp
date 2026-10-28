@@ -1,6 +1,7 @@
 slug: "ubiquiti-udm-pro"
 manufacturer: "Ubiquiti"
 model: "UniFi Dream Machine Pro (UDM-Pro)"
+description: "19-Zoll 1U All-in-One Enterprise Security Gateway, Firewall & UniFi Network/Protect Controller (UDM-Pro) mit 8x 1G RJ45 LAN-Switch, 1x 2.5G RJ45 WAN, 2x 10G SFP+ (WAN/LAN) und 1.3\" Touchscreen."
 category: "router"
 mount_type: "rackmount-19"
 geometry:

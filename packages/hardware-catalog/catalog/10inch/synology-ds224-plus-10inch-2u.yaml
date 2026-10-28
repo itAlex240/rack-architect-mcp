@@ -1,6 +1,7 @@
 slug: "synology-ds224-plus-10inch-2u"
 manufacturer: "Synology"
 model: "DiskStation DS224+ 2-Bay NAS (10-Inch 2U Rack Tray)"
+description: "Kompaktes 2-Bay NAS-Speichersystem (Synology DiskStation DS224+, 2x 1GbE LAN) für Backups, Container und Netzwerkspeicher. Belegt 2 Höheneinheiten (2U) auf einem passgenauen 10-Zoll-Rack-Träger."
 category: "nas"
 mount_type: "rackmount-10"
 geometry:

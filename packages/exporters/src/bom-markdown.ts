@@ -156,6 +156,19 @@ export function generateBomMarkdown(
     );
   }
   lines.push('');
+  lines.push(`### 2.1 Geräte-Erklärungen & Montage-Hinweise`);
+  lines.push('');
+  for (const dev of geometry.devices) {
+    if (dev.blueprint.category === 'keystone-module') continue;
+    const hostPart = dev.hostname ? ` — Hostname: \`${dev.hostname}\`` : '';
+    const descPart = dev.blueprint.description
+      ? `: ${dev.blueprint.description}`
+      : '';
+    lines.push(
+      `- **\`${dev.instance_id}\` (${dev.blueprint.manufacturer} ${dev.blueprint.model}${hostPart})**${descPart}`,
+    );
+  }
+  lines.push('');
 
   // =========================================================================
   // 3. 3D Print Queue (Fabrication List)

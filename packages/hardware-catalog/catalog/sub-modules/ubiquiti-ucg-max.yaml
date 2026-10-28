@@ -1,6 +1,7 @@
 slug: "ubiquiti-ucg-max"
 manufacturer: "Ubiquiti"
 model: "Cloud Gateway Max (UCG-Max)"
+description: "Kompaktes Multi-Gigabit UniFi Cloud Gateway & Firewall (UCG-Max) mit 5x 2.5GbE RJ45 Ports (1x WAN, 4x LAN), NVMe-Speicher für UniFi Protect und Front-OLED-Display. Da es ein reines Desktop-Gehäuse (141.8×30×127.6mm) ohne Rack-Ohren ist, wird es als Sub-Modul in den 3D-gedruckten 10-Zoll-Carrier eingesetzt."
 category: "router"
 mount_type: "sub-module"
 slot_compatibility: "unifi-compact-gateway"

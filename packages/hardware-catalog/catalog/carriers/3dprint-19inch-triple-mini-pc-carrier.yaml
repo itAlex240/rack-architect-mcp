@@ -1,6 +1,7 @@
 slug: "3dprint-19inch-triple-mini-pc-carrier"
 manufacturer: "Community 3D-Print"
 model: "19-Inch 1U Carrier for 3x 1L Mini-PCs (2-Piece Interlocking)"
+description: "Zweiteiliger 3D-druckbarer 19-Zoll 1U Schwerlast-Modulträger (ABS/ASA mit Schwalbenschwanz-Steckverbindung) für bis zu 3x 1-Liter Proxmox Mini-PCs nebeneinander auf nur einer Höheneinheit."
 category: "modular-carrier"
 mount_type: "rackmount-19"
 geometry:

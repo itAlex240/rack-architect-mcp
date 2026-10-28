@@ -161,12 +161,14 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     );
     expect(screen.getByTestId('btn-remove-device')).toBeDefined();
 
-    // Switch to BOM & 3D-Print Queue and verify .SCAD and .STL buttons
+    // Switch to BOM & 3D-Print Queue and verify .SCAD and .STL buttons (including sw-u8 10-inch desktop switch cradle)
     fireEvent.click(screen.getByTestId('nav-tab-bom'));
     expect(screen.getByTestId('download-scad-carrier-u3')).toBeDefined();
     expect(screen.getByTestId('download-stl-carrier-u3')).toBeDefined();
     expect(screen.getByTestId('download-scad-carrier-u4')).toBeDefined();
     expect(screen.getByTestId('download-stl-carrier-u4')).toBeDefined();
+    expect(screen.getByTestId('download-scad-sw-u8')).toBeDefined();
+    expect(screen.getByTestId('download-stl-sw-u8')).toBeDefined();
   });
 
   it('displays the MCP Agent Tool-Call Feed and replays LLM Plug-Clearance Collision & Self-Correction', () => {
@@ -244,6 +246,12 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     const sidebarEl = screen.getByTestId('inspector-sidebar');
     expect(sidebarEl.style.overflowX).toBe('hidden');
     expect(sidebarEl.style.maxWidth).toBe('368px');
+    expect(screen.getByTestId('selected-device-description').textContent).toContain(
+      'Durchgangs-Patchpanel',
+    );
+    expect(screen.getByTestId('device-mounting-badge').textContent).toContain(
+      'Direktmontage',
+    );
 
     // Fake demo simulation controls must NOT exist in sidecar-live mode
     expect(screen.queryByTestId('btn-simulate-mcp-agent')).toBeNull();

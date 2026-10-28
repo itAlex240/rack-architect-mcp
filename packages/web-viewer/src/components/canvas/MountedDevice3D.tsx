@@ -74,11 +74,19 @@ export function MountedDevice3D({
   const matParams = getMaterialParams(device.blueprint.visuals.material_preset);
   const chassisColor = device.blueprint.visuals.chassis_color_hex;
   const isBrushPanel = device.blueprint.category === 'brush-panel';
+  const isDesktopSwitchWithPrintedCradle =
+    device.mount_target === 'rack-unit' &&
+    device.blueprint.visuals.material_preset === 'polycarbonate' &&
+    h < 38.0;
   const hasEars =
     device.mount_target === 'rack-unit' &&
     device.blueprint.geometry.ear_mount_style !== 'none';
-  const earWidth = spec.X_aperture_min;
-  const earThickness = 3.2;
+  const earWidth = Math.max(spec.X_aperture_min, (spec.W_panel - w) / 2);
+  const earScrewXLeft = (spec.W_panel - spec.W_holes) / 2;
+  const earScrewXRight = spec.W_panel - earScrewXLeft;
+  const earColor = isDesktopSwitchWithPrintedCradle ? '#18181B' : chassisColor;
+  const earHeight = isDesktopSwitchWithPrintedCradle ? Math.max(h, 43.2) : h;
+  const earThickness = isDesktopSwitchWithPrintedCradle ? 3.8 : 3.2;
   const earZ =
     (device.face === 'front' ? box.min.z + earThickness / 2 : box.max.z - earThickness / 2) +
     offsetZ;
@@ -455,15 +463,78 @@ export function MountedDevice3D({
         </mesh>
       )}
 
+      {/* 3D-Printed 10-Inch 1U PETG Adapter Cradle for Desktop Polycarbonate Switches (e.g., USW-Flex-2.5G-8-PoE, USW-Lite-8-PoE) */}
+      {isDesktopSwitchWithPrintedCradle && (
+        <group onClick={handleClick}>
+          {/* 2.8mm Matte-Black PETG Bottom Support Tray Floor */}
+          <mesh position={[cx, box.min.y - 1.4, cz]}>
+            <boxGeometry args={[spec.W_aperture - 1.5, 2.8, d + 2]} />
+            <meshStandardMaterial
+              color="#18181B"
+              metalness={0.08}
+              roughness={0.72}
+              transparent={xrayMode}
+              opacity={xrayMode ? 0.16 : 1.0}
+              depthWrite={!xrayMode}
+            />
+          </mesh>
+          {/* Left & Right PETG Retention Cheeks bridging switch body to rack rails */}
+          {(() => {
+            const cheekW = Math.max(
+              2.5,
+              (spec.W_aperture - 1.5 - w) / 2,
+            );
+            return (
+              <>
+                <mesh
+                  position={[
+                    box.min.x - cheekW / 2,
+                    cy - 1.0,
+                    cz,
+                  ]}
+                >
+                  <boxGeometry args={[cheekW, h + 2.8, d + 2]} />
+                  <meshStandardMaterial
+                    color="#18181B"
+                    metalness={0.08}
+                    roughness={0.72}
+                    transparent={xrayMode}
+                    opacity={xrayMode ? 0.16 : 1.0}
+                    depthWrite={!xrayMode}
+                  />
+                </mesh>
+                <mesh
+                  position={[
+                    box.max.x + cheekW / 2,
+                    cy - 1.0,
+                    cz,
+                  ]}
+                >
+                  <boxGeometry args={[cheekW, h + 2.8, d + 2]} />
+                  <meshStandardMaterial
+                    color="#18181B"
+                    metalness={0.08}
+                    roughness={0.72}
+                    transparent={xrayMode}
+                    opacity={xrayMode ? 0.16 : 1.0}
+                    depthWrite={!xrayMode}
+                  />
+                </mesh>
+              </>
+            );
+          })()}
+        </group>
+      )}
+
       {/* Left & Right Mounting Ears + 3D Rack Screws */}
       {hasEars && (
         <>
           <mesh position={[earWidth / 2, cy, earZ]} onClick={handleClick}>
-            <boxGeometry args={[earWidth, h, earThickness]} />
+            <boxGeometry args={[earWidth, earHeight, earThickness]} />
             <meshStandardMaterial
-              color={chassisColor}
-              metalness={matParams.metalness}
-              roughness={matParams.roughness}
+              color={earColor}
+              metalness={isDesktopSwitchWithPrintedCradle ? 0.08 : matParams.metalness}
+              roughness={isDesktopSwitchWithPrintedCradle ? 0.72 : matParams.roughness}
               transparent={xrayMode}
               opacity={xrayMode ? 0.15 : 1.0}
               depthWrite={!xrayMode}
@@ -473,19 +544,19 @@ export function MountedDevice3D({
             position={[spec.W_panel - earWidth / 2, cy, earZ]}
             onClick={handleClick}
           >
-            <boxGeometry args={[earWidth, h, earThickness]} />
+            <boxGeometry args={[earWidth, earHeight, earThickness]} />
             <meshStandardMaterial
-              color={chassisColor}
-              metalness={matParams.metalness}
-              roughness={matParams.roughness}
+              color={earColor}
+              metalness={isDesktopSwitchWithPrintedCradle ? 0.08 : matParams.metalness}
+              roughness={isDesktopSwitchWithPrintedCradle ? 0.72 : matParams.roughness}
               transparent={xrayMode}
               opacity={xrayMode ? 0.15 : 1.0}
               depthWrite={!xrayMode}
             />
           </mesh>
-          {/* 4 Metallic Rack Screws */}
-          {[earWidth / 2, spec.W_panel - earWidth / 2].map((sx) =>
-            [box.min.y + 6.35, box.max.y - 6.35].map((sy) => (
+          {/* 4 Metallic Rack Screws aligned to EIA-310 hole centers */}
+          {[earScrewXLeft, earScrewXRight].map((sx) =>
+            [cy - earHeight / 2 + 6.35, cy + earHeight / 2 - 6.35].map((sy) => (
               <mesh
                 key={`${sx}-${sy}`}
                 position={[

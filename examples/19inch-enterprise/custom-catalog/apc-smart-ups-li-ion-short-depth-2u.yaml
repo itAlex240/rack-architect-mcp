@@ -1,6 +1,7 @@
 slug: apc-smart-ups-li-ion-short-depth-2u
 manufacturer: APC
 model: Smart-UPS Li-Ion 1500VA Short-Depth Network RM 2U (SMTL1500RMI2UC)
+description: "Kurztiefe 19-Zoll 2U Lithium-Ionen Enterprise-USV (APC Smart-UPS Short-Depth, 1500VA / 1200W, nur 290mm Einbautiefe) mit 6x IEC-C13 Ausgängen — speziell für kompakte 400mm–450mm tiefe 19-Zoll-Wand- und Netzwerkschränke."
 category: ups
 mount_type: rackmount-19
 geometry:

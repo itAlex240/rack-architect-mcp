@@ -1,6 +1,7 @@
 slug: "deskpi-10inch-patch-panel-12port"
 manufacturer: "DeskPi"
 model: "RackMate 10-Inch 12-Port Cat6A Passthrough Patch Panel"
+description: "Passives 10-Zoll 1U Cat6A Durchgangs-Patchpanel mit 12 geschirmten RJ45-Buchsen (vorne & hinten steckbar). Dient als sauberer Übergabepunkt zwischen den von hinten kommenden Gerätekabeln/Hausleitungen und den kurzen Patchkabeln zum Switch."
 category: "patch-panel"
 mount_type: "rackmount-10"
 is_passthrough_coupler: true

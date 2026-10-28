@@ -1,6 +1,7 @@
 slug: "dell-optiplex-7010-micro"
 manufacturer: "Dell"
 model: "OptiPlex 7010 Micro (1L Proxmox Node with 2.5GbE NIC)"
+description: "Kompakter 1-Liter Business Mini-PC (Dell OptiPlex 7010 Micro) mit zusätzlichem 2.5GbE M.2-Netzwerkadapter — ideal als stromsparender Proxmox-VE Virtualisierungs-Knoten in einem 3D-gedruckten 1U-Carrier."
 category: "mini-pc"
 mount_type: "sub-module"
 slot_compatibility: "mini-pc-1liter"

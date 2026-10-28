@@ -594,6 +594,108 @@ export function RackSceneCanvas({
         </div>
       )}
 
+      {/* Selected Device Info & Mounting Guide Banner (3D Overlay) */}
+      {selectedDeviceId !== null &&
+        selectedCableId === null &&
+        (() => {
+          const selDev = devicesById.get(selectedDeviceId);
+          if (!selDev) return null;
+          const isDesktopPrintedCradle =
+            selDev.mount_target === 'rack-unit' &&
+            selDev.blueprint.visuals.material_preset === 'polycarbonate' &&
+            selDev.blueprint.geometry.height_mm < 38.0;
+          const isPrintedCarrier =
+            selDev.blueprint.category === 'modular-carrier' ||
+            selDev.blueprint.printable_metadata !== null;
+          const isSubModule = selDev.mount_target === 'carrier-slot';
+
+          const mountBadge = isDesktopPrintedCradle
+            ? '🖨️ Desktop-Gerät im 3D-Druck-10"-Adapterrahmen'
+            : isPrintedCarrier
+              ? '🖨️ 3D-gedruckter 1U-Modulträger'
+              : isSubModule
+                ? `🧩 Sub-Modul in Slot (${selDev.slot_id ?? 'Bay'})`
+                : '🔩 Direktmontage (Metall-Rackohren)';
+
+          return (
+            <div
+              data-testid="selected-device-guide-banner"
+              style={{
+                position: 'absolute',
+                top: '16px',
+                left: '16px',
+                maxWidth: '460px',
+                padding: '12px 14px',
+                background: 'rgba(18, 18, 22, 0.92)',
+                backdropFilter: 'blur(14px)',
+                border: '1px solid rgba(255, 255, 255, 0.09)',
+                borderLeft: '3px solid #3B82F6',
+                borderRadius: '8px',
+                boxShadow: '0 10px 28px rgba(0,0,0,0.65)',
+                zIndex: 20,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '8px',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '12.5px',
+                    fontWeight: 600,
+                    color: '#F4F4F5',
+                  }}
+                >
+                  {selDev.blueprint.manufacturer} {selDev.blueprint.model}
+                </span>
+                <span
+                  className="mono"
+                  style={{
+                    fontSize: '10px',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    background: 'rgba(59, 130, 246, 0.14)',
+                    color: '#93C5FD',
+                    flexShrink: 0,
+                  }}
+                >
+                  U{selDev.u_position} · {selDev.face.toUpperCase()}
+                </span>
+              </div>
+
+              <div
+                className="mono"
+                style={{
+                  marginTop: '4px',
+                  fontSize: '10.5px',
+                  color: '#A1A1AA',
+                }}
+              >
+                {selDev.hostname
+                  ? `Hostname: ${selDev.hostname} · ID: ${selDev.instance_id} · ${mountBadge}`
+                  : `ID: ${selDev.instance_id} · ${mountBadge}`}
+              </div>
+
+              {selDev.blueprint.description && (
+                <div
+                  style={{
+                    marginTop: '7px',
+                    fontSize: '11px',
+                    color: '#D4D4D8',
+                    lineHeight: 1.45,
+                  }}
+                >
+                  {selDev.blueprint.description}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
       {/* Selected Cable Step-by-Step Patching Guide Banner (3D Overlay) */}
       {selectedCableId !== null &&
         (() => {

@@ -1,6 +1,7 @@
 slug: "jetkvm-smart-ip-kvm"
 manufacturer: "JetKVM"
 model: "JetKVM Open-Source Out-of-Band IP-KVM with Touchscreen"
+description: "Kompaktes Open-Source IP-KVM-Modul (JetKVM) mit Touchscreen zur Fernsteuerung (BIOS-Zugriff, HDMI-Capture & virtuelles USB-Keyboard/Media) von Servern über das Netzwerk. Wird in einen 3D-Druck-Carrier eingeclipst."
 category: "compute-node"
 mount_type: "sub-module"
 slot_compatibility: "jetkvm-bay"

@@ -1,6 +1,7 @@
 slug: "ubiquiti-usw-aggregation"
 manufacturer: "Ubiquiti"
 model: "UniFi Switch Aggregation (USW-Aggregation 8x 10G SFP+)"
+description: "Lüfterloser 19-Zoll 1U Layer-2 Core-Aggregation-Switch (USW-Aggregation) mit 8x 10G SFP+ Glasfaser-/DAC-Ports (160 Gbit/s Switching-Kapazität) zur schnellen Kopplung von Firewall, Access-Switches, NAS und Servern."
 category: "switch"
 mount_type: "rackmount-19"
 geometry:

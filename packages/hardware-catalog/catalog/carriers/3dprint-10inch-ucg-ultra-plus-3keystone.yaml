@@ -1,6 +1,7 @@
 slug: "3dprint-10inch-ucg-ultra-plus-3keystone"
 manufacturer: "Community 3D-Print"
 model: "10-Inch 1U Carrier for UniFi Cloud Gateway Ultra/Max + 3x Keystone"
+description: "3D-druckbarer 10-Zoll 1U Modulträger (PETG/ABS) passgenau für das Ubiquiti Cloud Gateway Max/Ultra (UCG-Max / UCG-Ultra) inklusive Sichtfenster für das Front-OLED und 3x Keystone-Buchsen, um die hinteren WAN/LAN-Ports nach vorne zu führen."
 category: "modular-carrier"
 mount_type: "rackmount-10"
 geometry:

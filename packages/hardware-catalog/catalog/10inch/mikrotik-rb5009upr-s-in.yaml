@@ -1,6 +1,7 @@
 slug: "mikrotik-rb5009upr-s-in"
 manufacturer: "MikroTik"
 model: "RB5009UPr+S+IN (PoE-In/Out Router)"
+description: "Hochleistungs-Router (RB5009UPr+S+IN) im kompakten Metallgehäuse mit 1x 10G SFP+, 1x 2.5G RJ45 und 7x 1G RJ45 Ports (alle 8 RJ45 Ports mit PoE-In & PoE-Out bis 130W Gesamtbudget). Direkt im 10-Zoll-Rack verschraubbar."
 category: "router"
 mount_type: "rackmount-10"
 geometry:

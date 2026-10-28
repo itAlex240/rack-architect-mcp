@@ -493,14 +493,31 @@ export function InspectorSidebar({
                     overflowWrap: 'anywhere',
                   }}
                 >
-                  {selectedDevice.hostname ?? selectedDevice.blueprint.model}
+                  {selectedDevice.blueprint.manufacturer}{' '}
+                  {selectedDevice.blueprint.model}
                 </div>
+                {selectedDevice.hostname && (
+                  <div
+                    className="mono"
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: '#93C5FD',
+                      marginTop: '3px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Hostname / Rolle: {selectedDevice.hostname}
+                  </div>
+                )}
                 <div
                   className="mono"
                   style={{
                     fontSize: '10.5px',
                     color: '#A1A1AA',
-                    marginTop: '3px',
+                    marginTop: '2px',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
@@ -508,6 +525,98 @@ export function InspectorSidebar({
                 >
                   {selectedDevice.instance_id} · {selectedDevice.blueprint_slug}
                 </div>
+
+                {/* Physical Mounting Method Badge */}
+                {(() => {
+                  const isDesktopPrintedCradle =
+                    selectedDevice.mount_target === 'rack-unit' &&
+                    selectedDevice.blueprint.visuals.material_preset ===
+                      'polycarbonate' &&
+                    selectedDevice.blueprint.geometry.height_mm < 38.0;
+                  const isPrintedCarrier =
+                    selectedDevice.blueprint.category === 'modular-carrier' ||
+                    selectedDevice.blueprint.printable_metadata !== null;
+                  const isSubModule =
+                    selectedDevice.mount_target === 'carrier-slot';
+
+                  const badgeLabel = isDesktopPrintedCradle
+                    ? '🖨️ Desktop-Gerät (benötigt 3D-Druck-Halterung / 1U-Fachboden)'
+                    : isPrintedCarrier
+                      ? '🖨️ 3D-gedruckter 1U-Modulträger (PETG / ABS)'
+                      : isSubModule
+                        ? `🧩 Sub-Modul im Carrier-Slot (${selectedDevice.slot_id ?? 'Bay'})`
+                        : '🔩 Direktmontage (inklusive Metall-Rackohren)';
+
+                  const badgeColor =
+                    isDesktopPrintedCradle || isPrintedCarrier
+                      ? {
+                          bg: 'rgba(245, 158, 11, 0.12)',
+                          border: 'rgba(245, 158, 11, 0.3)',
+                          text: '#FDE68A',
+                        }
+                      : isSubModule
+                        ? {
+                            bg: 'rgba(59, 130, 246, 0.12)',
+                            border: 'rgba(59, 130, 246, 0.3)',
+                            text: '#93C5FD',
+                          }
+                        : {
+                            bg: 'rgba(16, 185, 129, 0.1)',
+                            border: 'rgba(16, 185, 129, 0.25)',
+                            text: '#6EE7B7',
+                          };
+
+                  return (
+                    <div
+                      data-testid="device-mounting-badge"
+                      style={{
+                        marginTop: '7px',
+                        padding: '4px 8px',
+                        borderRadius: '5px',
+                        background: badgeColor.bg,
+                        border: `1px solid ${badgeColor.border}`,
+                        color: badgeColor.text,
+                        fontSize: '10.5px',
+                        fontWeight: 600,
+                        lineHeight: 1.35,
+                      }}
+                    >
+                      {badgeLabel}
+                    </div>
+                  );
+                })()}
+
+                {/* Human-Readable Device Description ("Was ist dieses Gerät?") */}
+                {selectedDevice.blueprint.description && (
+                  <div
+                    data-testid="selected-device-description"
+                    style={{
+                      marginTop: '8px',
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      background: '#111115',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
+                      borderLeft: '2.5px solid #3B82F6',
+                      fontSize: '11px',
+                      color: '#D4D4D8',
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: '9.5px',
+                        fontWeight: 700,
+                        letterSpacing: '0.03em',
+                        textTransform: 'uppercase',
+                        color: '#93C5FD',
+                        marginBottom: '3px',
+                      }}
+                    >
+                      Was ist dieses Gerät?
+                    </div>
+                    {selectedDevice.blueprint.description}
+                  </div>
+                )}
 
                 <div
                   className="mono"

@@ -1,6 +1,7 @@
 slug: "generic-10inch-blank-panel-1u"
 manufacturer: "Generic"
 model: "10-Inch 1U Steel Blanking Panel"
+description: "10-Zoll 1U Blindabdeckung aus pulverbeschichtetem Stahl. Verschließt ungenutzte Höheneinheiten für eine saubere Optik und gerichtete Luftführung (Airflow) im Rack."
 category: "blank-panel"
 mount_type: "rackmount-10"
 geometry:

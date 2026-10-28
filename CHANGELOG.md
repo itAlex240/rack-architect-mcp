@@ -5,6 +5,15 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2026-10-28
+
+### Added & Improved
+- **Human-Readable Device Descriptions, Full Manufacturer/Model Titles & Physical Mounting Guidance (`@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters`, `@rack-mcp/web-viewer`):**
+  - Added `description` to `HardwareBlueprintSchema` in [`hardware-blueprint.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/schemas/hardware-blueprint.ts) and populated detailed German/technical descriptions across all 30 catalog and custom blueprints (`packages/hardware-catalog/catalog/**/*.yaml` and `examples/19inch-enterprise/custom-catalog/*.yaml`).
+  - Updated [`InspectorSidebar.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/InspectorSidebar.tsx) and [`RackSceneCanvas.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/canvas/RackSceneCanvas.tsx) (`selected-device-guide-banner`) so selecting any device always shows its full **Manufacturer + Product Model** (`Ubiquiti UniFi Flex 2.5G PoE (USW-Flex-2.5G-8-PoE)`) alongside its assigned `hostname` (`sw-core-flex25g`), a physical **Mounting Method Badge** (`🖨️ Desktop-Gerät (benötigt 3D-Druck-Halterung / 1U-Fachboden)` vs. `🖨️ 3D-gedruckter 1U-Modulträger` vs. `🧩 Sub-Modul` vs. `🔩 Direktmontage`), and the **"Was ist dieses Gerät?"** explanation box.
+  - Added 3D rendering of the matte-black PETG **10-Inch 1U Adapter Cradle/Tray** around compact polycarbonate desktop switches (`USW-Flex-2.5G-8-PoE`, `USW-Lite-8-PoE`) and full-span rack ears in [`MountedDevice3D.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/canvas/MountedDevice3D.tsx), plus `.SCAD`/`.STL` cradle downloads in [`BomAndExportsView.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/BomAndExportsView.tsx) and [`standalone-homelab.ts`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/state/standalone-homelab.ts).
+  - Added `### 2.1 Geräte-Erklärungen & Montage-Hinweise` to [`bom-markdown.ts`](file:///home/alexb/projects/rack-designer/packages/exporters/src/bom-markdown.ts) and device descriptions to [`CatalogBuilderDrawer.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/CatalogBuilderDrawer.tsx).
+
 ## [0.4.2] - 2026-10-28
 
 ### Fixed

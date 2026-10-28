@@ -1,6 +1,7 @@
 slug: "ubiquiti-usw-lite-8-poe"
 manufacturer: "Ubiquiti"
 model: "UniFi Switch Lite 8 PoE (USW-Lite-8-PoE)"
+description: "Kompakter 8-Port Gigabit-Switch (davon 4x PoE+ bis 52W Gesamtbudget). Wichtiger Montage-Hinweis: Von Haus aus ein Desktop-/Wandgerät aus Polycarbonat (200×31×99.6mm ohne eigene Rack-Ohren) — benötigt für den 10-Zoll-Rackeinbau eine 3D-gedruckte 1U-PETG-Halterung oder einen 1U-Fachboden."
 category: "switch"
 mount_type: "rackmount-10"
 geometry:

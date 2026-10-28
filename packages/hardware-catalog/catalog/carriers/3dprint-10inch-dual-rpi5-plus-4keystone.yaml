@@ -1,6 +1,7 @@
 slug: "3dprint-10inch-dual-rpi5-plus-4keystone"
 manufacturer: "Community 3D-Print"
 model: "10-Inch 1U Carrier for 2x Raspberry Pi 5 + 4x Keystone"
+description: "3D-druckbarer 10-Zoll 1U Modulträger (PETG/ABS, L-Profil mit Stützboden) mit 2 Einschüben für Raspberry Pi 5 SBCs sowie 4 integrierten Standard-Keystone-Ausschnitten."
 category: "modular-carrier"
 mount_type: "rackmount-10"
 geometry:

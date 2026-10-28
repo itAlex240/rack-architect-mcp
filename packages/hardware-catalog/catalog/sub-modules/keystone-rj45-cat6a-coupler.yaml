@@ -1,6 +1,7 @@
 slug: "keystone-rj45-cat6a-coupler"
 manufacturer: "Generic"
 model: "Shielded RJ45 Cat6A Passthrough Keystone Coupler"
+description: "Geschirmtes Cat6A RJ45 Keystone-Durchgangsmodul (Buchse-auf-Buchse). Wird in die Keystone-Slots eines 3D-gedruckten Carriers eingeclipst, um rückseitige Anschlüsse sauber auf der Vorderseite zugänglich zu machen."
 category: "keystone-module"
 mount_type: "sub-module"
 slot_compatibility: "standard-keystone"

@@ -1,6 +1,7 @@
 slug: "digitus-10inch-pdu-4way-schuko"
 manufacturer: "Digitus"
 model: "10-Inch 1U 4-Way Socket Strip (DN-95411)"
+description: "10-Zoll 1U 4-fach Schuko-Steckdosenleiste (PDU, Aluminiumgehäuse, bis 3600W). Wird meist rückseitig im Rack montiert, um die Netzteile von Mini-PCs, Routern und Switches zentral über die USV mit Strom zu versorgen."
 category: "pdu"
 mount_type: "rackmount-10"
 geometry:

@@ -529,6 +529,17 @@ export function CatalogBuilderDrawer({
                   {bp.geometry.depth_mm}mm • {bp.ports.length} Ports •{' '}
                   {bp.power_and_thermal.max_system_watts}W
                 </div>
+                {bp.description && (
+                  <div
+                    style={{
+                      fontSize: '11px',
+                      color: '#A1A1AA',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {bp.description}
+                  </div>
+                )}
                 {!isSubModule && (
                   <button
                     type="button"
