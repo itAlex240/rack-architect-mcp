@@ -1,0 +1,111 @@
+/* ============================================================================
+ * RackArchitect MCP — Precision Hardware & CAD Studio Design System
+ * Inspired by Linear, Ubiquiti UniFi Design Center & Shapr3D
+ * ============================================================================ */
+
+@layer reset, tokens, studio;
+
+@layer tokens {
+  :root {
+    color-scheme: dark;
+    --bg-canvas: #09090b;
+    --bg-surface: #0e0e11;
+    --bg-panel: #121216;
+    --bg-elevated: #18181d;
+    --bg-hover: #202027;
+    --bg-active: #272730;
+    --border-hairline: rgba(255, 255, 255, 0.07);
+    --border-subtle: rgba(255, 255, 255, 0.11);
+    --border-focus: rgba(59, 130, 246, 0.55);
+    --text-primary: #f4f4f5;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent-blue: #3b82f6;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-red: #ef4444;
+    --radius-sm: 5px;
+    --radius-md: 7px;
+    --radius-lg: 10px;
+  }
+}
+
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family:
+      'Inter',
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer studio {
+  code,
+  pre,
+  .mono {
+    font-family:
+      'JetBrains Mono',
+      'SF Mono',
+      ui-monospace,
+      SFMono-Regular,
+      Menlo,
+      Monaco,
+      Consolas,
+      monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Subtle dark scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.26);
+  }
+
+  button,
+  select,
+  input {
+    font-family: inherit;
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease,
+      color 120ms ease,
+      opacity 120ms ease;
+  }
+
+  button:focus-visible,
+  select:focus-visible,
+  input:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 1px;
+  }
+}

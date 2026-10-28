@@ -8,7 +8,7 @@ import { InspectorSidebar } from './InspectorSidebar.js';
 import { CatalogBuilderDrawer } from './CatalogBuilderDrawer.js';
 
 /**
- * Full-featured CAD Dark-Mode Studio & 3D/2D Inspector Dashboard for `@rack-mcp/web-viewer`.
+ * Precision Hardware & CAD Studio Dashboard for `@rack-mcp/web-viewer`.
  */
 export function AppDashboard() {
   const state = useRackState();
@@ -21,8 +21,8 @@ export function AppDashboard() {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: '#090D16',
-        color: '#F8FAFC',
+        background: '#09090b',
+        color: '#F4F4F5',
         overflow: 'hidden',
       }}
     >

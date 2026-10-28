@@ -1,15 +1,15 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.2.0` — 3D/2D Rack-Planer & 3D-Druck-Paket
+# 🏗️ RackArchitect MCP `v0.3.0` — 3D/2D Rack-Planer & 3D-Druck-Paket
 
-**Willkommen beim Release `v0.2.0` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.3.0` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Neu in Version `v0.2.0`:**
-> - **Live MCP Agent Tool-Call Feed & Interaktiver KI-Selbstkorrektur-Replay im Web-Viewer:** Verfolge im neuen **`MCP AGENT TOOL-CALL FEED`** jeden MCP-Tool-Aufruf deiner KI (`init_rack`, `mount_equipment`, `connect_cables`, `modify_equipment`, `validate_rack`) live mit oder teste per 1-Klick (**`⚡ Simulate LLM Collision`** $\rightarrow$ **`✓ Apply LLM Self-Correction`**), wie die KI eine echte 3D-Stecker-Kollision (`PLUG_CLEARANCE_COLLISION`) erkennt und selbstständig behebt!
-> - **5 geführte MCP-Prompts für Claude Desktop, Cursor & Antigravity:** `plan-homelab-from-scratch`, `optimize-and-fix-rack`, `design-19inch-enterprise-rack`, `design-3d-printed-carrier-bay` und `audit-poe-and-thermals`.
-> - **Fertiges Docker-Image auf GitHub Container Registry (`ghcr.io/italex240/rack-architect-mcp:latest`) & Offizielle MCP Registry (`registry.modelcontextprotocol.io`).**
-> - **Hardware-Katalog mit 30 hochdetaillierten Geräten & 100 % wasserdichte 2-Manifold `.STL`-Dateien (`0` Slicer-Warnungen).**
+> **✨ Neu in Version `v0.3.0`:**
+> - **Komplettes „Precision Hardware & CAD Studio" UI/UX-Redesign im Web-Viewer:** Neues, ruhiges Carbon/Zinc-Farbschema (`#09090b` / `#121216`) im Stil von Linear, Ubiquiti UniFi Design Center und Shapr3D — ganz ohne überladene Neon-Ränder, Emojis oder abgeschnittene Scrollboxen.
+> - **Schwebendes Bottom-Center 3D-CAD-Dock & Einzeilige Studio-Topbar (`52px`):** Freie Sicht auf das 3D-Rack mit eloxierten Aluminium-Schienen, Frontblenden-Details und Status-LEDs sowie neuem Sektions-Filter (`All` | `Element` | `Checks` | `MCP`) in der rechten Seitenleiste.
+> - **Live MCP Agent Tool-Call Feed & Interaktiver KI-Selbstkorrektur-Replay:** Verfolge jeden MCP-Tool-Aufruf deiner KI live mit oder teste per 1-Klick (**`Simulate Collision`** $\rightarrow$ **`Auto-Fix Collision`**), wie die KI eine 3D-Stecker-Kollision (`PLUG_CLEARANCE_COLLISION`) selbstständig behebt!
+> - **Hardware-Katalog mit 30 hochdetaillierten Geräten, 5 geführten MCP-Prompts & 100 % wasserdichte 2-Manifold `.STL`-Dateien (`0` Slicer-Warnungen).**
 
 *(🇬🇧 English Quick-Start Guide included below the German section!)*
 

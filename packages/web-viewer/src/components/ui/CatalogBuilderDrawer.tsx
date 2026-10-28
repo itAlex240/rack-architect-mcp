@@ -106,8 +106,8 @@ export function CatalogBuilderDrawer({
       style={{
         width: '360px',
         height: '100%',
-        background: '#0F172A',
-        borderRight: '1px solid #1E293B',
+        background: '#121216',
+        borderRight: '1px solid rgba(255, 255, 255, 0.07)',
         display: 'flex',
         flexDirection: 'column',
         overflowY: 'auto',
@@ -117,29 +117,35 @@ export function CatalogBuilderDrawer({
       {/* Header */}
       <div
         style={{
-          padding: '14px 16px',
-          borderBottom: '1px solid #1E293B',
+          padding: '12px 16px',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
+          background: '#0e0e11',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}
       >
         <div
-          className="mono"
-          style={{ fontSize: '12px', fontWeight: 700, color: '#38BDF8' }}
+          style={{
+            fontSize: '11.5px',
+            fontWeight: 600,
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+            color: '#F4F4F5',
+          }}
         >
-          HARDWARE CATALOG &amp; CABLE BUILDER
+          Hardware Catalog &amp; Patcher
         </div>
         <button
           type="button"
           data-testid="btn-close-catalog-drawer"
           onClick={onClose}
           style={{
-            padding: '3px 8px',
-            borderRadius: '4px',
-            border: '1px solid #334155',
-            background: '#1E293B',
-            color: '#94A3B8',
+            padding: '4px 8px',
+            borderRadius: '5px',
+            border: '1px solid rgba(255, 255, 255, 0.09)',
+            background: '#18181d',
+            color: '#A1A1AA',
             fontSize: '11px',
             cursor: 'pointer',
           }}
@@ -153,34 +159,39 @@ export function CatalogBuilderDrawer({
         data-testid="interactive-cable-patcher"
         style={{
           padding: '14px 16px',
-          borderBottom: '1px solid #1E293B',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
           display: 'flex',
           flexDirection: 'column',
           gap: '8px',
-          background: '#0B1120',
+          background: '#0e0e11',
         }}
       >
         <div
-          className="mono"
-          style={{ fontSize: '11px', fontWeight: 700, color: '#10B981' }}
+          style={{
+            fontSize: '10.5px',
+            fontWeight: 600,
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+            color: '#A1A1AA',
+          }}
         >
-          1. POINT-TO-POINT 3D CABLE PATCHER
+          Point-to-Point 3D Cable Patcher
         </div>
 
-        <label style={{ fontSize: '10.5px', color: '#94A3B8' }}>
-          From Port:
+        <label style={{ fontSize: '11px', color: '#A1A1AA' }}>
+          From Port
           <select
             data-testid="select-cable-from"
             value={fromEndpoint}
             onChange={(e) => setFromEndpoint(e.target.value)}
             style={{
               width: '100%',
-              marginTop: '3px',
-              padding: '5px 8px',
-              borderRadius: '5px',
-              border: '1px solid #334155',
-              background: '#1E293B',
-              color: '#F8FAFC',
+              marginTop: '4px',
+              padding: '6px 8px',
+              borderRadius: '6px',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
+              background: '#18181d',
+              color: '#F4F4F5',
               fontSize: '11px',
             }}
           >
@@ -192,20 +203,20 @@ export function CatalogBuilderDrawer({
           </select>
         </label>
 
-        <label style={{ fontSize: '10.5px', color: '#94A3B8' }}>
-          To Port:
+        <label style={{ fontSize: '11px', color: '#A1A1AA' }}>
+          To Port
           <select
             data-testid="select-cable-to"
             value={toEndpoint}
             onChange={(e) => setToEndpoint(e.target.value)}
             style={{
               width: '100%',
-              marginTop: '3px',
-              padding: '5px 8px',
-              borderRadius: '5px',
-              border: '1px solid #334155',
-              background: '#1E293B',
-              color: '#F8FAFC',
+              marginTop: '4px',
+              padding: '6px 8px',
+              borderRadius: '6px',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
+              background: '#18181d',
+              color: '#F4F4F5',
               fontSize: '11px',
             }}
           >
@@ -217,20 +228,20 @@ export function CatalogBuilderDrawer({
           </select>
         </label>
 
-        <label style={{ fontSize: '10.5px', color: '#94A3B8' }}>
-          Cable Assembly Type:
+        <label style={{ fontSize: '11px', color: '#A1A1AA' }}>
+          Cable Assembly Type
           <select
             data-testid="select-cable-type"
             value={selectedCableType}
             onChange={(e) => setSelectedCableType(e.target.value as CableType)}
             style={{
               width: '100%',
-              marginTop: '3px',
-              padding: '5px 8px',
-              borderRadius: '5px',
-              border: '1px solid #334155',
-              background: '#1E293B',
-              color: '#F8FAFC',
+              marginTop: '4px',
+              padding: '6px 8px',
+              borderRadius: '6px',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
+              background: '#18181d',
+              color: '#F4F4F5',
               fontSize: '11px',
             }}
           >
@@ -253,11 +264,11 @@ export function CatalogBuilderDrawer({
             onChange={(e) => setVlanInput(e.target.value)}
             style={{
               flex: 1,
-              padding: '5px 8px',
-              borderRadius: '5px',
-              border: '1px solid #334155',
-              background: '#1E293B',
-              color: '#F8FAFC',
+              padding: '6px 8px',
+              borderRadius: '6px',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
+              background: '#18181d',
+              color: '#F4F4F5',
               fontSize: '11px',
             }}
           />
@@ -269,11 +280,11 @@ export function CatalogBuilderDrawer({
             onChange={(e) => setCidrInput(e.target.value)}
             style={{
               flex: 1,
-              padding: '5px 8px',
-              borderRadius: '5px',
-              border: '1px solid #334155',
-              background: '#1E293B',
-              color: '#F8FAFC',
+              padding: '6px 8px',
+              borderRadius: '6px',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
+              background: '#18181d',
+              color: '#F4F4F5',
               fontSize: '11px',
             }}
           />
@@ -307,11 +318,11 @@ export function CatalogBuilderDrawer({
           style={{
             padding: '7px 12px',
             borderRadius: '6px',
-            border: '1px solid #10B981',
-            background: '#064E3B',
-            color: '#34D399',
+            border: '1px solid rgba(16, 185, 129, 0.35)',
+            background: 'rgba(16, 185, 129, 0.12)',
+            color: '#6EE7B7',
             fontSize: '11.5px',
-            fontWeight: 700,
+            fontWeight: 600,
             cursor: 'pointer',
           }}
         >
@@ -330,10 +341,29 @@ export function CatalogBuilderDrawer({
         }}
       >
         <div
-          className="mono"
-          style={{ fontSize: '11px', fontWeight: 700, color: '#38BDF8' }}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
         >
-          2. HARDWARE CATALOG ({filteredCatalog.length} BLUEPRINTS)
+          <span
+            style={{
+              fontSize: '10.5px',
+              fontWeight: 600,
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+              color: '#A1A1AA',
+            }}
+          >
+            Hardware Catalog
+          </span>
+          <span
+            className="mono"
+            style={{ fontSize: '10.5px', color: '#71717A' }}
+          >
+            {filteredCatalog.length} blueprints
+          </span>
         </div>
 
         {/* Target U & Face Selector */}
@@ -342,13 +372,13 @@ export function CatalogBuilderDrawer({
             display: 'flex',
             gap: '8px',
             alignItems: 'center',
-            padding: '8px',
+            padding: '8px 10px',
             borderRadius: '6px',
-            background: '#1E293B',
-            border: '1px solid #334155',
+            background: '#18181d',
+            border: '1px solid rgba(255, 255, 255, 0.07)',
           }}
         >
-          <label style={{ fontSize: '11px', color: '#CBD5E1', flex: 1 }}>
+          <label style={{ fontSize: '11px', color: '#A1A1AA', flex: 1 }}>
             Target U:
             <select
               data-testid="select-mount-u"
@@ -357,10 +387,10 @@ export function CatalogBuilderDrawer({
               style={{
                 marginLeft: '6px',
                 padding: '3px 6px',
-                borderRadius: '4px',
-                background: '#090D16',
-                color: '#38BDF8',
-                border: '1px solid #334155',
+                borderRadius: '5px',
+                background: '#0e0e11',
+                color: '#F4F4F5',
+                border: '1px solid rgba(255, 255, 255, 0.09)',
                 fontSize: '11px',
               }}
             >
@@ -372,7 +402,7 @@ export function CatalogBuilderDrawer({
             </select>
           </label>
 
-          <label style={{ fontSize: '11px', color: '#CBD5E1', flex: 1 }}>
+          <label style={{ fontSize: '11px', color: '#A1A1AA', flex: 1 }}>
             Face:
             <select
               data-testid="select-mount-face"
@@ -381,10 +411,10 @@ export function CatalogBuilderDrawer({
               style={{
                 marginLeft: '6px',
                 padding: '3px 6px',
-                borderRadius: '4px',
-                background: '#090D16',
-                color: '#F59E0B',
-                border: '1px solid #334155',
+                borderRadius: '5px',
+                background: '#0e0e11',
+                color: '#F4F4F5',
+                border: '1px solid rgba(255, 255, 255, 0.09)',
                 fontSize: '11px',
               }}
             >
@@ -406,9 +436,9 @@ export function CatalogBuilderDrawer({
               flex: 1,
               padding: '6px 9px',
               borderRadius: '6px',
-              border: '1px solid #334155',
-              background: '#1E293B',
-              color: '#F8FAFC',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
+              background: '#18181d',
+              color: '#F4F4F5',
               fontSize: '11.5px',
             }}
           />
@@ -419,9 +449,9 @@ export function CatalogBuilderDrawer({
             style={{
               padding: '6px 8px',
               borderRadius: '6px',
-              border: '1px solid #334155',
-              background: '#1E293B',
-              color: '#CBD5E1',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
+              background: '#18181d',
+              color: '#A1A1AA',
               fontSize: '11px',
             }}
           >
@@ -451,10 +481,10 @@ export function CatalogBuilderDrawer({
                 key={bp.slug}
                 data-testid={`catalog-card-${bp.slug}`}
                 style={{
-                  padding: '10px',
-                  borderRadius: '7px',
-                  background: '#1E293B',
-                  border: '1px solid #334155',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  background: '#18181d',
+                  border: '1px solid rgba(255, 255, 255, 0.07)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '5px',
@@ -465,13 +495,14 @@ export function CatalogBuilderDrawer({
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    gap: '6px',
                   }}
                 >
                   <span
                     style={{
                       fontSize: '12px',
-                      fontWeight: 700,
-                      color: '#F8FAFC',
+                      fontWeight: 600,
+                      color: '#F4F4F5',
                     }}
                   >
                     {bp.manufacturer} {bp.model}
@@ -482,8 +513,9 @@ export function CatalogBuilderDrawer({
                       fontSize: '9.5px',
                       padding: '2px 6px',
                       borderRadius: '4px',
-                      background: '#090D16',
-                      color: '#38BDF8',
+                      background: 'rgba(255, 255, 255, 0.06)',
+                      color: '#A1A1AA',
+                      flexShrink: 0,
                     }}
                   >
                     {bp.category}
@@ -491,7 +523,7 @@ export function CatalogBuilderDrawer({
                 </div>
                 <div
                   className="mono"
-                  style={{ fontSize: '10px', color: '#94A3B8' }}
+                  style={{ fontSize: '10.5px', color: '#71717A' }}
                 >
                   {bp.geometry.width_mm}×{bp.geometry.height_mm}×
                   {bp.geometry.depth_mm}mm • {bp.ports.length} Ports •{' '}
@@ -506,13 +538,13 @@ export function CatalogBuilderDrawer({
                     }
                     style={{
                       marginTop: '3px',
-                      padding: '5px 9px',
-                      borderRadius: '5px',
-                      border: '1px solid #0284C7',
-                      background: '#082F49',
-                      color: '#38BDF8',
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(59, 130, 246, 0.35)',
+                      background: 'rgba(59, 130, 246, 0.12)',
+                      color: '#93C5FD',
                       fontSize: '11px',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       cursor: 'pointer',
                     }}
                   >

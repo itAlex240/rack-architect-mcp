@@ -2,6 +2,7 @@ import type {
   CableFilterMode,
   CameraPresetMode,
 } from '../../state/useRackState.js';
+import { EyeXrayIcon } from './Icons.js';
 
 export interface FloatingHudToolbarProps {
   readonly xrayMode: boolean;
@@ -22,10 +23,10 @@ const CAMERA_PRESETS: ReadonlyArray<{
   readonly id: CameraPresetMode;
   readonly label: string;
 }> = [
-  { id: 'isometric', label: 'Isometric' },
-  { id: 'front', label: 'Front (Ortho)' },
-  { id: 'rear', label: 'Rear (Ortho)' },
-  { id: 'side-cutaway', label: 'Side Cutaway' },
+  { id: 'isometric', label: 'Iso' },
+  { id: 'front', label: 'Front' },
+  { id: 'rear', label: 'Rear' },
+  { id: 'side-cutaway', label: 'Side' },
   { id: 'top', label: 'Top' },
 ];
 
@@ -34,10 +35,10 @@ const CABLE_FILTERS: ReadonlyArray<{
   readonly label: string;
 }> = [
   { id: 'all', label: 'All' },
-  { id: 'network', label: 'Network/Data' },
-  { id: 'power', label: 'Power (AC/DC)' },
-  { id: 'poe', label: 'PoE Only' },
-  { id: 'none', label: 'Hide Cables' },
+  { id: 'network', label: 'Data' },
+  { id: 'power', label: 'Power' },
+  { id: 'poe', label: 'PoE' },
+  { id: 'none', label: 'Off' },
 ];
 
 export function FloatingHudToolbar({
@@ -59,34 +60,47 @@ export function FloatingHudToolbar({
       data-testid="floating-3d-hud"
       style={{
         position: 'absolute',
-        top: '14px',
-        left: '14px',
-        right: '14px',
+        bottom: '18px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        maxWidth: 'calc(100% - 28px)',
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         gap: '10px',
-        padding: '10px 14px',
-        borderRadius: '10px',
-        background: 'rgba(15, 23, 42, 0.90)',
-        border: '1px solid #334155',
-        backdropFilter: 'blur(8px)',
+        padding: '7px 12px',
+        borderRadius: '11px',
+        background: 'rgba(16, 16, 20, 0.88)',
+        border: '1px solid rgba(255, 255, 255, 0.09)',
+        boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65)',
+        backdropFilter: 'blur(14px)',
         zIndex: 15,
+        whiteSpace: 'nowrap',
       }}
     >
-      {/* Left: Camera Presets */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+      {/* 1. Segmented Camera Preset Group */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '2px',
+          padding: '2px',
+          borderRadius: '7px',
+          background: '#121216',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+        }}
+      >
         <span
           className="mono"
           style={{
-            fontSize: '10.5px',
-            fontWeight: 700,
-            color: '#94A3B8',
-            marginRight: '4px',
+            fontSize: '10px',
+            fontWeight: 600,
+            color: '#71717A',
+            padding: '0 6px',
           }}
         >
-          CAMERA:
+          View
         </span>
         {CAMERA_PRESETS.map((preset) => {
           const active = cameraPreset === preset.id;
@@ -97,13 +111,13 @@ export function FloatingHudToolbar({
               data-testid={`hud-camera-${preset.id}`}
               onClick={() => onSelectCameraPreset(preset.id)}
               style={{
-                padding: '4px 9px',
+                padding: '4px 8px',
                 borderRadius: '5px',
-                border: active ? '1px solid #38BDF8' : '1px solid #334155',
-                background: active ? '#082F49' : '#1E293B',
-                color: active ? '#38BDF8' : '#CBD5E1',
+                border: 'none',
+                background: active ? '#272730' : 'transparent',
+                color: active ? '#F4F4F5' : '#A1A1AA',
                 fontSize: '11px',
-                fontWeight: active ? 700 : 500,
+                fontWeight: active ? 600 : 500,
                 cursor: 'pointer',
               }}
             >
@@ -113,18 +127,28 @@ export function FloatingHudToolbar({
         })}
       </div>
 
-      {/* Center: Cable Layer Filter */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+      {/* 2. Segmented Cable Layer Filter Group */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '2px',
+          padding: '2px',
+          borderRadius: '7px',
+          background: '#121216',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+        }}
+      >
         <span
           className="mono"
           style={{
-            fontSize: '10.5px',
-            fontWeight: 700,
-            color: '#94A3B8',
-            marginRight: '4px',
+            fontSize: '10px',
+            fontWeight: 600,
+            color: '#71717A',
+            padding: '0 6px',
           }}
         >
-          CABLES:
+          Cables
         </span>
         {CABLE_FILTERS.map((cf) => {
           const active = cableFilter === cf.id;
@@ -135,13 +159,13 @@ export function FloatingHudToolbar({
               data-testid={`hud-cable-filter-${cf.id}`}
               onClick={() => onSelectCableFilter(cf.id)}
               style={{
-                padding: '4px 9px',
+                padding: '4px 8px',
                 borderRadius: '5px',
-                border: active ? '1px solid #10B981' : '1px solid #334155',
-                background: active ? '#064E3B' : '#1E293B',
-                color: active ? '#34D399' : '#CBD5E1',
+                border: 'none',
+                background: active ? '#272730' : 'transparent',
+                color: active ? '#F4F4F5' : '#A1A1AA',
                 fontSize: '11px',
-                fontWeight: active ? 700 : 500,
+                fontWeight: active ? 600 : 500,
                 cursor: 'pointer',
               }}
             >
@@ -151,24 +175,30 @@ export function FloatingHudToolbar({
         })}
       </div>
 
-      {/* Right: X-Ray, Explode Z Slider, Clearance Boxes & Door Toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      {/* 3. CAD Inspection Toggles & Explode Z Slider */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <button
           type="button"
           data-testid="hud-toggle-xray"
           onClick={() => onToggleXray(!xrayMode)}
           style={{
-            padding: '5px 10px',
-            borderRadius: '5px',
-            border: xrayMode ? '1px solid #38BDF8' : '1px solid #334155',
-            background: xrayMode ? '#0284C7' : '#1E293B',
-            color: '#F8FAFC',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+            padding: '5px 9px',
+            borderRadius: '6px',
+            border: xrayMode
+              ? '1px solid rgba(59, 130, 246, 0.45)'
+              : '1px solid rgba(255, 255, 255, 0.08)',
+            background: xrayMode ? 'rgba(59, 130, 246, 0.16)' : '#16161B',
+            color: xrayMode ? '#93C5FD' : '#D4D4D8',
             fontSize: '11px',
-            fontWeight: 700,
+            fontWeight: 600,
             cursor: 'pointer',
           }}
         >
-          {xrayMode ? 'X-Ray Ghost: ON' : 'X-Ray Ghost: OFF'}
+          <EyeXrayIcon size={12} />
+          <span>{xrayMode ? 'X-Ray Ghost: ON' : 'X-Ray Ghost: OFF'}</span>
         </button>
 
         <button
@@ -176,15 +206,17 @@ export function FloatingHudToolbar({
           data-testid="hud-toggle-clearance"
           onClick={() => onToggleClearanceBoxes(!showClearanceBoxes)}
           style={{
-            padding: '5px 10px',
-            borderRadius: '5px',
+            padding: '5px 9px',
+            borderRadius: '6px',
             border: showClearanceBoxes
-              ? '1px solid #F59E0B'
-              : '1px solid #334155',
-            background: showClearanceBoxes ? '#78350F' : '#1E293B',
-            color: showClearanceBoxes ? '#FDE68A' : '#CBD5E1',
+              ? '1px solid rgba(245, 158, 11, 0.45)'
+              : '1px solid rgba(255, 255, 255, 0.08)',
+            background: showClearanceBoxes
+              ? 'rgba(245, 158, 11, 0.14)'
+              : '#16161B',
+            color: showClearanceBoxes ? '#FDE68A' : '#D4D4D8',
             fontSize: '11px',
-            fontWeight: 600,
+            fontWeight: 500,
             cursor: 'pointer',
           }}
         >
@@ -196,13 +228,15 @@ export function FloatingHudToolbar({
           data-testid="hud-toggle-door"
           onClick={() => onToggleDoorOpen(!doorOpen)}
           style={{
-            padding: '5px 10px',
-            borderRadius: '5px',
-            border: doorOpen ? '1px solid #38BDF8' : '1px solid #334155',
-            background: doorOpen ? '#082F49' : '#1E293B',
-            color: '#CBD5E1',
+            padding: '5px 9px',
+            borderRadius: '6px',
+            border: doorOpen
+              ? '1px solid rgba(59, 130, 246, 0.4)'
+              : '1px solid rgba(255, 255, 255, 0.08)',
+            background: doorOpen ? 'rgba(59, 130, 246, 0.12)' : '#16161B',
+            color: doorOpen ? '#93C5FD' : '#D4D4D8',
             fontSize: '11px',
-            fontWeight: 600,
+            fontWeight: 500,
             cursor: 'pointer',
           }}
         >
@@ -214,12 +248,16 @@ export function FloatingHudToolbar({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            fontSize: '11px',
-            color: '#E2E8F0',
+            gap: '7px',
+            padding: '3px 8px',
+            borderRadius: '6px',
+            background: '#121216',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
+            fontSize: '10.5px',
+            color: '#D4D4D8',
           }}
         >
-          <span>Explode Z: {explodeZMm}mm</span>
+          <span>Explode {explodeZMm}mm</span>
           <input
             type="range"
             data-testid="hud-explode-z-slider"
@@ -228,7 +266,7 @@ export function FloatingHudToolbar({
             step={5}
             value={explodeZMm}
             onChange={(e) => onChangeExplodeZ(Number(e.target.value))}
-            style={{ width: '96px', accentColor: '#38BDF8' }}
+            style={{ width: '76px', accentColor: '#3B82F6', cursor: 'pointer' }}
           />
         </label>
       </div>

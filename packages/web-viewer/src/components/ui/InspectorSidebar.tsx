@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import {
   roundTenths,
   type SerializedRackScene,
 } from '@rack-mcp/core-domain';
 import type { McpToolCallItem } from '../../state/useRackState.js';
+import { SparklesAiIcon, TerminalFeedIcon } from './Icons.js';
 
 export interface InspectorSidebarProps {
   readonly scene: SerializedRackScene;
@@ -19,6 +21,8 @@ export interface InspectorSidebarProps {
     | undefined;
 }
 
+type SidebarFilterTab = 'all' | 'inspector' | 'diagnostics' | 'agent';
+
 export function InspectorSidebar({
   scene,
   mcpToolLog = [],
@@ -31,6 +35,8 @@ export function InspectorSidebar({
   onDisconnectCable,
   onSimulateAgentStep,
 }: InspectorSidebarProps) {
+  const [activeFilter, setActiveFilter] = useState<SidebarFilterTab>('all');
+
   const pwr = scene.validation.power_summary;
   const mech = scene.validation.mechanical_summary;
   const uCount = scene.project.rack.u_height;
@@ -62,730 +68,979 @@ export function InspectorSidebar({
     ? scene.cable_routes.find((r) => r.cable_id === selectedCableId)
     : undefined;
 
+  const showInspector = activeFilter === 'all' || activeFilter === 'inspector';
+  const showDiagnostics =
+    activeFilter === 'all' || activeFilter === 'diagnostics';
+  const showAgent = activeFilter === 'all' || activeFilter === 'agent';
+
   return (
     <aside
       data-testid="inspector-sidebar"
       style={{
-        width: '360px',
+        width: '368px',
         height: '100%',
-        background: '#0F172A',
-        borderLeft: '1px solid #1E293B',
+        background: '#0E0E11',
+        borderLeft: '1px solid rgba(255, 255, 255, 0.07)',
         display: 'flex',
         flexDirection: 'column',
         overflowY: 'auto',
         flexShrink: 0,
       }}
     >
-      {/* 1. Rack-Health & Power Telemetry */}
+      {/* 1. Compact Rack Telemetry & Power Summary */}
       <section
         data-testid="telemetry-section"
         style={{
-          padding: '16px',
-          borderBottom: '1px solid #1E293B',
+          padding: '14px 16px',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '12px',
+          gap: '10px',
+          background: '#111115',
         }}
       >
         <div
-          className="mono"
           style={{
-            fontSize: '11.5px',
-            fontWeight: 700,
-            color: '#38BDF8',
-            letterSpacing: '0.04em',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
           }}
         >
-          RACK TELEMETRY &amp; POWER DAG
-        </div>
-
-        {/* UPS Load Bar */}
-        <div>
-          <div
-            className="mono"
+          <span
             style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: '11px',
-              marginBottom: '4px',
+              fontSize: '12px',
+              fontWeight: 600,
+              color: '#E4E4E7',
+              letterSpacing: '-0.01em',
             }}
           >
-            <span style={{ color: '#CBD5E1' }}>System / UPS Load</span>
-            <span style={{ color: '#34D399', fontWeight: 700 }}>
-              {roundTenths(pwr.total_system_watts)}W /{' '}
-              {upsSource?.capacity_watts ?? 300}W
-            </span>
-          </div>
+            Rack Telemetry &amp; Power
+          </span>
+          <span
+            className="mono"
+            style={{ fontSize: '10.5px', color: '#71717A' }}
+          >
+            {occupiedUs.size}/{uCount}U ({uOccupancyPct}%)
+          </span>
+        </div>
+
+        {/* Dual Compact Load Bars */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '10px',
+          }}
+        >
+          {/* UPS Load Bar */}
           <div
             style={{
-              height: '7px',
-              borderRadius: '4px',
-              background: '#090D16',
-              overflow: 'hidden',
+              padding: '8px 10px',
+              borderRadius: '7px',
+              background: '#17171C',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
             }}
           >
             <div
+              className="mono"
               style={{
-                width: `${Math.min(100, upsSource?.utilization_percent ?? 50)}%`,
-                height: '100%',
-                background: '#10B981',
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '10px',
+                marginBottom: '5px',
               }}
-            />
+            >
+              <span style={{ color: '#A1A1AA' }}>UPS Load</span>
+              <span style={{ color: '#F4F4F5', fontWeight: 600 }}>
+                {roundTenths(pwr.total_system_watts)}W /{' '}
+                {upsSource?.capacity_watts ?? 300}W
+              </span>
+            </div>
+            <div
+              style={{
+                height: '4px',
+                borderRadius: '999px',
+                background: '#272730',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  width: `${Math.min(100, upsSource?.utilization_percent ?? 50)}%`,
+                  height: '100%',
+                  background: '#10B981',
+                }}
+              />
+            </div>
           </div>
-        </div>
 
-        {/* PoE Budget Bar */}
-        <div>
-          <div
-            className="mono"
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: '11px',
-              marginBottom: '4px',
-            }}
-          >
-            <span style={{ color: '#CBD5E1' }}>PoE++ Switch Budget</span>
-            <span style={{ color: '#FBBF24', fontWeight: 700 }}>
-              {roundTenths(pwr.total_poe_watts)}W /{' '}
-              {pseSource?.poe_budget_watts ?? 196}W
-            </span>
-          </div>
+          {/* PoE Budget Bar */}
           <div
             style={{
-              height: '7px',
-              borderRadius: '4px',
-              background: '#090D16',
-              overflow: 'hidden',
+              padding: '8px 10px',
+              borderRadius: '7px',
+              background: '#17171C',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
             }}
           >
             <div
+              className="mono"
               style={{
-                width: `${Math.min(
-                  100,
-                  pseSource && pseSource.poe_budget_watts > 0
-                    ? (pseSource.consumed_poe_watts /
-                        pseSource.poe_budget_watts) *
-                        100
-                    : 0,
-                )}%`,
-                height: '100%',
-                background: '#F59E0B',
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '10px',
+                marginBottom: '5px',
               }}
-            />
+            >
+              <span style={{ color: '#A1A1AA' }}>PoE Budget</span>
+              <span style={{ color: '#F4F4F5', fontWeight: 600 }}>
+                {roundTenths(pwr.total_poe_watts)}W /{' '}
+                {pseSource?.poe_budget_watts ?? 196}W
+              </span>
+            </div>
+            <div
+              style={{
+                height: '4px',
+                borderRadius: '999px',
+                background: '#272730',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  width: `${Math.min(
+                    100,
+                    pseSource && pseSource.poe_budget_watts > 0
+                      ? (pseSource.consumed_poe_watts /
+                          pseSource.poe_budget_watts) *
+                          100
+                      : 0,
+                  )}%`,
+                  height: '100%',
+                  background: '#3B82F6',
+                }}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Mechanical KPIs */}
+        {/* Mechanical, Thermal & Acoustic KPI Grid */}
         <div
           className="mono"
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr 1fr',
-            gap: '8px',
-            marginTop: '4px',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '6px',
           }}
         >
           <div
             style={{
-              padding: '8px',
+              padding: '7px 8px',
               borderRadius: '6px',
-              background: '#1E293B',
-              textAlign: 'center',
+              background: '#16161B',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
             }}
           >
-            <div style={{ fontSize: '9.5px', color: '#94A3B8' }}>OCCUPIED</div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#F8FAFC' }}>
-              {occupiedUs.size}/{uCount}U ({uOccupancyPct}%)
-            </div>
-          </div>
-          <div
-            style={{
-              padding: '8px',
-              borderRadius: '6px',
-              background: '#1E293B',
-              textAlign: 'center',
-            }}
-          >
-            <div style={{ fontSize: '9.5px', color: '#94A3B8' }}>MASS</div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#F8FAFC' }}>
+            <div style={{ fontSize: '9px', color: '#71717A' }}>MASS</div>
+            <div
+              style={{
+                fontSize: '11.5px',
+                fontWeight: 600,
+                color: '#F4F4F5',
+                marginTop: '2px',
+              }}
+            >
               {roundTenths(mech.total_weight_grams / 1000)} kg
             </div>
           </div>
           <div
             style={{
-              padding: '8px',
+              padding: '7px 8px',
               borderRadius: '6px',
-              background: '#1E293B',
-              textAlign: 'center',
+              background: '#16161B',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
             }}
           >
-            <div style={{ fontSize: '9.5px', color: '#94A3B8' }}>CoG Y</div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#38BDF8' }}>
+            <div style={{ fontSize: '9px', color: '#71717A' }}>CoG Y</div>
+            <div
+              style={{
+                fontSize: '11.5px',
+                fontWeight: 600,
+                color: '#F4F4F5',
+                marginTop: '2px',
+              }}
+            >
               {roundTenths(mech.center_of_gravity_y_mm)} mm
             </div>
           </div>
           <div
             data-testid="kpi-thermal-btu"
             style={{
-              padding: '8px',
+              padding: '7px 8px',
               borderRadius: '6px',
-              background: '#1E293B',
-              textAlign: 'center',
+              background: '#16161B',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
             }}
           >
-            <div style={{ fontSize: '9.5px', color: '#94A3B8' }}>HEAT LOAD</div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#F59E0B' }}>
+            <div style={{ fontSize: '9px', color: '#71717A' }}>HEAT LOAD</div>
+            <div
+              style={{
+                fontSize: '11.5px',
+                fontWeight: 600,
+                color: '#F4F4F5',
+                marginTop: '2px',
+              }}
+            >
               {roundTenths(mech.total_thermal_btu_hr)} BTU/h
             </div>
           </div>
           <div
             data-testid="kpi-acoustic-dba"
             style={{
-              padding: '8px',
+              padding: '7px 8px',
               borderRadius: '6px',
-              background: '#1E293B',
-              textAlign: 'center',
+              background: '#16161B',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
             }}
           >
-            <div style={{ fontSize: '9.5px', color: '#94A3B8' }}>ACOUSTICS</div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#34D399' }}>
+            <div style={{ fontSize: '9px', color: '#71717A' }}>ACOUSTICS</div>
+            <div
+              style={{
+                fontSize: '11.5px',
+                fontWeight: 600,
+                color: '#F4F4F5',
+                marginTop: '2px',
+              }}
+            >
               {roundTenths(mech.combined_noise_db_a)} dB(A)
             </div>
           </div>
           <div
             data-testid="kpi-airflow-profile"
             style={{
-              padding: '8px',
+              gridColumn: 'span 2',
+              padding: '7px 8px',
               borderRadius: '6px',
-              background: '#1E293B',
-              textAlign: 'center',
+              background: '#16161B',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
             }}
           >
-            <div style={{ fontSize: '9.5px', color: '#94A3B8' }}>AIRFLOW</div>
-            <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#CBD5E1' }}>
+            <div style={{ fontSize: '9px', color: '#71717A' }}>
+              AIRFLOW PROFILE
+            </div>
+            <div
+              style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#D4D4D8',
+                marginTop: '2px',
+              }}
+            >
               {mech.airflow_profile}
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. Validation & Self-Correction Console */}
-      <section
-        data-testid="validation-console"
+      {/* Sticky Section Filter Switcher */}
+      <div
         style={{
-          padding: '16px',
-          borderBottom: '1px solid #1E293B',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
+          padding: '8px 16px',
+          background: '#0E0E11',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
         }}
       >
         <div
-          className="mono"
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            fontSize: '11.5px',
-            fontWeight: 700,
-            color: scene.validation.is_valid ? '#34D399' : '#FCA5A5',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '2px',
+            padding: '2px',
+            borderRadius: '7px',
+            background: '#15151A',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
           }}
         >
-          <span>5-STAGE VALIDATION CONSOLE</span>
-          <span>
-            {scene.validation.error_count}E / {scene.validation.warning_count}W
-          </span>
-        </div>
-
-        {scene.validation.issues.length === 0 ? (
-          <div
-            style={{
-              padding: '10px 12px',
-              borderRadius: '6px',
-              background: '#064E3B',
-              border: '1px solid #10B981',
-              fontSize: '11.5px',
-              color: '#D1FAE5',
-            }}
-          >
-            ✓ All spatial AABB clearances, sub-module slots, PoE budgets, and
-            3D spline cable routes are 100% collision-free.
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {scene.validation.issues.map((issue, idx) => (
-              <div
-                key={`${issue.code}-${idx}`}
-                data-testid={`diagnostic-issue-${issue.code}`}
-                onClick={() => {
-                  const firstTarget = issue.affected_instances[0];
-                  if (firstTarget) onSelectDevice(firstTarget);
-                }}
+          {(
+            [
+              { id: 'all', label: 'All' },
+              { id: 'inspector', label: 'Element' },
+              {
+                id: 'diagnostics',
+                label: `Checks (${scene.validation.error_count})`,
+              },
+              { id: 'agent', label: `MCP (${mcpToolLog.length})` },
+            ] as const
+          ).map((tab) => {
+            const active = activeFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveFilter(tab.id)}
                 style={{
-                  padding: '10px',
-                  borderRadius: '6px',
-                  background:
-                    issue.severity === 'ERROR' ? '#450A0A' : '#451A03',
-                  border:
-                    issue.severity === 'ERROR'
-                      ? '1px solid #EF4444'
-                      : '1px solid #F59E0B',
+                  padding: '4px 6px',
+                  borderRadius: '5px',
+                  border: 'none',
+                  background: active ? '#25252E' : 'transparent',
+                  color: active ? '#F4F4F5' : '#A1A1AA',
+                  fontSize: '10.5px',
+                  fontWeight: active ? 600 : 500,
                   cursor: 'pointer',
+                  whiteSpace: 'nowrap',
                 }}
               >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 2. Selection Inspector (Device or Cable) */}
+      {showInspector && (
+        <section
+          data-testid="selection-inspector"
+          style={{
+            padding: '14px 16px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <span
+              style={{ fontSize: '12px', fontWeight: 600, color: '#E4E4E7' }}
+            >
+              Selected Element
+            </span>
+            {selectedDevice && (
+              <span
+                className="mono"
+                style={{
+                  fontSize: '10px',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  background: '#18181F',
+                  color: '#93C5FD',
+                  border: '1px solid rgba(59, 130, 246, 0.25)',
+                }}
+              >
+                U{selectedDevice.u_position} ·{' '}
+                {selectedDevice.face.toUpperCase()}
+              </span>
+            )}
+          </div>
+
+          {selectedDevice ? (
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+            >
+              <div
+                style={{
+                  padding: '12px',
+                  borderRadius: '8px',
+                  background: '#15151A',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: '#F4F4F5',
+                  }}
+                >
+                  {selectedDevice.hostname ?? selectedDevice.blueprint.model}
+                </div>
                 <div
                   className="mono"
                   style={{
                     fontSize: '10.5px',
-                    fontWeight: 700,
-                    color: issue.severity === 'ERROR' ? '#FCA5A5' : '#FDE68A',
+                    color: '#A1A1AA',
+                    marginTop: '3px',
                   }}
                 >
-                  [{issue.severity.toUpperCase()}] {issue.code}
+                  {selectedDevice.instance_id} · {selectedDevice.blueprint_slug}
                 </div>
+
                 <div
+                  className="mono"
                   style={{
-                    fontSize: '11.5px',
-                    color: '#F8FAFC',
-                    marginTop: '4px',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '6px',
+                    marginTop: '10px',
+                    paddingTop: '10px',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                    fontSize: '10.5px',
                   }}
                 >
-                  {issue.message}
+                  <div>
+                    <div style={{ color: '#71717A', fontSize: '9.5px' }}>
+                      DIMENSIONS
+                    </div>
+                    <div style={{ color: '#E4E4E7', marginTop: '2px' }}>
+                      {selectedDevice.blueprint.geometry.width_mm}×
+                      {selectedDevice.blueprint.geometry.height_mm}×
+                      {selectedDevice.blueprint.geometry.depth_mm}mm
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ color: '#71717A', fontSize: '9.5px' }}>
+                      POWER DRAW
+                    </div>
+                    <div style={{ color: '#E4E4E7', marginTop: '2px' }}>
+                      {selectedDevice.blueprint.power_and_thermal.idle_watts}W /{' '}
+                      {
+                        selectedDevice.blueprint.power_and_thermal
+                          .max_system_watts
+                      }
+                      W Max
+                    </div>
+                  </div>
                 </div>
-                {issue.remediation_suggestions.length > 0 && (
-                  <div
-                    className="mono"
-                    style={{
-                      fontSize: '10px',
-                      color: '#93C5FD',
-                      marginTop: '6px',
-                    }}
-                  >
-                    Fix: {issue.remediation_suggestions[0]}
+
+                {/* Interactive U-Position Move Controls */}
+                {selectedDevice.mount_target === 'rack-unit' && (
+                  <div style={{ marginTop: '10px' }}>
+                    <div
+                      className="mono"
+                      style={{
+                        fontSize: '9.5px',
+                        color: '#71717A',
+                        marginBottom: '5px',
+                      }}
+                    >
+                      RELOCATE RACK UNIT (LIVE AABB SOLVER)
+                    </div>
+                    <div
+                      style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}
+                    >
+                      {Array.from({ length: uCount }, (_, i) => i + 1).map(
+                        (u) => {
+                          const isCurrent = selectedDevice.u_position === u;
+                          return (
+                            <button
+                              key={u}
+                              type="button"
+                              data-testid={`move-device-u-${u}`}
+                              onClick={() =>
+                                onMoveDeviceU(selectedDevice.instance_id, u)
+                              }
+                              className="mono"
+                              style={{
+                                padding: '3px 7px',
+                                borderRadius: '5px',
+                                border: isCurrent
+                                  ? '1px solid rgba(59, 130, 246, 0.5)'
+                                  : '1px solid rgba(255, 255, 255, 0.08)',
+                                background: isCurrent
+                                  ? 'rgba(59, 130, 246, 0.2)'
+                                  : '#1C1C22',
+                                color: isCurrent ? '#93C5FD' : '#D4D4D8',
+                                fontSize: '10.5px',
+                                fontWeight: isCurrent ? 600 : 400,
+                                cursor: 'pointer',
+                              }}
+                            >
+                              U{u}
+                            </button>
+                          );
+                        },
+                      )}
+                    </div>
                   </div>
                 )}
+
+                {onRemoveDevice && (
+                  <button
+                    type="button"
+                    data-testid="btn-remove-device"
+                    onClick={() => onRemoveDevice(selectedDevice.instance_id)}
+                    style={{
+                      marginTop: '10px',
+                      width: '100%',
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      background: 'rgba(239, 68, 68, 0.08)',
+                      color: '#FCA5A5',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Remove Device ({selectedDevice.instance_id})
+                  </button>
+                )}
               </div>
-            ))}
-          </div>
-        )}
-      </section>
 
-      {/* 2b. Live MCP Agent Tool-Call Feed & Self-Correction Replay */}
-      <section
-        data-testid="mcp-agent-feed"
-        style={{
-          padding: '16px',
-          borderBottom: '1px solid #1E293B',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-        }}
-      >
-        <div
-          className="mono"
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            fontSize: '11.5px',
-            fontWeight: 700,
-            color: '#38BDF8',
-          }}
-        >
-          <span>MCP AGENT TOOL-CALL FEED</span>
-          <span style={{ color: '#94A3B8', fontSize: '10.5px' }}>
-            {mcpToolLog.length} Calls
-          </span>
-        </div>
-
-        {onSimulateAgentStep && (
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <button
-              type="button"
-              data-testid="agent-sim-step-collision"
-              onClick={() => onSimulateAgentStep('collision')}
-              style={{
-                flex: 1,
-                padding: '6px 8px',
-                borderRadius: '5px',
-                border: '1px solid #F59E0B',
-                background: '#451A03',
-                color: '#FDE68A',
-                fontSize: '10.5px',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              ⚡ 1. Trigger Plug Collision
-            </button>
-            <button
-              type="button"
-              data-testid="agent-sim-step-resolved"
-              onClick={() => onSimulateAgentStep('resolved')}
-              style={{
-                flex: 1,
-                padding: '6px 8px',
-                borderRadius: '5px',
-                border: '1px solid #10B981',
-                background: '#064E3B',
-                color: '#34D399',
-                fontSize: '10.5px',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              ✓ 2. LLM Self-Correction
-            </button>
-          </div>
-        )}
-
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '6px',
-            maxHeight: '165px',
-            overflowY: 'auto',
-          }}
-        >
-          {mcpToolLog.map((entry) => (
+              {/* Device Ports List */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span
+                  className="mono"
+                  style={{
+                    fontSize: '10.5px',
+                    fontWeight: 600,
+                    color: '#A1A1AA',
+                  }}
+                >
+                  Ports ({selectedDevice.ports.length})
+                </span>
+                <span style={{ fontSize: '10px', color: '#71717A' }}>
+                  Click linked port to inspect cable
+                </span>
+              </div>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '5px',
+                }}
+              >
+                {selectedDevice.ports.map((p) => {
+                  const connCable = scene.project.cables.find(
+                    (c) =>
+                      (c.from.instance_id === selectedDevice.instance_id &&
+                        c.from.port_id === p.port_id) ||
+                      (c.to.instance_id === selectedDevice.instance_id &&
+                        c.to.port_id === p.port_id),
+                  );
+                  return (
+                    <div
+                      key={`${p.port_id}-${p.world_face}`}
+                      onClick={() => {
+                        if (connCable) onSelectCable(connCable.cable_id);
+                      }}
+                      style={{
+                        padding: '6px 8px',
+                        borderRadius: '6px',
+                        background: '#15151A',
+                        border: connCable
+                          ? '1px solid rgba(255, 255, 255, 0.14)'
+                          : '1px solid rgba(255, 255, 255, 0.05)',
+                        borderLeft: connCable
+                          ? `2.5px solid ${connCable.color_hex}`
+                          : '1px solid rgba(255, 255, 255, 0.05)',
+                        fontSize: '10.5px',
+                        cursor: connCable ? 'pointer' : 'default',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '2px',
+                      }}
+                    >
+                      <div
+                        className="mono"
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          fontWeight: 600,
+                          color: '#E4E4E7',
+                        }}
+                      >
+                        <span>{p.port_id}</span>
+                        <span style={{ color: '#71717A', fontSize: '9.5px' }}>
+                          {p.world_face}
+                        </span>
+                      </div>
+                      <div
+                        className="mono"
+                        style={{
+                          color: connCable ? '#A1A1AA' : '#52525B',
+                          fontSize: '9.5px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {connCable ? connCable.cable_id : p.connector_type}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : selectedCable && selectedRoute ? (
             <div
-              key={entry.id}
-              data-testid={`mcp-tool-call-${entry.tool}`}
               style={{
-                padding: '7px 9px',
-                borderRadius: '6px',
-                background: '#1E293B',
-                border:
-                  entry.status === 'VALID'
-                    ? '1px solid #334155'
-                    : '1px solid #EF4444',
+                padding: '12px',
+                borderRadius: '8px',
+                background: '#15151A',
+                border: '1px solid rgba(255, 255, 255, 0.09)',
+                borderLeft: `3px solid ${selectedCable.color_hex}`,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '3px',
+                gap: '6px',
               }}
             >
+              <div
+                className="mono"
+                style={{
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  color: '#F4F4F5',
+                }}
+              >
+                {selectedCable.cable_id}
+              </div>
+              <div style={{ fontSize: '11.5px', color: '#A1A1AA' }}>
+                {selectedCable.label ?? selectedCable.cable_type}
+              </div>
+              <div
+                className="mono"
+                style={{ fontSize: '11px', color: '#D4D4D8' }}
+              >
+                {selectedCable.from.instance_id}:{selectedCable.from.port_id} →{' '}
+                {selectedCable.to.instance_id}:{selectedCable.to.port_id}
+              </div>
               <div
                 className="mono"
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: '10.5px',
+                  paddingTop: '6px',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                  fontSize: '11px',
+                  color: '#A1A1AA',
                 }}
               >
-                <span style={{ fontWeight: 700, color: '#F8FAFC' }}>
-                  {entry.tool}()
+                <span>
+                  Spline: {roundTenths(selectedRoute.required_length_mm)}mm
                 </span>
-                <span
+                <span style={{ color: '#10B981', fontWeight: 600 }}>
+                  SKU:{' '}
+                  {(selectedRoute.recommended_commercial_mm / 1000).toFixed(2)}m
+                </span>
+              </div>
+              {onDisconnectCable && (
+                <button
+                  type="button"
+                  data-testid="btn-disconnect-cable"
+                  onClick={() => onDisconnectCable(selectedCable.cable_id)}
                   style={{
-                    fontWeight: 700,
-                    color: entry.status === 'VALID' ? '#34D399' : '#FCA5A5',
+                    marginTop: '6px',
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    background: 'rgba(239, 68, 68, 0.08)',
+                    color: '#FCA5A5',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
                   }}
                 >
-                  {entry.status}
-                </span>
-              </div>
-              <div style={{ fontSize: '11px', color: '#CBD5E1' }}>
-                {entry.summary}
-              </div>
+                  Disconnect Cable ({selectedCable.cable_id})
+                </button>
+              )}
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 3. Selection Inspector (Device or Cable) */}
-      <section
-        data-testid="selection-inspector"
-        style={{
-          padding: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          flex: 1,
-        }}
-      >
-        <div
-          className="mono"
-          style={{ fontSize: '11.5px', fontWeight: 700, color: '#38BDF8' }}
-        >
-          SELECTION INSPECTOR
-        </div>
-
-        {selectedDevice ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          ) : (
             <div
               style={{
                 padding: '12px',
                 borderRadius: '8px',
-                background: '#1E293B',
-                border: '1px solid #334155',
+                background: '#15151A',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+                fontSize: '11.5px',
+                color: '#A1A1AA',
               }}
             >
-              <div
-                style={{ fontSize: '13.5px', fontWeight: 700, color: '#F8FAFC' }}
-              >
-                {selectedDevice.hostname ?? selectedDevice.blueprint.model}
-              </div>
-              <div
-                className="mono"
-                style={{ fontSize: '11px', color: '#38BDF8', marginTop: '2px' }}
-              >
-                {selectedDevice.instance_id} • {selectedDevice.blueprint_slug}
-              </div>
-              <div
-                className="mono"
-                style={{ fontSize: '11px', color: '#94A3B8', marginTop: '6px' }}
-              >
-                Mount: U{selectedDevice.u_position}{' '}
-                {selectedDevice.face.toUpperCase()} (
-                {selectedDevice.mount_target})
-              </div>
-              <div
-                className="mono"
-                style={{ fontSize: '11px', color: '#CBD5E1', marginTop: '2px' }}
-              >
-                Dimensions: {selectedDevice.blueprint.geometry.width_mm} ×{' '}
-                {selectedDevice.blueprint.geometry.height_mm} ×{' '}
-                {selectedDevice.blueprint.geometry.depth_mm} mm
-              </div>
-              <div
-                className="mono"
-                style={{ fontSize: '11px', color: '#FDE68A', marginTop: '2px' }}
-              >
-                Power: {selectedDevice.blueprint.power_and_thermal.idle_watts}W
-                Idle /{' '}
-                {selectedDevice.blueprint.power_and_thermal.max_system_watts}W
-                Max
-              </div>
+              Select any device, sub-module, or 3D cable spline in the viewport
+              to inspect its dimensions, ports, and clearances.
+            </div>
+          )}
+        </section>
+      )}
 
-              {/* Interactive U-Position Move Controls for Top-Level Rackmount Units */}
-              {selectedDevice.mount_target === 'rack-unit' && (
-                <div style={{ marginTop: '10px' }}>
-                  <div
-                    className="mono"
-                    style={{
-                      fontSize: '10px',
-                      color: '#94A3B8',
-                      marginBottom: '5px',
-                    }}
-                  >
-                    MOVE RACK UNIT (LIVE AABB SOLVER):
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                    {Array.from({ length: uCount }, (_, i) => i + 1).map((u) => (
-                      <button
-                        key={u}
-                        type="button"
-                        data-testid={`move-device-u-${u}`}
-                        onClick={() =>
-                          onMoveDeviceU(selectedDevice.instance_id, u)
-                        }
-                        style={{
-                          padding: '3px 7px',
-                          borderRadius: '4px',
-                          border:
-                            selectedDevice.u_position === u
-                              ? '1px solid #38BDF8'
-                              : '1px solid #334155',
-                          background:
-                            selectedDevice.u_position === u
-                              ? '#0284C7'
-                              : '#0F172A',
-                          color: '#F8FAFC',
-                          fontSize: '10.5px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        U{u}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+      {/* 3. 5-Stage Validation Console */}
+      {showDiagnostics && (
+        <section
+          data-testid="validation-console"
+          style={{
+            padding: '14px 16px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <span
+              style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#E4E4E7',
+              }}
+            >
+              5-Stage Validation Checks
+            </span>
+            <span
+              className="mono"
+              style={{
+                fontSize: '10.5px',
+                fontWeight: 600,
+                color: scene.validation.is_valid ? '#10B981' : '#EF4444',
+              }}
+            >
+              {scene.validation.error_count} Errors ·{' '}
+              {scene.validation.warning_count} Warnings
+            </span>
+          </div>
 
-              {onRemoveDevice && (
-                <button
-                  type="button"
-                  data-testid="btn-remove-device"
-                  onClick={() => onRemoveDevice(selectedDevice.instance_id)}
+          {scene.validation.issues.length === 0 ? (
+            <div
+              style={{
+                padding: '10px 12px',
+                borderRadius: '7px',
+                background: '#15151A',
+                border: '1px solid rgba(255, 255, 255, 0.07)',
+                borderLeft: '3px solid #10B981',
+                fontSize: '11.5px',
+                color: '#D4D4D8',
+                lineHeight: 1.45,
+              }}
+            >
+              All spatial AABB clearances, sub-module slots, PoE budgets, and 3D
+              spline cable routes passed validation with 0 collisions.
+            </div>
+          ) : (
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+            >
+              {scene.validation.issues.map((issue, idx) => (
+                <div
+                  key={`${issue.code}-${idx}`}
+                  data-testid={`diagnostic-issue-${issue.code}`}
+                  onClick={() => {
+                    const firstTarget = issue.affected_instances[0];
+                    if (firstTarget) onSelectDevice(firstTarget);
+                  }}
                   style={{
-                    marginTop: '10px',
-                    width: '100%',
-                    padding: '6px 10px',
-                    borderRadius: '5px',
-                    border: '1px solid #EF4444',
-                    background: '#450A0A',
-                    color: '#FCA5A5',
-                    fontSize: '11px',
-                    fontWeight: 700,
+                    padding: '10px 12px',
+                    borderRadius: '7px',
+                    background: '#15151A',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderLeft:
+                      issue.severity === 'ERROR'
+                        ? '3px solid #EF4444'
+                        : '3px solid #F59E0B',
                     cursor: 'pointer',
                   }}
                 >
-                  Remove Device ({selectedDevice.instance_id})
-                </button>
-              )}
+                  <div
+                    className="mono"
+                    style={{
+                      fontSize: '10.5px',
+                      fontWeight: 600,
+                      color:
+                        issue.severity === 'ERROR' ? '#FCA5A5' : '#FDE68A',
+                    }}
+                  >
+                    {issue.severity} · {issue.code}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '11.5px',
+                      color: '#E4E4E7',
+                      marginTop: '4px',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {issue.message}
+                  </div>
+                  {issue.remediation_suggestions.length > 0 && (
+                    <div
+                      className="mono"
+                      style={{
+                        fontSize: '10px',
+                        color: '#93C5FD',
+                        marginTop: '6px',
+                        paddingTop: '6px',
+                        borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                      }}
+                    >
+                      Remediation: {issue.remediation_suggestions[0]}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
+          )}
+        </section>
+      )}
 
-            {/* Device Ports List */}
-            <div
-              className="mono"
-              style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8' }}
-            >
-              PORTS ({selectedDevice.ports.length})
-            </div>
+      {/* 4. Live MCP Agent Tool-Call Feed & Self-Correction Replay */}
+      {showAgent && (
+        <section
+          data-testid="mcp-agent-feed"
+          style={{
+            padding: '14px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <div
               style={{
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '5px',
-                maxHeight: '220px',
-                overflowY: 'auto',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#E4E4E7',
               }}
             >
-              {selectedDevice.ports.map((p) => {
-                const connCable = scene.project.cables.find(
-                  (c) =>
-                    (c.from.instance_id === selectedDevice.instance_id &&
-                      c.from.port_id === p.port_id) ||
-                    (c.to.instance_id === selectedDevice.instance_id &&
-                      c.to.port_id === p.port_id),
-                );
-                return (
-                  <div
-                    key={`${p.port_id}-${p.world_face}`}
-                    onClick={() => {
-                      if (connCable) onSelectCable(connCable.cable_id);
-                    }}
-                    style={{
-                      padding: '6px 8px',
-                      borderRadius: '5px',
-                      background: '#1E293B',
-                      border: connCable
-                        ? `1px solid ${connCable.color_hex}`
-                        : '1px solid #334155',
-                      fontSize: '11px',
-                      cursor: connCable ? 'pointer' : 'default',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <span className="mono" style={{ fontWeight: 700 }}>
-                      {p.port_id} [{p.world_face}]
-                    </span>
-                    <span
-                      className="mono"
-                      style={{
-                        color: connCable ? '#38BDF8' : '#64748B',
-                        fontSize: '10px',
-                      }}
-                    >
-                      {connCable ? connCable.cable_id : p.connector_type}
-                    </span>
-                  </div>
-                );
-              })}
+              <TerminalFeedIcon size={13} style={{ color: '#3B82F6' }} />
+              <span>MCP AGENT TOOL-CALL FEED</span>
             </div>
+            <span
+              className="mono"
+              style={{ color: '#71717A', fontSize: '10.5px' }}
+            >
+              {mcpToolLog.length} Calls
+            </span>
           </div>
-        ) : selectedCable && selectedRoute ? (
-          <div
-            style={{
-              padding: '12px',
-              borderRadius: '8px',
-              background: '#1E293B',
-              border: `1.5px solid ${selectedCable.color_hex}`,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '6px',
-            }}
-          >
+
+          {onSimulateAgentStep && (
             <div
-              className="mono"
               style={{
-                fontSize: '13px',
-                fontWeight: 700,
-                color: selectedCable.color_hex,
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '6px',
               }}
             >
-              ● {selectedCable.cable_id}
-            </div>
-            <div style={{ fontSize: '12px', color: '#F8FAFC' }}>
-              {selectedCable.label ?? selectedCable.cable_type}
-            </div>
-            <div className="mono" style={{ fontSize: '11px', color: '#CBD5E1' }}>
-              From: {selectedCable.from.instance_id}:
-              {selectedCable.from.port_id} ({selectedCable.from.face ?? 'auto'})
-            </div>
-            <div className="mono" style={{ fontSize: '11px', color: '#CBD5E1' }}>
-              To: {selectedCable.to.instance_id}:{selectedCable.to.port_id} (
-              {selectedCable.to.face ?? 'auto'})
-            </div>
-            <div className="mono" style={{ fontSize: '11px', color: '#38BDF8' }}>
-              3D Spline Length: {roundTenths(selectedRoute.required_length_mm)}{' '}
-              mm
-            </div>
-            <div
-              className="mono"
-              style={{ fontSize: '11.5px', fontWeight: 700, color: '#34D399' }}
-            >
-              Commercial Bin:{' '}
-              {(selectedRoute.recommended_commercial_mm / 1000).toFixed(2)} m (
-              {selectedRoute.recommended_commercial_mm} mm)
-            </div>
-            <div className="mono" style={{ fontSize: '10.5px', color: '#94A3B8' }}>
-              Route Case: {selectedRoute.route_case}
-              {selectedRoute.portal_u ? ` (Portal U${selectedRoute.portal_u})` : ''}
-            </div>
-            {(selectedCable.vlan_id !== undefined ||
-              selectedCable.ip_cidr !== undefined) && (
-              <div
-                className="mono"
-                style={{ fontSize: '11px', color: '#FDE68A', fontWeight: 700 }}
-              >
-                VLAN / Subnet:{' '}
-                {selectedCable.vlan_id !== undefined
-                  ? `VLAN ${selectedCable.vlan_id}`
-                  : ''}{' '}
-                {selectedCable.ip_cidr ?? ''}
-              </div>
-            )}
-            {onDisconnectCable && (
               <button
                 type="button"
-                data-testid="btn-disconnect-cable"
-                onClick={() => onDisconnectCable(selectedCable.cable_id)}
+                data-testid="agent-sim-step-collision"
+                onClick={() => onSimulateAgentStep('collision')}
                 style={{
-                  marginTop: '6px',
-                  padding: '6px 10px',
-                  borderRadius: '5px',
-                  border: '1px solid #EF4444',
-                  background: '#450A0A',
-                  color: '#FCA5A5',
-                  fontSize: '11px',
-                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '5px',
+                  padding: '6px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(245, 158, 11, 0.3)',
+                  background: 'rgba(245, 158, 11, 0.08)',
+                  color: '#FDE68A',
+                  fontSize: '10.5px',
+                  fontWeight: 600,
                   cursor: 'pointer',
                 }}
               >
-                Disconnect Cable ({selectedCable.cable_id})
+                <SparklesAiIcon size={11} />
+                <span>1. Trigger Collision</span>
               </button>
-            )}
+              <button
+                type="button"
+                data-testid="agent-sim-step-resolved"
+                onClick={() => onSimulateAgentStep('resolved')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '5px',
+                  padding: '6px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  background: 'rgba(16, 185, 129, 0.08)',
+                  color: '#A7F3D0',
+                  fontSize: '10.5px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                <span>2. LLM Self-Correction</span>
+              </button>
+            </div>
+          )}
+
+          {/* Full-Height Non-Clipped Timeline Cards */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {mcpToolLog.map((entry) => (
+              <div
+                key={entry.id}
+                data-testid={`mcp-tool-call-${entry.tool}`}
+                style={{
+                  padding: '9px 11px',
+                  borderRadius: '7px',
+                  background: '#15151A',
+                  border: '1px solid rgba(255, 255, 255, 0.07)',
+                  borderLeft:
+                    entry.status === 'VALID'
+                      ? '2.5px solid #10B981'
+                      : '2.5px solid #EF4444',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                }}
+              >
+                <div
+                  className="mono"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontSize: '10.5px',
+                  }}
+                >
+                  <span style={{ fontWeight: 600, color: '#F4F4F5' }}>
+                    {entry.tool}()
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '9.5px',
+                      fontWeight: 600,
+                      color:
+                        entry.status === 'VALID' ? '#10B981' : '#EF4444',
+                    }}
+                  >
+                    {entry.status}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    fontSize: '11px',
+                    color: '#A1A1AA',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {entry.summary}
+                </div>
+              </div>
+            ))}
           </div>
-        ) : (
-          <div
-            style={{
-              padding: '12px',
-              borderRadius: '8px',
-              background: '#1E293B',
-              fontSize: '12px',
-              color: '#94A3B8',
-            }}
-          >
-            Click any device, sub-module, or 3D cable tube in the viewport to
-            inspect its coordinates, ports, and clearance zones.
-          </div>
-        )}
-      </section>
+        </section>
+      )}
     </aside>
   );
 }

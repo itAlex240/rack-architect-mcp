@@ -1,6 +1,7 @@
-export const WEB_VIEWER_VERSION = '0.2.0';
+export const WEB_VIEWER_VERSION = '0.3.0';
 export * from './state/standalone-homelab.js';
 export * from './state/useRackState.js';
+export * from './components/ui/Icons.js';
 export * from './components/ui/AppDashboard.js';
 export * from './components/ui/TopNavBar.js';
 export * from './components/ui/FloatingHudToolbar.js';

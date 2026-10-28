@@ -55,10 +55,10 @@ export function BomAndExportsView({
         height: '100%',
         overflowY: 'auto',
         padding: '24px 28px',
-        background: '#090D16',
+        background: '#09090b',
         display: 'flex',
         flexDirection: 'column',
-        gap: '24px',
+        gap: '20px',
       }}
     >
       {/* Export & Deliverables Bar */}
@@ -66,8 +66,8 @@ export function BomAndExportsView({
         style={{
           padding: '16px 20px',
           borderRadius: '10px',
-          background: '#0F172A',
-          border: '1px solid #1E293B',
+          background: '#121216',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
@@ -76,10 +76,10 @@ export function BomAndExportsView({
         }}
       >
         <div>
-          <div style={{ fontSize: '15px', fontWeight: 700, color: '#F8FAFC' }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#F4F4F5' }}>
             Deterministic CAD &amp; Procurement Deliverables
           </div>
-          <div style={{ fontSize: '12px', color: '#94A3B8', marginTop: '3px' }}>
+          <div style={{ fontSize: '12px', color: '#A1A1AA', marginTop: '3px' }}>
             Export synchronized 2D SVG elevations, wiring schematics, Markdown
             BOM, and 3D glTF 2.0 (.glb) assets.
           </div>
@@ -99,11 +99,11 @@ export function BomAndExportsView({
             style={{
               padding: '7px 12px',
               borderRadius: '6px',
-              border: '1px solid #38BDF8',
-              background: '#082F49',
-              color: '#38BDF8',
+              border: '1px solid rgba(59, 130, 246, 0.35)',
+              background: 'rgba(59, 130, 246, 0.12)',
+              color: '#93C5FD',
               fontSize: '12px',
-              fontWeight: 700,
+              fontWeight: 600,
               cursor: 'pointer',
             }}
           >
@@ -123,11 +123,11 @@ export function BomAndExportsView({
             style={{
               padding: '7px 12px',
               borderRadius: '6px',
-              border: '1px solid #10B981',
-              background: '#064E3B',
-              color: '#34D399',
+              border: '1px solid rgba(16, 185, 129, 0.35)',
+              background: 'rgba(16, 185, 129, 0.12)',
+              color: '#6EE7B7',
               fontSize: '12px',
-              fontWeight: 700,
+              fontWeight: 600,
               cursor: 'pointer',
             }}
           >
@@ -147,11 +147,11 @@ export function BomAndExportsView({
             style={{
               padding: '7px 12px',
               borderRadius: '6px',
-              border: '1px solid #F59E0B',
-              background: '#78350F',
-              color: '#FDE68A',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              background: '#18181d',
+              color: '#F4F4F5',
               fontSize: '12px',
-              fontWeight: 700,
+              fontWeight: 600,
               cursor: 'pointer',
             }}
           >
@@ -171,11 +171,11 @@ export function BomAndExportsView({
             style={{
               padding: '7px 12px',
               borderRadius: '6px',
-              border: '1px solid #475569',
-              background: '#1E293B',
-              color: '#E2E8F0',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              background: '#18181d',
+              color: '#A1A1AA',
               fontSize: '12px',
-              fontWeight: 600,
+              fontWeight: 500,
               cursor: 'pointer',
             }}
           >
@@ -189,11 +189,11 @@ export function BomAndExportsView({
             style={{
               padding: '7px 12px',
               borderRadius: '6px',
-              border: '1px solid #A855F7',
-              background: '#3B0764',
-              color: '#E9D5FF',
+              border: '1px solid rgba(168, 85, 247, 0.35)',
+              background: 'rgba(168, 85, 247, 0.12)',
+              color: '#D8B4FE',
               fontSize: '12px',
-              fontWeight: 700,
+              fontWeight: 600,
               textDecoration: 'none',
               display: 'inline-flex',
               alignItems: 'center',
@@ -209,15 +209,18 @@ export function BomAndExportsView({
         style={{
           padding: '18px 20px',
           borderRadius: '10px',
-          background: '#0F172A',
-          border: '1px solid #1E293B',
+          background: '#121216',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
         }}
       >
         <h3
           style={{
             margin: '0 0 12px 0',
-            fontSize: '14px',
-            color: '#38BDF8',
+            fontSize: '12.5px',
+            fontWeight: 600,
+            letterSpacing: '0.03em',
+            textTransform: 'uppercase',
+            color: '#A1A1AA',
           }}
         >
           1. Mounted Equipment &amp; Sub-Module Schedule (
@@ -233,45 +236,47 @@ export function BomAndExportsView({
           <thead>
             <tr
               style={{
-                borderBottom: '1px solid #334155',
-                color: '#94A3B8',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.09)',
+                color: '#71717A',
                 textAlign: 'left',
               }}
             >
-              <th style={{ padding: '8px' }}>U / Slot</th>
-              <th style={{ padding: '8px' }}>Face</th>
-              <th style={{ padding: '8px' }}>Instance / Hostname</th>
-              <th style={{ padding: '8px' }}>Manufacturer &amp; Model</th>
-              <th style={{ padding: '8px' }}>Dimensions (mm)</th>
-              <th style={{ padding: '8px' }}>Max Draw</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>U / Slot</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Face</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Instance / Hostname</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Manufacturer &amp; Model</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Dimensions (mm)</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Max Draw</th>
             </tr>
           </thead>
           <tbody>
             {scene.geometry.devices.map((dev) => (
               <tr
                 key={dev.instance_id}
-                style={{ borderBottom: '1px solid #1E293B' }}
+                style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}
               >
-                <td className="mono" style={{ padding: '8px', color: '#38BDF8' }}>
+                <td className="mono" style={{ padding: '8px', color: '#93C5FD' }}>
                   U{dev.u_position}
                   {dev.slot_id ? ` • ${dev.slot_id}` : ''}
                 </td>
-                <td className="mono" style={{ padding: '8px' }}>
+                <td className="mono" style={{ padding: '8px', color: '#A1A1AA' }}>
                   {dev.face.toUpperCase()}
                 </td>
-                <td className="mono" style={{ padding: '8px', fontWeight: 700 }}>
+                <td className="mono" style={{ padding: '8px', fontWeight: 600, color: '#F4F4F5' }}>
                   {dev.hostname ?? dev.instance_id}{' '}
-                  <span style={{ color: '#64748B' }}>({dev.instance_id})</span>
+                  <span style={{ color: '#71717A', fontWeight: 400 }}>
+                    ({dev.instance_id})
+                  </span>
                 </td>
-                <td style={{ padding: '8px' }}>
+                <td style={{ padding: '8px', color: '#E4E4E7' }}>
                   {dev.blueprint.manufacturer} {dev.blueprint.model}
                 </td>
-                <td className="mono" style={{ padding: '8px', color: '#CBD5E1' }}>
+                <td className="mono" style={{ padding: '8px', color: '#A1A1AA' }}>
                   {dev.blueprint.geometry.width_mm} ×{' '}
                   {dev.blueprint.geometry.height_mm} ×{' '}
                   {dev.blueprint.geometry.depth_mm} mm
                 </td>
-                <td className="mono" style={{ padding: '8px', color: '#FDE68A' }}>
+                <td className="mono" style={{ padding: '8px', color: '#F4F4F5' }}>
                   {dev.blueprint.power_and_thermal.max_system_watts} W
                 </td>
               </tr>
@@ -285,15 +290,18 @@ export function BomAndExportsView({
         style={{
           padding: '18px 20px',
           borderRadius: '10px',
-          background: '#0F172A',
-          border: '1px solid #1E293B',
+          background: '#121216',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
         }}
       >
         <h3
           style={{
             margin: '0 0 12px 0',
-            fontSize: '14px',
-            color: '#10B981',
+            fontSize: '12.5px',
+            fontWeight: 600,
+            letterSpacing: '0.03em',
+            textTransform: 'uppercase',
+            color: '#A1A1AA',
           }}
         >
           2. 3D-Print Fabrication Queue ({printableDevices.length} Carriers •{' '}
@@ -309,17 +317,17 @@ export function BomAndExportsView({
           <thead>
             <tr
               style={{
-                borderBottom: '1px solid #334155',
-                color: '#94A3B8',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.09)',
+                color: '#71717A',
                 textAlign: 'left',
               }}
             >
-              <th style={{ padding: '8px' }}>Carrier Instance</th>
-              <th style={{ padding: '8px' }}>Blueprint Slug</th>
-              <th style={{ padding: '8px' }}>Material</th>
-              <th style={{ padding: '8px' }}>Filament</th>
-              <th style={{ padding: '8px' }}>Join Mechanism</th>
-              <th style={{ padding: '8px' }}>3D CAD Export (.SCAD / .STL)</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Carrier Instance</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Blueprint Slug</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Material</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Filament</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Join Mechanism</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>3D CAD Export (.SCAD / .STL)</th>
             </tr>
           </thead>
           <tbody>
@@ -328,24 +336,24 @@ export function BomAndExportsView({
               return (
                 <tr
                   key={dev.instance_id}
-                  style={{ borderBottom: '1px solid #1E293B' }}
+                  style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}
                 >
                   <td
                     className="mono"
-                    style={{ padding: '8px', fontWeight: 700, color: '#34D399' }}
+                    style={{ padding: '8px', fontWeight: 600, color: '#6EE7B7' }}
                   >
                     U{dev.u_position} • {dev.instance_id}
                   </td>
-                  <td className="mono" style={{ padding: '8px' }}>
+                  <td className="mono" style={{ padding: '8px', color: '#E4E4E7' }}>
                     {dev.blueprint_slug}
                   </td>
-                  <td className="mono" style={{ padding: '8px' }}>
+                  <td className="mono" style={{ padding: '8px', color: '#A1A1AA' }}>
                     {pm.material_recommendation}
                   </td>
-                  <td className="mono" style={{ padding: '8px' }}>
+                  <td className="mono" style={{ padding: '8px', color: '#F4F4F5' }}>
                     {pm.filament_grams} g
                   </td>
-                  <td className="mono" style={{ padding: '8px', color: '#94A3B8' }}>
+                  <td className="mono" style={{ padding: '8px', color: '#71717A' }}>
                     {pm.fasteners ?? 'M4 Rack Screws'}
                   </td>
                   <td style={{ padding: '8px' }}>
@@ -365,12 +373,12 @@ export function BomAndExportsView({
                         }
                         style={{
                           padding: '4px 8px',
-                          borderRadius: '4px',
-                          border: '1px solid #38BDF8',
-                          background: '#082F49',
-                          color: '#38BDF8',
+                          borderRadius: '5px',
+                          border: '1px solid rgba(59, 130, 246, 0.35)',
+                          background: 'rgba(59, 130, 246, 0.12)',
+                          color: '#93C5FD',
                           fontSize: '10.5px',
-                          fontWeight: 700,
+                          fontWeight: 600,
                           cursor: 'pointer',
                         }}
                       >
@@ -391,12 +399,12 @@ export function BomAndExportsView({
                         }
                         style={{
                           padding: '4px 8px',
-                          borderRadius: '4px',
-                          border: '1px solid #10B981',
-                          background: '#064E3B',
-                          color: '#34D399',
+                          borderRadius: '5px',
+                          border: '1px solid rgba(16, 185, 129, 0.35)',
+                          background: 'rgba(16, 185, 129, 0.12)',
+                          color: '#6EE7B7',
                           fontSize: '10.5px',
-                          fontWeight: 700,
+                          fontWeight: 600,
                           cursor: 'pointer',
                         }}
                       >
@@ -416,15 +424,18 @@ export function BomAndExportsView({
         style={{
           padding: '18px 20px',
           borderRadius: '10px',
-          background: '#0F172A',
-          border: '1px solid #1E293B',
+          background: '#121216',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
         }}
       >
         <h3
           style={{
             margin: '0 0 12px 0',
-            fontSize: '14px',
-            color: '#F59E0B',
+            fontSize: '12.5px',
+            fontWeight: 600,
+            letterSpacing: '0.03em',
+            textTransform: 'uppercase',
+            color: '#A1A1AA',
           }}
         >
           3. Step-by-Step Cable Patching Schedule ({scene.project.cables.length}{' '}
@@ -440,17 +451,17 @@ export function BomAndExportsView({
           <thead>
             <tr
               style={{
-                borderBottom: '1px solid #334155',
-                color: '#94A3B8',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.09)',
+                color: '#71717A',
                 textAlign: 'left',
               }}
             >
-              <th style={{ padding: '8px' }}>Cable ID</th>
-              <th style={{ padding: '8px' }}>Type</th>
-              <th style={{ padding: '8px' }}>From Port</th>
-              <th style={{ padding: '8px' }}>To Port</th>
-              <th style={{ padding: '8px' }}>3D Spline Length</th>
-              <th style={{ padding: '8px' }}>Commercial Bin</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Cable ID</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Type</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>From Port</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>To Port</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>3D Spline Length</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Commercial Bin</th>
             </tr>
           </thead>
           <tbody>
@@ -459,33 +470,33 @@ export function BomAndExportsView({
               return (
                 <tr
                   key={cable.cable_id}
-                  style={{ borderBottom: '1px solid #1E293B' }}
+                  style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}
                 >
                   <td
                     className="mono"
                     style={{
                       padding: '8px',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       color: cable.color_hex,
                     }}
                   >
                     ● {cable.cable_id}
                   </td>
-                  <td className="mono" style={{ padding: '8px' }}>
+                  <td className="mono" style={{ padding: '8px', color: '#A1A1AA' }}>
                     {cable.cable_type}
                   </td>
-                  <td className="mono" style={{ padding: '8px' }}>
+                  <td className="mono" style={{ padding: '8px', color: '#E4E4E7' }}>
                     {cable.from.instance_id}:{cable.from.port_id}
                   </td>
-                  <td className="mono" style={{ padding: '8px' }}>
+                  <td className="mono" style={{ padding: '8px', color: '#E4E4E7' }}>
                     {cable.to.instance_id}:{cable.to.port_id}
                   </td>
-                  <td className="mono" style={{ padding: '8px', color: '#94A3B8' }}>
+                  <td className="mono" style={{ padding: '8px', color: '#A1A1AA' }}>
                     {route ? `${roundTenths(route.required_length_mm)} mm` : '—'}
                   </td>
                   <td
                     className="mono"
-                    style={{ padding: '8px', fontWeight: 700, color: '#38BDF8' }}
+                    style={{ padding: '8px', fontWeight: 600, color: '#F4F4F5' }}
                   >
                     {route
                       ? `${(route.recommended_commercial_mm / 1000).toFixed(2)} m (${route.recommended_commercial_mm} mm)`

@@ -43,7 +43,7 @@ export function SvgPanZoomViewer({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: '#090D16',
+        background: '#09090b',
         overflow: 'hidden',
       }}
     >
@@ -52,8 +52,8 @@ export function SvgPanZoomViewer({
         style={{
           height: '44px',
           padding: '0 16px',
-          background: '#0F172A',
-          borderBottom: '1px solid #1E293B',
+          background: '#0e0e11',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -61,23 +61,41 @@ export function SvgPanZoomViewer({
         }}
       >
         <div
-          className="mono"
-          style={{ fontSize: '12px', fontWeight: 700, color: '#38BDF8' }}
+          style={{
+            fontSize: '12px',
+            fontWeight: 600,
+            color: '#F4F4F5',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
         >
-          {title} ({filename})
+          <span>{title}</span>
+          <span
+            className="mono"
+            style={{
+              fontSize: '11px',
+              color: '#71717A',
+              fontWeight: 500,
+            }}
+          >
+            ({filename})
+          </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <button
             type="button"
             data-testid="svg-zoom-out"
-            onClick={() => setZoom((z) => Math.max(0.35, Number((z - 0.15).toFixed(2))))}
+            onClick={() =>
+              setZoom((z) => Math.max(0.35, Number((z - 0.15).toFixed(2))))
+            }
             style={{
               padding: '4px 10px',
               borderRadius: '5px',
-              border: '1px solid #334155',
-              background: '#1E293B',
-              color: '#F8FAFC',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
+              background: '#18181d',
+              color: '#F4F4F5',
               cursor: 'pointer',
               fontSize: '11.5px',
             }}
@@ -86,20 +104,27 @@ export function SvgPanZoomViewer({
           </button>
           <span
             className="mono"
-            style={{ fontSize: '11.5px', color: '#CBD5E1', minWidth: '52px', textAlign: 'center' }}
+            style={{
+              fontSize: '11.5px',
+              color: '#A1A1AA',
+              minWidth: '52px',
+              textAlign: 'center',
+            }}
           >
             {Math.round(zoom * 100)}%
           </span>
           <button
             type="button"
             data-testid="svg-zoom-in"
-            onClick={() => setZoom((z) => Math.min(3.5, Number((z + 0.15).toFixed(2))))}
+            onClick={() =>
+              setZoom((z) => Math.min(3.5, Number((z + 0.15).toFixed(2))))
+            }
             style={{
               padding: '4px 10px',
               borderRadius: '5px',
-              border: '1px solid #334155',
-              background: '#1E293B',
-              color: '#F8FAFC',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
+              background: '#18181d',
+              color: '#F4F4F5',
               cursor: 'pointer',
               fontSize: '11.5px',
             }}
@@ -116,9 +141,9 @@ export function SvgPanZoomViewer({
             style={{
               padding: '4px 10px',
               borderRadius: '5px',
-              border: '1px solid #334155',
-              background: '#1E293B',
-              color: '#94A3B8',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
+              background: '#18181d',
+              color: '#A1A1AA',
               cursor: 'pointer',
               fontSize: '11.5px',
             }}
@@ -132,10 +157,10 @@ export function SvgPanZoomViewer({
             style={{
               padding: '5px 12px',
               borderRadius: '5px',
-              border: '1px solid #0284C7',
-              background: '#082F49',
-              color: '#38BDF8',
-              fontWeight: 700,
+              border: '1px solid rgba(59, 130, 246, 0.35)',
+              background: 'rgba(59, 130, 246, 0.12)',
+              color: '#93C5FD',
+              fontWeight: 600,
               cursor: 'pointer',
               fontSize: '11.5px',
             }}

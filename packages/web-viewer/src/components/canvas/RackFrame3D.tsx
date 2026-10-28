@@ -44,9 +44,9 @@ export function RackFrame3D({ rack, xrayMode, doorOpen }: RackFrame3DProps) {
         <mesh key={`post-${idx}`} position={[px!, py!, pz!]}>
           <boxGeometry args={[postSize, totalHeight + postSize * 2, postSize]} />
           <meshStandardMaterial
-            color="#1E293B"
-            metalness={0.75}
-            roughness={0.28}
+            color="#3F3F46"
+            metalness={0.68}
+            roughness={0.32}
             transparent={xrayMode}
             opacity={frameOpacity}
             depthWrite={!xrayMode}
@@ -68,9 +68,9 @@ export function RackFrame3D({ rack, xrayMode, doorOpen }: RackFrame3DProps) {
             ]}
           />
           <meshStandardMaterial
-            color="#0F172A"
-            metalness={0.65}
-            roughness={0.38}
+            color="#27272A"
+            metalness={0.58}
+            roughness={0.42}
             transparent={xrayMode}
             opacity={frameOpacity}
             depthWrite={!xrayMode}
@@ -88,9 +88,9 @@ export function RackFrame3D({ rack, xrayMode, doorOpen }: RackFrame3DProps) {
         <mesh key={`rail-${idx}`} position={[rx!, ry!, rz!]}>
           <boxGeometry args={[railWidth, totalHeight, 3.0]} />
           <meshStandardMaterial
-            color="#334155"
-            metalness={0.8}
-            roughness={0.25}
+            color="#71717A"
+            metalness={0.78}
+            roughness={0.26}
             transparent={xrayMode}
             opacity={frameOpacity}
             depthWrite={!xrayMode}

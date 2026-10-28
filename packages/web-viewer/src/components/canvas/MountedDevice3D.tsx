@@ -90,19 +90,63 @@ export function MountedDevice3D({
           color={chassisColor}
           metalness={matParams.metalness}
           roughness={matParams.roughness}
-          emissive={isSelected ? '#0284C7' : '#000000'}
-          emissiveIntensity={isSelected ? 0.32 : 0}
+          emissive={isSelected ? '#3B82F6' : '#000000'}
+          emissiveIntensity={isSelected ? 0.18 : 0}
           transparent={xrayMode}
-          opacity={xrayMode ? 0.15 : 1.0}
+          opacity={xrayMode ? 0.16 : 1.0}
           depthWrite={!xrayMode}
         />
       </mesh>
+
+      {/* Recessed Front Faceplate Bezel & Power Status LED */}
+      {device.blueprint.category !== 'keystone-module' &&
+        device.blueprint.category !== 'brush-panel' && (
+          <>
+            <mesh
+              position={[
+                cx,
+                cy,
+                (device.face === 'front' ? box.min.z - 0.5 : box.max.z + 0.5) +
+                  offsetZ,
+              ]}
+              onClick={handleClick}
+            >
+              <boxGeometry
+                args={[Math.max(8, w - 6), Math.max(6, h - 4), 1.0]}
+              />
+              <meshStandardMaterial
+                color={chassisColor}
+                metalness={Math.min(0.85, matParams.metalness + 0.15)}
+                roughness={Math.max(0.18, matParams.roughness - 0.12)}
+                transparent={xrayMode}
+                opacity={xrayMode ? 0.18 : 1.0}
+                depthWrite={!xrayMode}
+              />
+            </mesh>
+            {/* Subtle Emerald Power Status LED */}
+            <mesh
+              position={[
+                box.max.x - 10,
+                box.max.y - 6,
+                (device.face === 'front' ? box.min.z - 1.1 : box.max.z + 1.1) +
+                  offsetZ,
+              ]}
+            >
+              <boxGeometry args={[2.6, 2.6, 0.8]} />
+              <meshStandardMaterial
+                color="#10B981"
+                emissive="#10B981"
+                emissiveIntensity={0.9}
+              />
+            </mesh>
+          </>
+        )}
 
       {/* Selection Wireframe Outline */}
       {isSelected && (
         <mesh position={[cx, cy, cz]}>
           <boxGeometry args={[w + 1.5, h + 1.5, d + 1.5]} />
-          <meshBasicMaterial color="#38BDF8" wireframe />
+          <meshBasicMaterial color="#3B82F6" wireframe />
         </mesh>
       )}
 

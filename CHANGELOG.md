@@ -5,6 +5,18 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-10-28
+
+### Changed & Improved
+- **Precision Hardware & CAD Studio Redesign (`@rack-mcp/web-viewer`):**
+  - Replaced the navy-blue/neon-cyan aesthetic (`#090D16` / `#38BDF8`) with a neutral Carbon/Zinc engineering studio palette (`#09090b`, `#0e0e11`, `#121216`, `#18181d`) and `1px` translucent hairline borders (`rgba(255,255,255,0.07)`), inspired by Linear, Ubiquiti UniFi Design Center, and Shapr3D.
+  - Added [`packages/web-viewer/src/styles/studio.css`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/styles/studio.css) with design tokens, `font-variant-numeric: tabular-nums` for telemetry alignment, and custom dark scrollbars.
+  - Added [`packages/web-viewer/src/components/ui/Icons.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/Icons.tsx) with 12 geometric vector SVG icons (`1.5px` stroke) replacing emoji-based buttons.
+  - Redesigned [`TopNavBar.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/TopNavBar.tsx) into a single-line `52px` studio header with zero text wrapping or clipping, a segmented 4-view switcher, compact status indicator dots, and icon buttons.
+  - Moved [`FloatingHudToolbar.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/FloatingHudToolbar.tsx) to a floating **Bottom-Center CAD Dock** (`bottom: 18px`, `backdropFilter: blur(14px)`) so the 3D rack top never collides with UI controls.
+  - Redesigned [`InspectorSidebar.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/InspectorSidebar.tsx) with a sticky 4-way section filter (`All` | `Element` | `Checks` | `MCP`), eliminating nested scroll traps (`maxHeight: 165px`) and replacing neon box borders with clean `2.5px` left severity accent bars.
+  - Enhanced 3D rack frame contrast and hardware detail in [`RackFrame3D.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/canvas/RackFrame3D.tsx), [`MountedDevice3D.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/canvas/MountedDevice3D.tsx), and [`RackSceneCanvas.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/canvas/RackSceneCanvas.tsx) (anodized gunmetal posts, brushed steel EIA-310 rails, recessed front faceplates, and emerald status LEDs).
+
 ## [0.2.0] - 2026-10-28
 
 ### Added

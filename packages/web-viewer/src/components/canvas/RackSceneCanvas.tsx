@@ -220,7 +220,7 @@ export function RackSceneCanvas({
         width: '100%',
         height: '100%',
         background:
-          'radial-gradient(circle at 50% 35%, #131c31 0%, #090d16 75%)',
+          'radial-gradient(circle at 50% 38%, #18181f 0%, #09090b 78%)',
         overflow: 'hidden',
       }}
     >
@@ -241,10 +241,14 @@ export function RackSceneCanvas({
             onSelectCable(null);
           }}
         >
-          <ambientLight intensity={0.75} />
-          <directionalLight position={[320, 620, -480]} intensity={1.35} />
-          <directionalLight position={[-280, 420, 620]} intensity={0.95} />
-          <pointLight position={[panelWidthMm / 2, totalHeightMm / 2, -120]} intensity={0.6} color="#38BDF8" />
+          <ambientLight intensity={1.05} />
+          <directionalLight position={[360, 680, -520]} intensity={1.65} />
+          <directionalLight position={[-320, 480, 640]} intensity={1.15} />
+          <pointLight
+            position={[panelWidthMm / 2, totalHeightMm / 2, -160]}
+            intensity={0.75}
+            color="#E4E4E7"
+          />
 
           <CameraPresetController
             preset={cameraPreset}
@@ -256,7 +260,7 @@ export function RackSceneCanvas({
 
           {/* Reference Floor Grid in Millimeters */}
           <gridHelper
-            args={[1200, 24, '#1E293B', '#0F172A']}
+            args={[1200, 24, '#27272A', '#141418']}
             position={[panelWidthMm / 2, -22, railDepthMm / 2]}
           />
 
