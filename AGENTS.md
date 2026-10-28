@@ -133,3 +133,22 @@ Every contribution across all packages MUST adhere to these zero-compromise engi
    * Never throw raw exceptions from tool `execute()` handlers (exception messages are not forwarded to the agent); always return structured diagnostic objects.
 4. **3D Canvas & HiDPI Rendering:**
    * Manage canvas sizing via a single `ResizeObserver` outside the render/`onpaint` loop using `devicePixelContentBoxSize` (falling back to `Math.round(entry.contentRect.width * window.devicePixelRatio)`) to prevent blurriness and memory leaks.
+
+---
+
+## 9. Automatic Semantic Versioning & Release Protocol (Mandatory)
+
+Whenever publishing a release or pushing a completed feature/fix batch, **automatically determine and bump the version number based on the scope of the release** without waiting for the user to remind you:
+
+1. **Version Increment Rules (`MAJOR.MINOR.PATCH`):**
+   * **`PATCH` (`0.x.Y` -> `0.x.(Y+1)`):** Bugfixes, security/Dependabot/CodeQL patches, STL/SVG/exporter refinements, documentation/skill updates, or adding new hardware blueprints to `@rack-mcp/hardware-catalog`.
+   * **`MINOR` (`0.X.y` -> `0.(X+1).0`):** New MCP tools, new exporter formats, new validation stages/diagnostic codes, major 3D/2D Web-Viewer features, or new schema capabilities.
+   * **`MAJOR` (`X.y.z` -> `(X+1).0.0`):** Breaking changes to `rack.yaml` schema, MCP tool contracts, or a major milestone release.
+2. **Mandatory Synchronized Files on Every Version Bump:**
+   Every release MUST update all of the following files in lockstep before creating and pushing the git tag `vX.Y.Z`:
+   * Root `package.json` and all 6 workspace `packages/*/package.json` files (`core-domain`, `hardware-catalog`, `exporters`, `mcp-server`, `web-viewer`, `cli`).
+   * `packages/mcp-server/src/mcp/server.ts` (`version: 'X.Y.Z'`).
+   * `packages/web-viewer/src/index.ts` (`export const WEB_VIEWER_VERSION = 'X.Y.Z';`).
+   * `CHANGELOG.md` (new `## [X.Y.Z] - YYYY-MM-DD` entry).
+   * `docs/RELEASE_NOTES.md` (update header `# 🏗️ RackArchitect MCP vX.Y.Z`, intro line, and the `> ✨ Neu in Version vX.Y.Z:` box so the GitHub Release page always matches the tag).
+   * Whenever hardware blueprints are added or modified in `packages/hardware-catalog/catalog/`, regenerate `packages/hardware-catalog/src/embedded-catalog.ts`, run `pnpm validate:catalog`, and update blueprint counts/tables in `README.md`, `packages/hardware-catalog/README.md`, `docs/COMPLETE_SYSTEM_HANDBOOK.md`, `skills/rack-architect/SKILL.md`, and `.agents/skills/rack-architect/SKILL.md`.
