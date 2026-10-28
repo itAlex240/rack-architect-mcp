@@ -5,6 +5,7 @@ import { OrbitControls } from '@react-three/drei';
 import {
   EIA_310_SPECS,
   MM_PER_U,
+  evaluateCentripetalCatmullRomSpline,
   isPowerCableType,
   type CableConnection,
   type ComputedDeviceGeometry,
@@ -169,30 +170,34 @@ function ExternalBuildingDrops3D({
       const rearFaceZ = ppDev.chassis_box.max.z + offsetZ + 2.2;
 
       const conduitZ = Math.min(
-        railDepthMm - 25,
-        Math.max(rearFaceZ + 85, railDepthMm * 0.42),
+        railDepthMm - 24,
+        Math.max(rearFaceZ + 90, railDepthMm * 0.46),
       );
       const conduitY =
-        ext.entry_position === 'bottom-rear' ? -18 : totalHeightMm + 22;
+        ext.entry_position === 'bottom-rear'
+          ? Math.max(7.5, portY - 12.0)
+          : Math.min(totalHeightMm - 7.5, portY + 12.0);
       const spreadX =
         panelWidthMm / 2 +
         (idx - (externalEndpoints.length - 1) / 2) *
-          Math.min(8.5, (panelWidthMm * 0.68) / Math.max(1, externalEndpoints.length));
-      const dropZ = conduitZ + (idx % 2) * 5.5;
+          Math.min(7.5, (panelWidthMm * 0.62) / Math.max(1, externalEndpoints.length));
+      const dropZ = conduitZ + (idx % 2) * 4.5;
+      const combZ = rearFaceZ + 32 + (idx % 4) * 5.2;
 
-      const pts = [
-        new THREE.Vector3(spreadX, conduitY, dropZ),
-        new THREE.Vector3(
-          spreadX * 0.5 + portX * 0.5,
-          portY + (ext.entry_position === 'bottom-rear' ? -18 : 22),
-          dropZ - 14,
-        ),
-        new THREE.Vector3(portX, portY, rearFaceZ + 22),
-        new THREE.Vector3(portX, portY, rearFaceZ),
-      ];
+      const splinePts = evaluateCentripetalCatmullRomSpline(
+        [
+          { x: spreadX, y: conduitY, z: dropZ },
+          { x: spreadX, y: conduitY, z: combZ },
+          { x: portX, y: conduitY, z: combZ },
+          { x: portX, y: portY, z: rearFaceZ + 16 },
+          { x: portX, y: portY, z: rearFaceZ },
+        ],
+        16,
+      );
+      const pts = splinePts.map((p) => new THREE.Vector3(p.x, p.y, p.z));
 
       const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal', 0.5);
-      const tubeGeo = new THREE.TubeGeometry(curve, 36, 1.95, 10, false);
+      const tubeGeo = new THREE.TubeGeometry(curve, 64, 1.85, 10, false);
 
       items.push({
         ext,
@@ -219,17 +224,19 @@ function ExternalBuildingDrops3D({
   const firstPpDev = devicesById.get(
     externalEndpoints[0]?.patch_panel_instance_id ?? '',
   );
+  const firstPortY =
+    firstPpDev?.ports[0]?.world_position.y ?? totalHeightMm - MM_PER_U / 2;
   const firstRearZ =
     (firstPpDev?.chassis_box.max.z ?? 35) +
     computeDeviceExplodeOffsetZMm(firstPpDev, explodeZMm);
   const collarZ = Math.min(
-    railDepthMm - 25,
-    Math.max(firstRearZ + 85, railDepthMm * 0.42),
+    railDepthMm - 24,
+    Math.max(firstRearZ + 90, railDepthMm * 0.46),
   );
   const collarY =
     externalEndpoints[0]?.entry_position === 'bottom-rear'
-      ? -18
-      : totalHeightMm + 22;
+      ? Math.max(7.5, firstPortY - 12.0)
+      : Math.min(totalHeightMm - 7.5, firstPortY + 12.0);
   const collarWidth = Math.min(
     panelWidthMm * 0.52,
     Math.max(70, externalEndpoints.length * 6.5 + 28),

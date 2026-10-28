@@ -5,6 +5,16 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.6] - 2026-10-28
+
+### Fixed
+- **Zero Cable-Through-Rack-Rail / Frame Penetration, Convex-Hull-Bounded De Casteljau Corner Fillets & Clean Rear/Top Conduit Routing (`@rack-mcp/core-domain`, `@rack-mcp/web-viewer`):**
+  - Replaced outward-bulging Barry-Goldman Catmull-Rom corner interpolation in [`catmull-rom-router.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/routing/catmull-rom-router.ts) (`evaluateCentripetalCatmullRomSpline`) with **De Casteljau quadratic Bezier inner corner fillets** ($C^1/C^2$ continuous), mathematically guaranteeing **0.0000 mm outward corner overshoot** and zero S-wave oscillation along straight duct runs while preserving exact endpoint clamping (`splinePoints[0] === P_start`, `splinePoints[last] === P_end`).
+  - Shifted vertical side-duct margins from `[5.5, 12.5, 19.5]` to `[railWidth + 6.0, railWidth + 12.5, railWidth + 19.0]` (`[21.875, 28.375, 34.875] mm` on 10"/19" racks) and clamped `computePortRiserX` so cables **never pass through the 4 vertical EIA-310 mounting rails (`X ∈ [0, 15.875 mm]` / `[W - 15.875, W]`) or the 4 corner posts**.
+  - Bounded interior rear vertical duct Z-planes strictly inside `[maxFrontDeviceZ + 10 mm, rail_depth_mm - 8.5 mm]` (`195–231.5 mm` in 240 mm 10-inch racks; `335–391.5 mm` in 400 mm 19-inch racks) so internal rear LAN/power cables never loop out the back of the rack frame.
+  - Updated `ExternalBuildingDrops3D` in [`RackSceneCanvas.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/canvas/RackSceneCanvas.tsx) so the rear building cable trunk collar and drop tubes sit strictly inside the upper rear aperture below the top steel roof plate (`Y <= totalHeightMm - 7.5 mm`) and above the lower switch chassis (`Y >= portY`), eliminating both roof-plate and switch-chassis clipping.
+  - Aligned 10G SFP+ DAC ports (`sfp4..sfp8`) and left/right PoE/Proxmox ports (`eth2`, `eth23`, `eth24`) in [`examples/19inch-enterprise/rack.yaml`](file:///home/alexb/projects/rack-designer/examples/19inch-enterprise/rack.yaml) so all core SFP+ trunks route as short vertical C-arches (`|dX| <= 48 mm`) and left/right bay cables stay on their respective side of the rack.
+
 ## [0.4.5] - 2026-10-28
 
 ### Added & Improved

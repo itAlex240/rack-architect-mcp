@@ -1,20 +1,21 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.4.5` — 3D/2D Rack-Planer & 3D-Druck-Paket
+# 🏗️ RackArchitect MCP `v0.4.6` — 3D/2D Rack-Planer & 3D-Druck-Paket
 
-**Willkommen beim Release `v0.4.5` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.4.6` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Neu in den letzten 3 Versionen (`v0.4.3` – `v0.4.5`):**
-> - **Aufgeräumte GitHub-Releases-Seite & automatisches Release-Archiv (`v0.4.5`):** Die GitHub-Releases-Seite behält ab sofort automatisch nur noch die **3 aktuellsten Releases** aktiv im Feed (wobei die Einsteiger-Anleitung bei den beiden Vorgänger-Releases platzsparend eingeklappt wird). Alle älteren Versionen (`v0.1.0` – `v0.4.2`) sind übersichtlich in [`docs/RELEASE_ARCHIVE.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md) und [`CHANGELOG.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/CHANGELOG.md) archiviert.
-> - **Echte Server-Rack-Schaltpläne (ANSI/TIA-942 & Homelab-Best-Practices), 1:1 Port-Alignment & 4 Praxis-Archetypen (`v0.4.4`):** KI-Agenten unterscheiden im [`rack-architect` Skill](https://github.com/itAlex240/rack-architect-mcp/blob/main/skills/rack-architect/SKILL.md) strikt zwischen **Nutzer-Souveränität** (wer genau weiß, was er will, behält zu 100 % die Oberhand) und **Beratungs-Modus** (4 praxiserprobte Referenz-Racks nach echten TIA-942-, UniFi- und DeskPi-Schaltplänen). Zudem richtet `plan_external_endpoints` Patch-Panel-Ports (`p1..p24`) und Switch-Ports (`eth1..eth24`) auf dem einreihigen `USW-Pro-Max-24-PoE` automatisch 1:1 vertikal untereinander aus.
-> - **Verständliche Geräte-Beschreibungen („Was ist dieses Gerät?") & 3D-Druck-Halterung für Desktop-Switches (`v0.4.3`):** Alle 30 Geräte im Katalog zeigen im 3D-Viewer und in der Sidebar ihren echten Herstellernamen + Modell (`Ubiquiti UniFi Flex 2.5G PoE`), ihren Montage-Hinweis (`🖨️ Desktop-Gerät: benötigt 3D-Druck-Halterung / 1U-Fachboden`) sowie die druckfertige 10-Zoll-Aufnahmehalterung (`.SCAD` & `.STL`).
+> **✨ Neu in den letzten 3 Versionen (`v0.4.4` – `v0.4.6`):**
+> - **Kein Kabel-Clipping durch den Rack-Rahmen mehr & De-Casteljau-Kurven-Fillets (`v0.4.6`):** Alle vertikalen Kabelschächte liegen ab sofort garantiert innerhalb der lichten EIA-310-Öffnung (`X >= 21.875 mm`, `0` Treffer an den 4 vertikalen Montageschienen und Eckpfosten). Eine konvex-hüllen-beschränkte De-Casteljau-Kurvenberechnung verhindert jedes Überschwingen an 90°-Knickpunkten (`0.00 mm` Overshoot), hält interne Rückseiten-Kabel komplett innerhalb des Rack-Rahmens und führt externe Haus-Kabel (`top-rear`) sauber unterhalb des Dachblechs ins Patchpanel.
+> - **Aufgeräumte GitHub-Releases-Seite & automatisches Release-Archiv (`v0.4.5`):** Die GitHub-Releases-Seite behält automatisch nur noch die **3 aktuellsten Releases** aktiv im Feed (wobei die Einsteiger-Anleitung bei den beiden Vorgänger-Releases platzsparend eingeklappt wird). Alle älteren Versionen (`v0.1.0` – `v0.4.3`) sind übersichtlich in [`docs/RELEASE_ARCHIVE.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/RELEASE_ARCHIVE.md) und [`CHANGELOG.md`](https://github.com/itAlex240/rack-architect-mcp/blob/main/CHANGELOG.md) archiviert.
+> - **Echte Server-Rack-Schaltpläne (ANSI/TIA-942 & Homelab-Best-Practices), 1:1 Port-Alignment & 4 Praxis-Archetypen (`v0.4.4`):** KI-Agenten unterscheiden im [`rack-architect` Skill](https://github.com/itAlex240/rack-architect-mcp/blob/main/skills/rack-architect/SKILL.md) strikt zwischen **Nutzer-Souveränität** (wer genau weiß, was er will, behält zu 100 % die Oberhand) und **Beratungs-Modus** (4 praxiserprobte Referenz-Racks nach echten TIA-942-, UniFi- und DeskPi-Schaltplänen). Zudem richtet `plan_external_endpoints` Patch-Panel-Ports (`p1..p24`) und Switch-Ports (`eth1..eth24`) automatisch 1:1 vertikal untereinander aus.
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.4.2) im Release-Archiv anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.4.3) im Release-Archiv anzeigen</b></summary>
 
 <br />
 
+- **`v0.4.3`** — Verständliche Geräte-Beschreibungen („Was ist dieses Gerät?"), echter Hersteller + Modellname & 3D-Druck-Halterung für Desktop-Switches (`USW-Flex-2.5G-8-PoE`).
 - **`v0.4.2`** — Fix gegen horizontales Abschneiden in der rechten `InspectorSidebar` (`minmax(0, 1fr)`) & `TopNavBar`.
 - **`v0.4.1`** — 100 % kollisionsfreie 3D-Kabelführung (`0` Kabel-Überlappungen durch `computeMinSplineClearanceMm`).
 - **`v0.4.0`** — Externe Haus- & Raum-Verkabelung (`plan_external_endpoints`), sichtbare 3D-Ports & segmentiertes 3D-Bürstenpanel.

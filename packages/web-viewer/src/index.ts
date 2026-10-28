@@ -1,4 +1,4 @@
-export const WEB_VIEWER_VERSION = '0.4.5';
+export const WEB_VIEWER_VERSION = '0.4.6';
 export * from './state/standalone-homelab.js';
 export * from './state/useRackState.js';
 export * from './components/ui/Icons.js';

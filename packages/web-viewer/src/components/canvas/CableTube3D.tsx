@@ -103,9 +103,10 @@ export function CableTube3D({
         0.5,
       );
 
+      const tubularSegments = Math.max(96, Math.min(192, vectors.length));
       const geometry = new THREE.TubeGeometry(
         curve,
-        64,
+        tubularSegments,
         tubeRadiusMm,
         12,
         false,

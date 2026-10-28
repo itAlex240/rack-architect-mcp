@@ -306,7 +306,7 @@ cables:
       face: front
     to:
       instance_id: sw-core-agg-01
-      port_id: sfp1
+      port_id: sfp5
       face: front
     cable_type: sfp-plus-dac
     color_hex: "#A855F7"
@@ -320,7 +320,7 @@ cables:
       face: front
     to:
       instance_id: sw-core-agg-01
-      port_id: sfp2
+      port_id: sfp6
       face: front
     cable_type: sfp-plus-dac
     color_hex: "#A855F7"
@@ -330,7 +330,7 @@ cables:
   - cable_id: dac-agg-to-poesw-1
     from:
       instance_id: sw-core-agg-01
-      port_id: sfp3
+      port_id: sfp7
       face: front
     to:
       instance_id: sw-poe-core-01
@@ -343,7 +343,7 @@ cables:
   - cable_id: dac-agg-to-poesw-2
     from:
       instance_id: sw-core-agg-01
-      port_id: sfp4
+      port_id: sfp8
       face: front
     to:
       instance_id: sw-poe-core-01
@@ -356,7 +356,7 @@ cables:
   - cable_id: dac-agg-to-udm
     from:
       instance_id: sw-core-agg-01
-      port_id: sfp5
+      port_id: sfp4
       face: front
     to:
       instance_id: udm-pro-sec-01
@@ -370,7 +370,7 @@ cables:
   - cable_id: cross-agg-to-nas
     from:
       instance_id: sw-core-agg-01
-      port_id: sfp6
+      port_id: sfp1
       face: front
     to:
       instance_id: nas-storage-01
@@ -385,7 +385,7 @@ cables:
   - cable_id: poe-sw-to-pi5-witness
     from:
       instance_id: sw-poe-core-01
-      port_id: eth1
+      port_id: eth24
       face: front
     to:
       instance_id: pi5-qdevice-01
@@ -414,7 +414,7 @@ cables:
   - cable_id: cross-pve2-to-poesw
     from:
       instance_id: sw-poe-core-01
-      port_id: eth3
+      port_id: eth23
       face: front
     to:
       instance_id: pve-node-02

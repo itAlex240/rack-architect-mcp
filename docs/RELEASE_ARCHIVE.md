@@ -1,4 +1,4 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.4.2`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.4.3`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md)). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
@@ -6,6 +6,8 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ## 📦 `v0.4.x` Series — 3D Port & Brush-Panel Realism, External Building Drops & Collision-Free Routing
 
+- **[`v0.4.3`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.3) (2026-10-28) — Human-Readable Device Descriptions, Full Manufacturer/Model Titles & 3D-Printed Desktop Switch Cradles:**
+  - Added `description` across all hardware blueprints, displayed full Manufacturer + Model titles alongside `hostname` in the 3D banner and right Inspector Sidebar, and added 3D rendering + `.SCAD`/`.STL` downloads for 10-inch desktop switch adapter cradles (`USW-Flex-2.5G-8-PoE`, `USW-Lite-8-PoE`).
 - **[`v0.4.2`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.2) (2026-10-28) — Inspector Sidebar & TopNavBar Anti-Clipping Fix:**
   - Replaced `1fr 1fr` and `repeat(3, 1fr)` grids in `InspectorSidebar.tsx` with `minmax(0, 1fr)` and `minWidth: 0` ellipsis truncation so long port and building-drop labels never push the right sidebar off-screen.
   - Locked `TopNavBar.tsx` brand badge (`RackArchitect`) with `flexShrink: 0` so the top navigation bar never clips on narrow viewports.

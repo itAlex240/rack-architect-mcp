@@ -1280,11 +1280,43 @@ describe('10-Inch Mini-Rack (8U, 260mm Depth) End-to-End Validation & 3D Routing
     const scene = evaluateRackScene(project, catalog);
     expect(scene.cable_routes).toHaveLength(9);
 
+    const railWidth =
+      (scene.geometry.panel_width_mm - scene.geometry.aperture_width_mm) / 2;
+
     for (let i = 0; i < scene.cable_routes.length; i++) {
       const routeA = scene.cable_routes[i]!;
       const others = scene.cable_routes.slice(0, i);
       const minDist = computeMinSplineClearanceMm(routeA.spline_points, others);
       expect(minDist).toBeGreaterThanOrEqual(6.0);
+
+      // Verify zero outward corner overshoot beyond waypoint bounding box
+      const wpXs = routeA.waypoints.map((w) => w.x);
+      const wpYs = routeA.waypoints.map((w) => w.y);
+      const wpZs = routeA.waypoints.map((w) => w.z);
+      const minWpX = Math.min(...wpXs) - 1e-3;
+      const maxWpX = Math.max(...wpXs) + 1e-3;
+      const minWpY = Math.min(...wpYs) - 1e-3;
+      const maxWpY = Math.max(...wpYs) + 1e-3;
+      const minWpZ = Math.min(...wpZs) - 1e-3;
+      const maxWpZ = Math.max(...wpZs) + 1e-3;
+
+      for (const pt of routeA.spline_points) {
+        expect(pt.x).toBeGreaterThanOrEqual(minWpX);
+        expect(pt.x).toBeLessThanOrEqual(maxWpX);
+        expect(pt.y).toBeGreaterThanOrEqual(minWpY);
+        expect(pt.y).toBeLessThanOrEqual(maxWpY);
+        expect(pt.z).toBeGreaterThanOrEqual(minWpZ);
+        expect(pt.z).toBeLessThanOrEqual(maxWpZ);
+
+        // Verify zero penetration of the 4 EIA-310 vertical mounting rails
+        const inLeftRail = pt.x < railWidth;
+        const inRightRail = pt.x > scene.geometry.panel_width_mm - railWidth;
+        const inFrontRailPlane = pt.z >= -1.0 && pt.z <= 4.0;
+        const inRearRailPlane =
+          pt.z >= scene.geometry.rail_depth_mm - 4.0 &&
+          pt.z <= scene.geometry.rail_depth_mm + 1.0;
+        expect((inLeftRail || inRightRail) && (inFrontRailPlane || inRearRailPlane)).toBe(false);
+      }
     }
   });
 });

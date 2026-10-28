@@ -88,15 +88,15 @@ export function computeHexagonalBundleOffset(
 }
 
 /**
- * Evaluates a Centripetal Catmull-Rom Spline (`alpha = 0.5`) through `waypoints`
- * with explicit endpoint clamping (`[P_start, P_start, A_1, ...middleWaypoints, A_2, P_end, P_end]`)
- * and corner-tangent lever-arm bounding so long duct segments never overshoot
- * past 90-degree bends while `splinePoints[0] === P_start` and `splinePoints[last] === P_end`.
+ * Evaluates a corner-filleted, convex-hull-bounded 3D spline through `waypoints`
+ * with exact endpoint clamping (`splinePoints[0] === P_start`, `splinePoints[last] === P_end`)
+ * and De Casteljau quadratic Bezier inner corner fillets so orthogonal duct runs
+ * have 0.0000mm outward corner overshoot and zero S-wave oscillation.
  */
 export function evaluateCentripetalCatmullRomSpline(
   waypoints: readonly Vector3D[],
   subdivisionsPerSegment = 32,
-  alpha = 0.5
+  _alpha = 0.5
 ): Vector3D[] {
   if (waypoints.length === 0) {
     return [];
@@ -120,10 +120,7 @@ export function evaluateCentripetalCatmullRomSpline(
 
   const pStart = uniquePoints[0]!;
   const pEnd = uniquePoints[uniquePoints.length - 1]!;
-
-  // Endpoint Clamping: Duplicate P_start at the beginning and P_end at the end:
-  // [P_start, P_start, A_1, ...middleWaypoints, A_2, P_end, P_end]
-  const controlPoints: Vector3D[] = [pStart, ...uniquePoints, pEnd];
+  const numSegments = uniquePoints.length - 1;
 
   const lerpPoint = (a: Vector3D, b: Vector3D, weightB: number): Vector3D => {
     const weightA = 1 - weightB;
@@ -134,68 +131,140 @@ export function evaluateCentripetalCatmullRomSpline(
     };
   };
 
-  const clampNeighborArm = (
-    anchor: Vector3D,
-    neighbor: Vector3D,
-    maxArmMm: number
+  const evalQuadBezier = (
+    p0: Vector3D,
+    p1: Vector3D,
+    p2: Vector3D,
+    t: number
   ): Vector3D => {
-    const dist = vec3Distance(anchor, neighbor);
-    if (dist <= maxArmMm || dist <= 1e-4) {
-      return neighbor;
-    }
-    const ratio = maxArmMm / dist;
+    const inv = 1 - t;
+    const c0 = inv * inv;
+    const c1 = 2 * inv * t;
+    const c2 = t * t;
     return {
-      x: anchor.x + (neighbor.x - anchor.x) * ratio,
-      y: anchor.y + (neighbor.y - anchor.y) * ratio,
-      z: anchor.z + (neighbor.z - anchor.z) * ratio
+      x: c0 * p0.x + c1 * p1.x + c2 * p2.x,
+      y: c0 * p0.y + c1 * p1.y + c2 * p2.y,
+      z: c0 * p0.z + c1 * p1.z + c2 * p2.z
     };
   };
 
+  interface CornerFilletGeometry {
+    readonly radiusMm: number;
+    readonly sIn: Vector3D;
+    readonly cIn: Vector3D;
+    readonly apex: Vector3D;
+    readonly cOut: Vector3D;
+    readonly sOut: Vector3D;
+  }
+
+  const corners: CornerFilletGeometry[] = uniquePoints.map((w, idx) => {
+    if (idx === 0 || idx === numSegments) {
+      return {
+        radiusMm: 0,
+        sIn: w,
+        cIn: w,
+        apex: w,
+        cOut: w,
+        sOut: w
+      };
+    }
+
+    const prev = uniquePoints[idx - 1]!;
+    const next = uniquePoints[idx + 1]!;
+    const lenIn = vec3Distance(prev, w);
+    const lenOut = vec3Distance(w, next);
+
+    if (lenIn <= 1e-3 || lenOut <= 1e-3) {
+      return {
+        radiusMm: 0,
+        sIn: w,
+        cIn: w,
+        apex: w,
+        cOut: w,
+        sOut: w
+      };
+    }
+
+    const uIn = {
+      x: (w.x - prev.x) / lenIn,
+      y: (w.y - prev.y) / lenIn,
+      z: (w.z - prev.z) / lenIn
+    };
+    const uOut = {
+      x: (next.x - w.x) / lenOut,
+      y: (next.y - w.y) / lenOut,
+      z: (next.z - w.z) / lenOut
+    };
+
+    const isBootCorner = idx === 1 || idx === numSegments - 1;
+    const maxRadius = isBootCorner ? 4.5 : 10.0;
+    const maxFraction = isBootCorner ? 0.35 : 0.4;
+    const radiusMm = Math.min(maxRadius, lenIn * maxFraction, lenOut * maxFraction);
+
+    const sIn = {
+      x: w.x - uIn.x * radiusMm,
+      y: w.y - uIn.y * radiusMm,
+      z: w.z - uIn.z * radiusMm
+    };
+    const sOut = {
+      x: w.x + uOut.x * radiusMm,
+      y: w.y + uOut.y * radiusMm,
+      z: w.z + uOut.z * radiusMm
+    };
+    const cIn = lerpPoint(sIn, w, 0.5);
+    const cOut = lerpPoint(w, sOut, 0.5);
+    const apex = lerpPoint(cIn, cOut, 0.5);
+
+    return {
+      radiusMm,
+      sIn,
+      cIn,
+      apex,
+      cOut,
+      sOut
+    };
+  });
+
   const splinePoints: Vector3D[] = [];
-  const numSegments = uniquePoints.length - 1;
 
   for (let seg = 0; seg < numSegments; seg++) {
-    const rawP0 = controlPoints[seg]!;
-    const p1 = controlPoints[seg + 1]!;
-    const p2 = controlPoints[seg + 2]!;
-    const rawP3 = controlPoints[seg + 3]!;
+    const startCorner = corners[seg]!;
+    const endCorner = corners[seg + 1]!;
 
-    const spanDist = vec3Distance(p1, p2);
-    const isStartBootSpan = seg === 0;
-    const isEndBootSpan = seg === numSegments - 1;
-    const maxArm0 = isStartBootSpan
-      ? Math.min(4.0, spanDist * 0.2)
-      : Math.min(12.0, spanDist * 0.34);
-    const maxArm3 = isEndBootSpan
-      ? Math.min(4.0, spanDist * 0.2)
-      : Math.min(12.0, spanDist * 0.34);
+    const hasStartFillet = startCorner.radiusMm > 1e-3;
+    const hasEndFillet = endCorner.radiusMm > 1e-3;
 
-    const p0 = clampNeighborArm(p1, rawP0, maxArm0);
-    const p3 = clampNeighborArm(p2, rawP3, maxArm3);
-
-    const d01 = Math.max(Math.pow(vec3Distance(p0, p1), alpha), 1e-4);
-    const d12 = Math.max(Math.pow( spanDist, alpha), 1e-4);
-    const d23 = Math.max(Math.pow(vec3Distance(p2, p3), alpha), 1e-4);
-
-    const t0 = 0;
-    const t1 = t0 + d01;
-    const t2 = t1 + d12;
-    const t3 = t2 + d23;
+    const u1 = hasStartFillet ? 0.28 : 0.0;
+    const u2 = hasEndFillet ? 0.72 : 1.0;
 
     const startStep = seg === 0 ? 0 : 1;
     for (let step = startStep; step <= subdivisionsPerSegment; step++) {
       const u = step / subdivisionsPerSegment;
-      const t = t1 + u * (t2 - t1);
+      let pt: Vector3D;
 
-      const a1 = lerpPoint(p0, p1, (t - t0) / (t1 - t0));
-      const a2 = lerpPoint(p1, p2, (t - t1) / (t2 - t1));
-      const a3 = lerpPoint(p2, p3, (t - t2) / (t3 - t2));
+      if (hasStartFillet && u < u1) {
+        const tau = u / u1;
+        pt = evalQuadBezier(
+          startCorner.apex,
+          startCorner.cOut,
+          startCorner.sOut,
+          tau
+        );
+      } else if (hasEndFillet && u > u2) {
+        const tau = (u - u2) / (1.0 - u2);
+        pt = evalQuadBezier(
+          endCorner.sIn,
+          endCorner.cIn,
+          endCorner.apex,
+          tau
+        );
+      } else {
+        const spanU = Math.max(1e-6, u2 - u1);
+        const tau = (u - u1) / spanU;
+        pt = lerpPoint(startCorner.sOut, endCorner.sIn, tau);
+      }
 
-      const b1 = lerpPoint(a1, a2, (t - t0) / (t2 - t0));
-      const b2 = lerpPoint(a2, a3, (t - t1) / (t3 - t1));
-
-      const c = lerpPoint(b1, b2, (t - t1) / (t2 - t1));
-      splinePoints.push(vec3(c.x, c.y, c.z));
+      splinePoints.push(vec3(pt.x, pt.y, pt.z));
     }
   }
 
@@ -443,12 +512,18 @@ function computePortRiserX(
     return portPos.x;
   }
 
+  const railWidth = (geometry.panel_width_mm - geometry.aperture_width_mm) / 2;
+  const minClearX = roundMm(railWidth + 5.5);
+  const maxClearX = roundMm(geometry.panel_width_mm - railWidth - 5.5);
+  const clampRiserX = (x: number): number =>
+    roundMm(Math.max(minClearX, Math.min(maxClearX, x)));
+
   const dir = preferredDirection >= 0 ? 1 : -1;
-  const cand1 = roundMm(portPos.x + dir * 7.8);
+  const cand1 = clampRiserX(portPos.x + dir * 7.8);
   if (!hasVerticalPortObstruction(cand1)) {
     return cand1;
   }
-  const cand2 = roundMm(portPos.x - dir * 7.8);
+  const cand2 = clampRiserX(portPos.x - dir * 7.8);
   if (!hasVerticalPortObstruction(cand2)) {
     return cand2;
   }
@@ -659,7 +734,7 @@ export function routeSingleCable(
         }
 
         const slot = bridgeBaseIdx + attempt;
-        const bridgeZPlanes = [-25.0, -32.0, -39.0, -46.0, -18.0, -52.5];
+        const bridgeZPlanes = [-23.5, -29.8, -36.1, -42.4, -17.5, -45.5];
         const zPeak = bridgeZPlanes[slot % bridgeZPlanes.length]!;
         const yBoundaryOffsets = [-3.6, 3.6, -10.2, 10.2, 0.0, -6.8, 6.8];
         const yBoundary =
@@ -834,7 +909,14 @@ export function routeSingleCable(
 
     const buildCaseBWaypoints = (attempt: number): Vector3D[] => {
       const slot = basePlaneSlot + attempt;
-      const ductMargins = [5.5, 12.5, 19.5];
+      const railWidth =
+        (geometry.panel_width_mm - geometry.aperture_width_mm) / 2;
+      const innerRailClearX = roundMm(railWidth + 6.0);
+      const ductMargins = [
+        innerRailClearX,
+        roundMm(innerRailClearX + 6.5),
+        roundMm(innerRailClearX + 13.0)
+      ];
       const sideMarginMm =
         ductMargins[Math.floor(slot / 2) % ductMargins.length]!;
       const ductX = roundMm(
@@ -845,7 +927,7 @@ export function routeSingleCable(
 
       if (port1.world_face === 'front') {
         const frontDuctZPlanes = [
-          -31.6, -38.4, -45.2, -24.8, -52.0, -18.0, -58.8, -11.5
+          -25.0, -31.5, -38.0, -18.8, -44.2, -21.8, -28.2, -34.8
         ];
         const zFrontDuct = frontDuctZPlanes[slot % frontDuctZPlanes.length]!;
         const yTrackSlot = Math.floor(slot / frontDuctZPlanes.length);
@@ -887,11 +969,20 @@ export function routeSingleCable(
       }
 
       // Rear Duct Route:
-      const rawBaseRearZ = Math.max(maxFrontDeviceZInSpan + 16.0, 203.0);
-      const baseRearZ = Math.ceil(rawBaseRearZ / 7.0) * 7.0;
-      const maxRearZ = Math.max(baseRearZ + 77.0, geometry.rail_depth_mm + 49.0);
+      const interiorMinRearZ = Math.max(
+        maxFrontDeviceZInSpan + 10.0,
+        Math.min(geometry.rail_depth_mm - 38.0, 194.0)
+      );
+      const interiorMaxRearZ = Math.max(
+        interiorMinRearZ + 14.0,
+        geometry.rail_depth_mm - 8.5
+      );
+      const interiorSpanZ = interiorMaxRearZ - interiorMinRearZ;
+      const rearPlaneSteps = 8;
       const zRearVerticalDuct = roundMm(
-        Math.min(maxRearZ, baseRearZ + (slot % 12) * 7.0)
+        interiorMinRearZ +
+          (((slot * 3) % rearPlaneSteps) * interiorSpanZ) /
+            (rearPlaneSteps - 1)
       );
 
       const yTrackSlot = Math.floor(slot / 3) + attempt;
@@ -915,14 +1006,22 @@ export function routeSingleCable(
       const rX1 = computePortRiserX(geometry, p1, 'rear', yRunner1, 1);
       const rX2 = computePortRiserX(geometry, p2, 'rear', yRunner2, 1);
 
-      const zBehindRearRail = roundMm(a1.z + 8.0 + (slot % 6) * 6.8);
+      const zBehindRearRail = roundMm(a1.z + 5.0 + (slot % 5) * 5.2);
+      const yPassOverStart = roundMm(
+        Math.min(
+          geometry.total_height_mm - 5.0,
+          (fromParent ?? fromDev).u_range[1] * MM_PER_U +
+            4.5 +
+            (slot % 3) * 4.5
+        )
+      );
       const departWaypoints: Vector3D[] =
-        a1.z > zRearVerticalDuct - 6.0
+        a1.z > zRearVerticalDuct - 4.0
           ? [
               vec3(rX1, p1.y, zBehindRearRail),
-              vec3(rX1, yRunner1, zBehindRearRail),
-              vec3(ductX, yRunner1, zBehindRearRail),
-              vec3(ductX, yRunner2, zBehindRearRail)
+              vec3(rX1, yPassOverStart, zBehindRearRail),
+              vec3(ductX, yPassOverStart, zBehindRearRail),
+              vec3(ductX, yPassOverStart, zRearVerticalDuct)
             ]
           : [
               vec3(rX1, p1.y, zRearVerticalDuct),
@@ -930,13 +1029,19 @@ export function routeSingleCable(
               vec3(ductX, yRunner1, zRearVerticalDuct)
             ];
 
-      const zBehindRearRail2 = roundMm(a2.z + 8.0 + (slot % 6) * 6.8);
+      const zBehindRearRail2 = roundMm(a2.z + 5.0 + (slot % 5) * 5.2);
+      const yPassOverEnd = roundMm(
+        Math.min(
+          geometry.total_height_mm - 5.0,
+          (toParent ?? toDev).u_range[1] * MM_PER_U + 4.5 + (slot % 3) * 4.5
+        )
+      );
       const arriveWaypoints: Vector3D[] =
-        a2.z > zRearVerticalDuct + 6.0
+        a2.z > zRearVerticalDuct + 4.0
           ? [
-              vec3(ductX, yRunner2, zRearVerticalDuct),
-              vec3(ductX, yRunner2, zBehindRearRail2),
-              vec3(rX2, yRunner2, zBehindRearRail2),
+              vec3(ductX, yPassOverEnd, zRearVerticalDuct),
+              vec3(ductX, yPassOverEnd, zBehindRearRail2),
+              vec3(rX2, yPassOverEnd, zBehindRearRail2),
               vec3(rX2, p2.y, zBehindRearRail2)
             ]
           : [
@@ -1077,8 +1182,12 @@ export function routeSingleCable(
     const rSlot = rearPlaneBase + attempt * 2;
     const pSlot = portalBase + attempt;
 
+    const useLeftPortalSide =
+      isPower ||
+      (geometry.panel_width_mm > 300.0 &&
+        Math.min(p1.x, p2.x) < geometry.panel_width_mm * 0.45);
     const portalX = roundMm(
-      isPower
+      useLeftPortalSide
         ? 38.0 + (pSlot % 10) * 8.5
         : geometry.panel_width_mm - 38.0 - (pSlot % 10) * 8.5
     );
@@ -1087,15 +1196,24 @@ export function routeSingleCable(
     );
 
     const frontDuctZPlanes = [
-      -31.6, -38.4, -45.2, -24.8, -52.0, -18.0, -58.8, -11.5
+      -25.0, -31.5, -38.0, -18.8, -44.2, -21.8, -28.2, -34.8
     ];
     const zFrontDuct = frontDuctZPlanes[fSlot % frontDuctZPlanes.length]!;
 
-    const rawBaseRearZ = Math.max(maxFrontZForPortal + 18.0, 203.0);
-    const baseRearZ = Math.ceil(rawBaseRearZ / 7.0) * 7.0;
-    const maxRearZ = Math.max(baseRearZ + 77.0, geometry.rail_depth_mm + 49.0);
+    const interiorMinRearZ = Math.max(
+      maxFrontZForPortal + 10.0,
+      Math.min(geometry.rail_depth_mm - 38.0, 194.0)
+    );
+    const interiorMaxRearZ = Math.max(
+      interiorMinRearZ + 14.0,
+      geometry.rail_depth_mm - 8.5
+    );
+    const interiorSpanZ = interiorMaxRearZ - interiorMinRearZ;
+    const rearPlaneSteps = 8;
     const zRearDuct = roundMm(
-      Math.min(maxRearZ, baseRearZ + (rSlot % 12) * 7.0)
+      interiorMinRearZ +
+        (((rSlot * 3) % rearPlaneSteps) * interiorSpanZ) /
+          (rearPlaneSteps - 1)
     );
 
     const yRunner1 = computeDeviceHorizontalRunnerY(
@@ -1125,6 +1243,13 @@ export function routeSingleCable(
       yRunner1,
       1
     );
+    const rX2 = computePortRiserX(
+      geometry,
+      p2,
+      port2.world_face,
+      yRunner2,
+      1
+    );
 
     const b1 = vec3(rX1, p1.y, startDuctZ);
     const dStartRunner = vec3(rX1, yRunner1, startDuctZ);
@@ -1144,8 +1269,8 @@ export function routeSingleCable(
 
     const endArriveWaypoints: Vector3D[] = [
       vec3(portalX, yRunner2, endDuctZ),
-      vec3(p2.x, yRunner2, endDuctZ),
-      vec3(p2.x, p2.y, endDuctZ)
+      vec3(rX2, yRunner2, endDuctZ),
+      vec3(rX2, p2.y, endDuctZ)
     ];
 
     return [
