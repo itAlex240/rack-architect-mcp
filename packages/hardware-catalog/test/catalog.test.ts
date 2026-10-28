@@ -9,16 +9,16 @@ import {
 import { validateCatalogDirectory } from '../src/validate-cli.js';
 
 describe('@rack-mcp/hardware-catalog', () => {
-  it('validates all 60 YAML hardware blueprints on disk with zero schema, port, or slot errors', () => {
+  it('validates all 67 YAML hardware blueprints on disk with zero schema, port, or slot errors', () => {
     const report = validateCatalogDirectory();
-    expect(report.totalFiles).toBe(60);
+    expect(report.totalFiles).toBe(67);
     expect(report.issues).toEqual([]);
-    expect(report.validFiles).toBe(60);
+    expect(report.validFiles).toBe(67);
   });
 
-  it('loads all 60 blueprints in CatalogRegistry with expanded port_groups', () => {
+  it('loads all 67 blueprints in CatalogRegistry with expanded port_groups', () => {
     const all = getAllBlueprints();
-    expect(all.length).toBe(60);
+    expect(all.length).toBe(67);
 
     const flex25g = getBlueprintBySlug('ubiquiti-usw-flex-2-5g-8-poe');
     expect(flex25g).toBeDefined();
@@ -103,6 +103,7 @@ describe('@rack-mcp/hardware-catalog', () => {
 
     const sixInchGear = searchCatalog({ mount_type: '6inch' });
     expect(sixInchGear.map((b) => b.slug).sort()).toEqual([
+      '3dprint-6inch-cover-panel-lines-1u',
       '3dprint-6inch-rpi5-plus-keystone-carrier-1u',
       'generic-6inch-brush-panel-1u',
       'generic-6inch-patch-panel-6port',
@@ -110,6 +111,19 @@ describe('@rack-mcp/hardware-catalog', () => {
       'gl-inet-mt3000-beryl-ax-6inch',
       'ubiquiti-usw-flex-mini-6inch',
     ]);
+
+    const coverPanels = searchCatalog({ category: 'blank-panel' });
+    expect(coverPanels.map((b) => b.slug)).toEqual(
+      expect.arrayContaining([
+        '3dprint-10inch-cover-panel-lines-1u',
+        '3dprint-10inch-cover-panel-hex-1u',
+        '3dprint-10inch-cover-panel-lines-2u',
+        '3dprint-10inch-cover-panel-ribs-2u',
+        '3dprint-19inch-cover-panel-lines-1u',
+        '3dprint-19inch-cover-panel-hex-2u',
+        '3dprint-6inch-cover-panel-lines-1u',
+      ]),
+    );
 
     const jetkvmCompatible = searchCatalog({ accepted_slot_type: 'jetkvm-bay' });
     expect(jetkvmCompatible.map((b) => b.slug).sort()).toEqual([

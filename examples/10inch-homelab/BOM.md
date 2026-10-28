@@ -4,9 +4,9 @@
 
 - **Validation Status:** `VALID` (0 Errors, 0 Warnings)
 - **Rack Enclosure:** 8U `10inch` (Rail Depth: `240 mm`, Rear Clearance: `60 mm`)
-- **Total Mounted Devices:** 18 (8 rackmount units + 10 sub-modules)
+- **Total Mounted Devices:** 19 (9 rackmount units + 10 sub-modules)
 - **Total Electrical Draw:** `175.1 W` system + `33.5 W` PoE
-- **Mechanical Mass & Stability:** `8.5 kg` total weight | Center of Gravity $Y_{\text{CoG}} = 121.4\text{ mm}$ (`34.1%` of rack height)
+- **Mechanical Mass & Stability:** `8.6 kg` total weight | Center of Gravity $Y_{\text{CoG}} = 121.1\text{ mm}$ (`34.1%` of rack height)
 
 ## 2. Commercial Hardware BOM
 
@@ -24,6 +24,7 @@
 ### 2.1 Geräte-Erklärungen & Montage-Hinweise
 
 - **`ups-u1` (CyberPower 10-Inch Compact Lithium UPS 500VA/300W 1U — Hostname: `ups-core-01`)**: Kompakte 10-Zoll 1U Unterbrechungsfreie Stromversorgung (USV, 500VA / 300W Lithium) mit 4x IEC-C13 Batterie-Ausgängen hinten. Schützt das gesamte Mini-Rack bei Stromausfall und versorgt die hintere Steckdosenleiste (PDU) sowie das PoE-Netzteil.
+- **`cover-u2` (Community 3D-Print 10-Inch 1U Designer Cover Panel (Horizontal Precision Lines) — Hostname: `cover-panel-u2`)**: 3D-druckbares 10-Zoll 1U Cover-Panel (PETG/PLA/ASA, komplett geschlossene Frontblende ohne Kabeldurchlass) mit feinen horizontalen Design-Rillen und rückseitigen Versteifungsrippen. Verschließt offene Slots (z. B. über der USV, wenn hinten eine Steckdosenleiste sitzt) für eine saubere, geschlossene Frontansicht.
 - **`pdu-u2-rear` (Digitus 10-Inch 1U 4-Way Socket Strip (DN-95411) — Hostname: `pdu-rear-01`)**: 10-Zoll 1U 4-fach Schuko-Steckdosenleiste (PDU, Aluminiumgehäuse, bis 3600W). Wird meist rückseitig im Rack montiert, um die Netzteile von Mini-PCs, Routern und Switches zentral über die USV mit Strom zu versorgen.
 - **`carrier-u3` (Community 3D-Print 10-Inch 1U Carrier for UniFi Cloud Gateway Ultra/Max + 3x Keystone — Hostname: `carrier-gateway-u3`)**: 3D-druckbarer 10-Zoll 1U Modulträger (PETG/ABS) passgenau für das Ubiquiti Cloud Gateway Max/Ultra (UCG-Max / UCG-Ultra) inklusive Sichtfenster für das Front-OLED und 3x Keystone-Buchsen, um die hinteren WAN/LAN-Ports nach vorne zu führen.
 - **`ucg-max` (Ubiquiti Cloud Gateway Max (UCG-Max) — Hostname: `gw-unifi-max`)**: Kompaktes Multi-Gigabit UniFi Cloud Gateway & Firewall (UCG-Max) mit 5x 2.5GbE RJ45 Ports (1x WAN, 4x LAN), NVMe-Speicher für UniFi Protect und Front-OLED-Display. Da es ein reines Desktop-Gehäuse (141.8×30×127.6mm) ohne Rack-Ohren ist, wird es als Sub-Modul in den 3D-gedruckten 10-Zoll-Carrier eingesetzt.
@@ -39,10 +40,11 @@
 
 | Carrier Blueprint | Qty | Material | Total Filament (g) | Heat-Set Inserts (per unit) | Fasteners / Screws (per unit) | Source Model |
 | :--- | :---: | :---: | :---: | :--- | :--- | :--- |
+| `3dprint-10inch-cover-panel-lines-1u` (U2) | 1 | PETG / PLA | 45 g | — | 4x M6 Cage Nuts & Screws | https://www.printables.com/model/10inch-1u-cover-panel-lines |
 | `3dprint-10inch-ucg-ultra-plus-3keystone` (U3) | 1 | PETG / ABS | 150 g | 4x M3x5x4mm | 4x M3x12mm Socket Head | https://www.printables.com/model/10inch-ucg-ultra-max-3keystone |
 | `3dprint-10inch-lenovo-tiny-plus-2keystone` (U4, U5) | 2 | PETG / ABS | 330 g | 4x M3x5x4mm | 4x M3x10mm Socket Head | https://www.printables.com/model/10inch-lenovo-tiny-2keystone |
 
-**Total Estimated 3D Filament Required:** `480 g`
+**Total Estimated 3D Filament Required:** `525 g`
 
 ## 4. Aggregated Cable Shopping List
 
@@ -71,6 +73,7 @@
 
 ### Phase A: Mechanical Mounting (Bottom-Up for Stability)
 - [ ] Mount **10-Inch Compact Lithium UPS 500VA/300W 1U** (`ups-u1`) at **U1** (FRONT rails).
+- [ ] Mount **10-Inch 1U Designer Cover Panel (Horizontal Precision Lines)** (`cover-u2`) at **U2** (FRONT rails).
 - [ ] Mount **10-Inch 1U 4-Way Socket Strip (DN-95411)** (`pdu-u2-rear`) at **U2** (REAR rails).
 - [ ] Mount **10-Inch 1U Carrier for UniFi Cloud Gateway Ultra/Max + 3x Keystone** (`carrier-u3`) at **U3** (FRONT rails).
   - [ ] Insert sub-module **Cloud Gateway Max (UCG-Max)** (`ucg-max`) into carrier slot `carrier-u3:gateway-bay`.

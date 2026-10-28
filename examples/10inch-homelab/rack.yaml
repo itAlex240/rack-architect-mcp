@@ -14,6 +14,12 @@ mounted_devices:
     u_position: 1
     face: front
     children: []
+  - instance_id: cover-u2
+    blueprint_slug: 3dprint-10inch-cover-panel-lines-1u
+    hostname: cover-panel-u2
+    u_position: 2
+    face: front
+    children: []
   - instance_id: pdu-u2-rear
     blueprint_slug: digitus-10inch-pdu-4way-schuko
     hostname: pdu-rear-01

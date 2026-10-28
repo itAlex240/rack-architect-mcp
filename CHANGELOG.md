@@ -5,6 +5,28 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.12] - 2026-10-28
+
+### Added & Improved (🇬🇧 English)
+- **3D-Printable Designer Slot Cover Panels (`1U` & `2U` • `Lines` / `Hex` / `Tech-Ribs`), Closed `U2 Front` Slot Above UPS & Watertight `.SCAD`/`.STL` Generators (`@rack-mcp/hardware-catalog`, `@rack-mcp/exporters`, `@rack-mcp/web-viewer`):**
+  - **7 New 3D-Printable Designer Slot Cover Panels Added to Hardware Catalog (`60` $\rightarrow$ `67` Blueprints):** Added closed, zero-cable-passthrough 3D-printable blanking cover panels across `1U` and `2U` slot sizes, surface relief patterns (`lines` = Horizontal Precision Lines, `hex` = Blind Hexagonal Honeycomb Relief, `ribs` = Vertical Tech-Ribs), and rack standards (`10inch`, `19inch`, `6inch`):
+    1. `3dprint-10inch-cover-panel-lines-1u` (`1U`, `45 g`, Horizontal Precision Lines)
+    2. `3dprint-10inch-cover-panel-hex-1u` (`1U`, `42 g`, Blind Hexagonal Honeycomb Relief)
+    3. `3dprint-10inch-cover-panel-lines-2u` (`2U`, `85 g`, 6 Horizontal Precision Lines)
+    4. `3dprint-10inch-cover-panel-ribs-2u` (`2U`, `88 g`, Vertical Tech-Ribs, `#E5E7EB`)
+    5. `3dprint-19inch-cover-panel-lines-1u` (`1U`, `85 g`, 19-Inch Horizontal Precision Lines)
+    6. `3dprint-19inch-cover-panel-hex-2u` (`2U`, `160 g`, 19-Inch Hexagonal Honeycomb Relief)
+    7. `3dprint-6inch-cover-panel-lines-1u` (`1U`, `28 g`, 6-Inch Horizontal Precision Lines)
+  - **Closed Open Slot on `U2 Front` Above the UPS (`reference-homelab.ts`, `standalone-homelab.ts`, `examples/10inch-homelab/rack.yaml`):** Mounted `cover-u2` (`3dprint-10inch-cover-panel-lines-1u`, `depth_mm: 8.0 mm`) on `U2 Front` directly above `ups-u1` (`U1 Front`) while `pdu-u2-rear` (`depth_mm: 55.0 mm`) remains on `U2 Rear` (`177 mm` internal Z clearance, `0` collisions, `19` total mounted devices), closing the front of `U2` with a clean patterned faceplate.
+  - **3D WebGL, 2D CAD Elevation SVG & `.glb` Surface Pattern Rendering (`MountedDevice3D.tsx`, `elevation-svg.ts`, `glb-exporter.ts`):** Rendered recessed decorative bezels and 3D relief patterns (`lines`, `hex`, `ribs`) on `blank-panel` devices in the 3D viewer, 2D CAD elevation drawing, and binary glTF 2.0 exports (`rack-scene.glb`).
+  - **Parametric OpenSCAD (`.scad`) & 100% Watertight 2-Manifold `.stl` Cover Panel Generators + Browser Download Hub (`openscad-carrier.ts`, `BomAndExportsView.tsx`):** Upgraded the `.scad` and `.stl` generators to produce closed `4.2 mm` faceplates with `1.4 mm` blind decorative pattern grooves on the front (`2.8 mm` solid backing wall, zero through-holes) plus rear perimeter stiffening ribs (`Z = 4.2..8.0 mm`), pre-generated all 4 10-inch `.scad`/`.stl` cover panels into `examples/10inch-homelab/`, and added Section **2.1 3D-Printable Slot Cover Panels Library** in the `BOM & 3D-Print Hub` tab.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **3D-druckbare Designer-Cover-Panels (`1U` & `2U` • `Linien` / `Waben` / `Tech-Rippen`), geschlossener `U2 Front`-Slot über der USV & 2-Manifold `.SCAD`/`.STL`-Dateien (`@rack-mcp/hardware-catalog`, `@rack-mcp/exporters`, `@rack-mcp/web-viewer`):**
+  - **7 neue 3D-druckbare Cover-Panels im Hardware-Katalog (`60` $\rightarrow$ `67` Blueprints):** Komplett geschlossene Frontblenden ohne Kabeldurchlass für `1U`- und `2U`-Slots mit verschiedenen Oberflächen-Mustern (**horizontale Präzisions-Linien**, **Hexagon-Wabenrelief**, **vertikale Tech-Rippen**) für `10inch`-, `19inch`- und `6inch`-Racks.
+  - **Offener Slot auf `U2 Front` über der USV geschlossen (`cover-u2`):** Auf `U2 Front` (direkt über der USV auf `U1`, wo hinten auf `U2 Rear` die Steckdosenleiste sitzt) ist nun standardmäßig das `1U` Designer-Cover-Panel `3dprint-10inch-cover-panel-lines-1u` (`8 mm` Tiefe, `177 mm` Freiraum zur hinteren PDU, `0` Kollisionen) montiert, sodass die Vorderseite von `U2` sauber mit einem feinen Linien-Relief geschlossen ist.
+  - **Parametrischer `.scad`- & wasserdichter `.stl`-Generator + direkter Download für alle Muster & Größen:** Alle 4 10-Zoll-Cover-Panel-Varianten (`1U Lines`, `1U Hex`, `2U Lines`, `2U Tech-Ribs`) liegen als druckfertige `.scad`- und `.stl`-Dateien unter `examples/10inch-homelab/` und können zudem im Tab **`BOM & 3D-Print Hub`** unter **2.1 3D-Printable Slot Cover Panels Library** mit 1 Klick heruntergeladen werden.
+
 ## [0.4.11] - 2026-10-28
 
 ### Added & Improved (🇬🇧 English)

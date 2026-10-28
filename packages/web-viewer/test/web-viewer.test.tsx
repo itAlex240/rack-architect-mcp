@@ -15,11 +15,11 @@ afterEach(() => {
 });
 
 describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', () => {
-  it('evaluates the standalone 8U 10-Inch Homelab reference scene with 18 devices, 22 clamped cable routes, 4 top-rear external drops, and all 22 Side-Profile Cutaway SVG cables', () => {
+  it('evaluates the standalone 8U 10-Inch Homelab reference scene with 19 devices, 22 clamped cable routes, 4 top-rear external drops, and all 22 Side-Profile Cutaway SVG cables', () => {
     const scene = evaluateStandaloneScene();
     expect(scene.validation.is_valid).toBe(true);
     expect(scene.validation.error_count).toBe(0);
-    expect(scene.geometry.devices.length).toBe(18);
+    expect(scene.geometry.devices.length).toBe(19);
     expect(scene.cable_routes.length).toBe(22);
     expect(scene.project.external_endpoints.length).toBe(4);
     expect(scene.validation.power_summary.total_poe_watts).toBe(33.5);
@@ -165,14 +165,26 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     );
     expect(screen.getByTestId('btn-remove-device')).toBeDefined();
 
-    // Switch to BOM & 3D-Print Queue and verify .SCAD and .STL buttons (including sw-u8 10-inch desktop switch cradle)
+    // Switch to BOM & 3D-Print Queue and verify .SCAD and .STL buttons (including U2 cover panel & Cover Panels Library)
     fireEvent.click(screen.getByTestId('nav-tab-bom'));
+    expect(screen.getByTestId('download-scad-cover-u2')).toBeDefined();
+    expect(screen.getByTestId('download-stl-cover-u2')).toBeDefined();
     expect(screen.getByTestId('download-scad-carrier-u3')).toBeDefined();
     expect(screen.getByTestId('download-stl-carrier-u3')).toBeDefined();
     expect(screen.getByTestId('download-scad-carrier-u4')).toBeDefined();
     expect(screen.getByTestId('download-stl-carrier-u4')).toBeDefined();
     expect(screen.getByTestId('download-scad-sw-u8')).toBeDefined();
     expect(screen.getByTestId('download-stl-sw-u8')).toBeDefined();
+    expect(
+      screen.getByTestId(
+        'download-cover-stl-3dprint-10inch-cover-panel-hex-1u',
+      ),
+    ).toBeDefined();
+    expect(
+      screen.getByTestId(
+        'download-cover-scad-3dprint-10inch-cover-panel-ribs-2u',
+      ),
+    ).toBeDefined();
   });
 
   it('displays the MCP Agent Tool-Call Feed and replays LLM Plug-Clearance Collision & Self-Correction', () => {

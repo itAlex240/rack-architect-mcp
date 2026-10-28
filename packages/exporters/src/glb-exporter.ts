@@ -689,6 +689,66 @@ export function generateGlbBinary(scene: ComputedRackScene): Uint8Array {
       );
     }
 
+    // 3D-Printed / Anodized Cover Panel Decorative Relief (`blank-panel` / `blanking-panel`)
+    if (
+      dev.blueprint.category === 'blank-panel' ||
+      dev.blueprint.category === 'blanking-panel'
+    ) {
+      const patternMatIdx = getOrCreateMaterial(
+        'CoverPanelReliefMat',
+        '#3F3F46',
+        0.38,
+        0.45,
+      );
+      const patZ0 =
+        dev.face === 'front' ? adjustedBox.min.z - 1.2 : adjustedBox.max.z;
+      const patZ1 =
+        dev.face === 'front' ? adjustedBox.min.z : adjustedBox.max.z + 1.2;
+      const devW = adjustedBox.max.x - adjustedBox.min.x;
+      const devH = adjustedBox.max.y - adjustedBox.min.y;
+      const slug = dev.blueprint.slug;
+
+      if (slug.includes('ribs')) {
+        const ribCount = devW > 300 ? 18 : 10;
+        const innerW = Math.max(20, devW - 30);
+        const stepX = ribCount > 1 ? innerW / (ribCount - 1) : 0;
+        for (let i = 0; i < ribCount; i++) {
+          const rx = adjustedBox.min.x + 15 + i * stepX;
+          childMeshIndices.push(
+            pushMesh(
+              buildBoxMesh(
+                `CoverRib_${dev.instance_id}_${i}`,
+                {
+                  min: { x: rx - 1.6, y: adjustedBox.min.y + 6.5, z: patZ0 },
+                  max: { x: rx + 1.6, y: adjustedBox.max.y - 6.5, z: patZ1 },
+                },
+                patternMatIdx,
+              ),
+            ),
+          );
+        }
+      } else {
+        const lineCount = devH > 60 ? 6 : 3;
+        const innerH = Math.max(10, devH - 14);
+        const stepY = lineCount > 1 ? innerH / (lineCount - 1) : 0;
+        for (let i = 0; i < lineCount; i++) {
+          const ly = adjustedBox.min.y + 7 + i * stepY;
+          childMeshIndices.push(
+            pushMesh(
+              buildBoxMesh(
+                `CoverLine_${dev.instance_id}_${i}`,
+                {
+                  min: { x: adjustedBox.min.x + 14, y: ly - 1.1, z: patZ0 },
+                  max: { x: adjustedBox.max.x - 14, y: ly + 1.1, z: patZ1 },
+                },
+                patternMatIdx,
+              ),
+            ),
+          );
+        }
+      }
+    }
+
     // Raised 3D Ports (`1.8 mm` outward protrusion along `world_normal` to eliminate Z-fighting)
     for (const port of dev.ports) {
       const portPbr = getPortPbrColorAndFactors(

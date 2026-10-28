@@ -645,22 +645,32 @@ export function generateElevationSvg(
       );
     } else {
       const primary = uDevs[0]!;
+      const secondary = uDevs[1];
       const children = primary.child_instance_ids
         .map((cid) => scene.geometry.devices_by_id.get(cid))
         .filter((c) => c !== undefined);
 
-      const faceTag = primary.face === 'rear' ? 'REAR' : 'FRONT';
-      const titleLine = `U${u} [${faceTag}] ${primary.hostname ?? primary.instance_id}`;
+      const faceTag =
+        uDevs.length > 1
+          ? 'FRONT+REAR'
+          : primary.face === 'rear'
+            ? 'REAR'
+            : 'FRONT';
+      const titleLine = secondary
+        ? `U${u} [${faceTag}] ${primary.hostname ?? primary.instance_id} + ${secondary.hostname ?? secondary.instance_id}`
+        : `U${u} [${faceTag}] ${primary.hostname ?? primary.instance_id}`;
       const subLine =
         children.length > 0
           ? `Slots: ${children.map((c) => c.hostname ?? c.instance_id).join(', ')}`
-          : `${primary.blueprint.manufacturer} ${primary.blueprint.model} (${primary.blueprint.geometry.depth_mm}mm)`;
+          : secondary
+            ? `${primary.blueprint.model} (${primary.blueprint.geometry.depth_mm}mm) | ${secondary.blueprint.model} (${secondary.blueprint.geometry.depth_mm}mm)`
+            : `${primary.blueprint.manufacturer} ${primary.blueprint.model} (${primary.blueprint.geometry.depth_mm}mm)`;
 
       lines.push(
-        `    <text x="${calloutColOriginX + 10}" y="${roundCentis(yTopSvg + 18)}" fill="#F8FAFC" font-size="9.8" font-weight="700">${escapeXml(titleLine.slice(0, 36))}</text>`,
+        `    <text x="${calloutColOriginX + 10}" y="${roundCentis(yTopSvg + 18)}" fill="#F8FAFC" font-size="9.8" font-weight="700">${escapeXml(titleLine.slice(0, 42))}</text>`,
       );
       lines.push(
-        `    <text x="${calloutColOriginX + 10}" y="${roundCentis(yTopSvg + 32)}" fill="#94A3B8" font-size="8.4">${escapeXml(subLine.slice(0, 42))}</text>`,
+        `    <text x="${calloutColOriginX + 10}" y="${roundCentis(yTopSvg + 32)}" fill="#94A3B8" font-size="8.4">${escapeXml(subLine.slice(0, 46))}</text>`,
       );
     }
   }
@@ -1143,6 +1153,65 @@ export function generateElevationSvg(
           lines.push(
             `      <circle cx="${roundCentis(bx + bw - px(3.2))}" cy="${roundCentis(by + px(3.2))}" r="1.8" fill="#10B981" />`,
           );
+        }
+      } else if (
+        dev.blueprint.category === 'blank-panel' ||
+        dev.blueprint.category === 'blanking-panel'
+      ) {
+        // 3D-Printed / Anodized Cover Panel decorative pattern (Lines / Hex / Tech-Ribs)
+        lines.push(
+          `      <rect x="${roundCentis(xSvg + px(6))}" y="${roundCentis(ySvg + px(3.5))}" width="${roundCentis(Math.max(10, wSvg - px(12)))}" height="${roundCentis(Math.max(6, hSvg - px(7)))}" rx="2" fill="#0F172A" fill-opacity="0.55" stroke="#475569" stroke-width="0.9" />`,
+        );
+        const slug = dev.blueprint.slug;
+        if (slug.includes('hex')) {
+          const rows = hSvg > px(60) ? 4 : 2;
+          const cols = 10;
+          const innerX = xSvg + px(16);
+          const innerW = Math.max(20, wSvg - px(32));
+          const innerY = ySvg + px(12);
+          const innerH = Math.max(10, hSvg - px(18));
+          const stepX = innerW / cols;
+          const stepY = innerH / rows;
+          for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+              const cx = roundCentis(
+                innerX +
+                  c * stepX +
+                  (r % 2 === 1 ? stepX * 0.5 : stepX * 0.25),
+              );
+              const cy = roundCentis(innerY + (r + 0.5) * stepY);
+              lines.push(
+                `      <circle cx="${cx}" cy="${cy}" r="${roundCentis(px(2.6))}" fill="#1E293B" stroke="#64748B" stroke-width="0.9" />`,
+              );
+            }
+          }
+        } else if (slug.includes('ribs')) {
+          const ribCount = 12;
+          const innerX = xSvg + px(14);
+          const innerW = Math.max(20, wSvg - px(28));
+          const stepX = innerW / ribCount;
+          const ribY = roundCentis(ySvg + px(11));
+          const ribH = roundCentis(Math.max(8, hSvg - px(16)));
+          for (let i = 0; i < ribCount; i++) {
+            const rx = roundCentis(innerX + i * stepX + stepX * 0.25);
+            lines.push(
+              `      <rect x="${rx}" y="${ribY}" width="${roundCentis(px(3.2))}" height="${ribH}" rx="1" fill="#1E293B" stroke="#475569" stroke-width="0.7" />`,
+            );
+          }
+        } else {
+          // Default / 'lines': horizontal precision designer grooves
+          const lineCount = hSvg > px(60) ? 5 : 3;
+          const lineX = roundCentis(xSvg + px(14));
+          const lineW = roundCentis(Math.max(20, wSvg - px(28)));
+          const topPad = px(12);
+          const usableH = Math.max(8, hSvg - topPad - px(6));
+          const stepY = lineCount > 1 ? usableH / (lineCount - 1) : 0;
+          for (let i = 0; i < lineCount; i++) {
+            const ly = roundCentis(ySvg + topPad + i * stepY - px(0.9));
+            lines.push(
+              `      <rect x="${lineX}" y="${ly}" width="${lineW}" height="${roundCentis(px(1.8))}" rx="0.9" fill="#334155" stroke="#64748B" stroke-width="0.5" />`,
+            );
+          }
         }
       } else {
         lines.push(

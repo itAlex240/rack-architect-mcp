@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.4.8`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.4.9`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.4.8`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.4.9`)
 
 ### 📦 `v0.4.x` Series — 3D Port & Brush-Panel Realism, External Building Drops & Collision-Free Routing
 
+- **[`v0.4.9`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.9) (2026-10-28) — 30 New Hardware Blueprints Across 10-Inch, 19-Inch & 6-Inch Racks (Catalog Doubled to 60 Parts):**
+  - Added 12 new 10-inch & sub-module parts (`USW-Ultra-60W`, `UCG-Fiber` 10G, `CRS309-1G-8S+IN`, `QNAP TS-433`, `Brennenstuhl 6-Way IEC-C13 PDU`, `Netgear GS108PP`, `HP EliteDesk 800 G6 Mini`, `Intel NUC 13 Pro`, `ZimaBoard 832`, `PiKVM v4 Mini`, + 2 new 3D-print carriers), 12 new 19-inch parts (`UDM-SE`, `UNVR 4-Bay`, `USW-Pro-Max-16-PoE`, `CRS326-24G-2S+RM`, `CCR2004-16G-2S+`, `Synology RS1221+`, `FortiGate 200F`, `APC Short-Depth Li-Ion 2U UPS`, `Brennenstuhl 8-Way Schuko PDU`, `19" Shelf`, `19" Blank Panel`, `19" Dual Mini-PC Carrier`), and 6 new 6-inch micro-rack parts + `examples/6inch-microlab/`.
 - **[`v0.4.8`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.8) (2026-10-28) — Shortest-Direct Monotonic 3D Cable Routing by Default & Optional Side-Duct Overrides:**
   - Refactored `routeSingleCable` in `catmull-rom-router.ts` so `same-face-duct` and `cross-face-portal` default to shortest-direct monotonic orthogonal L-bend routing (`20%–55%` shorter cable paths and lower BOM costs while preserving `>= 6.50 mm` 3D clearance), with optional `routing_mode: 'left-duct' | 'right-duct'`.
 - **[`v0.4.7`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.7) (2026-10-28) — English-First, German-Second Release Notes, Archive & Changelog Consistency:**
@@ -50,10 +52,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.4.8`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.4.9`)
 
 ### 📦 Serie `v0.4.x` — 3D-Ports, Bürstenpanels, Externe Haus-Verkabelung & Kollisionsfreie Kabelführung
 
+- **[`v0.4.9`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.9) (2026-10-28) — 30 neue Hardware-Blueprints für 10-Zoll-, 19-Zoll- & 6-Zoll-Racks (Verdopplung auf 60 Teile):**
+  - 12 neue 10-Zoll- und Sub-Modul-Teile, 12 neue 19-Zoll-Enterprise-Teile und 6 neue 6-Zoll-Micro-Rack-Teile (inkl. `examples/6inch-microlab/`) sowie 3D/2D-Darstellung für Hot-Swap-NAS-Laufwerksschächte und L-Fachböden.
 - **[`v0.4.8`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.8) (2026-10-28) — Kürzeste, sinnvolle & kollisionsfreie 3D-Kabelführung als Standard (`shortest-direct`) & optionale Seitenkanal-Wahl:**
   - Direkte monotone orthogonale L-Kurven-Kabelführung als Standard (`20 %–55 %` kürzere Kabellängen ohne Zickzack an die Seitenwände bei `>= 6,50 mm` Mindestabstand) sowie optionales `routing_mode: 'left-duct' | 'right-duct'`.
 - **[`v0.4.7`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.7) (2026-10-28) — Einheitliche Struktur „Englisch zuerst, Deutsch danach" in allen Releases, im Archiv & im Changelog:**

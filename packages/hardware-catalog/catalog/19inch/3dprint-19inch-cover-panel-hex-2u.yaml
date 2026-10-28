@@ -1,0 +1,30 @@
+slug: "3dprint-19inch-cover-panel-hex-2u"
+manufacturer: "Community 3D-Print"
+model: "19-Inch 2U Designer Cover Panel (Hexagonal Honeycomb Relief)"
+description: "3D-druckbares 19-Zoll 2U Cover-Panel (88.1mm Höhe, PETG/ASA, rückseitig geschlossen ohne Kabeldurchlass) mit eingelassenem Waben-Relief für 2U-Lücken im 19-Zoll-Serverschrank."
+category: "blank-panel"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 2.0
+  width_mm: 442.4
+  height_mm: 88.1
+  depth_mm: 8.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 160
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "none"
+visuals:
+  chassis_color_hex: "#27272A"
+  material_preset: "3d-printed-petg"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata:
+  filament_grams: 160
+  material_recommendation: "PETG / ASA"
+  fasteners: "4x M6 Cage Nuts & Screws"
+  printables_url: "https://www.printables.com/model/19inch-2u-cover-panel-hex"

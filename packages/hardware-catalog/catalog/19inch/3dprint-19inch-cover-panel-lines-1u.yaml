@@ -1,0 +1,30 @@
+slug: "3dprint-19inch-cover-panel-lines-1u"
+manufacturer: "Community 3D-Print"
+model: "19-Inch 1U Designer Cover Panel (Horizontal Precision Lines)"
+description: "3D-druckbares 19-Zoll 1U Cover-Panel (PETG/ASA, geschlossene Frontfläche ohne Kabeldurchlass) mit feinen horizontalen Präzisionsrillen für freie 19-Zoll-Höheneinheiten."
+category: "blank-panel"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 442.4
+  height_mm: 44.0
+  depth_mm: 8.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 85
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "none"
+visuals:
+  chassis_color_hex: "#27272A"
+  material_preset: "3d-printed-petg"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata:
+  filament_grams: 85
+  material_recommendation: "PETG / ASA"
+  fasteners: "4x M6 Cage Nuts & Screws"
+  printables_url: "https://www.printables.com/model/19inch-1u-cover-panel-lines"

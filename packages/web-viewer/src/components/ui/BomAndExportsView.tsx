@@ -1,7 +1,9 @@
 import {
   roundTenths,
+  type RackStandard,
   type SerializedRackScene,
 } from '@rack-mcp/core-domain';
+import { defaultCatalogRegistry } from '@rack-mcp/hardware-catalog';
 import {
   generateClientSideCarrierOpenScad,
   generateClientSideCarrierStl,
@@ -47,6 +49,15 @@ export function BomAndExportsView({
       sum + (d.blueprint.printable_metadata?.filament_grams ?? 95),
     0,
   );
+
+  const printableCoverPanelBlueprints = defaultCatalogRegistry
+    .getAllBlueprints()
+    .filter(
+      (bp) =>
+        bp.category === 'blank-panel' &&
+        bp.printable_metadata !== undefined &&
+        bp.printable_metadata !== null,
+    );
 
   const routesById = new Map(scene.cable_routes.map((r) => [r.cable_id, r]));
 
@@ -438,6 +449,169 @@ export function BomAndExportsView({
             })}
           </tbody>
         </table>
+
+        {/* 2.1 Printable Slot Cover Panels Library (1U & 2U • Lines / Hex / Tech-Ribs) */}
+        <div
+          style={{
+            marginTop: '18px',
+            paddingTop: '14px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.07)',
+          }}
+        >
+          <h4
+            style={{
+              margin: '0 0 10px 0',
+              fontSize: '11.5px',
+              fontWeight: 600,
+              letterSpacing: '0.03em',
+              textTransform: 'uppercase',
+              color: '#A1A1AA',
+            }}
+          >
+            2.1 3D-Printable Slot Cover Panels Library (
+            {printableCoverPanelBlueprints.length} Variants • 1U &amp; 2U •
+            Lines / Hex / Tech-Ribs)
+          </h4>
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: '12px',
+            }}
+          >
+            <thead>
+              <tr
+                style={{
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.09)',
+                  color: '#71717A',
+                  textAlign: 'left',
+                }}
+              >
+                <th style={{ padding: '7px 8px', fontWeight: 500 }}>
+                  Standard / Size
+                </th>
+                <th style={{ padding: '7px 8px', fontWeight: 500 }}>
+                  Blueprint Slug
+                </th>
+                <th style={{ padding: '7px 8px', fontWeight: 500 }}>
+                  Pattern &amp; Model
+                </th>
+                <th style={{ padding: '7px 8px', fontWeight: 500 }}>
+                  Dimensions (mm)
+                </th>
+                <th style={{ padding: '7px 8px', fontWeight: 500 }}>
+                  Filament
+                </th>
+                <th style={{ padding: '7px 8px', fontWeight: 500 }}>
+                  3D CAD Export (.SCAD / .STL)
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {printableCoverPanelBlueprints.map((bp) => {
+                const rackStd: RackStandard =
+                  bp.mount_type === 'rackmount-19'
+                    ? '19inch'
+                    : bp.mount_type === 'rackmount-6'
+                      ? '6inch'
+                      : '10inch';
+                const uHeight = bp.geometry.u_height ?? 1;
+                const filament = bp.printable_metadata?.filament_grams ?? 45;
+                return (
+                  <tr
+                    key={bp.slug}
+                    style={{
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                    }}
+                  >
+                    <td
+                      className="mono"
+                      style={{
+                        padding: '7px 8px',
+                        fontWeight: 600,
+                        color: '#93C5FD',
+                      }}
+                    >
+                      {rackStd.toUpperCase()} • {uHeight}U
+                    </td>
+                    <td
+                      className="mono"
+                      style={{ padding: '7px 8px', color: '#E4E4E7' }}
+                    >
+                      {bp.slug}
+                    </td>
+                    <td style={{ padding: '7px 8px', color: '#A1A1AA' }}>
+                      {bp.model}
+                    </td>
+                    <td
+                      className="mono"
+                      style={{ padding: '7px 8px', color: '#A1A1AA' }}
+                    >
+                      {bp.geometry.width_mm} × {bp.geometry.height_mm} ×{' '}
+                      {bp.geometry.depth_mm} mm
+                    </td>
+                    <td
+                      className="mono"
+                      style={{ padding: '7px 8px', color: '#F4F4F5' }}
+                    >
+                      {filament} g
+                    </td>
+                    <td style={{ padding: '7px 8px' }}>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button
+                          type="button"
+                          data-testid={`download-cover-scad-${bp.slug}`}
+                          onClick={() =>
+                            triggerBlobDownload(
+                              generateClientSideCarrierOpenScad(bp, rackStd),
+                              `${bp.slug}.scad`,
+                              'text/plain;charset=utf-8',
+                            )
+                          }
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: '5px',
+                            border: '1px solid rgba(59, 130, 246, 0.35)',
+                            background: 'rgba(59, 130, 246, 0.12)',
+                            color: '#93C5FD',
+                            fontSize: '10.5px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          .SCAD
+                        </button>
+                        <button
+                          type="button"
+                          data-testid={`download-cover-stl-${bp.slug}`}
+                          onClick={() =>
+                            triggerBlobDownload(
+                              generateClientSideCarrierStl(bp, rackStd),
+                              `${bp.slug}.stl`,
+                              'model/stl;charset=utf-8',
+                            )
+                          }
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: '5px',
+                            border: '1px solid rgba(16, 185, 129, 0.35)',
+                            background: 'rgba(16, 185, 129, 0.12)',
+                            color: '#6EE7B7',
+                            fontSize: '10.5px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          .STL
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       {/* Section 3: Cable Patching Checklist */}

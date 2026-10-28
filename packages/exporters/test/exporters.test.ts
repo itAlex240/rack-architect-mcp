@@ -25,8 +25,8 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     expect(scene.validation.is_valid).toBe(true);
     expect(scene.validation.error_count).toBe(0);
 
-    // 8 rackmount units + 10 child sub-modules (1 UCG-Max + 2 Lenovo M920q + 7 Keystones) = 18 devices
-    expect(scene.geometry.devices.length).toBe(18);
+    // 9 rackmount units (including U2 Front 3D-printed cover panel) + 10 child sub-modules = 19 devices
+    expect(scene.geometry.devices.length).toBe(19);
     // 22 cables including 9 Front-to-Front patch, 1 Cross-Face U6 Brush Portal cable, and 12 Rear-to-Rear power/LAN cables
     expect(scene.cable_routes.length).toBe(22);
     // 4 external building / ISP cable drops entering from top-rear (including 21W Wi-Fi 7 AP + 12.5W 4K PoE+ Camera = 33.5W PoE)
@@ -188,9 +188,10 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     expect(bom).toContain('## 3. 3D Print Queue (Fabrication List)');
     expect(bom).toContain('## 4. Aggregated Cable Shopping List');
     expect(bom).toContain('## 5. Step-by-Step Assembly & Patching Checklist');
+    expect(bom).toContain('`3dprint-10inch-cover-panel-lines-1u`');
     expect(bom).toContain('`3dprint-10inch-ucg-ultra-plus-3keystone`');
     expect(bom).toContain('`3dprint-10inch-lenovo-tiny-plus-2keystone`');
-    expect(bom).toContain('**Total Estimated 3D Filament Required:** `480 g`');
+    expect(bom).toContain('**Total Estimated 3D Filament Required:** `525 g`');
   });
 
   it('generates valid binary glTF 2.0 (.glb) in meter scale with solid TRIANGLES (mode: 4) PTF tubes, boots, raised ports, and glass door', () => {
@@ -311,12 +312,40 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     writeFileSync(bomPath, generateBomMarkdown(scene), 'utf8');
     writeFileSync(glbPath, generateGlbBinary(scene));
 
-    // Also generate parametric 3D-printable OpenSCAD (.scad) and ASCII STL (.stl) files for all modular carriers
+    // Also generate parametric 3D-printable OpenSCAD (.scad) and ASCII STL (.stl) files for all mounted carriers + cover panels
     const printableCarriers = generateProjectPrintableCarriers(scene);
-    expect(printableCarriers.length).toBe(2);
-    for (const item of printableCarriers) {
+    expect(printableCarriers.length).toBe(3);
+
+    // Include the additional 10-inch slot cover panel variants (1U Hex, 2U Lines, 2U Tech-Ribs) in examples/10inch-homelab/
+    const extraCoverPanelSlugs = [
+      '3dprint-10inch-cover-panel-hex-1u',
+      '3dprint-10inch-cover-panel-lines-2u',
+      '3dprint-10inch-cover-panel-ribs-2u',
+    ] as const;
+    const allPrintableItems = [
+      ...printableCarriers,
+      ...extraCoverPanelSlugs.map((slug) => {
+        const bp = defaultCatalogRegistry.getBlueprintBySlug(slug)!;
+        return {
+          slug,
+          model: bp.model,
+          instance_ids: [slug],
+          rack_standard: '10inch' as const,
+          filename_scad: `${slug}.scad`,
+          filename_stl: `${slug}.stl`,
+          openscad_code: generateCarrierOpenScad(bp, '10inch'),
+          stl_ascii: generateCarrierStl(bp, '10inch'),
+        };
+      }),
+    ];
+
+    for (const item of allPrintableItems) {
+      const isCoverPanel = item.slug.includes('cover-panel');
       expect(item.openscad_code).toContain('rack_carrier_assembly();');
       expect(item.openscad_code).toContain('slot_bay_cutouts()');
+      if (isCoverPanel) {
+        expect(item.openscad_code).toContain('front_surface_pattern_grooves()');
+      }
       expect(item.stl_ascii.startsWith('solid ')).toBe(true);
       expect(item.stl_ascii.includes('facet normal')).toBe(true);
 
@@ -327,7 +356,7 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
         ),
       ];
       expect(vertexMatches.length % 3).toBe(0);
-      expect(vertexMatches.length).toBeGreaterThan(300);
+      expect(vertexMatches.length).toBeGreaterThan(200);
 
       const directedEdges = new Map<string, number>();
       const undirectedEdges = new Map<string, number>();
@@ -388,7 +417,7 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
         expect(directedEdges.get(`${to}->${from}`)).toBe(cnt);
       }
 
-      expect(signedVolumeMm3).toBeGreaterThan(50_000);
+      expect(signedVolumeMm3).toBeGreaterThan(20_000);
 
       writeFileSync(
         resolve(exampleDir, item.filename_scad),

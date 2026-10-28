@@ -231,7 +231,7 @@ Whenever the user asks you to design, modify, or audit a rack, execute these **6
      - `3dprint-10inch-dual-rpi5-plus-4keystone` (accepts 2× `sbc-rpi5` in `rpi-bay-1`..`2` + 4× `standard-keystone` in `keystone-1`..`4`)
      - `3dprint-19inch-triple-mini-pc-carrier` (accepts 3× `mini-pc-1liter` up to `145 mm` width in `mini-pc-bay-1`..`3`)
    - Then mount the child `sub-module` into that carrier using `parent_carrier_id` and `slot_id`.
-3. If the user owns hardware that is not among the 60 built-in blueprints, call `define_custom_blueprint` with exact millimeter dimensions (`width_mm`, `height_mm`, `depth_mm`), weight (`weight_grams`), power draw (`max_system_watts`), and `ports` before mounting it.
+3. If the user owns hardware that is not among the 67 built-in blueprints, call `define_custom_blueprint` with exact millimeter dimensions (`width_mm`, `height_mm`, `depth_mm`), weight (`weight_grams`), power draw (`max_system_watts`), and `ports` before mounting it.
 
 ### Phase 2: Rack Initialization (`init_rack`)
 1. Call `init_rack` with the target `standard` (`"10inch"`, `"19inch"`, or `"6inch"`), `u_height`, `rail_depth_mm`, and `enclosure_type` (`"open-frame"`, `"closed-glass-front"`, or `"closed-vented-front"`).
@@ -346,10 +346,17 @@ This deterministically writes:
 
 ---
 
-## 7. Built-In Hardware Catalog Quick Reference (60 Blueprints)
+## 7. Built-In Hardware Catalog Quick Reference (67 Blueprints)
 
 | Blueprint Slug | Form Factor / Mount | Category | U / Size (`W×H×D mm`) | Key Ports, Carrier Slots & Practical Role |
 | :--- | :--- | :--- | :--- | :--- |
+| `3dprint-10inch-cover-panel-lines-1u` | `rackmount-10` (3D-Printed) | `blank-panel` | `1U` (`222×44×8`) | Closed 1U 3D-printable designer slot cover panel with horizontal precision lines (`45 g` PETG/PLA, zero cable pass-through) |
+| `3dprint-10inch-cover-panel-hex-1u` | `rackmount-10` (3D-Printed) | `blank-panel` | `1U` (`222×44×8`) | Closed 1U 3D-printable designer slot cover panel with blind hexagonal honeycomb relief (`42 g` PETG/PLA) |
+| `3dprint-10inch-cover-panel-lines-2u` | `rackmount-10` (3D-Printed) | `blank-panel` | `2U` (`222×88×8.5`) | Closed 2U 3D-printable designer slot cover panel with 6 horizontal precision lines (`85 g` PETG/PLA) |
+| `3dprint-10inch-cover-panel-ribs-2u` | `rackmount-10` (3D-Printed) | `blank-panel` | `2U` (`222×88×8.5`) | Closed 2U 3D-printable designer slot cover panel with vertical tech-ribs (`88 g` Silver/Grey PETG/PLA) |
+| `3dprint-19inch-cover-panel-lines-1u` | `rackmount-19` (3D-Printed) | `blank-panel` | `1U` (`442.4×44×8.5`) | Closed 19-inch 1U 3D-printable designer slot cover panel with horizontal precision lines (`85 g` PETG/PLA) |
+| `3dprint-19inch-cover-panel-hex-2u` | `rackmount-19` (3D-Printed) | `blank-panel` | `2U` (`442.4×88×9`) | Closed 19-inch 2U 3D-printable designer slot cover panel with hexagonal honeycomb relief (`160 g` PETG/PLA) |
+| `3dprint-6inch-cover-panel-lines-1u` | `rackmount-6` (3D-Printed) | `blank-panel` | `1U` (`120×44×7.5`) | Closed 6-inch 1U 3D-printable designer slot cover panel with horizontal precision lines (`28 g` PETG/PLA) |
 | `ubiquiti-usw-flex-2-5g-8-poe` | `rackmount-10` (3D-Print Cradle) | `switch` | `1U` (`212.9×32.5×99.4`) | `eth1`..`eth8` (2.5G PoE+ PSE, `196W`), `sfp1` (10G SFP+), `eth9` (10G), `pwr_in` · Compact 2.5G PoE++ core switch (requires 3D-printed 10" 1U PETG cradle) |
 | `ubiquiti-usw-lite-8-poe` | `rackmount-10` (3D-Print Cradle) | `switch` | `1U` (`200×31×99.6`) | `eth1`..`eth4` (1G PoE+ PSE, `52W`), `eth5`..`eth8` (1G), `dc_in` · Whisper-quiet starter PoE switch (requires 3D-printed 10" 1U PETG cradle) |
 | `ubiquiti-usw-ultra-60w` | `rackmount-10` (3D-Print Cradle) | `switch` | `1U` (`203×33×76`) | `eth1`..`eth7` (1G PoE+ PSE, `52W`), `eth8` (PoE-In/Uplink), `pwr_in` · Ultra-shallow 10" 8-Port PoE+ switch |

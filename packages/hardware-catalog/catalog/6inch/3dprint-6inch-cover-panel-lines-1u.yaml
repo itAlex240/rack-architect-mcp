@@ -1,0 +1,30 @@
+slug: "3dprint-6inch-cover-panel-lines-1u"
+manufacturer: "Community 3D-Print"
+model: "6-Inch 1U Micro-Rack Designer Cover Panel (Horizontal Precision Lines)"
+description: "3D-druckbares 6-Zoll 1U Cover-Panel (PETG/PLA, geschlossene Frontblende ohne Kabeldurchlass) mit feinen horizontalen Präzisionsrillen für 6-Zoll Micro-Homelabs."
+category: "blank-panel"
+mount_type: "rackmount-6"
+geometry:
+  u_height: 1.0
+  width_mm: 120.0
+  height_mm: 44.0
+  depth_mm: 6.0
+  ear_mount_style: "included-6inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 28
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "none"
+visuals:
+  chassis_color_hex: "#27272A"
+  material_preset: "3d-printed-petg"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata:
+  filament_grams: 28
+  material_recommendation: "PETG / PLA"
+  fasteners: "4x M4 Rack Screws"
+  printables_url: "https://www.printables.com/model/6inch-1u-cover-panel-lines"

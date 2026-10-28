@@ -29,10 +29,27 @@ function inferRackStandardFromBlueprint(
   return fallback;
 }
 
+export type CoverPanelSurfacePattern = 'lines' | 'hex' | 'ribs' | 'bevel';
+
+export function resolveCoverPanelPattern(slug: string): CoverPanelSurfacePattern {
+  if (slug.includes('-hex')) return 'hex';
+  if (slug.includes('-ribs')) return 'ribs';
+  if (slug.includes('-lines')) return 'lines';
+  return 'bevel';
+}
+
+function isCoverPanelBlueprint(blueprint: HardwareBlueprint): boolean {
+  return (
+    blueprint.category === 'blank-panel' ||
+    blueprint.category === 'blanking-panel'
+  );
+}
+
 /**
  * Generates a parametric OpenSCAD (`.scad`) script for a 3D-printable modular rack carrier
- * or custom rackmount faceplate, complete with EIA-310 mounting slots, L-shaped rear support tray,
- * honeycomb ventilation floor, and exact sub-module bay cutouts (`slots[]`).
+ * or patterned slot cover panel (`blank-panel`), complete with EIA-310 mounting slots,
+ * surface relief grooves (horizontal lines, hexagonal honeycomb, or vertical tech-ribs),
+ * rear stiffening flange or L-shaped support tray, and sub-module bay cutouts (`slots[]`).
  */
 export function generateCarrierOpenScad(
   blueprint: HardwareBlueprint,
@@ -46,8 +63,129 @@ export function generateCarrierOpenScad(
   const apertureWidthMm = roundCentis(spec.W_aperture);
   const holePitchXMm = roundCentis(spec.W_holes);
   const panelHeightMm = roundCentis(blueprint.geometry.height_mm || uCount * MM_PER_U - 0.75);
-  const trayDepthMm = roundCentis(Math.max(40, blueprint.geometry.depth_mm));
   const earWidthMm = roundCentis((panelWidthMm - apertureWidthMm) / 2);
+
+  if (isCoverPanelBlueprint(blueprint)) {
+    const pattern = resolveCoverPanelPattern(blueprint.slug);
+    const totalDepthMm = roundCentis(Math.max(6.0, blueprint.geometry.depth_mm));
+    const lines: string[] = [];
+    lines.push(`// ============================================================================`);
+    lines.push(`// RackArchitect MCP — Parametric 3D-Printable Slot Cover Panel (.scad)`);
+    lines.push(`// Blueprint: ${blueprint.manufacturer} ${blueprint.model} (${blueprint.slug})`);
+    lines.push(`// Standard:  ${std.toUpperCase()} EIA-310 (${panelWidthMm}mm Total Width, ${uCount}U = ${panelHeightMm}mm)`);
+    lines.push(`// Pattern:   ${pattern.toUpperCase()} (Closed Front Faceplate — Zero Cable Pass-Through)`);
+    lines.push(`// Material:  ${blueprint.printable_metadata?.material_recommendation ?? 'PETG / PLA / ASA (4 Perimeters, 25% Gyroid Infill)'}`);
+    lines.push(`// ============================================================================`);
+    lines.push(``);
+    lines.push(`/* [EIA-310 Cover Panel Parameters (mm)] */`);
+    lines.push(`panel_width_mm = ${panelWidthMm};`);
+    lines.push(`aperture_width_mm = ${apertureWidthMm};`);
+    lines.push(`hole_center_pitch_x_mm = ${holePitchXMm};`);
+    lines.push(`panel_height_mm = ${panelHeightMm};`);
+    lines.push(`u_count = ${uCount};`);
+    lines.push(`faceplate_thickness_mm = 4.2;`);
+    lines.push(`stiffener_depth_mm = ${totalDepthMm};`);
+    lines.push(`stiffener_wall_mm = 3.2;`);
+    lines.push(`pattern_groove_depth_mm = 1.4;`);
+    lines.push(`$fn = 36;`);
+    lines.push(``);
+    lines.push(`module oval_mounting_slot(slot_w = 10.0, slot_h = 6.5, thickness = 10.0) {`);
+    lines.push(`  hull() {`);
+    lines.push(`    translate([-(slot_w - slot_h) / 2, 0, -1]) cylinder(d = slot_h, h = thickness);`);
+    lines.push(`    translate([ (slot_w - slot_h) / 2, 0, -1]) cylinder(d = slot_h, h = thickness);`);
+    lines.push(`  }`);
+    lines.push(`}`);
+    lines.push(``);
+    lines.push(`module eia310_ear_holes() {`);
+    lines.push(`  left_hole_x = (panel_width_mm - hole_center_pitch_x_mm) / 2;`);
+    lines.push(`  right_hole_x = panel_width_mm - left_hole_x;`);
+    lines.push(`  for (u = [0 : u_count - 1]) {`);
+    lines.push(`    base_y = u * 44.45;`);
+    lines.push(`    for (offset_y = [6.35, 22.225, 38.10]) {`);
+    lines.push(`      if (base_y + offset_y < panel_height_mm - 3.0) {`);
+    lines.push(`        translate([left_hole_x, base_y + offset_y, 0]) oval_mounting_slot();`);
+    lines.push(`        translate([right_hole_x, base_y + offset_y, 0]) oval_mounting_slot();`);
+    lines.push(`      }`);
+    lines.push(`    }`);
+    lines.push(`  }`);
+    lines.push(`}`);
+    lines.push(``);
+    lines.push(`module front_surface_pattern_grooves() {`);
+    const patX0 = roundCentis(earWidthMm + 10.0);
+    const patW = roundCentis(apertureWidthMm - 20.0);
+    if (pattern === 'lines') {
+      const lineCount = uCount * 3;
+      const marginY = 8.0;
+      const usableH = panelHeightMm - 2 * marginY;
+      const stepY = lineCount > 1 ? usableH / (lineCount - 1) : 0;
+      lines.push(`  // Horizontal precision decorative grooves (${lineCount} lines, blind depth = 1.4mm)`);
+      for (let i = 0; i < lineCount; i++) {
+        const gy = roundCentis(marginY + i * stepY - 1.2);
+        lines.push(`  translate([${patX0}, ${gy}, -0.5]) cube([${patW}, 2.4, pattern_groove_depth_mm + 0.5]);`);
+      }
+    } else if (pattern === 'hex') {
+      const rows = uCount * 2;
+      const cols = Math.max(5, Math.min(14, Math.floor(patW / 20)));
+      const pitchX = roundCentis(patW / cols);
+      const pitchY = roundCentis((panelHeightMm - 12.0) / rows);
+      lines.push(`  // Blind hexagonal honeycomb relief cells (${rows}x${cols}, closed 2.8mm rear baffle wall)`);
+      for (let r = 0; r < rows; r++) {
+        const cy = roundCentis(6.0 + (r + 0.5) * pitchY);
+        const rowShift = r % 2 === 1 ? roundCentis(pitchX * 0.25) : -roundCentis(pitchX * 0.25);
+        for (let c = 0; c < cols; c++) {
+          const cx = roundCentis(patX0 + (c + 0.5) * pitchX + rowShift);
+          lines.push(`  translate([${cx}, ${cy}, -0.5]) cylinder(d = ${roundCentis(Math.min(pitchX, pitchY) * 0.68)}, h = pattern_groove_depth_mm + 0.5, $fn = 6);`);
+        }
+      }
+    } else if (pattern === 'ribs') {
+      const ribCount = Math.max(8, Math.min(20, Math.floor(patW / 14)));
+      const pitchX = patW / ribCount;
+      const grooveW = roundCentis(Math.max(3.0, pitchX * 0.45));
+      const grooveH = roundCentis(panelHeightMm - 12.0);
+      lines.push(`  // Vertical tech-rib relief grooves (${ribCount} channels, blind depth = 1.4mm)`);
+      for (let i = 0; i < ribCount; i++) {
+        const gx = roundCentis(patX0 + (i + 0.5) * pitchX - grooveW / 2);
+        lines.push(`  translate([${gx}, 6.0, -0.5]) cube([${grooveW}, ${grooveH}, pattern_groove_depth_mm + 0.5]);`);
+      }
+    } else {
+      lines.push(`  // Minimalist recessed architectural bevel groove`);
+      lines.push(`  translate([${patX0}, ${roundCentis(panelHeightMm / 2 - 1.2)}, -0.5]) cube([${patW}, 2.4, pattern_groove_depth_mm + 0.5]);`);
+    }
+    lines.push(`}`);
+    lines.push(``);
+    lines.push(`module slot_bay_cutouts() {`);
+    lines.push(`  // Closed blanking cover panel (zero through-holes; front relief grooves only)`);
+    lines.push(`  front_surface_pattern_grooves();`);
+    lines.push(`}`);
+    lines.push(``);
+    lines.push(`module rear_perimeter_stiffener_frame() {`);
+    lines.push(`  flange_h = stiffener_depth_mm - faceplate_thickness_mm;`);
+    lines.push(`  if (flange_h > 0.5) {`);
+    lines.push(`    // Bottom & Top horizontal stiffening ribs`);
+    lines.push(`    translate([${earWidthMm}, 0, faceplate_thickness_mm]) cube([aperture_width_mm, stiffener_wall_mm, flange_h]);`);
+    lines.push(`    translate([${earWidthMm}, panel_height_mm - stiffener_wall_mm, faceplate_thickness_mm]) cube([aperture_width_mm, stiffener_wall_mm, flange_h]);`);
+    lines.push(`    // Left & Right vertical stiffening ribs`);
+    lines.push(`    translate([${earWidthMm}, 0, faceplate_thickness_mm]) cube([stiffener_wall_mm, panel_height_mm, flange_h]);`);
+    lines.push(`    translate([${earWidthMm} + aperture_width_mm - stiffener_wall_mm, 0, faceplate_thickness_mm]) cube([stiffener_wall_mm, panel_height_mm, flange_h]);`);
+    lines.push(`  }`);
+    lines.push(`}`);
+    lines.push(``);
+    lines.push(`module rack_carrier_assembly() {`);
+    lines.push(`  union() {`);
+    lines.push(`    difference() {`);
+    lines.push(`      cube([panel_width_mm, panel_height_mm, faceplate_thickness_mm]);`);
+    lines.push(`      eia310_ear_holes();`);
+    lines.push(`      slot_bay_cutouts();`);
+    lines.push(`    }`);
+    lines.push(`    rear_perimeter_stiffener_frame();`);
+    lines.push(`  }`);
+    lines.push(`}`);
+    lines.push(``);
+    lines.push(`rack_carrier_assembly();`);
+    return lines.join('\n');
+  }
+
+  const trayDepthMm = roundCentis(Math.max(40, blueprint.geometry.depth_mm));
 
   const lines: string[] = [];
   lines.push(`// ============================================================================`);
@@ -235,11 +373,14 @@ export function generateCarrierStl(
   const panelHeightMm = roundCentis(
     blueprint.geometry.height_mm || uCount * MM_PER_U - 0.75
   );
+  const isCoverPanel = isCoverPanelBlueprint(blueprint);
   const faceplateThicknessMm = 4.2;
   const trayFloorThicknessMm = 3.2;
   const sideGussetThicknessMm = 3.5;
   const printToleranceMm = 0.35;
-  const trayDepthMm = roundCentis(Math.max(40, blueprint.geometry.depth_mm));
+  const trayDepthMm = isCoverPanel
+    ? roundCentis(Math.max(6.0, blueprint.geometry.depth_mm))
+    : roundCentis(Math.max(40, blueprint.geometry.depth_mm));
   const earWidthMm = roundCentis((panelWidthMm - apertureWidthMm) / 2);
 
   // 1. Primary additive CSG volumes
@@ -261,7 +402,20 @@ export function generateCarrierStl(
     z1: trayDepthMm
   });
 
-  const gussetHeightMm = roundCentis(panelHeightMm * 0.65);
+  const topStiffenerBox = isCoverPanel
+    ? normalizeBox({
+        x0: earWidthMm,
+        y0: roundCentis(panelHeightMm - trayFloorThicknessMm),
+        z0: faceplateThicknessMm,
+        x1: panelWidthMm - earWidthMm,
+        y1: panelHeightMm,
+        z1: trayDepthMm
+      })
+    : null;
+
+  const gussetHeightMm = isCoverPanel
+    ? panelHeightMm
+    : roundCentis(panelHeightMm * 0.65);
   const gussetBoxes: Box3DMm[] = [
     normalizeBox({
       x0: earWidthMm,
@@ -311,6 +465,96 @@ export function generateCarrierStl(
           })
         );
       }
+    }
+  }
+
+  // 2b. Blind Front Decorative Pattern Grooves for Cover Panels (z = 0..1.4mm, leaving 2.8mm solid backing wall)
+  const patternGrooveBoxes: Box3DMm[] = [];
+  if (isCoverPanel) {
+    const pattern = resolveCoverPanelPattern(blueprint.slug);
+    const patX0 = roundCentis(earWidthMm + 10.0);
+    const patX1 = roundCentis(panelWidthMm - earWidthMm - 10.0);
+    const patW = roundCentis(patX1 - patX0);
+    const grooveDepthMm = 1.4;
+
+    if (pattern === 'lines') {
+      const lineCount = uCount * 3;
+      const marginY = 8.0;
+      const usableH = panelHeightMm - 2 * marginY;
+      const stepY = lineCount > 1 ? usableH / (lineCount - 1) : 0;
+      for (let i = 0; i < lineCount; i++) {
+        const gy0 = roundCentis(marginY + i * stepY - 1.2);
+        const gy1 = roundCentis(gy0 + 2.4);
+        patternGrooveBoxes.push(
+          normalizeBox({
+            x0: patX0,
+            y0: gy0,
+            z0: -1,
+            x1: patX1,
+            y1: gy1,
+            z1: grooveDepthMm
+          })
+        );
+      }
+    } else if (pattern === 'hex') {
+      const rows = uCount * 2;
+      const cols = Math.max(5, Math.min(10, Math.floor(patW / 24)));
+      const pitchX = patW / cols;
+      const pitchY = (panelHeightMm - 12.0) / rows;
+      const cellW = roundCentis(pitchX * 0.62);
+      const cellH = roundCentis(pitchY * 0.6);
+      for (let r = 0; r < rows; r++) {
+        const cy = 6.0 + (r + 0.5) * pitchY;
+        const shiftX = r % 2 === 1 ? pitchX * 0.16 : -pitchX * 0.16;
+        for (let c = 0; c < cols; c++) {
+          const cx = patX0 + (c + 0.5) * pitchX + shiftX;
+          const x0 = roundCentis(Math.max(patX0, cx - cellW / 2));
+          const x1 = roundCentis(Math.min(patX1, cx + cellW / 2));
+          const y0 = roundCentis(cy - cellH / 2);
+          const y1 = roundCentis(cy + cellH / 2);
+          if (x1 - x0 >= 3.0 && y1 - y0 >= 3.0) {
+            patternGrooveBoxes.push(
+              normalizeBox({
+                x0,
+                y0,
+                z0: -1,
+                x1,
+                y1,
+                z1: grooveDepthMm
+              })
+            );
+          }
+        }
+      }
+    } else if (pattern === 'ribs') {
+      const ribCount = Math.max(8, Math.min(14, Math.floor(patW / 16)));
+      const pitchX = patW / ribCount;
+      const grooveW = roundCentis(Math.max(3.0, pitchX * 0.45));
+      for (let i = 0; i < ribCount; i++) {
+        const gx0 = roundCentis(patX0 + (i + 0.5) * pitchX - grooveW / 2);
+        const gx1 = roundCentis(gx0 + grooveW);
+        patternGrooveBoxes.push(
+          normalizeBox({
+            x0: gx0,
+            y0: 6.0,
+            z0: -1,
+            x1: gx1,
+            y1: roundCentis(panelHeightMm - 6.0),
+            z1: grooveDepthMm
+          })
+        );
+      }
+    } else {
+      patternGrooveBoxes.push(
+        normalizeBox({
+          x0: patX0,
+          y0: roundCentis(panelHeightMm / 2 - 1.2),
+          z0: -1,
+          x1: patX1,
+          y1: roundCentis(panelHeightMm / 2 + 1.2),
+          z1: grooveDepthMm
+        })
+      );
     }
   }
 
@@ -389,34 +633,36 @@ export function generateCarrierStl(
 
   // 4. Tray Floor Ventilation Cutouts (spaced safely clear of gussets and retention rails)
   const ventCutoutBoxes: Box3DMm[] = [];
-  const ventXMin = roundCentis(earWidthMm + sideGussetThicknessMm + 10);
-  const ventXMax = roundCentis(
-    panelWidthMm - earWidthMm - sideGussetThicknessMm - 10
-  );
-  for (let z = 20; z + 12 <= trayDepthMm - 12; z += 22) {
-    for (let x = ventXMin; x + 12 <= ventXMax; x += 22) {
-      const vx0 = roundCentis(x);
-      const vx1 = roundCentis(x + 12);
-      const vz0 = roundCentis(z);
-      const vz1 = roundCentis(z + 12);
-      const overlapsRail = railBoxes.some(
-        (r) =>
-          vx1 > r.x0 - 2.0 &&
-          vx0 < r.x1 + 2.0 &&
-          vz1 > r.z0 - 2.0 &&
-          vz0 < r.z1 + 2.0
-      );
-      if (!overlapsRail) {
-        ventCutoutBoxes.push(
-          normalizeBox({
-            x0: vx0,
-            y0: -1,
-            z0: vz0,
-            x1: vx1,
-            y1: trayFloorThicknessMm + 1,
-            z1: vz1
-          })
+  if (!isCoverPanel) {
+    const ventXMin = roundCentis(earWidthMm + sideGussetThicknessMm + 10);
+    const ventXMax = roundCentis(
+      panelWidthMm - earWidthMm - sideGussetThicknessMm - 10
+    );
+    for (let z = 20; z + 12 <= trayDepthMm - 12; z += 22) {
+      for (let x = ventXMin; x + 12 <= ventXMax; x += 22) {
+        const vx0 = roundCentis(x);
+        const vx1 = roundCentis(x + 12);
+        const vz0 = roundCentis(z);
+        const vz1 = roundCentis(z + 12);
+        const overlapsRail = railBoxes.some(
+          (r) =>
+            vx1 > r.x0 - 2.0 &&
+            vx0 < r.x1 + 2.0 &&
+            vz1 > r.z0 - 2.0 &&
+            vz0 < r.z1 + 2.0
         );
+        if (!overlapsRail) {
+          ventCutoutBoxes.push(
+            normalizeBox({
+              x0: vx0,
+              y0: -1,
+              z0: vz0,
+              x1: vx1,
+              y1: trayFloorThicknessMm + 1,
+              z1: vz1
+            })
+          );
+        }
       }
     }
   }
@@ -425,8 +671,10 @@ export function generateCarrierStl(
   const allBoxes = [
     faceplateBox,
     trayFloorBox,
+    ...(topStiffenerBox ? [topStiffenerBox] : []),
     ...gussetBoxes,
     ...earHoleBoxes,
+    ...patternGrooveBoxes,
     ...slotCutoutBoxes,
     ...railBoxes,
     ...ventCutoutBoxes
@@ -479,16 +727,21 @@ export function generateCarrierStl(
     const inFaceplate =
       isPointInsideBox(mx, my, mz, faceplateBox) &&
       !earHoleBoxes.some((b) => isPointInsideBox(mx, my, mz, b)) &&
+      !patternGrooveBoxes.some((b) => isPointInsideBox(mx, my, mz, b)) &&
       !slotCutoutBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
 
     const inTrayFloor =
       isPointInsideBox(mx, my, mz, trayFloorBox) &&
       !ventCutoutBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
 
+    const inTopStiffener =
+      topStiffenerBox !== null && isPointInsideBox(mx, my, mz, topStiffenerBox);
     const inGusset = gussetBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
     const inRail = railBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
 
-    return inFaceplate || inTrayFloor || inGusset || inRail;
+    return (
+      inFaceplate || inTrayFloor || inTopStiffener || inGusset || inRail
+    );
   };
 
   const solidGrid: boolean[][][] = [];

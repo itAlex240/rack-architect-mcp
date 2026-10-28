@@ -114,6 +114,9 @@ export function MountedDevice3D({
   }
 
   const isModularCarrier = device.blueprint.category === 'modular-carrier';
+  const isBlankPanel =
+    device.blueprint.category === 'blank-panel' ||
+    device.blueprint.category === 'blanking-panel';
   const sortedSlots = isModularCarrier
     ? [...device.slots].sort(
         (a, b) => a.world_bounds.min.x - b.world_bounds.min.x,
@@ -555,6 +558,7 @@ export function MountedDevice3D({
       {/* Recessed Front Faceplate Bezel & Power Status LED */}
       {!isModularCarrier &&
         !isShelf &&
+        !isBlankPanel &&
         device.blueprint.category !== 'keystone-module' &&
         device.blueprint.category !== 'brush-panel' && (
           <>
@@ -597,6 +601,125 @@ export function MountedDevice3D({
             </mesh>
           </>
         )}
+
+      {/* 3D-Printed / Anodized Cover Panel Decorative Surface Relief (Lines / Hex / Tech-Ribs) */}
+      {isBlankPanel && (
+        <group onClick={handleClick}>
+          {/* Recessed Inner Decorative Bezel Cavity */}
+          <mesh
+            position={[
+              cx,
+              cy,
+              (device.face === 'front' ? box.min.z - 0.45 : box.max.z + 0.45) +
+                offsetZ,
+            ]}
+          >
+            <boxGeometry
+              args={[Math.max(12, w - 14), Math.max(8, h - 7), 0.9]}
+            />
+            <meshStandardMaterial
+              color="#111115"
+              metalness={0.22}
+              roughness={0.72}
+              transparent={xrayMode}
+              opacity={xrayMode ? 0.16 : 1.0}
+              depthWrite={!xrayMode}
+            />
+          </mesh>
+          {(() => {
+            const slug = device.blueprint.slug;
+            const patternZ =
+              (device.face === 'front' ? box.min.z - 1.05 : box.max.z + 1.05) +
+              offsetZ;
+            const accentColor =
+              chassisColor.toUpperCase() === '#E5E7EB' ||
+              chassisColor.toUpperCase() === '#D1D5DB'
+                ? '#9CA3AF'
+                : '#3F3F46';
+
+            if (slug.includes('hex')) {
+              const rows = h > 60 ? 5 : 2;
+              const cols = w > 300 ? 18 : w > 180 ? 11 : 6;
+              const innerW = Math.max(24, w - 34);
+              const innerH = Math.max(12, h - 14);
+              const stepX = cols > 1 ? innerW / (cols - 1) : 0;
+              const stepY = rows > 1 ? innerH / (rows - 1) : 0;
+              const cells: React.JSX.Element[] = [];
+              for (let r = 0; r < rows; r++) {
+                const rowShift = r % 2 === 1 ? stepX * 0.45 : 0;
+                const rowCols = r % 2 === 1 ? Math.max(1, cols - 1) : cols;
+                for (let c = 0; c < rowCols; c++) {
+                  const hx = cx - innerW / 2 + c * stepX + rowShift;
+                  const hy = cy - innerH / 2 + r * stepY;
+                  cells.push(
+                    <mesh
+                      key={`hex-${r}-${c}`}
+                      position={[hx, hy, patternZ]}
+                      rotation={[Math.PI / 2, 0, 0]}
+                    >
+                      <cylinderGeometry args={[3.4, 3.4, 1.1, 6]} />
+                      <meshStandardMaterial
+                        color={accentColor}
+                        metalness={0.35}
+                        roughness={0.48}
+                        transparent={xrayMode}
+                        opacity={xrayMode ? 0.18 : 1.0}
+                        depthWrite={!xrayMode}
+                      />
+                    </mesh>,
+                  );
+                }
+              }
+              return cells;
+            }
+
+            if (slug.includes('ribs')) {
+              const ribCount = w > 300 ? 20 : w > 180 ? 12 : 7;
+              const innerW = Math.max(24, w - 32);
+              const ribH = Math.max(10, h - 13);
+              const stepX = ribCount > 1 ? innerW / (ribCount - 1) : 0;
+              return Array.from({ length: ribCount }, (_, idx) => {
+                const rx = cx - innerW / 2 + idx * stepX;
+                return (
+                  <mesh key={`rib-${idx}`} position={[rx, cy, patternZ]}>
+                    <boxGeometry args={[3.2, ribH, 1.2]} />
+                    <meshStandardMaterial
+                      color={accentColor}
+                      metalness={0.4}
+                      roughness={0.42}
+                      transparent={xrayMode}
+                      opacity={xrayMode ? 0.18 : 1.0}
+                      depthWrite={!xrayMode}
+                    />
+                  </mesh>
+                );
+              });
+            }
+
+            // Default / 'lines': Horizontal precision designer ribs across the slot faceplate
+            const lineCount = h > 60 ? 6 : 3;
+            const lineW = Math.max(20, w - 28);
+            const innerH = Math.max(10, h - 14);
+            const stepY = lineCount > 1 ? innerH / (lineCount - 1) : 0;
+            return Array.from({ length: lineCount }, (_, idx) => {
+              const ly = cy - innerH / 2 + idx * stepY;
+              return (
+                <mesh key={`line-${idx}`} position={[cx, ly, patternZ]}>
+                  <boxGeometry args={[lineW, 2.2, 1.2]} />
+                  <meshStandardMaterial
+                    color={accentColor}
+                    metalness={0.42}
+                    roughness={0.38}
+                    transparent={xrayMode}
+                    opacity={xrayMode ? 0.18 : 1.0}
+                    depthWrite={!xrayMode}
+                  />
+                </mesh>
+              );
+            });
+          })()}
+        </group>
+      )}
 
       {/* Selection Wireframe Outline */}
       {isSelected && (

@@ -139,13 +139,17 @@ For every modular 3D-printed carrier (`category: 'modular-carrier'`), `@rack-mcp
 Pre-generated reference files in [`examples/10inch-homelab/`](./examples/10inch-homelab/):
 - [`3dprint-10inch-lenovo-tiny-plus-2keystone.scad`](./examples/10inch-homelab/3dprint-10inch-lenovo-tiny-plus-2keystone.scad) & [`.stl`](./examples/10inch-homelab/3dprint-10inch-lenovo-tiny-plus-2keystone.stl)
 - [`3dprint-10inch-ucg-ultra-plus-3keystone.scad`](./examples/10inch-homelab/3dprint-10inch-ucg-ultra-plus-3keystone.scad) & [`.stl`](./examples/10inch-homelab/3dprint-10inch-ucg-ultra-plus-3keystone.stl)
+- [`3dprint-10inch-cover-panel-lines-1u.scad`](./examples/10inch-homelab/3dprint-10inch-cover-panel-lines-1u.scad) & [`.stl`](./examples/10inch-homelab/3dprint-10inch-cover-panel-lines-1u.stl)
+- [`3dprint-10inch-cover-panel-hex-1u.scad`](./examples/10inch-homelab/3dprint-10inch-cover-panel-hex-1u.scad) & [`.stl`](./examples/10inch-homelab/3dprint-10inch-cover-panel-hex-1u.stl)
+- [`3dprint-10inch-cover-panel-lines-2u.scad`](./examples/10inch-homelab/3dprint-10inch-cover-panel-lines-2u.scad) & [`.stl`](./examples/10inch-homelab/3dprint-10inch-cover-panel-lines-2u.stl)
+- [`3dprint-10inch-cover-panel-ribs-2u.scad`](./examples/10inch-homelab/3dprint-10inch-cover-panel-ribs-2u.scad) & [`.stl`](./examples/10inch-homelab/3dprint-10inch-cover-panel-ribs-2u.stl)
 
 ---
 
 ## 🖥️ Live 3D Digital Twin & 2D CAD Web-Viewer (`127.0.0.1:3100`)
 
 - **Interactive Catalog & Cable Patch Builder (`+ Catalog & Cable Builder`):**
-  - Search all 60 hardware blueprints, filter by `10inch` / `19inch` / `6inch` / `sub-module`, select `Target U` + `FRONT/REAR`, and mount with 1 click.
+  - Search all 67 hardware blueprints, filter by `10inch` / `19inch` / `6inch` / `sub-module`, select `Target U` + `FRONT/REAR`, and mount with 1 click.
   - Patch 3D Catmull-Rom cables between any two ports with optional `VLAN ID` (`1..4094`) and `IP CIDR` (`10.10.20.0/24`) annotations.
 - **3D Engineering HUD:**
   - Camera Presets: `Perspective`, `Front Ortho`, `Rear Ortho`, `Left Cutaway`
@@ -172,7 +176,7 @@ Pre-generated reference files in [`examples/10inch-homelab/`](./examples/10inch-
 | Package | Description |
 | :--- | :--- |
 | [`@rack-mcp/core-domain`](./packages/core-domain) | Pure TypeScript/Zod schemas, 3D coordinate transformer, AABB collision solver, 5-stage validator, and clamped Catmull-Rom 3D spline router (zero Node/DOM dependencies). |
-| [`@rack-mcp/hardware-catalog`](./packages/hardware-catalog) | 60 YAML hardware blueprints (`10inch`, `19inch`, `6inch`, `carriers`, `sub-modules`), `port_groups` matrix expander, and catalog search/validator. |
+| [`@rack-mcp/hardware-catalog`](./packages/hardware-catalog) | 67 YAML hardware blueprints (`10inch`, `19inch`, `6inch`, `carriers`, `sub-modules`), `port_groups` matrix expander, and catalog search/validator. |
 | [`@rack-mcp/exporters`](./packages/exporters) | `elevation.svg`, `wiring-schematic.svg`, `BOM.md`, headless binary `.glb`, and parametric `.scad` & `.stl` 3D-print generators. |
 | [`@rack-mcp/mcp-server`](./packages/mcp-server) | MCP server (`stdio`), 11 tools, 4 resources, 2 prompts, 50-step Undo/Redo manager, and local HTTP/WebSocket sidecar (`:3100`). |
 | [`@rack-mcp/web-viewer`](./packages/web-viewer) | React 19 + Three.js (`@react-three/fiber`) live 3D/2D CAD studio, Catalog/Cable Builder Drawer, and W3C WebMCP integration. |

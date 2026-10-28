@@ -8,7 +8,7 @@ import { defaultCatalogRegistry } from '@rack-mcp/hardware-catalog';
 /**
  * Canonical 8U 10-Inch Homelab reference project specification:
  * - U1: cyberpower-10inch-ups-1u (Front)
- * - U2: digitus-10inch-pdu-4way-schuko (Rear)
+ * - U2: 3dprint-10inch-cover-panel-lines-1u (Front) + digitus-10inch-pdu-4way-schuko (Rear)
  * - U3: 3dprint-10inch-ucg-ultra-plus-3keystone with ubiquiti-ucg-max + 3x keystone-rj45-cat6a-coupler
  * - U4: 3dprint-10inch-lenovo-tiny-plus-2keystone with lenovo-thinkcentre-m920q (pve-node-01) + 2x keystone-rj45-cat6a-coupler
  * - U5: 3dprint-10inch-lenovo-tiny-plus-2keystone with lenovo-thinkcentre-m920q (pve-node-02) + 2x keystone-rj45-cat6a-coupler
@@ -34,6 +34,14 @@ export function create10InchHomelabProjectInput(): RackProjectInput {
         blueprint_slug: 'cyberpower-10inch-ups-1u',
         hostname: 'ups-core-01',
         u_position: 1,
+        face: 'front',
+        children: [],
+      },
+      {
+        instance_id: 'cover-u2',
+        blueprint_slug: '3dprint-10inch-cover-panel-lines-1u',
+        hostname: 'cover-panel-u2',
+        u_position: 2,
         face: 'front',
         children: [],
       },
