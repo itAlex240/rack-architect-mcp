@@ -227,7 +227,7 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
           scene={scene}
           connectionMode="sidecar-live"
           projectPath="/workspace/examples/19inch-enterprise/rack.yaml"
-          selectedDeviceId={null}
+          selectedDeviceId="patch-u7"
           selectedCableId={null}
           mcpToolLog={[]}
           onSelectDevice={vi.fn()}
@@ -240,6 +240,10 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
         />
       </div>,
     );
+
+    const sidebarEl = screen.getByTestId('inspector-sidebar');
+    expect(sidebarEl.style.overflowX).toBe('hidden');
+    expect(sidebarEl.style.maxWidth).toBe('368px');
 
     // Fake demo simulation controls must NOT exist in sidecar-live mode
     expect(screen.queryByTestId('btn-simulate-mcp-agent')).toBeNull();

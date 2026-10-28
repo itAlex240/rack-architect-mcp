@@ -5,6 +5,14 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2026-10-28
+
+### Fixed
+- **Eliminated Horizontal Clipping in Right Inspector Sidebar & Top Navigation Bar (`@rack-mcp/web-viewer`):**
+  - Replaced `gridTemplateColumns: '1fr 1fr'` and `'repeat(3, 1fr)'` across [`InspectorSidebar.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/InspectorSidebar.tsx) (`Ports (24)` list, `DIMENSIONS / POWER DRAW`, `UPS Load / PoE Budget`, mechanical KPIs, and demo controls) with `repeat(2, minmax(0, 1fr))` / `repeat(3, minmax(0, 1fr))` and added `minWidth: 0, overflow: 'hidden'` on all grid/flex cards so long port and building-drop labels (`🏢 Primary Fiber ONT (ISP 1)`, `🏠 Wi-Fi 7 PoE++ AP #1`) truncate cleanly with ellipsis instead of expanding the right column off-screen.
+  - Locked `<aside data-testid="inspector-sidebar">` to `width: 368px; minWidth: 368px; maxWidth: 368px; overflowX: hidden; boxSizing: border-box`.
+  - Updated [`TopNavBar.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/ui/TopNavBar.tsx) flex-shrink priorities (`flexShrink: 0` on the `RackArchitect` brand badge, workspace switcher, and action buttons; `flexShrink: 1` with ellipsis on the project title and compact filename badge) so the top navigation bar never clips on the left or right edge.
+
 ## [0.4.1] - 2026-10-28
 
 ### Fixed

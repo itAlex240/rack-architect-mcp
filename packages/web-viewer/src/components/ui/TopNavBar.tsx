@@ -91,15 +91,18 @@ export function TopNavBar({
     <header
       data-testid="top-nav-bar"
       style={{
+        width: '100%',
+        maxWidth: '100%',
         height: '52px',
-        padding: '0 16px',
+        padding: '0 12px',
         background: '#0E0E11',
         borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: '12px',
+        gap: '8px',
         flexShrink: 0,
+        boxSizing: 'border-box',
         whiteSpace: 'nowrap',
       }}
     >
@@ -108,15 +111,16 @@ export function TopNavBar({
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
+          gap: '8px',
           minWidth: 0,
+          flexShrink: 1,
         }}
       >
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '7px',
+            gap: '6px',
             padding: '4px 8px',
             borderRadius: '6px',
             background: '#18181D',
@@ -125,6 +129,7 @@ export function TopNavBar({
             fontWeight: 700,
             fontSize: '11.5px',
             letterSpacing: '-0.01em',
+            flexShrink: 0,
           }}
         >
           <span
@@ -134,6 +139,7 @@ export function TopNavBar({
               borderRadius: '2px',
               background: '#3B82F6',
               display: 'inline-block',
+              flexShrink: 0,
             }}
           />
           <span>RackArchitect</span>
@@ -143,18 +149,22 @@ export function TopNavBar({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: '6px',
             minWidth: 0,
+            flexShrink: 1,
           }}
         >
           <span
+            title={scene.project.project_name}
             style={{
-              fontSize: '13px',
+              fontSize: '12.5px',
               fontWeight: 600,
               color: '#F4F4F5',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              maxWidth: '220px',
+              maxWidth: '175px',
+              minWidth: '40px',
+              flexShrink: 1,
             }}
           >
             {scene.project.project_name}
@@ -162,12 +172,13 @@ export function TopNavBar({
           <span
             className="mono"
             style={{
-              padding: '2px 7px',
+              padding: '2px 6px',
               borderRadius: '4px',
               background: '#16161B',
               border: '1px solid rgba(255, 255, 255, 0.06)',
-              fontSize: '10.5px',
+              fontSize: '10px',
               color: '#A1A1AA',
+              flexShrink: 0,
             }}
           >
             {scene.project.rack.standard.toUpperCase()} ·{' '}
@@ -184,16 +195,17 @@ export function TopNavBar({
             display: 'inline-flex',
             alignItems: 'center',
             gap: '5px',
-            padding: '5px 10px',
+            padding: '4px 9px',
             borderRadius: '6px',
             border: catalogDrawerOpen
               ? '1px solid rgba(59, 130, 246, 0.5)'
               : '1px solid rgba(255, 255, 255, 0.1)',
             background: catalogDrawerOpen ? 'rgba(59, 130, 246, 0.14)' : '#18181D',
             color: catalogDrawerOpen ? '#93C5FD' : '#E4E4E7',
-            fontSize: '11.5px',
+            fontSize: '11px',
             fontWeight: 600,
             cursor: 'pointer',
+            flexShrink: 0,
           }}
         >
           <PlusIcon size={12} />
@@ -212,6 +224,7 @@ export function TopNavBar({
           borderRadius: '8px',
           background: '#141418',
           border: '1px solid rgba(255, 255, 255, 0.07)',
+          flexShrink: 0,
         }}
       >
         {WORKSPACE_TABS.map((tab) => {
@@ -225,15 +238,15 @@ export function TopNavBar({
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '5px 11px',
+                gap: '5px',
+                padding: '4px 9px',
                 borderRadius: '6px',
                 border: active
                   ? '1px solid rgba(255, 255, 255, 0.12)'
                   : '1px solid transparent',
                 background: active ? '#23232B' : 'transparent',
                 color: active ? '#F4F4F5' : '#A1A1AA',
-                fontSize: '11.5px',
+                fontSize: '11px',
                 fontWeight: active ? 600 : 500,
                 cursor: 'pointer',
               }}
@@ -246,17 +259,25 @@ export function TopNavBar({
       </nav>
 
       {/* Right: Validation Status Dot, AI Self-Correction Trigger & History Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          minWidth: 0,
+          flexShrink: 0,
+        }}
+      >
         <span
           data-testid="validation-status-pill"
           className="mono"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '6px',
-            padding: '4px 9px',
+            gap: '5px',
+            padding: '4px 8px',
             borderRadius: '6px',
-            fontSize: '10.5px',
+            fontSize: '10px',
             fontWeight: 600,
             background: isValid
               ? 'rgba(16, 185, 129, 0.08)'
@@ -265,6 +286,7 @@ export function TopNavBar({
             border: isValid
               ? '1px solid rgba(16, 185, 129, 0.25)'
               : '1px solid rgba(239, 68, 68, 0.35)',
+            flexShrink: 0,
           }}
         >
           <span
@@ -297,13 +319,17 @@ export function TopNavBar({
             display: 'inline-flex',
             alignItems: 'center',
             gap: '5px',
-            padding: '4px 8px',
+            padding: '4px 7px',
             borderRadius: '6px',
-            fontSize: '10.5px',
+            fontSize: '10px',
             fontWeight: 500,
             background: '#16161B',
             color: connectionMode === 'sidecar-live' ? '#93C5FD' : '#A1A1AA',
             border: '1px solid rgba(255, 255, 255, 0.07)',
+            maxWidth: '155px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            flexShrink: 0,
           }}
         >
           <span
@@ -311,6 +337,7 @@ export function TopNavBar({
               width: '5px',
               height: '5px',
               borderRadius: '999px',
+              flexShrink: 0,
               background:
                 connectionMode === 'sidecar-live' ? '#3B82F6' : '#71717A',
               boxShadow:
@@ -319,7 +346,13 @@ export function TopNavBar({
                   : 'none',
             }}
           />
-          <span>
+          <span
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
             {connectionMode === 'sidecar-live'
               ? `MCP Live · ${shortFileName}`
               : 'Standalone Demo'}
@@ -434,7 +467,7 @@ export function TopNavBar({
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '1fr 1fr 1fr',
+                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
                     gap: '6px',
                   }}
                 >

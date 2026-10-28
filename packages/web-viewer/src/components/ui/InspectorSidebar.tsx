@@ -84,12 +84,16 @@ export function InspectorSidebar({
       data-testid="inspector-sidebar"
       style={{
         width: '368px',
+        minWidth: '368px',
+        maxWidth: '368px',
         height: '100%',
         background: '#0E0E11',
         borderLeft: '1px solid rgba(255, 255, 255, 0.07)',
         display: 'flex',
         flexDirection: 'column',
         overflowY: 'auto',
+        overflowX: 'hidden',
+        boxSizing: 'border-box',
         flexShrink: 0,
       }}
     >
@@ -134,13 +138,15 @@ export function InspectorSidebar({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
             gap: '10px',
           }}
         >
           {/* UPS Load Bar */}
           <div
             style={{
+              minWidth: 0,
+              overflow: 'hidden',
               padding: '8px 10px',
               borderRadius: '7px',
               background: '#17171C',
@@ -183,6 +189,8 @@ export function InspectorSidebar({
           {/* PoE Budget Bar */}
           <div
             style={{
+              minWidth: 0,
+              overflow: 'hidden',
               padding: '8px 10px',
               borderRadius: '7px',
               background: '#17171C',
@@ -235,12 +243,14 @@ export function InspectorSidebar({
           className="mono"
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
             gap: '6px',
           }}
         >
           <div
             style={{
+              minWidth: 0,
+              overflow: 'hidden',
               padding: '7px 8px',
               borderRadius: '6px',
               background: '#16161B',
@@ -261,6 +271,8 @@ export function InspectorSidebar({
           </div>
           <div
             style={{
+              minWidth: 0,
+              overflow: 'hidden',
               padding: '7px 8px',
               borderRadius: '6px',
               background: '#16161B',
@@ -282,6 +294,8 @@ export function InspectorSidebar({
           <div
             data-testid="kpi-thermal-btu"
             style={{
+              minWidth: 0,
+              overflow: 'hidden',
               padding: '7px 8px',
               borderRadius: '6px',
               background: '#16161B',
@@ -303,6 +317,8 @@ export function InspectorSidebar({
           <div
             data-testid="kpi-acoustic-dba"
             style={{
+              minWidth: 0,
+              overflow: 'hidden',
               padding: '7px 8px',
               borderRadius: '6px',
               background: '#16161B',
@@ -324,6 +340,8 @@ export function InspectorSidebar({
           <div
             data-testid="kpi-airflow-profile"
             style={{
+              minWidth: 0,
+              overflow: 'hidden',
               gridColumn: 'span 2',
               padding: '7px 8px',
               borderRadius: '6px',
@@ -450,10 +468,17 @@ export function InspectorSidebar({
 
           {selectedDevice ? (
             <div
-              style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                minWidth: 0,
+              }}
             >
               <div
                 style={{
+                  minWidth: 0,
+                  overflow: 'hidden',
                   padding: '12px',
                   borderRadius: '8px',
                   background: '#15151A',
@@ -465,6 +490,7 @@ export function InspectorSidebar({
                     fontSize: '13px',
                     fontWeight: 600,
                     color: '#F4F4F5',
+                    overflowWrap: 'anywhere',
                   }}
                 >
                   {selectedDevice.hostname ?? selectedDevice.blueprint.model}
@@ -475,6 +501,9 @@ export function InspectorSidebar({
                     fontSize: '10.5px',
                     color: '#A1A1AA',
                     marginTop: '3px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {selectedDevice.instance_id} · {selectedDevice.blueprint_slug}
@@ -484,7 +513,7 @@ export function InspectorSidebar({
                   className="mono"
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
+                    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
                     gap: '6px',
                     marginTop: '10px',
                     paddingTop: '10px',
@@ -492,7 +521,7 @@ export function InspectorSidebar({
                     fontSize: '10.5px',
                   }}
                 >
-                  <div>
+                  <div style={{ minWidth: 0, overflow: 'hidden' }}>
                     <div style={{ color: '#71717A', fontSize: '9.5px' }}>
                       DIMENSIONS
                     </div>
@@ -502,7 +531,7 @@ export function InspectorSidebar({
                       {selectedDevice.blueprint.geometry.depth_mm}mm
                     </div>
                   </div>
-                  <div>
+                  <div style={{ minWidth: 0, overflow: 'hidden' }}>
                     <div style={{ color: '#71717A', fontSize: '9.5px' }}>
                       POWER DRAW
                     </div>
@@ -617,8 +646,10 @@ export function InspectorSidebar({
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
                   gap: '5px',
+                  minWidth: 0,
+                  width: '100%',
                 }}
               >
                 {selectedDevice.ports.map((p) => {
@@ -641,7 +672,16 @@ export function InspectorSidebar({
                       onClick={() => {
                         if (connCable) onSelectCable(connCable.cable_id);
                       }}
+                      title={
+                        connExt
+                          ? `${p.port_id}: ${connExt.label} (${connExt.room_or_zone ?? 'Gebäude'})`
+                          : connCable
+                            ? `${p.port_id}: ${connCable.label ?? connCable.cable_id}`
+                            : `${p.port_id} (${p.connector_type})`
+                      }
                       style={{
+                        minWidth: 0,
+                        overflow: 'hidden',
                         padding: '6px 8px',
                         borderRadius: '6px',
                         background: '#15151A',
@@ -666,18 +706,37 @@ export function InspectorSidebar({
                         style={{
                           display: 'flex',
                           justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: '4px',
+                          minWidth: 0,
                           fontWeight: 600,
                           color: '#E4E4E7',
                         }}
                       >
-                        <span>{p.port_id}</span>
-                        <span style={{ color: '#71717A', fontSize: '9.5px' }}>
+                        <span
+                          style={{
+                            minWidth: 0,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {p.port_id}
+                        </span>
+                        <span
+                          style={{
+                            color: '#71717A',
+                            fontSize: '9px',
+                            flexShrink: 0,
+                          }}
+                        >
                           {connExt ? 'rear+front' : p.world_face}
                         </span>
                       </div>
                       <div
                         className="mono"
                         style={{
+                          minWidth: 0,
                           color:
                             connCable || connExt ? '#A1A1AA' : '#52525B',
                           fontSize: '9.5px',
@@ -930,6 +989,8 @@ export function InspectorSidebar({
                         }
                       }}
                       style={{
+                        minWidth: 0,
+                        overflow: 'hidden',
                         padding: '7px 9px',
                         borderRadius: '6px',
                         background: isRowSelected ? '#1E1E28' : '#111115',
@@ -949,10 +1010,15 @@ export function InspectorSidebar({
                           justifyContent: 'space-between',
                           alignItems: 'center',
                           gap: '6px',
+                          minWidth: 0,
                         }}
                       >
                         <span
                           style={{
+                            minWidth: 0,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
                             fontSize: '11px',
                             fontWeight: 600,
                             color: '#F4F4F5',
@@ -963,6 +1029,7 @@ export function InspectorSidebar({
                         <span
                           className="mono"
                           style={{
+                            flexShrink: 0,
                             fontSize: '9.5px',
                             padding: '1px 5px',
                             borderRadius: '4px',
@@ -981,7 +1048,14 @@ export function InspectorSidebar({
                       </div>
                       <div
                         className="mono"
-                        style={{ fontSize: '10px', color: '#A1A1AA' }}
+                        style={{
+                          fontSize: '10px',
+                          color: '#A1A1AA',
+                          minWidth: 0,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
                       >
                         1. Hinten:{' '}
                         <span style={{ color: '#38BDF8' }}>
@@ -1207,7 +1281,7 @@ export function InspectorSidebar({
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
                 gap: '6px',
               }}
             >
