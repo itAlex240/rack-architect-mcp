@@ -1,5 +1,6 @@
 import {
   EIA_310_SPECS,
+  evaluateCentripetalCatmullRomSpline,
   vec3Add,
   vec3Scale,
   vec3Sub,
@@ -832,6 +833,120 @@ export function generateGlbBinary(scene: ComputedRackScene): Uint8Array {
         cable_type: route.cable_type,
         recommended_commercial_mm: route.recommended_commercial_mm,
       },
+    });
+  }
+
+  // 3b. External Building & ISP Drop Tubes (`ExternalDrop_<endpoint_id>`) entering from Top-Rear / Bottom-Rear
+  const externalEndpoints = scene.project.external_endpoints ?? [];
+  if (externalEndpoints.length > 0) {
+    const firstPpDev = scene.geometry.devices_by_id.get(
+      externalEndpoints[0]?.patch_panel_instance_id ?? '',
+    );
+    const firstRearZ = (firstPpDev?.chassis_box.max.z ?? 35) + 2.2;
+    const collarZ = Math.min(dMm - 22, Math.max(firstRearZ + 88, dMm * 0.56));
+    const isBottomEntry =
+      externalEndpoints[0]?.entry_position === 'bottom-rear';
+    const collarY = isBottomEntry ? -3.0 : hMm + 3.0;
+    const collarHalfW = Math.min(
+      pW * 0.26,
+      Math.max(35, externalEndpoints.length * 3.25 + 14),
+    );
+    rackFrameMeshIndices.push(
+      pushMesh(
+        buildBoxMesh(
+          'ExternalConduitCollar',
+          {
+            min: {
+              x: pW / 2 - collarHalfW,
+              y: collarY - 5.0,
+              z: collarZ - 14.0,
+            },
+            max: {
+              x: pW / 2 + collarHalfW,
+              y: collarY + 5.0,
+              z: collarZ + 14.0,
+            },
+          },
+          aluProfileMatIdx,
+        ),
+      ),
+    );
+
+    externalEndpoints.forEach((ext, idx) => {
+      const ppDev = scene.geometry.devices_by_id.get(
+        ext.patch_panel_instance_id,
+      );
+      if (!ppDev) return;
+      const ppPort = ppDev.ports.find(
+        (p) => p.port_id === ext.patch_panel_port_id,
+      );
+      if (!ppPort) return;
+
+      const portX = ppPort.world_position.x;
+      const portY = ppPort.world_position.y;
+      const rearFaceZ = ppDev.chassis_box.max.z + 2.2;
+      const conduitZ = Math.min(
+        dMm - 22,
+        Math.max(rearFaceZ + 88, dMm * 0.56),
+      );
+      const isBottom = ext.entry_position === 'bottom-rear';
+      const entryY = isBottom ? -24.0 : hMm + 30.0;
+      const collarPassY = isBottom ? 4.0 : hMm - 2.0;
+      const combY = isBottom
+        ? Math.max(8.0, portY - 9.5 - (idx % 3) * 2.0)
+        : Math.min(hMm - 8.0, portY + 9.5 + (idx % 3) * 2.0);
+      const spreadX =
+        pW / 2 +
+        (idx - (externalEndpoints.length - 1) / 2) *
+          Math.min(8.0, (pW * 0.62) / Math.max(1, externalEndpoints.length));
+      const dropZ = conduitZ + (idx % 2) * 4.5;
+      const combZ = rearFaceZ + 30 + (idx % 4) * 5.0;
+
+      const dropSplinePts = evaluateCentripetalCatmullRomSpline(
+        [
+          { x: spreadX, y: entryY, z: dropZ },
+          { x: spreadX, y: collarPassY, z: dropZ },
+          { x: spreadX, y: combY, z: dropZ },
+          { x: spreadX, y: combY, z: combZ },
+          { x: portX, y: combY, z: combZ },
+          { x: portX, y: portY, z: rearFaceZ + 14 },
+          { x: portX, y: portY, z: rearFaceZ },
+        ],
+        12,
+      );
+
+      const extMatIdx = getOrCreateMaterial(
+        `ExtDropMat_${ext.color_hex}`,
+        ext.color_hex,
+        0.1,
+        0.45,
+      );
+      const dropMeshIdx = pushMesh(
+        buildParallelTransportTubeMesh(
+          `ExternalDrop_${ext.endpoint_id}`,
+          dropSplinePts,
+          2.6,
+          extMatIdx,
+          {
+            endpoint_id: ext.endpoint_id,
+            label: ext.label,
+            category: ext.category,
+            poe_draw_watts: ext.poe_draw_watts,
+          },
+        ),
+      );
+
+      cableNodeSpecs.push({
+        nodeName: `ExternalDrop_${ext.endpoint_id}`,
+        tubeMeshIndex: dropMeshIdx,
+        bootMeshIndices: [],
+        extras: {
+          endpoint_id: ext.endpoint_id,
+          label: ext.label,
+          category: ext.category,
+          poe_draw_watts: ext.poe_draw_watts,
+        },
+      });
     });
   }
 

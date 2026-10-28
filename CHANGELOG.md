@@ -5,6 +5,27 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.11] - 2026-10-28
+
+### Added & Improved (🇬🇧 English)
+- **Top-Rear External ISP WAN & PoE Building Cable Drops in the GitHub Pages Demo, 3D Roof Conduit Collar & 2D/3D/GLB Exporters (`@rack-mcp/web-viewer`, `@rack-mcp/exporters`):**
+  - **4 External Building & ISP Drops (`external_endpoints`) in the 8U 10-Inch Homelab Reference Scene & Live GitHub Pages Demo (`standalone-homelab.ts`, `reference-homelab.ts`, `examples/10inch-homelab/rack.yaml`):** Added 4 overhead external cable drops (`entry_position: 'top-rear'`) terminating onto the rear of the 12-port patch panel (`patch-u7:p6..p9`) and patched on the front to the gateway and PoE++ switch (`22` total cables, `33.5W / 196W` active PoE load):
+    1. `ext-isp-wan` (**ISP Glasfaser-ONT 2.5G WAN-Uplink**, `category: 'isp-wan-uplink'`, `#EC4899`) $\rightarrow$ `patch-u7:p6` (rear) $\rightarrow$ front patch cable `patch-front-p6-wan` to `ks-u3-wan:coupler` (front) $\rightarrow$ `ucg-max:wan` (rear).
+    2. `ext-ap-eg` (**UniFi U7-Pro Wi-Fi 7 Ceiling AP**, `category: 'wifi-ap'`, `21W` PoE+, `2.5gbe`, `#0EA5E9`) $\rightarrow$ `patch-u7:p7` (rear) $\rightarrow$ front patch cable `patch-front-p7-sw7` to `sw-u8:eth7` (2.5G PoE++).
+    3. `ext-cam-einfahrt` (**4K PoE+ Surveillance Camera Driveway / Entrance**, `category: 'poe-camera'`, `12.5W` PoE+, `1gbe`, `#F59E0B`) $\rightarrow$ `patch-u7:p8` (rear) $\rightarrow$ front patch cable `patch-front-p8-sw8` to `sw-u8:eth8` (2.5G PoE++).
+    4. `ext-office-lan` (**Home-Office 2.5G Workstation Wall Outlet**, `category: 'workstation-dock'`, `0W`, `2.5gbe`, `#14B8A6`) $\rightarrow$ `patch-u7:p9` (rear) $\rightarrow$ front patch cable `patch-front-p9-sw9` to `sw-u8:eth9` (10G/2.5G RJ45).
+  - **3D Overhead Roof Cable Entry Conduit & Vertical Drop Splines (`RackSceneCanvas.tsx`, `glb-exporter.ts`):** Anchored the `top-rear` cable entry conduit collar at the top-rear roof plane of the rack (`collarY = totalHeightMm + 3.0 mm`) with external drop splines entering vertically from above the rack roof (`Y = totalHeightMm + 30.0 mm`) down through the roof gland to any patch panel U height (`U7` in the 10-inch homelab) in both the interactive 3D WebGL viewport and exported binary glTF 2.0 (`rack-scene.glb`).
+  - **2D Rear Elevation & Side-Profile Cutaway External Drop Rendering (`elevation-svg.ts`, `standalone-homelab.ts`):** Rendered the `TOP-REAR ISP / BUILDING CONDUIT` collar and dashed external drop paths (`data-layer="external-building-drops"`) in both the Rear Elevation and Side-Profile Depth Cutaway views, and added a dedicated pink `ISP WAN` badge in `InspectorSidebar.tsx`.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Externe Zuführungskabel von oben (ISP-Glasfaser-WAN, PoE+ Überwachungskamera, PoE+ Wi-Fi 7 AP & 2.5G Büro-LAN) in der GitHub-Pages-Demo, im 3D-Dacheinlass & in allen 2D/3D-Exportern (`@rack-mcp/web-viewer`, `@rack-mcp/exporters`):**
+  - **4 externe Gebäude- & Provider-Leitungen (`external_endpoints`, `top-rear`) im 8U 10-Zoll-Homelab & in der GitHub-Demo:**
+    1. `ext-isp-wan` (**ISP Glasfaser-ONT 2.5G WAN-Uplink**, `#EC4899`) von oben auf `patch-u7:p6` (hinten) und vorne über `patch-front-p6-wan` auf den `WAN-ISP`-Keystone (`ks-u3-wan` auf U3 $\rightarrow$ `ucg-max:wan`).
+    2. `ext-ap-eg` (**UniFi U7-Pro Wi-Fi 7 Decken-AP**, `21W` PoE+, `#0EA5E9`) von oben auf `patch-u7:p7` (hinten) und vorne auf `sw-u8:eth7` (PoE++).
+    3. `ext-cam-einfahrt` (**4K PoE+ Überwachungskamera Einfahrt & Haustür**, `12.5W` PoE+, `#F59E0B`) von oben auf `patch-u7:p8` (hinten) und vorne auf `sw-u8:eth8` (PoE++).
+    4. `ext-office-lan` (**Home-Office 2.5G Workstation-Dose**, `#14B8A6`) von oben auf `patch-u7:p9` (hinten) und vorne auf `sw-u8:eth9` (10G/2.5G).
+  - **Sichtbarer 3D-Kabeleinlass von oben am Rack-Dach (`RackSceneCanvas.tsx`, `glb-exporter.ts`) sowie im 2D-CAD-Schnitt (`elevation.svg`):** Der obere Kabelkanal-Einlass sitzt nun direkt auf dem hinteren Rack-Dach (`Y = totalHeightMm + 3 mm`), sodass die externen Kabel im 3D-Viewer, in der `.glb`-Datei sowie in der 2D-Rückansicht und im 2D-Seitenschnitt sichtbar von oben ins Rack geführt werden und in der rechten Sidebar (`🏠 Haus- & Raum-Verkabelung`) inkl. `33.5W` PoE-Budget erscheinen.
+
 ## [0.4.10] - 2026-10-28
 
 ### Added & Improved (🇬🇧 English)

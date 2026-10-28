@@ -27,8 +27,11 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
 
     // 8 rackmount units + 10 child sub-modules (1 UCG-Max + 2 Lenovo M920q + 7 Keystones) = 18 devices
     expect(scene.geometry.devices.length).toBe(18);
-    // 18 cables including 5 Front-to-Front patch, 1 Cross-Face U6 Brush Portal cable, and 12 Rear-to-Rear power/LAN cables
-    expect(scene.cable_routes.length).toBe(18);
+    // 22 cables including 9 Front-to-Front patch, 1 Cross-Face U6 Brush Portal cable, and 12 Rear-to-Rear power/LAN cables
+    expect(scene.cable_routes.length).toBe(22);
+    // 4 external building / ISP cable drops entering from top-rear (including 21W Wi-Fi 7 AP + 12.5W 4K PoE+ Camera = 33.5W PoE)
+    expect(scene.project.external_endpoints.length).toBe(4);
+    expect(scene.validation.power_summary.total_poe_watts).toBe(33.5);
 
     // Verify all child sub-modules lie 100% within the 10-inch usable aperture [15.875 .. 238.125 mm]
     const spec = EIA_310_SPECS['10inch'];
@@ -90,13 +93,13 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     expect(svg).toContain('FRONT-&gt;●');
     expect(svg).toContain('mm clear</text>');
 
-    // Verify every cable path (17 Same-Face + 2 Cross-Face portal halves = 19 paths) starts at `M startX startY` and ends at `L endX endY` matching its PortAnchorRegistry coordinates
+    // Verify every cable path (21 Same-Face + 2 Cross-Face portal halves = 23 paths) starts at `M startX startY` and ends at `L endX endY` matching its PortAnchorRegistry coordinates
     const cablePathMatches = [
       ...svg.matchAll(
         /<path data-cable-id="([^"]+)" data-cable-view="(?:front|rear)" data-start-anchor="([^"]+)" data-end-anchor="([^"]+)" data-start-xy="([^"]+)" data-end-xy="([^"]+)" d="M ([^ ]+) ([^ ]+) [^"]*L ([^ ]+) ([^"]+)"/g,
       ),
     ];
-    expect(cablePathMatches.length).toBe(19);
+    expect(cablePathMatches.length).toBe(23);
     for (const match of cablePathMatches) {
       const startXY = match[4]!;
       const endXY = match[5]!;
@@ -106,17 +109,23 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
       expect(pathEnd).toBe(endXY);
     }
 
-    // Verify every Side-Cutaway cable path (18 cables) also starts and ends at its exact Z-Y port coordinates
+    // Verify every Side-Cutaway cable path (22 cables) also starts and ends at its exact Z-Y port coordinates
     const sideCableMatches = [
       ...svg.matchAll(
         /<path data-cable-id="([^"]+)" data-cable-view="side" data-start-xy="([^"]+)" data-end-xy="([^"]+)" d="M ([^ ]+) ([^ ]+) [^"]*L ([^ ]+) ([^"]+)"/g,
       ),
     ];
-    expect(sideCableMatches.length).toBe(18);
+    expect(sideCableMatches.length).toBe(22);
     for (const match of sideCableMatches) {
       expect(`${match[4]},${match[5]}`).toBe(match[2]!);
       expect(`${match[6]},${match[7]}`).toBe(match[3]!);
     }
+
+    // Verify external building / ISP drops rendered in Rear Elevation and Side-Profile Cutaway
+    expect(svg).toContain('data-layer="external-building-drops"');
+    expect(svg).toContain('data-external-endpoint-id="ext-isp-wan"');
+    expect(svg).toContain('data-external-endpoint-id="ext-ap-eg"');
+    expect(svg).toContain('data-external-endpoint-id="ext-cam-einfahrt"');
 
     // Verify red collision callouts on a deliberately colliding rack
     const collidingInput = create10InchHomelabProjectInput();
@@ -148,7 +157,7 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     expect(svg).toContain('TIER 3: ACTIVE CONSUMERS &amp; PoE PDs');
     expect(svg).toContain('data-section="port-to-port-schematic"');
     expect(svg).toContain('data-track-index="0"');
-    expect(svg).toContain('data-track-index="17"');
+    expect(svg).toContain('data-track-index="21"');
     expect(svg).toContain('PoE Budget:');
     expect(svg).toContain('UPS Load:');
     expect(svg).toContain('patch-front-p1-sw1 | 0.15m Cat6A');
@@ -159,7 +168,7 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
         /<g data-schematic-cable="([^"]+)" data-track-index="[^"]+" data-channel-x="[^"]+" data-start-pin="([^"]+)" data-end-pin="([^"]+)"[^>]*>\s*<path d="M ([^ ]+) ([^ ]+) [^"]*L ([^ ]+) ([^"]+)"/g,
       ),
     ];
-    expect(schematicCableMatches.length).toBe(18);
+    expect(schematicCableMatches.length).toBe(22);
     for (const match of schematicCableMatches) {
       const startPin = match[2]!;
       const endPin = match[3]!;
@@ -235,6 +244,9 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     expect(nodeNames).toContain('Port_sw-u8_eth1');
     expect(nodeNames).toContain('Cable_patch-front-p1-sw1');
     expect(nodeNames).toContain('CableBootStart_patch-front-p1-sw1');
+    expect(nodeNames).toContain('ExternalDrop_ext-isp-wan');
+    expect(nodeNames).toContain('ExternalDrop_ext-ap-eg');
+    expect(nodeNames).toContain('ExternalDrop_ext-cam-einfahrt');
     expect(nodeNames).toContain('RackGlassFrontDoorMesh');
 
     const glassMat = gltf.materials.find(
@@ -251,10 +263,10 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     const projectInput = create10InchHomelabProjectInput();
     const scene = evaluate10InchHomelabScene();
 
-    // Verify all 18 cables in the 8U 10-Inch Homelab reference scene enter and exit
+    // Verify all 22 cables in the 8U 10-Inch Homelab reference scene enter and exit
     // their terminator boots coaxially (zero lateral kink at boot tip) and never clip
     // through any 3D-printed carrier tray floor.
-    expect(scene.cable_routes).toHaveLength(18);
+    expect(scene.cable_routes).toHaveLength(22);
     for (const route of scene.cable_routes) {
       const sp = route.spline_points;
       const p1 = sp[0]!;

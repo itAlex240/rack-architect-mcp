@@ -15,19 +15,23 @@ afterEach(() => {
 });
 
 describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', () => {
-  it('evaluates the standalone 8U 10-Inch Homelab reference scene with 18 devices, 18 clamped cable routes, and all 18 Side-Profile Cutaway SVG cables', () => {
+  it('evaluates the standalone 8U 10-Inch Homelab reference scene with 18 devices, 22 clamped cable routes, 4 top-rear external drops, and all 22 Side-Profile Cutaway SVG cables', () => {
     const scene = evaluateStandaloneScene();
     expect(scene.validation.is_valid).toBe(true);
     expect(scene.validation.error_count).toBe(0);
     expect(scene.geometry.devices.length).toBe(18);
-    expect(scene.cable_routes.length).toBe(18);
+    expect(scene.cable_routes.length).toBe(22);
+    expect(scene.project.external_endpoints.length).toBe(4);
+    expect(scene.validation.power_summary.total_poe_watts).toBe(33.5);
 
-    // Verify client-side 2D Elevation SVG renders all 18 cables in the Side-Profile Depth Cutaway
+    // Verify client-side 2D Elevation SVG renders all 22 cables + 4 external drops in the Side-Profile Depth Cutaway
     const clientElevationSvg = renderClientSideElevationSvg(scene);
     const sideCableMatches = [
       ...clientElevationSvg.matchAll(/data-cable-view="side"/g),
     ];
-    expect(sideCableMatches.length).toBe(18);
+    expect(sideCableMatches.length).toBe(22);
+    expect(clientElevationSvg).toContain('data-external-endpoint-id="ext-isp-wan"');
+    expect(clientElevationSvg).toContain('data-external-endpoint-id="ext-cam-einfahrt"');
 
     const pdu = scene.geometry.devices.find(
       (d) => d.instance_id === 'pdu-u2-rear',

@@ -5,7 +5,7 @@
 - **Validation Status:** `VALID` (0 Errors, 0 Warnings)
 - **Rack Enclosure:** 8U `10inch` (Rail Depth: `240 mm`, Rear Clearance: `60 mm`)
 - **Total Mounted Devices:** 18 (8 rackmount units + 10 sub-modules)
-- **Total Electrical Draw:** `175.1 W` system + `0 W` PoE
+- **Total Electrical Draw:** `175.1 W` system + `33.5 W` PoE
 - **Mechanical Mass & Stability:** `8.5 kg` total weight | Center of Gravity $Y_{\text{CoG}} = 121.4\text{ mm}$ (`34.1%` of rack height)
 
 ## 2. Commercial Hardware BOM
@@ -52,9 +52,13 @@
 | `cat6a` | **0.15 m** (150 mm) | `#3B82F6` | 1 | `patch-front-p1-sw1` (Patch P1 -> Switch Port 1 (Gateway Uplink)) |
 | `cat6a` | **0.15 m** (150 mm) | `#10B981` | 2 | `patch-front-p2-sw2`, `patch-front-p3-sw3` (Patch P2 -> Switch Port 2 (PVE-01 2.5G), Patch P3 -> Switch Port 3 (PVE-02 2.5G)) |
 | `cat6a` | **0.15 m** (150 mm) | `#6366F1` | 2 | `patch-front-p4-sw4`, `patch-front-p5-sw5` (Patch P4 -> Switch Port 4 (PVE-01 Mgmt), Patch P5 -> Switch Port 5 (PVE-02 Mgmt)) |
+| `cat6a` | **0.15 m** (150 mm) | `#0EA5E9` | 1 | `patch-front-p7-sw7` (Patch P7 -> Switch Port 7 (PoE+ Wi-Fi 7 AP EG, 21W)) |
+| `cat6a` | **0.15 m** (150 mm) | `#F59E0B` | 1 | `patch-front-p8-sw8` (Patch P8 -> Switch Port 8 (PoE+ 4K Kamera Einfahrt, 12.5W)) |
+| `cat6a` | **0.15 m** (150 mm) | `#14B8A6` | 1 | `patch-front-p9-sw9` (Patch P9 -> Switch Port 9 (Home-Office 2.5G LAN)) |
 | `cat6a` | **0.30 m** (300 mm) | `#EC4899` | 1 | `trunk-ucg-wan-to-ks` (UCG-Max WAN -> U3 Keystone 1 (Rear)) |
 | `cat6a` | **0.50 m** (500 mm) | `#10B981` | 1 | `trunk-pve2-eth1-to-patch3` (PVE-02 2.5G ETH1 -> Patch P3 (Rear)) |
 | `cat6a` | **0.50 m** (500 mm) | `#6366F1` | 2 | `trunk-pve1-eth0-to-patch4`, `trunk-pve2-eth0-to-patch5` (PVE-01 Mgmt ETH0 -> Patch P4 (Rear), PVE-02 Mgmt ETH0 -> Patch P5 (Rear)) |
+| `cat6a` | **0.50 m** (500 mm) | `#EC4899` | 1 | `patch-front-p6-wan` (Patch P6 -> U3 WAN Keystone (ISP Glasfaser-ONT 2.5G)) |
 | `cat6a` | **0.75 m** (750 mm) | `#3B82F6` | 1 | `trunk-ucg-lan1-to-patch1` (UCG-Max LAN1 -> Patch P1 (Rear)) |
 | `cat6a` | **0.75 m** (750 mm) | `#10B981` | 1 | `trunk-pve1-eth1-to-patch2` (PVE-01 2.5G ETH1 -> Patch P2 (Rear)) |
 | `cat6a` | **0.75 m** (750 mm) | `#06B6D4` | 1 | `cross-sw6-to-ucg-lan2` (Switch Port 6 (Front) -> U6 Brush Portal -> UCG-Max LAN2 (Rear)) |
@@ -103,4 +107,17 @@
 - [ ] Patch **0.15m Cat6A** [`patch-front-p3-sw3`, `#10B981`]: Connect `patch-u7:p3` (front) $\rightarrow$ `sw-u8:eth3` (front) — _Patch P3 -> Switch Port 3 (PVE-02 2.5G)_.
 - [ ] Patch **0.15m Cat6A** [`patch-front-p4-sw4`, `#6366F1`]: Connect `patch-u7:p4` (front) $\rightarrow$ `sw-u8:eth4` (front) — _Patch P4 -> Switch Port 4 (PVE-01 Mgmt)_.
 - [ ] Patch **0.15m Cat6A** [`patch-front-p5-sw5`, `#6366F1`]: Connect `patch-u7:p5` (front) $\rightarrow$ `sw-u8:eth5` (front) — _Patch P5 -> Switch Port 5 (PVE-02 Mgmt)_.
+- [ ] Patch **0.50m Cat6A** [`patch-front-p6-wan`, `#EC4899`]: Connect `patch-u7:p6` (front) $\rightarrow$ `ks-u3-wan:coupler` (front) — _Patch P6 -> U3 WAN Keystone (ISP Glasfaser-ONT 2.5G)_.
+- [ ] Patch **0.15m Cat6A** [`patch-front-p7-sw7`, `#0EA5E9`]: Connect `patch-u7:p7` (front) $\rightarrow$ `sw-u8:eth7` (front) — _Patch P7 -> Switch Port 7 (PoE+ Wi-Fi 7 AP EG, 21W)_.
+- [ ] Patch **0.15m Cat6A** [`patch-front-p8-sw8`, `#F59E0B`]: Connect `patch-u7:p8` (front) $\rightarrow$ `sw-u8:eth8` (front) — _Patch P8 -> Switch Port 8 (PoE+ 4K Kamera Einfahrt, 12.5W)_.
+- [ ] Patch **0.15m Cat6A** [`patch-front-p9-sw9`, `#14B8A6`]: Connect `patch-u7:p9` (front) $\rightarrow$ `sw-u8:eth9` (front) — _Patch P9 -> Switch Port 9 (Home-Office 2.5G LAN)_.
 - [ ] Patch **0.75m Cat6A** [`cross-sw6-to-ucg-lan2`, `#06B6D4`]: Connect `sw-u8:eth6` (front) $\rightarrow$ `ucg-max:lan2` (rear) — _Switch Port 6 (Front) -> U6 Brush Portal -> UCG-Max LAN2 (Rear)_.
+
+### Phase C: External Building / Room Cable Drops (Step-by-Step Patching Guide)
+
+| # | Room / Endpoint | Category & PoE | Step 1: Rear Patch Panel Termination | Step 2: Front Switch Patch Cable |
+| :---: | :--- | :--- | :--- | :--- |
+| 1 | **ISP Glasfaser-ONT (2.5G WAN-Uplink) (Hausanschluss / Keller (Glasfaser-Übergabepunkt))** | `isp-wan-uplink` (No PoE) | Building cable (top-rear) $\rightarrow$ `patch-u7:p6` (REAR) | Patch cable `patch-front-p6-wan` (`#EC4899`) from `patch-u7:p6` (FRONT) $\rightarrow$ `ks-u3-wan:coupler` |
+| 2 | **UniFi U7-Pro Wi-Fi 7 Decken-AP (Erdgeschoss Flur / Wohnbereich)** | `wifi-ap` (PoE 21 W) | Building cable (top-rear) $\rightarrow$ `patch-u7:p7` (REAR) | Patch cable `patch-front-p7-sw7` (`#0EA5E9`) from `patch-u7:p7` (FRONT) $\rightarrow$ `sw-u8:eth7` |
+| 3 | **4K PoE+ Überwachungskamera Einfahrt & Haustür (Außenbereich Nord / Einfahrt)** | `poe-camera` (PoE 12.5 W) | Building cable (top-rear) $\rightarrow$ `patch-u7:p8` (REAR) | Patch cable `patch-front-p8-sw8` (`#F59E0B`) from `patch-u7:p8` (FRONT) $\rightarrow$ `sw-u8:eth8` |
+| 4 | **Home-Office 2.5G Workstation-Dose (Obergeschoss Arbeitszimmer)** | `workstation-dock` (No PoE) | Building cable (top-rear) $\rightarrow$ `patch-u7:p9` (REAR) | Patch cable `patch-front-p9-sw9` (`#14B8A6`) from `patch-u7:p9` (FRONT) $\rightarrow$ `sw-u8:eth9` |

@@ -2029,6 +2029,107 @@ export function generateElevationSvg(
   }
 
   // =========================================================================
+  // 4b. External Building & ISP Drops (`external_endpoints` — Top-Rear / Bottom-Rear)
+  // =========================================================================
+  if (showCables && (scene.project.external_endpoints ?? []).length > 0) {
+    const extList = scene.project.external_endpoints;
+    lines.push(`  <g data-layer="external-building-drops">`);
+    const collarWidthPx = Math.min(
+      rackWidthPx * 0.56,
+      Math.max(110, extList.length * 16 + 38),
+    );
+    const rearCollarX = roundCentis(
+      rearOriginX + (rackWidthPx - collarWidthPx) / 2,
+    );
+    const topCollarY = roundCentis(topMarginPx - 14);
+    lines.push(
+      `    <rect x="${rearCollarX}" y="${topCollarY}" width="${collarWidthPx}" height="12" rx="3" fill="#0F172A" stroke="#475569" stroke-width="1.3" />`,
+    );
+    lines.push(
+      `    <text x="${roundCentis(rearOriginX + rackWidthPx / 2)}" y="${roundCentis(topCollarY + 8.5)}" fill="#E2E8F0" font-size="7.2" font-weight="700" text-anchor="middle">TOP-REAR ISP / BUILDING CONDUIT (${extList.length}x)</text>`,
+    );
+
+    const sideConduitZMm = Math.min(
+      railDepthMm - 18,
+      Math.max(120, railDepthMm * 0.72),
+    );
+    const sideCollarX = worldZToSideSvgX(sideConduitZMm);
+    lines.push(
+      `    <rect x="${roundCentis(sideCollarX - 36)}" y="${topCollarY}" width="72" height="12" rx="3" fill="#0F172A" stroke="#475569" stroke-width="1.3" />`,
+    );
+    lines.push(
+      `    <text x="${sideCollarX}" y="${roundCentis(topCollarY + 8.5)}" fill="#E2E8F0" font-size="7" font-weight="700" text-anchor="middle">ROOF ENTRY</text>`,
+    );
+
+    extList.forEach((ext, idx) => {
+      const ppDev = scene.geometry.devices_by_id.get(
+        ext.patch_panel_instance_id,
+      );
+      if (!ppDev) return;
+      const ppParent = ppDev.parent_carrier_id
+        ? scene.geometry.devices_by_id.get(ppDev.parent_carrier_id)
+        : undefined;
+      const ppPort = resolveCableEndpointPortGeometry(
+        ppDev,
+        ext.patch_panel_port_id,
+        'rear',
+        ppParent,
+      );
+      const rearKey = `${ext.patch_panel_instance_id}:${ext.patch_panel_port_id}:rear`;
+      const rearAnchor = portAnchorRegistry.get(rearKey);
+      if (!rearAnchor || !ppPort) return;
+
+      const entrySpreadX = roundCentis(
+        rearOriginX +
+          rackWidthPx / 2 +
+          (idx - (extList.length - 1) / 2) * 12,
+      );
+      const entryY =
+        ext.entry_position === 'bottom-rear'
+          ? roundCentis(topMarginPx + rackHeightPx + 10)
+          : roundCentis(topCollarY + 12);
+      const combY = roundCentis(rearAnchor.y - 10 - (idx % 3) * 2.8);
+
+      const rearDropD = buildRoundedOrthogonalPath(
+        [
+          { x: entrySpreadX, y: entryY },
+          { x: entrySpreadX, y: combY },
+          { x: rearAnchor.x, y: combY },
+          { x: rearAnchor.x, y: rearAnchor.y },
+        ],
+        4.5,
+      );
+      lines.push(
+        `    <path data-external-endpoint-id="${escapeXml(ext.endpoint_id)}" data-external-view="rear" d="${rearDropD}" fill="none" stroke="${ext.color_hex}" stroke-width="2.2" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />`,
+      );
+      lines.push(
+        `    <circle cx="${rearAnchor.x}" cy="${rearAnchor.y}" r="3.0" fill="${ext.color_hex}" stroke="#090D16" stroke-width="1.2" />`,
+      );
+
+      // Side-Cutaway Top-Rear Drop Path
+      const sideTrackX = worldZToSideSvgX(sideConduitZMm - 10 + idx * 4.5);
+      const sidePortX = worldZToSideSvgX(ppPort.world_position.z);
+      const sidePortY = worldYToSvgY(ppPort.world_position.y);
+      const sideDropD = buildRoundedOrthogonalPath(
+        [
+          { x: sideTrackX, y: entryY },
+          { x: sideTrackX, y: sidePortY },
+          { x: sidePortX, y: sidePortY },
+        ],
+        4.5,
+      );
+      lines.push(
+        `    <path data-external-endpoint-id="${escapeXml(ext.endpoint_id)}" data-external-view="side" d="${sideDropD}" fill="none" stroke="${ext.color_hex}" stroke-width="2.0" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />`,
+      );
+      lines.push(
+        `    <circle cx="${sidePortX}" cy="${sidePortY}" r="2.8" fill="${ext.color_hex}" stroke="#090D16" stroke-width="1.2" />`,
+      );
+    });
+
+    lines.push(`  </g>`);
+  }
+
+  // =========================================================================
   // 5. Right-Side Port & Cable Callout Legend Column
   // =========================================================================
   lines.push(`  <g data-view="front-callout-legend" data-layer="callout-legend">`);

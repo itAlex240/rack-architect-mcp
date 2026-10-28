@@ -300,6 +300,42 @@ export function createStandaloneHomelabProjectInput(): RackProjectInput {
         to: { instance_id: 'sw-u8', port_id: 'eth5', face: 'front' },
       },
       {
+        cable_id: 'patch-front-p6-wan',
+        cable_type: 'cat6a',
+        color_hex: '#EC4899',
+        label: 'Patch P6 -> U3 WAN Keystone (ISP Glasfaser-ONT 2.5G)',
+        vlan_id: 900,
+        from: { instance_id: 'patch-u7', port_id: 'p6', face: 'front' },
+        to: { instance_id: 'ks-u3-wan', port_id: 'coupler', face: 'front' },
+      },
+      {
+        cable_id: 'patch-front-p7-sw7',
+        cable_type: 'cat6a',
+        color_hex: '#0EA5E9',
+        label: 'Patch P7 -> Switch Port 7 (PoE+ Wi-Fi 7 AP EG, 21W)',
+        vlan_id: 20,
+        from: { instance_id: 'patch-u7', port_id: 'p7', face: 'front' },
+        to: { instance_id: 'sw-u8', port_id: 'eth7', face: 'front' },
+      },
+      {
+        cable_id: 'patch-front-p8-sw8',
+        cable_type: 'cat6a',
+        color_hex: '#F59E0B',
+        label: 'Patch P8 -> Switch Port 8 (PoE+ 4K Kamera Einfahrt, 12.5W)',
+        vlan_id: 30,
+        from: { instance_id: 'patch-u7', port_id: 'p8', face: 'front' },
+        to: { instance_id: 'sw-u8', port_id: 'eth8', face: 'front' },
+      },
+      {
+        cable_id: 'patch-front-p9-sw9',
+        cable_type: 'cat6a',
+        color_hex: '#14B8A6',
+        label: 'Patch P9 -> Switch Port 9 (Home-Office 2.5G LAN)',
+        vlan_id: 10,
+        from: { instance_id: 'patch-u7', port_id: 'p9', face: 'front' },
+        to: { instance_id: 'sw-u8', port_id: 'eth9', face: 'front' },
+      },
+      {
         cable_id: 'cross-sw6-to-ucg-lan2',
         cable_type: 'cat6a',
         color_hex: '#06B6D4',
@@ -307,6 +343,60 @@ export function createStandaloneHomelabProjectInput(): RackProjectInput {
         preferred_portal_u: 6,
         from: { instance_id: 'sw-u8', port_id: 'eth6', face: 'front' },
         to: { instance_id: 'ucg-max', port_id: 'lan2', face: 'rear' },
+      },
+    ],
+    external_endpoints: [
+      {
+        endpoint_id: 'ext-isp-wan',
+        label: 'ISP Glasfaser-ONT (2.5G WAN-Uplink)',
+        category: 'isp-wan-uplink',
+        room_or_zone: 'Hausanschluss / Keller (Glasfaser-Übergabepunkt)',
+        patch_panel_instance_id: 'patch-u7',
+        patch_panel_port_id: 'p6',
+        entry_position: 'top-rear',
+        color_hex: '#EC4899',
+        poe_draw_watts: 0,
+        required_speed: '2.5gbe',
+        vlan_id: 900,
+      },
+      {
+        endpoint_id: 'ext-ap-eg',
+        label: 'UniFi U7-Pro Wi-Fi 7 Decken-AP',
+        category: 'wifi-ap',
+        room_or_zone: 'Erdgeschoss Flur / Wohnbereich',
+        patch_panel_instance_id: 'patch-u7',
+        patch_panel_port_id: 'p7',
+        entry_position: 'top-rear',
+        color_hex: '#0EA5E9',
+        poe_draw_watts: 21,
+        required_speed: '2.5gbe',
+        vlan_id: 20,
+      },
+      {
+        endpoint_id: 'ext-cam-einfahrt',
+        label: '4K PoE+ Überwachungskamera Einfahrt & Haustür',
+        category: 'poe-camera',
+        room_or_zone: 'Außenbereich Nord / Einfahrt',
+        patch_panel_instance_id: 'patch-u7',
+        patch_panel_port_id: 'p8',
+        entry_position: 'top-rear',
+        color_hex: '#F59E0B',
+        poe_draw_watts: 12.5,
+        required_speed: '1gbe',
+        vlan_id: 30,
+      },
+      {
+        endpoint_id: 'ext-office-lan',
+        label: 'Home-Office 2.5G Workstation-Dose',
+        category: 'workstation-dock',
+        room_or_zone: 'Obergeschoss Arbeitszimmer',
+        patch_panel_instance_id: 'patch-u7',
+        patch_panel_port_id: 'p9',
+        entry_position: 'top-rear',
+        color_hex: '#14B8A6',
+        poe_draw_watts: 0,
+        required_speed: '2.5gbe',
+        vlan_id: 10,
       },
     ],
   };
@@ -877,6 +967,95 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
     );
   }
 
+  // Render External Building / ISP Drops (`external_endpoints`) entering from Top-Rear / Bottom-Rear
+  const externalEndpoints = scene.project.external_endpoints ?? [];
+  if (externalEndpoints.length > 0) {
+    lines.push(`<g data-layer="external-building-drops">`);
+    const collarWidthPx = Math.min(
+      rackWidthPx * 0.56,
+      Math.max(92, externalEndpoints.length * 16 + 34),
+    );
+    const rearCollarX = roundCentis(
+      rearOriginX + (rackWidthPx - collarWidthPx) / 2,
+    );
+    const topCollarY = roundCentis(topMarginPx - 14);
+    lines.push(
+      `<rect x="${rearCollarX}" y="${topCollarY}" width="${collarWidthPx}" height="12" rx="3" fill="#18181D" stroke="#52525B" stroke-width="1.2" />`,
+    );
+    lines.push(
+      `<text x="${roundCentis(rearOriginX + rackWidthPx / 2)}" y="${roundCentis(topCollarY + 8.5)}" fill="#E4E4E7" font-size="7.2" font-weight="700" text-anchor="middle">TOP-REAR ISP / BUILDING CONDUIT (${externalEndpoints.length}x)</text>`,
+    );
+
+    const sideConduitZMm = Math.min(
+      railDepthMm - 18,
+      Math.max(120, railDepthMm * 0.72),
+    );
+    const sideCollarX = worldZToSideSvgX(sideConduitZMm);
+    lines.push(
+      `<rect x="${roundCentis(sideCollarX - 34)}" y="${topCollarY}" width="68" height="12" rx="3" fill="#18181D" stroke="#52525B" stroke-width="1.2" />`,
+    );
+    lines.push(
+      `<text x="${sideCollarX}" y="${roundCentis(topCollarY + 8.5)}" fill="#E4E4E7" font-size="7" font-weight="700" text-anchor="middle">ROOF ENTRY</text>`,
+    );
+
+    externalEndpoints.forEach((ext, idx) => {
+      const rearAnchor =
+        portAnchors.get(
+          `${ext.patch_panel_instance_id}:${ext.patch_panel_port_id}:rear`,
+        ) ??
+        portAnchors.get(
+          `${ext.patch_panel_instance_id}:${ext.patch_panel_port_id}:front`,
+        );
+      if (!rearAnchor) return;
+
+      const entrySpreadX = roundCentis(
+        rearOriginX +
+          rackWidthPx / 2 +
+          (idx - (externalEndpoints.length - 1) / 2) * 12,
+      );
+      const entryY =
+        ext.entry_position === 'bottom-rear'
+          ? roundCentis(topMarginPx + rackHeightPx + 10)
+          : roundCentis(topCollarY + 12);
+      const combY = roundCentis(rearAnchor.y - 10 - (idx % 3) * 2.8);
+
+      const rearDropD = buildClientRoundedPath(
+        [
+          { x: entrySpreadX, y: entryY },
+          { x: entrySpreadX, y: combY },
+          { x: rearAnchor.x, y: combY },
+          { x: rearAnchor.x, y: rearAnchor.y },
+        ],
+        4.5,
+      );
+      lines.push(
+        `<path data-external-endpoint-id="${escapeXml(ext.endpoint_id)}" data-external-view="rear" d="${rearDropD}" fill="none" stroke="${ext.color_hex}" stroke-width="2.1" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />`,
+      );
+      lines.push(
+        `<circle cx="${rearAnchor.x}" cy="${rearAnchor.y}" r="3.0" fill="${ext.color_hex}" stroke="#09090B" stroke-width="1.1" />`,
+      );
+
+      // Side-Cutaway Top-Rear Drop Path
+      const sideTrackX = worldZToSideSvgX(sideConduitZMm - 10 + idx * 4.5);
+      const sidePortX = worldZToSideSvgX(rearAnchor.worldZ);
+      const sideDropD = buildClientRoundedPath(
+        [
+          { x: sideTrackX, y: entryY },
+          { x: sideTrackX, y: rearAnchor.y },
+          { x: sidePortX, y: rearAnchor.y },
+        ],
+        4.5,
+      );
+      lines.push(
+        `<path data-external-endpoint-id="${escapeXml(ext.endpoint_id)}" data-external-view="side" d="${sideDropD}" fill="none" stroke="${ext.color_hex}" stroke-width="2.0" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />`,
+      );
+      lines.push(
+        `<circle cx="${sidePortX}" cy="${rearAnchor.y}" r="2.8" fill="${ext.color_hex}" stroke="#09090B" stroke-width="1.1" />`,
+      );
+    });
+    lines.push(`</g>`);
+  }
+
   lines.push(`</svg>`);
   return lines.join('\n');
 }
@@ -997,6 +1176,18 @@ export function renderClientSideBomMarkdown(scene: SerializedRackScene): string 
     lines.push(
       `- \`${cable.cable_id}\` [${pwrTag}]${vlanTag} \`${cable.from.instance_id}:${cable.from.port_id}\` -> \`${cable.to.instance_id}:${cable.to.port_id}\` (${(route.recommended_commercial_mm / 1000).toFixed(2)}m \`${cable.cable_type}\`)`,
     );
+  }
+  if ((scene.project.external_endpoints ?? []).length > 0) {
+    lines.push('');
+    lines.push('## External Building & ISP Cable Drops (Top-Rear Entry)');
+    for (const ext of scene.project.external_endpoints) {
+      const poeBadge =
+        ext.poe_draw_watts > 0 ? `PoE ${ext.poe_draw_watts}W` : 'Non-PoE';
+      const roomSuffix = ext.room_or_zone ? ` (${ext.room_or_zone})` : '';
+      lines.push(
+        `- **${ext.label}**${roomSuffix} [\`${ext.category}\`, ${poeBadge}, \`${ext.entry_position}\`] -> \`${ext.patch_panel_instance_id}:${ext.patch_panel_port_id}\` (REAR)`,
+      );
+    }
   }
   return lines.join('\n');
 }

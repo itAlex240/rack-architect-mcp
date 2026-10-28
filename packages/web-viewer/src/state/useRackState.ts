@@ -53,7 +53,17 @@ const DEFAULT_STANDALONE_TOOL_LOG: readonly McpToolCallItem[] = [
     timestamp: '10:14:22',
     tool: 'validate_rack',
     summary:
-      "Rack '8U 10-Inch Proxmox & UniFi Homelab' is VALID (0 Errors, 0 Warnings).",
+      "Rack '8U 10-Inch Proxmox & UniFi Homelab' is VALID (0 Errors, 0 Warnings, 33.5W PoE active).",
+    status: 'VALID',
+    errorCount: 0,
+    warningCount: 0,
+  },
+  {
+    id: 'mcp-call-5b',
+    timestamp: '10:14:20',
+    tool: 'plan_external_endpoints',
+    summary:
+      "Terminated 4 top-rear external drops on 'patch-u7' (ISP Glasfaser-ONT WAN, Wi-Fi 7 PoE+ AP 21W, 4K PoE+ Kamera 12.5W, Office 2.5G LAN).",
     status: 'VALID',
     errorCount: 0,
     warningCount: 0,
@@ -63,7 +73,7 @@ const DEFAULT_STANDALONE_TOOL_LOG: readonly McpToolCallItem[] = [
     timestamp: '10:14:19',
     tool: 'connect_cables',
     summary:
-      'Connected 18 cable(s) and computed 3D Catmull-Rom routes cleanly (including U6 Brush Portal).',
+      'Connected 22 cable(s) and computed 3D Catmull-Rom routes cleanly (including U6 Brush Portal & external patch links).',
     status: 'VALID',
     errorCount: 0,
     warningCount: 0,

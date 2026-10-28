@@ -301,6 +301,58 @@ cables:
       instance_id: sw-u8
       port_id: eth5
       face: front
+  - cable_id: patch-front-p6-wan
+    cable_type: cat6a
+    color_hex: "#EC4899"
+    label: Patch P6 -> U3 WAN Keystone (ISP Glasfaser-ONT 2.5G)
+    vlan_id: 900
+    from:
+      instance_id: patch-u7
+      port_id: p6
+      face: front
+    to:
+      instance_id: ks-u3-wan
+      port_id: coupler
+      face: front
+  - cable_id: patch-front-p7-sw7
+    cable_type: cat6a
+    color_hex: "#0EA5E9"
+    label: Patch P7 -> Switch Port 7 (PoE+ Wi-Fi 7 AP EG, 21W)
+    vlan_id: 20
+    from:
+      instance_id: patch-u7
+      port_id: p7
+      face: front
+    to:
+      instance_id: sw-u8
+      port_id: eth7
+      face: front
+  - cable_id: patch-front-p8-sw8
+    cable_type: cat6a
+    color_hex: "#F59E0B"
+    label: Patch P8 -> Switch Port 8 (PoE+ 4K Kamera Einfahrt, 12.5W)
+    vlan_id: 30
+    from:
+      instance_id: patch-u7
+      port_id: p8
+      face: front
+    to:
+      instance_id: sw-u8
+      port_id: eth8
+      face: front
+  - cable_id: patch-front-p9-sw9
+    cable_type: cat6a
+    color_hex: "#14B8A6"
+    label: Patch P9 -> Switch Port 9 (Home-Office 2.5G LAN)
+    vlan_id: 10
+    from:
+      instance_id: patch-u7
+      port_id: p9
+      face: front
+    to:
+      instance_id: sw-u8
+      port_id: eth9
+      face: front
   - cable_id: cross-sw6-to-ucg-lan2
     cable_type: cat6a
     color_hex: "#06B6D4"
@@ -314,3 +366,48 @@ cables:
       instance_id: ucg-max
       port_id: lan2
       face: rear
+external_endpoints:
+  - endpoint_id: ext-isp-wan
+    label: ISP Glasfaser-ONT (2.5G WAN-Uplink)
+    category: isp-wan-uplink
+    room_or_zone: Hausanschluss / Keller (Glasfaser-Übergabepunkt)
+    patch_panel_instance_id: patch-u7
+    patch_panel_port_id: p6
+    entry_position: top-rear
+    color_hex: "#EC4899"
+    poe_draw_watts: 0
+    required_speed: 2.5gbe
+    vlan_id: 900
+  - endpoint_id: ext-ap-eg
+    label: UniFi U7-Pro Wi-Fi 7 Decken-AP
+    category: wifi-ap
+    room_or_zone: Erdgeschoss Flur / Wohnbereich
+    patch_panel_instance_id: patch-u7
+    patch_panel_port_id: p7
+    entry_position: top-rear
+    color_hex: "#0EA5E9"
+    poe_draw_watts: 21
+    required_speed: 2.5gbe
+    vlan_id: 20
+  - endpoint_id: ext-cam-einfahrt
+    label: 4K PoE+ Überwachungskamera Einfahrt & Haustür
+    category: poe-camera
+    room_or_zone: Außenbereich Nord / Einfahrt
+    patch_panel_instance_id: patch-u7
+    patch_panel_port_id: p8
+    entry_position: top-rear
+    color_hex: "#F59E0B"
+    poe_draw_watts: 12.5
+    required_speed: 1gbe
+    vlan_id: 30
+  - endpoint_id: ext-office-lan
+    label: Home-Office 2.5G Workstation-Dose
+    category: workstation-dock
+    room_or_zone: Obergeschoss Arbeitszimmer
+    patch_panel_instance_id: patch-u7
+    patch_panel_port_id: p9
+    entry_position: top-rear
+    color_hex: "#14B8A6"
+    poe_draw_watts: 0
+    required_speed: 2.5gbe
+    vlan_id: 10

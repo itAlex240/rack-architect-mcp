@@ -170,29 +170,33 @@ function ExternalBuildingDrops3D({
       const rearFaceZ = ppDev.chassis_box.max.z + offsetZ + 2.2;
 
       const conduitZ = Math.min(
-        railDepthMm - 24,
-        Math.max(rearFaceZ + 90, railDepthMm * 0.46),
+        railDepthMm - 22,
+        Math.max(rearFaceZ + 88, railDepthMm * 0.56),
       );
-      const conduitY =
-        ext.entry_position === 'bottom-rear'
-          ? Math.max(7.5, portY - 12.0)
-          : Math.min(totalHeightMm - 7.5, portY + 12.0);
+      const isBottomEntry = ext.entry_position === 'bottom-rear';
+      const roofOrFloorEntryY = isBottomEntry ? -24.0 : totalHeightMm + 30.0;
+      const collarPassY = isBottomEntry ? 4.0 : totalHeightMm - 2.0;
+      const combY = isBottomEntry
+        ? Math.max(8.0, portY - 9.5 - (idx % 3) * 2.0)
+        : Math.min(totalHeightMm - 8.0, portY + 9.5 + (idx % 3) * 2.0);
       const spreadX =
         panelWidthMm / 2 +
         (idx - (externalEndpoints.length - 1) / 2) *
-          Math.min(7.5, (panelWidthMm * 0.62) / Math.max(1, externalEndpoints.length));
+          Math.min(8.0, (panelWidthMm * 0.62) / Math.max(1, externalEndpoints.length));
       const dropZ = conduitZ + (idx % 2) * 4.5;
-      const combZ = rearFaceZ + 32 + (idx % 4) * 5.2;
+      const combZ = rearFaceZ + 30 + (idx % 4) * 5.0;
 
       const splinePts = evaluateCentripetalCatmullRomSpline(
         [
-          { x: spreadX, y: conduitY, z: dropZ },
-          { x: spreadX, y: conduitY, z: combZ },
-          { x: portX, y: conduitY, z: combZ },
-          { x: portX, y: portY, z: rearFaceZ + 16 },
+          { x: spreadX, y: roofOrFloorEntryY, z: dropZ },
+          { x: spreadX, y: collarPassY, z: dropZ },
+          { x: spreadX, y: combY, z: dropZ },
+          { x: spreadX, y: combY, z: combZ },
+          { x: portX, y: combY, z: combZ },
+          { x: portX, y: portY, z: rearFaceZ + 14 },
           { x: portX, y: portY, z: rearFaceZ },
         ],
-        16,
+        14,
       );
       const pts = splinePts.map((p) => new THREE.Vector3(p.x, p.y, p.z));
 
@@ -224,19 +228,16 @@ function ExternalBuildingDrops3D({
   const firstPpDev = devicesById.get(
     externalEndpoints[0]?.patch_panel_instance_id ?? '',
   );
-  const firstPortY =
-    firstPpDev?.ports[0]?.world_position.y ?? totalHeightMm - MM_PER_U / 2;
   const firstRearZ =
     (firstPpDev?.chassis_box.max.z ?? 35) +
     computeDeviceExplodeOffsetZMm(firstPpDev, explodeZMm);
   const collarZ = Math.min(
-    railDepthMm - 24,
-    Math.max(firstRearZ + 90, railDepthMm * 0.46),
+    railDepthMm - 22,
+    Math.max(firstRearZ + 88, railDepthMm * 0.56),
   );
-  const collarY =
-    externalEndpoints[0]?.entry_position === 'bottom-rear'
-      ? Math.max(7.5, firstPortY - 12.0)
-      : Math.min(totalHeightMm - 7.5, firstPortY + 12.0);
+  const isFirstBottomEntry =
+    externalEndpoints[0]?.entry_position === 'bottom-rear';
+  const collarY = isFirstBottomEntry ? -3.0 : totalHeightMm + 3.0;
   const collarWidth = Math.min(
     panelWidthMm * 0.52,
     Math.max(70, externalEndpoints.length * 6.5 + 28),
@@ -244,7 +245,7 @@ function ExternalBuildingDrops3D({
 
   return (
     <group>
-      {/* Rear Building Cable Entry Conduit Collar (`0U` Overhead Trunk) */}
+      {/* Rear Building Cable Entry Conduit Collar (`0U` Overhead Roof / Floor Trunk) */}
       <group position={[panelWidthMm / 2, collarY, collarZ]}>
         <mesh>
           <boxGeometry args={[collarWidth, 10, 28]} />
@@ -253,6 +254,10 @@ function ExternalBuildingDrops3D({
         <mesh position={[0, 0, 0]}>
           <boxGeometry args={[collarWidth - 8, 11.2, 20]} />
           <meshStandardMaterial color="#09090B" roughness={0.92} />
+        </mesh>
+        <mesh position={[0, isFirstBottomEntry ? -11 : 11, 0]}>
+          <boxGeometry args={[collarWidth - 14, 16, 16]} />
+          <meshStandardMaterial color="#18181D" metalness={0.55} roughness={0.45} />
         </mesh>
       </group>
 

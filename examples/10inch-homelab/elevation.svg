@@ -69,8 +69,8 @@
     <rect x="3150.4" y="26" width="324" height="68" rx="5" fill="#090D16" stroke="#22C55E" stroke-width="1.5" />
     <circle cx="3168.4" cy="44" r="5.5" fill="#22C55E" />
     <text x="3182.4" y="48" fill="#22C55E" font-size="12.5" font-weight="700">STATUS: VALID (0 ERR, 0 WARN)</text>
-    <text x="3168.4" y="67" fill="#E2E8F0" font-size="10.5">Power: 175.1W • PoE: 0W / 196W</text>
-    <text x="3168.4" y="83" fill="#94A3B8" font-size="10">Mass: 8.5kg • CoG Y: 121.38mm • Cables: 18</text>
+    <text x="3168.4" y="67" fill="#E2E8F0" font-size="10.5">Power: 175.1W • PoE: 33.5W / 196W</text>
+    <text x="3168.4" y="83" fill="#94A3B8" font-size="10">Mass: 8.5kg • CoG Y: 121.38mm • Cables: 22</text>
   </g>
   <g data-view="front-equipment-schedule" data-layer="left-equipment-callouts">
     <text x="156" y="130" fill="#E2E8F0" font-size="12.5" font-weight="700" text-anchor="middle">EQUIPMENT SCHEDULE (U1..U8)</text>
@@ -437,8 +437,8 @@
       <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
-      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
-      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
       <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">coup</text>
       <title>ks-u3-wan.coupler (RJ45 — rj45)</title>
     </g>
@@ -860,8 +860,8 @@
       <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
-      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
-      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
       <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">6</text>
       <title>patch-u7.p6 (Port 6 — rj45)</title>
     </g>
@@ -876,8 +876,8 @@
       <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
-      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
-      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
       <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">7</text>
       <title>patch-u7.p7 (Port 7 — rj45)</title>
     </g>
@@ -892,8 +892,8 @@
       <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
-      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
-      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
       <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">8</text>
       <title>patch-u7.p8 (Port 8 — rj45)</title>
     </g>
@@ -908,8 +908,8 @@
       <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
-      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
-      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#22C55E" />
       <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">9</text>
       <title>patch-u7.p9 (Port 9 — rj45)</title>
     </g>
@@ -1075,8 +1075,8 @@
       <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
-      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
-      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#F59E0B" />
       <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">7</text>
       <title>sw-u8.eth7 (Port 7 — rj45)</title>
     </g>
@@ -1091,8 +1091,8 @@
       <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
-      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
-      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#F59E0B" />
       <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">8</text>
       <title>sw-u8.eth8 (Port 8 — rj45)</title>
     </g>
@@ -1114,8 +1114,8 @@
       <line x1="4.81" y1="-4.7" x2="4.81" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="8.02" y1="-4.7" x2="8.02" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
       <line x1="11.23" y1="-4.7" x2="11.23" y2="3.36" stroke="#FBBF24" stroke-width="0.8" />
-      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#334155" />
-      <circle cx="14.32" cy="-11.44" r="1.4" fill="#334155" />
+      <circle cx="-14.32" cy="-11.44" r="1.4" fill="#22C55E" />
+      <circle cx="14.32" cy="-11.44" r="1.4" fill="#F59E0B" />
       <text x="0" y="20.72" fill="#CBD5E1" font-size="6.8" font-weight="600" text-anchor="middle">9</text>
       <title>sw-u8.eth9 (10G RJ45/PoE-In — rj45)</title>
     </g>
@@ -2027,7 +2027,7 @@
       <text x="2204.8" y="300.72" fill="#F8FAFC" font-size="8.5" font-weight="700">patch-panel-u7 (32mm)</text>
       <text x="2204.8" y="311.72" fill="#94A3B8" font-size="7.3">DeskPi RackMate 10-Inch 12-Port Cat6A Pa</text>
       <rect x="2100.4" y="322.92" width="98" height="44.8" rx="2" fill="#F59E0B" fill-opacity="0.22" stroke="#F59E0B" stroke-width="1.2" stroke-dasharray="3,2" />
-      <text x="2149.4" y="347.92" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+35mm (5x)</text>
+      <text x="2149.4" y="347.92" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+35mm (9x)</text>
       <rect x="2282.4" y="322.92" width="98" height="44.8" rx="2" fill="#F59E0B" fill-opacity="0.22" stroke="#F59E0B" stroke-width="1.2" stroke-dasharray="3,2" />
       <text x="2331.4" y="347.92" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+35mm (5x)</text>
     </g>
@@ -2038,7 +2038,7 @@
       <text x="2204.8" y="208.46" fill="#F8FAFC" font-size="8.5" font-weight="700">sw-core-flex25g (101.4mm)</text>
       <text x="2204.8" y="219.46" fill="#94A3B8" font-size="7.3">Ubiquiti UniFi Flex 2.5G PoE (USW-Flex-2</text>
       <rect x="2100.4" y="215.26" width="98" height="44.8" rx="2" fill="#F59E0B" fill-opacity="0.22" stroke="#F59E0B" stroke-width="1.2" stroke-dasharray="3,2" />
-      <text x="2149.4" y="240.26" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+35mm (6x)</text>
+      <text x="2149.4" y="240.26" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+35mm (9x)</text>
       <rect x="2476.72" y="215.26" width="154" height="44.8" rx="2" fill="#F59E0B" fill-opacity="0.22" stroke="#F59E0B" stroke-width="1.2" stroke-dasharray="3,2" />
       <text x="2553.72" y="240.26" fill="#FDE68A" font-size="7.2" font-weight="700" text-anchor="middle">+55mm</text>
     </g>
@@ -2201,6 +2201,38 @@
     <path data-cable-id="patch-front-p5-sw5" data-cable-view="side" data-start-xy="2198.4,345.32" data-end-xy="2198.4,237.66" d="M 2198.4 345.32 L 2111.56 345.32 Q 2106.56 345.32, 2106.56 340.32 L 2106.56 242.66 Q 2106.56 237.66, 2111.56 237.66 L 2198.4 237.66" fill="none" stroke="#6366F1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
     <circle class="side-cable-plug" cx="2198.4" cy="345.32" r="3.0" fill="#6366F1" stroke="#090D16" stroke-width="1.2" />
     <circle class="side-cable-plug" cx="2198.4" cy="237.66" r="3.0" fill="#6366F1" stroke="#090D16" stroke-width="1.2" />
+    <path data-cable-id="patch-front-p6-wan" data-cable-view="front-halo" d="M 641.8 345.32 L 641.8 348.34 Q 641.8 350.52, 643.98 350.52 L 1026.9 350.52 Q 1032.4 350.52, 1032.4 356.02 L 1032.4 845.66 Q 1032.4 851.16, 1026.9 851.16 L 852.58 851.16 Q 850.4 851.16, 850.4 848.98 L 850.4 845.96" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="patch-front-p6-wan" data-cable-view="front" data-start-anchor="patch-u7:p6:front" data-end-anchor="ks-u3-wan:coupler:front" data-start-xy="641.8,345.32" data-end-xy="850.4,845.96" d="M 641.8 345.32 L 641.8 348.34 Q 641.8 350.52, 643.98 350.52 L 1026.9 350.52 Q 1032.4 350.52, 1032.4 356.02 L 1032.4 845.66 Q 1032.4 851.16, 1026.9 851.16 L 852.58 851.16 Q 850.4 851.16, 850.4 848.98 L 850.4 845.96" fill="none" stroke="#EC4899" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-front-p6-wan" data-anchor-key="patch-u7:p6:front" cx="641.8" cy="345.32" r="3.6" fill="#EC4899" stroke="#090D16" stroke-width="1.4" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-front-p6-wan" data-anchor-key="ks-u3-wan:coupler:front" cx="850.4" cy="845.96" r="3.6" fill="#EC4899" stroke="#090D16" stroke-width="1.4" />
+    <path data-cable-id="patch-front-p6-wan" data-cable-view="side-halo" d="M 2198.4 345.32 L 2099.8 345.32 Q 2094.8 345.32, 2094.8 350.32 L 2094.8 840.96 Q 2094.8 845.96, 2099.8 845.96 L 2198.4 845.96" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="patch-front-p6-wan" data-cable-view="side" data-start-xy="2198.4,345.32" data-end-xy="2198.4,845.96" d="M 2198.4 345.32 L 2099.8 345.32 Q 2094.8 345.32, 2094.8 350.32 L 2094.8 840.96 Q 2094.8 845.96, 2099.8 845.96 L 2198.4 845.96" fill="none" stroke="#EC4899" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="2198.4" cy="345.32" r="3.0" fill="#EC4899" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="2198.4" cy="845.96" r="3.0" fill="#EC4899" stroke="#090D16" stroke-width="1.2" />
+    <path data-cable-id="patch-front-p7-sw7" data-cable-view="front-halo" d="M 685.2 345.32 L 685.2 277.61 Q 685.2 275.26, 682.85 275.26 L 681.95 275.26 Q 679.6 275.26, 679.6 272.91 L 679.6 237.66" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="patch-front-p7-sw7" data-cable-view="front" data-start-anchor="patch-u7:p7:front" data-end-anchor="sw-u8:eth7:front" data-start-xy="685.2,345.32" data-end-xy="679.6,237.66" d="M 685.2 345.32 L 685.2 277.61 Q 685.2 275.26, 682.85 275.26 L 681.95 275.26 Q 679.6 275.26, 679.6 272.91 L 679.6 237.66" fill="none" stroke="#0EA5E9" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-front-p7-sw7" data-anchor-key="patch-u7:p7:front" cx="685.2" cy="345.32" r="3.6" fill="#0EA5E9" stroke="#090D16" stroke-width="1.4" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-front-p7-sw7" data-anchor-key="sw-u8:eth7:front" cx="679.6" cy="237.66" r="3.6" fill="#0EA5E9" stroke="#090D16" stroke-width="1.4" />
+    <path data-cable-id="patch-front-p7-sw7" data-cable-view="side-halo" d="M 2198.4 345.32 L 2158.6 345.32 Q 2153.6 345.32, 2153.6 340.32 L 2153.6 242.66 Q 2153.6 237.66, 2158.6 237.66 L 2198.4 237.66" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="patch-front-p7-sw7" data-cable-view="side" data-start-xy="2198.4,345.32" data-end-xy="2198.4,237.66" d="M 2198.4 345.32 L 2158.6 345.32 Q 2153.6 345.32, 2153.6 340.32 L 2153.6 242.66 Q 2153.6 237.66, 2158.6 237.66 L 2198.4 237.66" fill="none" stroke="#0EA5E9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="2198.4" cy="345.32" r="3.0" fill="#0EA5E9" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="2198.4" cy="237.66" r="3.0" fill="#0EA5E9" stroke="#090D16" stroke-width="1.2" />
+    <path data-cable-id="patch-front-p8-sw8" data-cable-view="front-halo" d="M 728.6 345.32 L 728.6 281.19 Q 728.6 277.66, 725.07 277.66 L 723.73 277.66 Q 720.2 277.66, 720.2 274.13 L 720.2 237.66" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="patch-front-p8-sw8" data-cable-view="front" data-start-anchor="patch-u7:p8:front" data-end-anchor="sw-u8:eth8:front" data-start-xy="728.6,345.32" data-end-xy="720.2,237.66" d="M 728.6 345.32 L 728.6 281.19 Q 728.6 277.66, 725.07 277.66 L 723.73 277.66 Q 720.2 277.66, 720.2 274.13 L 720.2 237.66" fill="none" stroke="#F59E0B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-front-p8-sw8" data-anchor-key="patch-u7:p8:front" cx="728.6" cy="345.32" r="3.6" fill="#F59E0B" stroke="#090D16" stroke-width="1.4" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-front-p8-sw8" data-anchor-key="sw-u8:eth8:front" cx="720.2" cy="237.66" r="3.6" fill="#F59E0B" stroke="#090D16" stroke-width="1.4" />
+    <path data-cable-id="patch-front-p8-sw8" data-cable-view="side-halo" d="M 2198.4 345.32 L 2146.84 345.32 Q 2141.84 345.32, 2141.84 340.32 L 2141.84 242.66 Q 2141.84 237.66, 2146.84 237.66 L 2198.4 237.66" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="patch-front-p8-sw8" data-cable-view="side" data-start-xy="2198.4,345.32" data-end-xy="2198.4,237.66" d="M 2198.4 345.32 L 2146.84 345.32 Q 2141.84 345.32, 2141.84 340.32 L 2141.84 242.66 Q 2141.84 237.66, 2146.84 237.66 L 2198.4 237.66" fill="none" stroke="#F59E0B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="2198.4" cy="345.32" r="3.0" fill="#F59E0B" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="2198.4" cy="237.66" r="3.0" fill="#F59E0B" stroke="#090D16" stroke-width="1.2" />
+    <path data-cable-id="patch-front-p9-sw9" data-cable-view="front-halo" d="M 772 345.32 L 772 285.56 Q 772 280.06, 777.5 280.06 L 864.5 280.06 Q 870 280.06, 870 274.56 L 870 237.66" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
+    <path data-cable-id="patch-front-p9-sw9" data-cable-view="front" data-start-anchor="patch-u7:p9:front" data-end-anchor="sw-u8:eth9:front" data-start-xy="772,345.32" data-end-xy="870,237.66" d="M 772 345.32 L 772 285.56 Q 772 280.06, 777.5 280.06 L 864.5 280.06 Q 870 280.06, 870 274.56 L 870 237.66" fill="none" stroke="#14B8A6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-front-p9-sw9" data-anchor-key="patch-u7:p9:front" cx="772" cy="345.32" r="3.6" fill="#14B8A6" stroke="#090D16" stroke-width="1.4" />
+    <circle class="cable-plug-endpoint" data-cable-id="patch-front-p9-sw9" data-anchor-key="sw-u8:eth9:front" cx="870" cy="237.66" r="3.6" fill="#14B8A6" stroke="#090D16" stroke-width="1.4" />
+    <path data-cable-id="patch-front-p9-sw9" data-cable-view="side-halo" d="M 2198.4 345.32 L 2135.08 345.32 Q 2130.08 345.32, 2130.08 340.32 L 2130.08 242.66 Q 2130.08 237.66, 2135.08 237.66 L 2198.4 237.66" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+    <path data-cable-id="patch-front-p9-sw9" data-cable-view="side" data-start-xy="2198.4,345.32" data-end-xy="2198.4,237.66" d="M 2198.4 345.32 L 2135.08 345.32 Q 2130.08 345.32, 2130.08 340.32 L 2130.08 242.66 Q 2130.08 237.66, 2135.08 237.66 L 2198.4 237.66" fill="none" stroke="#14B8A6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />
+    <circle class="side-cable-plug" cx="2198.4" cy="345.32" r="3.0" fill="#14B8A6" stroke="#090D16" stroke-width="1.2" />
+    <circle class="side-cable-plug" cx="2198.4" cy="237.66" r="3.0" fill="#14B8A6" stroke="#090D16" stroke-width="1.2" />
     <path data-cable-id="cross-sw6-to-ucg-lan2" data-cable-view="front-halo" d="M 639 237.66 L 639 244.04 Q 639 248.66, 643.62 248.66 L 1024.1 248.66 Q 1029.6 248.66, 1029.6 254.16 L 1029.6 460.15 Q 1029.6 465.65, 1024.1 465.65 L 962.4 465.65" fill="none" stroke="#090D16" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />
     <path data-cable-id="cross-sw6-to-ucg-lan2" data-cable-view="front" data-start-anchor="sw-u8:eth6:front" data-end-anchor="PORTAL:U6:front:cross-sw6-to-ucg-lan2" data-start-xy="639,237.66" data-end-xy="962.4,465.65" d="M 639 237.66 L 639 244.04 Q 639 248.66, 643.62 248.66 L 1024.1 248.66 Q 1029.6 248.66, 1029.6 254.16 L 1029.6 460.15 Q 1029.6 465.65, 1024.1 465.65 L 962.4 465.65" fill="none" stroke="#06B6D4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.96" />
     <circle class="cable-plug-endpoint" data-cable-id="cross-sw6-to-ucg-lan2" data-anchor-key="sw-u8:eth6:front" cx="639" cy="237.66" r="3.6" fill="#06B6D4" stroke="#090D16" stroke-width="1.4" />
@@ -2222,10 +2254,32 @@
     <circle class="side-cable-plug" cx="2198.4" cy="237.66" r="3.0" fill="#06B6D4" stroke="#090D16" stroke-width="1.2" />
     <circle class="side-cable-plug" cx="2555.68" cy="854.36" r="3.0" fill="#06B6D4" stroke="#090D16" stroke-width="1.2" />
   </g>
+  <g data-layer="external-building-drops">
+    <rect x="1505.8" y="144" width="110" height="12" rx="3" fill="#0F172A" stroke="#475569" stroke-width="1.3" />
+    <text x="1560.8" y="152.5" fill="#E2E8F0" font-size="7.2" font-weight="700" text-anchor="middle">TOP-REAR ISP / BUILDING CONDUIT (4x)</text>
+    <rect x="2646.24" y="144" width="72" height="12" rx="3" fill="#0F172A" stroke="#475569" stroke-width="1.3" />
+    <text x="2682.24" y="152.5" fill="#E2E8F0" font-size="7" font-weight="700" text-anchor="middle">ROOF ENTRY</text>
+    <path data-external-endpoint-id="ext-isp-wan" data-external-view="rear" d="M 1542.8 156 L 1542.8 330.82 Q 1542.8 335.32, 1547.3 335.32 L 1622.4 335.32 Q 1626.6 335.32, 1626.6 339.52 L 1626.6 345.32" fill="none" stroke="#EC4899" stroke-width="2.2" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="1626.6" cy="345.32" r="3.0" fill="#EC4899" stroke="#090D16" stroke-width="1.2" />
+    <path data-external-endpoint-id="ext-isp-wan" data-external-view="side" d="M 2654.24 156 L 2654.24 340.82 Q 2654.24 345.32, 2649.74 345.32 L 2282.4 345.32" fill="none" stroke="#EC4899" stroke-width="2.0" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="2282.4" cy="345.32" r="2.8" fill="#EC4899" stroke="#090D16" stroke-width="1.2" />
+    <path data-external-endpoint-id="ext-ap-eg" data-external-view="rear" d="M 1554.8 156 L 1554.8 328.02 Q 1554.8 332.52, 1559.3 332.52 L 1578.7 332.52 Q 1583.2 332.52, 1583.2 337.02 L 1583.2 345.32" fill="none" stroke="#0EA5E9" stroke-width="2.2" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="1583.2" cy="345.32" r="3.0" fill="#0EA5E9" stroke="#090D16" stroke-width="1.2" />
+    <path data-external-endpoint-id="ext-ap-eg" data-external-view="side" d="M 2666.84 156 L 2666.84 340.82 Q 2666.84 345.32, 2662.34 345.32 L 2282.4 345.32" fill="none" stroke="#0EA5E9" stroke-width="2.0" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="2282.4" cy="345.32" r="2.8" fill="#0EA5E9" stroke="#090D16" stroke-width="1.2" />
+    <path data-external-endpoint-id="ext-cam-einfahrt" data-external-view="rear" d="M 1566.8 156 L 1566.8 325.22 Q 1566.8 329.72, 1562.3 329.72 L 1544.3 329.72 Q 1539.8 329.72, 1539.8 334.22 L 1539.8 345.32" fill="none" stroke="#F59E0B" stroke-width="2.2" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="1539.8" cy="345.32" r="3.0" fill="#F59E0B" stroke="#090D16" stroke-width="1.2" />
+    <path data-external-endpoint-id="ext-cam-einfahrt" data-external-view="side" d="M 2679.44 156 L 2679.44 340.82 Q 2679.44 345.32, 2674.94 345.32 L 2282.4 345.32" fill="none" stroke="#F59E0B" stroke-width="2.0" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="2282.4" cy="345.32" r="2.8" fill="#F59E0B" stroke="#090D16" stroke-width="1.2" />
+    <path data-external-endpoint-id="ext-office-lan" data-external-view="rear" d="M 1578.8 156 L 1578.8 330.82 Q 1578.8 335.32, 1574.3 335.32 L 1500.6 335.32 Q 1496.4 335.32, 1496.4 339.52 L 1496.4 345.32" fill="none" stroke="#14B8A6" stroke-width="2.2" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="1496.4" cy="345.32" r="3.0" fill="#14B8A6" stroke="#090D16" stroke-width="1.2" />
+    <path data-external-endpoint-id="ext-office-lan" data-external-view="side" d="M 2692.04 156 L 2692.04 340.82 Q 2692.04 345.32, 2687.54 345.32 L 2282.4 345.32" fill="none" stroke="#14B8A6" stroke-width="2.0" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="2282.4" cy="345.32" r="2.8" fill="#14B8A6" stroke="#090D16" stroke-width="1.2" />
+  </g>
   <g data-view="front-callout-legend" data-layer="callout-legend">
     <rect x="3104.4" y="144" width="370" height="1023.68" rx="6" fill="#090D16" stroke="#334155" stroke-width="1.6" />
     <text x="3120.4" y="172" fill="#F8FAFC" font-size="12" font-weight="700">PORT &amp; CABLE CALLOUT LEGEND</text>
-    <text x="3120.4" y="188" fill="#94A3B8" font-size="9.5">Deterministic PortAnchorRegistry Mapping (36 Active Endpoints)</text>
+    <text x="3120.4" y="188" fill="#94A3B8" font-size="9.5">Deterministic PortAnchorRegistry Mapping (44 Active Endpoints)</text>
     <line x1="3116.4" y1="196" x2="3462.4" y2="196" stroke="#1E293B" stroke-width="1" />
     <circle cx="3128.4" cy="208.5" r="7.5" fill="#0F172A" stroke="#EF4444" stroke-width="1.3" />
     <text x="3128.4" y="211.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">1</text>
@@ -2363,13 +2417,45 @@
     <text x="3128.4" y="838.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">34</text>
     <text x="3142.4" y="839" fill="#E2E8F0" font-size="8.8" font-weight="600">sw-u8:eth5 <tspan fill="#64748B">(front)</tspan></text>
     <text x="3302.4" y="839" fill="#94A3B8" font-size="8.3">-&gt; patch-u7:p5 [patch-front-p5-sw5]</text>
-    <circle cx="3128.4" cy="854.5" r="7.5" fill="#0F172A" stroke="#06B6D4" stroke-width="1.3" />
+    <circle cx="3128.4" cy="854.5" r="7.5" fill="#0F172A" stroke="#EC4899" stroke-width="1.3" />
     <text x="3128.4" y="857.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">35</text>
-    <text x="3142.4" y="858" fill="#E2E8F0" font-size="8.8" font-weight="600">sw-u8:eth6 <tspan fill="#64748B">(front)</tspan></text>
-    <text x="3302.4" y="858" fill="#94A3B8" font-size="8.3">-&gt; ucg-max:lan2 [cross-sw6-to-ucg-lan2]</text>
-    <circle cx="3128.4" cy="873.5" r="7.5" fill="#0F172A" stroke="#06B6D4" stroke-width="1.3" />
+    <text x="3142.4" y="858" fill="#E2E8F0" font-size="8.8" font-weight="600">patch-u7:p6 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="3302.4" y="858" fill="#94A3B8" font-size="8.3">-&gt; ks-u3-wan:coupler [patch-front-p6-wan]</text>
+    <circle cx="3128.4" cy="873.5" r="7.5" fill="#0F172A" stroke="#EC4899" stroke-width="1.3" />
     <text x="3128.4" y="876.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">36</text>
-    <text x="3142.4" y="877" fill="#E2E8F0" font-size="8.8" font-weight="600">ucg-max:lan2 <tspan fill="#64748B">(rear)</tspan></text>
-    <text x="3302.4" y="877" fill="#94A3B8" font-size="8.3">-&gt; sw-u8:eth6 [cross-sw6-to-ucg-lan2]</text>
+    <text x="3142.4" y="877" fill="#E2E8F0" font-size="8.8" font-weight="600">ks-u3-wan:coupler <tspan fill="#64748B">(front)</tspan></text>
+    <text x="3302.4" y="877" fill="#94A3B8" font-size="8.3">-&gt; patch-u7:p6 [patch-front-p6-wan]</text>
+    <circle cx="3128.4" cy="892.5" r="7.5" fill="#0F172A" stroke="#0EA5E9" stroke-width="1.3" />
+    <text x="3128.4" y="895.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">37</text>
+    <text x="3142.4" y="896" fill="#E2E8F0" font-size="8.8" font-weight="600">patch-u7:p7 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="3302.4" y="896" fill="#94A3B8" font-size="8.3">-&gt; sw-u8:eth7 [patch-front-p7-sw7]</text>
+    <circle cx="3128.4" cy="911.5" r="7.5" fill="#0F172A" stroke="#0EA5E9" stroke-width="1.3" />
+    <text x="3128.4" y="914.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">38</text>
+    <text x="3142.4" y="915" fill="#E2E8F0" font-size="8.8" font-weight="600">sw-u8:eth7 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="3302.4" y="915" fill="#94A3B8" font-size="8.3">-&gt; patch-u7:p7 [patch-front-p7-sw7]</text>
+    <circle cx="3128.4" cy="930.5" r="7.5" fill="#0F172A" stroke="#F59E0B" stroke-width="1.3" />
+    <text x="3128.4" y="933.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">39</text>
+    <text x="3142.4" y="934" fill="#E2E8F0" font-size="8.8" font-weight="600">patch-u7:p8 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="3302.4" y="934" fill="#94A3B8" font-size="8.3">-&gt; sw-u8:eth8 [patch-front-p8-sw8]</text>
+    <circle cx="3128.4" cy="949.5" r="7.5" fill="#0F172A" stroke="#F59E0B" stroke-width="1.3" />
+    <text x="3128.4" y="952.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">40</text>
+    <text x="3142.4" y="953" fill="#E2E8F0" font-size="8.8" font-weight="600">sw-u8:eth8 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="3302.4" y="953" fill="#94A3B8" font-size="8.3">-&gt; patch-u7:p8 [patch-front-p8-sw8]</text>
+    <circle cx="3128.4" cy="968.5" r="7.5" fill="#0F172A" stroke="#14B8A6" stroke-width="1.3" />
+    <text x="3128.4" y="971.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">41</text>
+    <text x="3142.4" y="972" fill="#E2E8F0" font-size="8.8" font-weight="600">patch-u7:p9 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="3302.4" y="972" fill="#94A3B8" font-size="8.3">-&gt; sw-u8:eth9 [patch-front-p9-sw9]</text>
+    <circle cx="3128.4" cy="987.5" r="7.5" fill="#0F172A" stroke="#14B8A6" stroke-width="1.3" />
+    <text x="3128.4" y="990.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">42</text>
+    <text x="3142.4" y="991" fill="#E2E8F0" font-size="8.8" font-weight="600">sw-u8:eth9 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="3302.4" y="991" fill="#94A3B8" font-size="8.3">-&gt; patch-u7:p9 [patch-front-p9-sw9]</text>
+    <circle cx="3128.4" cy="1006.5" r="7.5" fill="#0F172A" stroke="#06B6D4" stroke-width="1.3" />
+    <text x="3128.4" y="1009.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">43</text>
+    <text x="3142.4" y="1010" fill="#E2E8F0" font-size="8.8" font-weight="600">sw-u8:eth6 <tspan fill="#64748B">(front)</tspan></text>
+    <text x="3302.4" y="1010" fill="#94A3B8" font-size="8.3">-&gt; ucg-max:lan2 [cross-sw6-to-ucg-lan2]</text>
+    <circle cx="3128.4" cy="1025.5" r="7.5" fill="#0F172A" stroke="#06B6D4" stroke-width="1.3" />
+    <text x="3128.4" y="1028.2" fill="#F8FAFC" font-size="7.5" font-weight="700" text-anchor="middle">44</text>
+    <text x="3142.4" y="1029" fill="#E2E8F0" font-size="8.8" font-weight="600">ucg-max:lan2 <tspan fill="#64748B">(rear)</tspan></text>
+    <text x="3302.4" y="1029" fill="#94A3B8" font-size="8.3">-&gt; sw-u8:eth6 [cross-sw6-to-ucg-lan2]</text>
   </g>
 </svg>

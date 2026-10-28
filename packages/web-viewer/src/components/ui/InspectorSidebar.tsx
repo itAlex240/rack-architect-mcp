@@ -1143,16 +1143,24 @@ export function InspectorSidebar({
                             padding: '1px 5px',
                             borderRadius: '4px',
                             background:
-                              ext.poe_draw_watts > 0
-                                ? 'rgba(245, 158, 11, 0.14)'
-                                : 'rgba(16, 185, 129, 0.12)',
+                              ext.category === 'isp-wan-uplink'
+                                ? 'rgba(236, 72, 153, 0.14)'
+                                : ext.poe_draw_watts > 0
+                                  ? 'rgba(245, 158, 11, 0.14)'
+                                  : 'rgba(16, 185, 129, 0.12)',
                             color:
-                              ext.poe_draw_watts > 0 ? '#FBBF24' : '#34D399',
+                              ext.category === 'isp-wan-uplink'
+                                ? '#F472B6'
+                                : ext.poe_draw_watts > 0
+                                  ? '#FBBF24'
+                                  : '#34D399',
                           }}
                         >
-                          {ext.poe_draw_watts > 0
-                            ? `PoE ${ext.poe_draw_watts}W`
-                            : 'LAN'}
+                          {ext.category === 'isp-wan-uplink'
+                            ? 'ISP WAN'
+                            : ext.poe_draw_watts > 0
+                              ? `PoE ${ext.poe_draw_watts}W`
+                              : 'LAN'}
                         </span>
                       </div>
                       <div

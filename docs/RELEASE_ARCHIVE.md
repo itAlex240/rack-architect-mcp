@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.4.7`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.4.8`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.4.7`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.4.8`)
 
 ### 📦 `v0.4.x` Series — 3D Port & Brush-Panel Realism, External Building Drops & Collision-Free Routing
 
+- **[`v0.4.8`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.8) (2026-10-28) — Shortest-Direct Monotonic 3D Cable Routing by Default & Optional Side-Duct Overrides:**
+  - Refactored `routeSingleCable` in `catmull-rom-router.ts` so `same-face-duct` and `cross-face-portal` default to shortest-direct monotonic orthogonal L-bend routing (`20%–55%` shorter cable paths and lower BOM costs while preserving `>= 6.50 mm` 3D clearance), with optional `routing_mode: 'left-duct' | 'right-duct'`.
 - **[`v0.4.7`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.7) (2026-10-28) — English-First, German-Second Release Notes, Archive & Changelog Consistency:**
   - Unified `docs/RELEASE_NOTES.md`, `docs/RELEASE_ARCHIVE.md`, `CHANGELOG.md`, and `.github/workflows/release.yml` so English always appears first followed by the complete German version.
 - **[`v0.4.6`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.6) (2026-10-28) — Zero Cable-Through-Rail Penetration, De Casteljau Corner Fillets & Clean Rear/Top Conduit Routing:**
@@ -48,10 +50,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.4.7`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.4.8`)
 
 ### 📦 Serie `v0.4.x` — 3D-Ports, Bürstenpanels, Externe Haus-Verkabelung & Kollisionsfreie Kabelführung
 
+- **[`v0.4.8`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.8) (2026-10-28) — Kürzeste, sinnvolle & kollisionsfreie 3D-Kabelführung als Standard (`shortest-direct`) & optionale Seitenkanal-Wahl:**
+  - Direkte monotone orthogonale L-Kurven-Kabelführung als Standard (`20 %–55 %` kürzere Kabellängen ohne Zickzack an die Seitenwände bei `>= 6,50 mm` Mindestabstand) sowie optionales `routing_mode: 'left-duct' | 'right-duct'`.
 - **[`v0.4.7`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.7) (2026-10-28) — Einheitliche Struktur „Englisch zuerst, Deutsch danach" in allen Releases, im Archiv & im Changelog:**
   - `docs/RELEASE_NOTES.md`, `docs/RELEASE_ARCHIVE.md`, `CHANGELOG.md` und `.github/workflows/release.yml` durchgehend auf die Reihenfolge Englisch zuerst, Deutsch danach vereinheitlicht.
 - **[`v0.4.6`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.6) (2026-10-28) — Kein Kabel-Clipping durch den Rack-Rahmen mehr, De-Casteljau-Kurven-Fillets & saubere Dach-/Rückseiten-Kabelführung:**
