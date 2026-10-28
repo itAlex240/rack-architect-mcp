@@ -1,0 +1,262 @@
+slug: enterprise-poe-field-demarcation-16port-1u
+manufacturer: Building Infrastructure
+model: External Building LAN & PoE++ Field Demarcation Trunk (16x Cat6A Drops)
+category: patch-panel
+mount_type: rackmount-19
+geometry:
+  u_height: 1
+  width_mm: 442.4
+  height_mm: 43.7
+  depth_mm: 45
+  ear_mount_style: flush-front
+  front_protrusion_mm: 2
+  rear_protrusion_mm: 0
+  weight_grams: 950
+power_and_thermal:
+  electrical_role: consumer
+  idle_watts: 12
+  max_system_watts: 18
+  airflow: passive-convection
+port_groups: []
+ports:
+  - port_id: ext1
+    label: ISP WAN 1
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+    coordinates:
+      x_mm: 418.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext2
+    label: ISP WAN 2
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+    coordinates:
+      x_mm: 400.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext3
+    label: Wi-Fi 7 PoE++ AP 1
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 382.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext4
+    label: Wi-Fi 7 PoE++ AP 2
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 364.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext5
+    label: Wi-Fi 7 PoE++ AP 3
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 346.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext6
+    label: Wi-Fi 7 PoE++ AP 4
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 328.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext7
+    label: Wi-Fi 7 PoE++ AP 5
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 310.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext8
+    label: Wi-Fi 7 PoE++ AP 6
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 292.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext9
+    label: 4K PoE+ Cam 1
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 274.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext10
+    label: 4K PoE+ Cam 2
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 256.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext11
+    label: 4K PoE+ Cam 3
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 238.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext12
+    label: 4K PoE+ Cam 4
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 220.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext13
+    label: 4K PoE+ Cam 5
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 202.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext14
+    label: 4K PoE+ Cam 6
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 184.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext15
+    label: PoE+ Door Hub 1
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 166.4
+      y_mm: 22
+      orientation: upright
+  - port_id: ext16
+    label: PoE+ Door Hub 2
+    face: front
+    connector_type: rj45
+    direction: bidirectional
+    capabilities:
+      - 1000base-t
+      - 2500base-t
+      - poe-in-af
+      - poe-in-at
+      - poe-in-bt-type3
+    coordinates:
+      x_mm: 148.4
+      y_mm: 22
+      orientation: upright
+slots: []
+visuals:
+  chassis_color_hex: "#27272A"
+  material_preset: matte-black-steel
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

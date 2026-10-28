@@ -1,0 +1,62 @@
+slug: 3dprint-19inch-dual-minipc-poe-carrier-1u
+manufacturer: Community 3D-Print
+model: 19-Inch 1U Carrier for 2x 1L Proxmox Nodes + 1x PoE Pi5 Witness
+category: modular-carrier
+mount_type: rackmount-19
+geometry:
+  u_height: 1
+  width_mm: 482.6
+  height_mm: 44
+  depth_mm: 185
+  ear_mount_style: flush-front
+  front_protrusion_mm: 3
+  rear_protrusion_mm: 0
+  weight_grams: 390
+power_and_thermal:
+  electrical_role: passive
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: passive-convection
+port_groups: []
+ports: []
+slots:
+  - slot_id: mini-pc-bay-1
+    accepted_slot_type: mini-pc-1liter
+    offset_mm:
+      x: 22
+      y: 3.5
+      z: 0
+    max_dimensions_mm:
+      width: 182
+      height: 38
+      depth: 185
+  - slot_id: mini-pc-bay-2
+    accepted_slot_type: mini-pc-1liter
+    offset_mm:
+      x: 212
+      y: 3.5
+      z: 0
+    max_dimensions_mm:
+      width: 182
+      height: 38
+      depth: 185
+  - slot_id: pi-poe-bay-1
+    accepted_slot_type: sbc-rpi5
+    offset_mm:
+      x: 400
+      y: 4
+      z: 0
+    max_dimensions_mm:
+      width: 66
+      height: 38
+      depth: 120
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: 3d-printed-petg
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata:
+  filament_grams: 365
+  material_recommendation: PETG-CF / ASA
+  heat_set_inserts: 8x M3x5x4mm
+  fasteners: 8x M3x12mm Socket Head

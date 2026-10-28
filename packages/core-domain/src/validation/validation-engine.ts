@@ -1346,7 +1346,13 @@ export function validateRackProject(
     totalWeightGrams += weight;
     weightedYSum += weight * yCenter;
 
-    if (weight >= 4000 && dev.u_position > 3) {
+    const heavyUnitThresholdGrams =
+      project.rack.standard === '19inch' ? 12000 : 4000;
+    if (
+      (weight >= heavyUnitThresholdGrams ||
+        (dev.blueprint.category === 'ups' && weight >= 4000)) &&
+      dev.u_position > 3
+    ) {
       heavyDevicesAboveU3.push(dev);
     }
   }

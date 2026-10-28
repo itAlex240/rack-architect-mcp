@@ -1,0 +1,778 @@
+schema_version: "1.0"
+project_name: 12U 19-Inch Enterprise Firewall, PoE++ & Proxmox HA Rack
+rack:
+  standard: 19inch
+  u_height: 12
+  rail_depth_mm: 600
+  enclosure_type: closed-vented-front
+  front_door_clearance_mm: 65
+  rear_clearance_mm: 80
+mounted_devices:
+  - instance_id: ups-core-01
+    blueprint_slug: apc-smart-ups-1500-2u
+    u_position: 1
+    face: front
+    hostname: APC Smart-UPS 1500VA (U1-U2)
+    children: []
+  - instance_id: nas-storage-01
+    blueprint_slug: ubiquiti-unas-pro-2u
+    u_position: 3
+    face: front
+    hostname: UniFi UNAS Pro 7-Bay 10G NAS (U3-U4)
+    children: []
+  - instance_id: carrier-compute-u5
+    blueprint_slug: 3dprint-19inch-dual-minipc-poe-carrier-1u
+    u_position: 5
+    face: front
+    hostname: 19-Inch Proxmox & PoE Witness Carrier (U5)
+    children:
+      - instance_id: pve-node-01
+        blueprint_slug: lenovo-thinkcentre-m920q
+        slot_id: mini-pc-bay-1
+        hostname: Proxmox HA Node 01 (M920q)
+      - instance_id: pve-node-02
+        blueprint_slug: lenovo-thinkcentre-m920q
+        slot_id: mini-pc-bay-2
+        hostname: Proxmox HA Node 02 (M920q)
+      - instance_id: pi5-qdevice-01
+        blueprint_slug: raspberry-pi-5-poe-hat
+        slot_id: pi-poe-bay-1
+        hostname: Pi 5 PoE+ Quorum Witness & NetBox
+  - instance_id: pdu-rear-u5
+    blueprint_slug: enterprise-19inch-dc-pdu-shelf-1u
+    u_position: 5
+    face: rear
+    hostname: APC Rear PDU & 20V DC Shelf (U5 Rear)
+    children: []
+  - instance_id: brush-portal-u6
+    blueprint_slug: generic-19inch-brush-panel-1u
+    u_position: 6
+    face: front
+    hostname: "19-Inch Brush Strip Portal #1 (U6)"
+    children: []
+  - instance_id: udm-pro-sec-01
+    blueprint_slug: ubiquiti-udm-pro
+    u_position: 7
+    face: front
+    hostname: UniFi UDM-Pro NVR & Controller (U7)
+    children: []
+  - instance_id: fw-ngfw-01
+    blueprint_slug: fortinet-fortigate-200f-ngfw-1u
+    u_position: 8
+    face: front
+    hostname: FortiGate 200F Enterprise NGFW (U8)
+    children: []
+  - instance_id: sw-core-agg-01
+    blueprint_slug: ubiquiti-usw-aggregation
+    u_position: 9
+    face: front
+    hostname: USW-Aggregation 10G Core Switch (U9)
+    children: []
+  - instance_id: brush-portal-u10
+    blueprint_slug: generic-19inch-brush-panel-1u
+    u_position: 10
+    face: front
+    hostname: "19-Inch Brush Strip Portal #2 (U10)"
+    children: []
+  - instance_id: sw-poe-core-01
+    blueprint_slug: ubiquiti-usw-pro-max-24-poe
+    u_position: 11
+    face: front
+    hostname: USW-Pro-Max 24 PoE++ Switch (U11)
+    children: []
+  - instance_id: patch-ext-u12
+    blueprint_slug: generic-19inch-patch-panel-24port-cat6a
+    u_position: 12
+    face: front
+    hostname: 24-Port Cat6A Building Patch Panel (U12)
+    children: []
+  - instance_id: ext-building-demarc
+    blueprint_slug: enterprise-poe-field-demarcation-16port-1u
+    u_position: 12
+    face: rear
+    hostname: External Building LAN & PoE++ Demarcation (U12 Rear)
+    children: []
+cables:
+  - cable_id: ext-drop-01
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext1
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p1
+      face: rear
+    cable_type: cat6a
+    color_hex: "#EF4444"
+    label: Incoming ISP WAN 1
+    vlan_id: 901
+  - cable_id: ext-drop-02
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext2
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p2
+      face: rear
+    cable_type: cat6a
+    color_hex: "#EF4444"
+    label: Incoming ISP WAN 2
+    vlan_id: 902
+  - cable_id: ext-drop-03
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext3
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p3
+      face: rear
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Incoming Building Drop AP-1 (PoE++)
+    vlan_id: 20
+  - cable_id: ext-drop-04
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext4
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p4
+      face: rear
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Incoming Building Drop AP-2 (PoE++)
+    vlan_id: 20
+  - cable_id: ext-drop-05
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext5
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p5
+      face: rear
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Incoming Building Drop AP-3 (PoE++)
+    vlan_id: 20
+  - cable_id: ext-drop-06
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext6
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p6
+      face: rear
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Incoming Building Drop AP-4 (PoE++)
+    vlan_id: 20
+  - cable_id: ext-drop-07
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext7
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p7
+      face: rear
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Incoming Building Drop AP-5 (PoE++)
+    vlan_id: 20
+  - cable_id: ext-drop-08
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext8
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p8
+      face: rear
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Incoming Building Drop AP-6 (PoE++)
+    vlan_id: 20
+  - cable_id: ext-drop-09
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext9
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p9
+      face: rear
+    cable_type: cat6a
+    color_hex: "#F59E0B"
+    label: Incoming Building Drop CAM-1 (PoE+)
+    vlan_id: 30
+  - cable_id: ext-drop-10
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext10
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p10
+      face: rear
+    cable_type: cat6a
+    color_hex: "#F59E0B"
+    label: Incoming Building Drop CAM-2 (PoE+)
+    vlan_id: 30
+  - cable_id: ext-drop-11
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext11
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p11
+      face: rear
+    cable_type: cat6a
+    color_hex: "#F59E0B"
+    label: Incoming Building Drop CAM-3 (PoE+)
+    vlan_id: 30
+  - cable_id: ext-drop-12
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext12
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p12
+      face: rear
+    cable_type: cat6a
+    color_hex: "#F59E0B"
+    label: Incoming Building Drop CAM-4 (PoE+)
+    vlan_id: 30
+  - cable_id: ext-drop-13
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext13
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p13
+      face: rear
+    cable_type: cat6a
+    color_hex: "#F59E0B"
+    label: Incoming Building Drop CAM-5 (PoE+)
+    vlan_id: 30
+  - cable_id: ext-drop-14
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext14
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p14
+      face: rear
+    cable_type: cat6a
+    color_hex: "#F59E0B"
+    label: Incoming Building Drop CAM-6 (PoE+)
+    vlan_id: 30
+  - cable_id: ext-drop-15
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext15
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p15
+      face: rear
+    cable_type: cat6a
+    color_hex: "#A855F7"
+    label: Incoming Building Drop DOOR-1 (PoE+)
+    vlan_id: 40
+  - cable_id: ext-drop-16
+    from:
+      instance_id: ext-building-demarc
+      port_id: ext16
+      face: rear
+    to:
+      instance_id: patch-ext-u12
+      port_id: p16
+      face: rear
+    cable_type: cat6a
+    color_hex: "#A855F7"
+    label: Incoming Building Drop DOOR-2 (PoE+)
+    vlan_id: 40
+  - cable_id: wan1-patch-to-ngfw
+    from:
+      instance_id: patch-ext-u12
+      port_id: p1
+      face: front
+    to:
+      instance_id: fw-ngfw-01
+      port_id: wan1
+      face: front
+    cable_type: cat6a
+    color_hex: "#EF4444"
+    label: Primary Fiber WAN1 (ONT -> FortiGate WAN1)
+    vlan_id: 901
+    ip_cidr: 198.51.100.2/30
+  - cable_id: wan2-patch-to-ngfw
+    from:
+      instance_id: patch-ext-u12
+      port_id: p2
+      face: front
+    to:
+      instance_id: fw-ngfw-01
+      port_id: wan2
+      face: front
+    cable_type: cat6a
+    color_hex: "#F97316"
+    label: Backup 5G/Cable WAN2 (Patch p2 -> FortiGate WAN2)
+    vlan_id: 902
+    ip_cidr: 203.0.113.2/30
+  - cable_id: poe-front-patch-p3
+    from:
+      instance_id: patch-ext-u12
+      port_id: p3
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth3
+      face: front
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Wi-Fi 7 PoE++ AP-1 Patch
+    vlan_id: 20
+    ip_cidr: 10.20.0.13/24
+  - cable_id: poe-front-patch-p4
+    from:
+      instance_id: patch-ext-u12
+      port_id: p4
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth4
+      face: front
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Wi-Fi 7 PoE++ AP-2 Patch
+    vlan_id: 20
+    ip_cidr: 10.20.0.14/24
+  - cable_id: poe-front-patch-p5
+    from:
+      instance_id: patch-ext-u12
+      port_id: p5
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth5
+      face: front
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Wi-Fi 7 PoE++ AP-3 Patch
+    vlan_id: 20
+    ip_cidr: 10.20.0.15/24
+  - cable_id: poe-front-patch-p6
+    from:
+      instance_id: patch-ext-u12
+      port_id: p6
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth6
+      face: front
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Wi-Fi 7 PoE++ AP-4 Patch
+    vlan_id: 20
+    ip_cidr: 10.20.0.16/24
+  - cable_id: poe-front-patch-p7
+    from:
+      instance_id: patch-ext-u12
+      port_id: p7
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth7
+      face: front
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Wi-Fi 7 PoE++ AP-5 Patch
+    vlan_id: 20
+    ip_cidr: 10.20.0.17/24
+  - cable_id: poe-front-patch-p8
+    from:
+      instance_id: patch-ext-u12
+      port_id: p8
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth8
+      face: front
+    cable_type: cat6a
+    color_hex: "#10B981"
+    label: Wi-Fi 7 PoE++ AP-6 Patch
+    vlan_id: 20
+    ip_cidr: 10.20.0.18/24
+  - cable_id: poe-front-patch-p9
+    from:
+      instance_id: patch-ext-u12
+      port_id: p9
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth9
+      face: front
+    cable_type: cat6a
+    color_hex: "#F59E0B"
+    label: 4K PoE+ Camera-1 Patch
+    vlan_id: 30
+    ip_cidr: 10.30.0.29/24
+  - cable_id: poe-front-patch-p10
+    from:
+      instance_id: patch-ext-u12
+      port_id: p10
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth10
+      face: front
+    cable_type: cat6a
+    color_hex: "#F59E0B"
+    label: 4K PoE+ Camera-2 Patch
+    vlan_id: 30
+    ip_cidr: 10.30.0.30/24
+  - cable_id: poe-front-patch-p11
+    from:
+      instance_id: patch-ext-u12
+      port_id: p11
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth11
+      face: front
+    cable_type: cat6a
+    color_hex: "#F59E0B"
+    label: 4K PoE+ Camera-3 Patch
+    vlan_id: 30
+    ip_cidr: 10.30.0.31/24
+  - cable_id: poe-front-patch-p12
+    from:
+      instance_id: patch-ext-u12
+      port_id: p12
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth12
+      face: front
+    cable_type: cat6a
+    color_hex: "#F59E0B"
+    label: 4K PoE+ Camera-4 Patch
+    vlan_id: 30
+    ip_cidr: 10.30.0.32/24
+  - cable_id: poe-front-patch-p13
+    from:
+      instance_id: patch-ext-u12
+      port_id: p13
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth13
+      face: front
+    cable_type: cat6a
+    color_hex: "#F59E0B"
+    label: 4K PoE+ Camera-5 Patch
+    vlan_id: 30
+    ip_cidr: 10.30.0.33/24
+  - cable_id: poe-front-patch-p14
+    from:
+      instance_id: patch-ext-u12
+      port_id: p14
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth14
+      face: front
+    cable_type: cat6a
+    color_hex: "#F59E0B"
+    label: 4K PoE+ Camera-6 Patch
+    vlan_id: 30
+    ip_cidr: 10.30.0.34/24
+  - cable_id: poe-front-patch-p15
+    from:
+      instance_id: patch-ext-u12
+      port_id: p15
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth15
+      face: front
+    cable_type: cat6a
+    color_hex: "#A855F7"
+    label: PoE+ Door Access-1 Patch
+    vlan_id: 40
+    ip_cidr: 10.40.0.45/24
+  - cable_id: poe-front-patch-p16
+    from:
+      instance_id: patch-ext-u12
+      port_id: p16
+      face: front
+    to:
+      instance_id: sw-poe-core-01
+      port_id: eth16
+      face: front
+    cable_type: cat6a
+    color_hex: "#A855F7"
+    label: PoE+ Door Access-2 Patch
+    vlan_id: 40
+    ip_cidr: 10.40.0.46/24
+  - cable_id: dac-ngfw-to-agg-1
+    from:
+      instance_id: fw-ngfw-01
+      port_id: sfp_plus1
+      face: front
+    to:
+      instance_id: sw-core-agg-01
+      port_id: sfp1
+      face: front
+    cable_type: sfp-plus-dac
+    color_hex: "#06B6D4"
+    label: 10G SFP+ LACP Firewall Trunk 1
+    vlan_id: 1
+    ip_cidr: 10.0.0.1/24
+  - cable_id: dac-ngfw-to-agg-2
+    from:
+      instance_id: fw-ngfw-01
+      port_id: sfp_plus2
+      face: front
+    to:
+      instance_id: sw-core-agg-01
+      port_id: sfp2
+      face: front
+    cable_type: sfp-plus-dac
+    color_hex: "#06B6D4"
+    label: 10G SFP+ LACP Firewall Trunk 2
+    vlan_id: 1
+    ip_cidr: 10.0.0.2/24
+  - cable_id: dac-udm-to-agg
+    from:
+      instance_id: udm-pro-sec-01
+      port_id: sfp_lan11
+      face: front
+    to:
+      instance_id: sw-core-agg-01
+      port_id: sfp3
+      face: front
+    cable_type: sfp-plus-dac
+    color_hex: "#38BDF8"
+    label: 10G SFP+ Protect NVR & Controller Trunk
+    vlan_id: 30
+    ip_cidr: 10.30.0.2/24
+  - cable_id: dac-poesw-to-agg-1
+    from:
+      instance_id: sw-poe-core-01
+      port_id: sfp1
+      face: front
+    to:
+      instance_id: sw-core-agg-01
+      port_id: sfp7
+      face: front
+    cable_type: sfp-plus-dac
+    color_hex: "#3B82F6"
+    label: 10G SFP+ LACP PoE Switch Uplink 1
+    vlan_id: 1
+  - cable_id: dac-poesw-to-agg-2
+    from:
+      instance_id: sw-poe-core-01
+      port_id: sfp2
+      face: front
+    to:
+      instance_id: sw-core-agg-01
+      port_id: sfp8
+      face: front
+    cable_type: sfp-plus-dac
+    color_hex: "#3B82F6"
+    label: 10G SFP+ LACP PoE Switch Uplink 2
+    vlan_id: 1
+  - cable_id: dac-nas-to-agg-cross
+    from:
+      instance_id: sw-core-agg-01
+      port_id: sfp4
+      face: front
+    to:
+      instance_id: nas-storage-01
+      port_id: sfp_plus1
+      face: rear
+    cable_type: sfp-plus-dac
+    color_hex: "#6366F1"
+    label: 10G SFP+ UNAS Pro Storage Trunk (via U6 Brush Portal)
+    vlan_id: 50
+    ip_cidr: 10.50.0.10/24
+    preferred_portal_u: 6
+  - cable_id: poe-sw-to-pi5-witness
+    from:
+      instance_id: sw-poe-core-01
+      port_id: eth17
+      face: front
+    to:
+      instance_id: pi5-qdevice-01
+      port_id: eth0
+      face: front
+    cable_type: cat6a
+    color_hex: "#EC4899"
+    label: PoE+ Power & Quorum Link -> Pi 5 Witness (12W PoE)
+    vlan_id: 10
+    ip_cidr: 10.10.0.15/24
+  - cable_id: cross-pve1-to-poesw
+    from:
+      instance_id: sw-poe-core-01
+      port_id: eth18
+      face: front
+    to:
+      instance_id: pve-node-01
+      port_id: eth1
+      face: rear
+    cable_type: cat6a
+    color_hex: "#2563EB"
+    label: 2.5G Proxmox Node 01 VM Trunk (via U10 Brush Portal)
+    vlan_id: 10
+    ip_cidr: 10.10.0.11/24
+    preferred_portal_u: 10
+  - cable_id: cross-pve2-to-poesw
+    from:
+      instance_id: sw-poe-core-01
+      port_id: eth19
+      face: front
+    to:
+      instance_id: pve-node-02
+      port_id: eth1
+      face: rear
+    cable_type: cat6a
+    color_hex: "#2563EB"
+    label: 2.5G Proxmox Node 02 VM Trunk (via U10 Brush Portal)
+    vlan_id: 10
+    ip_cidr: 10.10.0.12/24
+    preferred_portal_u: 10
+  - cable_id: rear-pve1-to-pve2-ceph
+    from:
+      instance_id: pve-node-01
+      port_id: eth2
+      face: rear
+    to:
+      instance_id: pve-node-02
+      port_id: eth2
+      face: rear
+    cable_type: cat6a
+    color_hex: "#14B8A6"
+    label: 2.5G Direct Ceph Storage Replication Heartbeat
+    vlan_id: 99
+    ip_cidr: 172.16.99.1/30
+  - cable_id: fw-ha-sync-to-udm
+    from:
+      instance_id: fw-ngfw-01
+      port_id: eth8
+      face: front
+    to:
+      instance_id: udm-pro-sec-01
+      port_id: eth8
+      face: front
+    cable_type: cat6a
+    color_hex: "#F43F5E"
+    label: FortiGate <-> UDM-Pro Management & Telemetry Interconnect
+    vlan_id: 1
+    ip_cidr: 10.0.0.3/24
+  - cable_id: pwr-ups-to-pdu
+    from:
+      instance_id: ups-core-01
+      port_id: iec_out1
+      face: rear
+    to:
+      instance_id: pdu-rear-u5
+      port_id: ac_in
+      face: rear
+    cable_type: power-c13-c14
+    color_hex: "#18181B"
+    label: UPS IEC-1 -> Rear DC PDU Mains In
+  - cable_id: pwr-ups-to-nas
+    from:
+      instance_id: ups-core-01
+      port_id: iec_out2
+      face: rear
+    to:
+      instance_id: nas-storage-01
+      port_id: ac_in
+      face: rear
+    cable_type: power-c13-c14
+    color_hex: "#18181B"
+    label: UPS IEC-2 -> UNAS Pro 2U (160W)
+  - cable_id: pwr-ups-to-udm
+    from:
+      instance_id: ups-core-01
+      port_id: iec_out3
+      face: rear
+    to:
+      instance_id: udm-pro-sec-01
+      port_id: ac_in
+      face: rear
+    cable_type: power-c13-c14
+    color_hex: "#18181B"
+    label: UPS IEC-3 -> UDM-Pro (33W)
+  - cable_id: pwr-ups-to-ngfw
+    from:
+      instance_id: ups-core-01
+      port_id: iec_out4
+      face: rear
+    to:
+      instance_id: fw-ngfw-01
+      port_id: ac_in
+      face: rear
+    cable_type: power-c13-c14
+    color_hex: "#DC2626"
+    label: UPS IEC-4 -> FortiGate 200F NGFW (68W)
+  - cable_id: pwr-ups-to-agg
+    from:
+      instance_id: ups-core-01
+      port_id: iec_out5
+      face: rear
+    to:
+      instance_id: sw-core-agg-01
+      port_id: ac_in
+      face: rear
+    cable_type: power-c13-c14
+    color_hex: "#18181B"
+    label: UPS IEC-5 -> USW-Aggregation 10G (30W)
+  - cable_id: pwr-ups-to-poesw
+    from:
+      instance_id: ups-core-01
+      port_id: iec_out6
+      face: rear
+    to:
+      instance_id: sw-poe-core-01
+      port_id: ac_in
+      face: rear
+    cable_type: power-c13-c14
+    color_hex: "#18181B"
+    label: UPS IEC-6 -> USW-Pro-Max-24-PoE++ (450W Total)
+  - cable_id: pwr-pdu-to-pve1
+    from:
+      instance_id: pdu-rear-u5
+      port_id: dc_out1
+      face: rear
+    to:
+      instance_id: pve-node-01
+      port_id: dc_in
+      face: rear
+    cable_type: power-dc-5525
+    color_hex: "#27272A"
+    label: 20V DC Out 1 -> Proxmox Node 01 (65W)
+  - cable_id: pwr-pdu-to-pve2
+    from:
+      instance_id: pdu-rear-u5
+      port_id: dc_out2
+      face: rear
+    to:
+      instance_id: pve-node-02
+      port_id: dc_in
+      face: rear
+    cable_type: power-dc-5525
+    color_hex: "#27272A"
+    label: 20V DC Out 2 -> Proxmox Node 02 (65W)

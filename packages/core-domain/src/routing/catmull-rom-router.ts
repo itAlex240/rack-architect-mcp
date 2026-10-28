@@ -360,6 +360,8 @@ export function routeSingleCable(
     sameFace &&
     isSameOrAdjacentU &&
     dy <= 95.0 &&
+    dz <= 160.0 &&
+    (fromDev.u_position !== toDev.u_position || fromDev.face === toDev.face) &&
     (dx <= 50.0 ||
       fromDev.u_position === toDev.u_position ||
       isAdjacentTopLevelFrontPatch)
@@ -493,9 +495,10 @@ export function routeSingleCable(
     ductOccupancyCounters.set(ductId, bundleIdx + 1);
     const offset = computeHexagonalBundleOffset(bundleIdx);
 
-    // Place vertical cable ducts in the side channel near the left/right rails,
-    // staggered neatly by bundleIdx so parallel cables never overlap.
-    const sideMarginMm = 14.0 + (bundleIdx % 5) * 3.2;
+    // Place vertical cable ducts in the outer rail channel (X = 6..15mm / W - 15..W - 6mm),
+    // strictly outside the chassis aperture ([17, 237]mm on 10" and [20.1, 462.5]mm on 19")
+    // so Z transitions in the side channel never intersect front or rear device enclosures.
+    const sideMarginMm = 6.0 + (bundleIdx % 5) * 2.2;
     const ductX = roundMm(
       isPower ? sideMarginMm : geometry.panel_width_mm - sideMarginMm
     );
@@ -586,8 +589,19 @@ export function routeSingleCable(
               vec3(ductX, yDepart, zRearVerticalDuct)
             ];
 
+      const zBehindRearRail2 = roundMm(a2.z + 8.0 + (bundleIdx % 4) * 2.5);
       const arriveWaypoints: Vector3D[] =
-        a2.z >= zRearVerticalDuct - 70.0
+        a2.z > zRearVerticalDuct + 6.0
+          ? [
+              // Rear-rail target device (e.g. Rear PDU at Z=600mm facing +Z):
+              // Travel in the outer side channel to yRunner2, step behind the rear rail at ductX,
+              // traverse horizontally behind the rear device to p2.x, and plug straight forward (-Z) into a2 -> p2!
+              vec3(ductX, yRunner2, zRearVerticalDuct),
+              vec3(ductX, yRunner2, zBehindRearRail2),
+              vec3(p2.x, yRunner2, zBehindRearRail2),
+              vec3(p2.x, p2.y, zBehindRearRail2)
+            ]
+          : a2.z >= zRearVerticalDuct - 70.0
           ? [
               // Deep/mid-depth target device (e.g. UCG-Max at Z=127.6, Mini-PCs at Z=182):
               // Arrive at target port height in the rear duct, traverse horizontally at zRearVerticalDuct to p2.x,
@@ -692,9 +706,33 @@ export function routeSingleCable(
   );
   const yPortal = roundMm((chosenPortalU - 0.5) * MM_PER_U + offset.dv * 0.35);
 
+  const minPortalSpanU = Math.min(
+    fromDev.u_position,
+    toDev.u_position,
+    chosenPortalU
+  );
+  const maxPortalSpanU = Math.max(
+    fromDev.u_position,
+    toDev.u_position,
+    chosenPortalU
+  );
+  let maxFrontZForPortal = 185.0;
+  for (const dev of geometry.devices) {
+    if (
+      dev.face === 'front' &&
+      dev.u_range[1] >= minPortalSpanU &&
+      dev.u_range[0] <= maxPortalSpanU
+    ) {
+      maxFrontZForPortal = Math.max(maxFrontZForPortal, dev.chassis_box.max.z);
+    }
+  }
+
   const zFrontDuct = roundMm(-18.0 - (bundleIdx % 4) * 2.0);
   const zRearDuct = roundMm(
-    Math.min(geometry.rail_depth_mm - 8.0, 206.0 + (bundleIdx % 4) * 2.5)
+    Math.min(
+      geometry.rail_depth_mm - 8.0,
+      Math.max(maxFrontZForPortal + 21.0, 206.0) + (bundleIdx % 5) * 2.5
+    )
   );
 
   const yRunner1 = computeDeviceHorizontalRunnerY(

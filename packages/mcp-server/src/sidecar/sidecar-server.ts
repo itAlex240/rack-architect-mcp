@@ -35,11 +35,16 @@ export interface SidecarWsMessage {
 export interface SidecarClientCommand {
   readonly type: 'COMMAND';
   readonly tool:
+    | 'search_catalog'
+    | 'get_device_blueprint'
+    | 'define_custom_blueprint'
     | 'init_rack'
     | 'mount_equipment'
     | 'modify_equipment'
     | 'connect_cables'
     | 'disconnect_cables'
+    | 'validate_rack'
+    | 'export_deliverables'
     | 'undo_redo';
   readonly args?: Record<string, unknown> | undefined;
 }
@@ -277,6 +282,15 @@ export async function startRackSidecarServer(
         const args = (parsed.args ?? {}) as never;
         let result: unknown;
         switch (parsed.tool) {
+          case 'search_catalog':
+            result = handlers.searchCatalog(args);
+            break;
+          case 'get_device_blueprint':
+            result = handlers.getDeviceBlueprint(args);
+            break;
+          case 'define_custom_blueprint':
+            result = handlers.defineCustomBlueprint(args);
+            break;
           case 'init_rack':
             result = handlers.initRack(args);
             break;
@@ -291,6 +305,12 @@ export async function startRackSidecarServer(
             break;
           case 'disconnect_cables':
             result = handlers.disconnectCables(args);
+            break;
+          case 'validate_rack':
+            result = handlers.validateRack(args);
+            break;
+          case 'export_deliverables':
+            result = handlers.exportDeliverables(args);
             break;
           case 'undo_redo':
             result = handlers.undoRedo(args);

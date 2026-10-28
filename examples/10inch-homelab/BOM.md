@@ -39,11 +39,12 @@
 | `cat6a` | **0.15 m** (150 mm) | `#10B981` | 2 | `patch-front-p2-sw2`, `patch-front-p3-sw3` (Patch P2 -> Switch Port 2 (PVE-01 2.5G), Patch P3 -> Switch Port 3 (PVE-02 2.5G)) |
 | `cat6a` | **0.15 m** (150 mm) | `#6366F1` | 2 | `patch-front-p4-sw4`, `patch-front-p5-sw5` (Patch P4 -> Switch Port 4 (PVE-01 Mgmt), Patch P5 -> Switch Port 5 (PVE-02 Mgmt)) |
 | `cat6a` | **0.30 m** (300 mm) | `#EC4899` | 1 | `trunk-ucg-wan-to-ks` (UCG-Max WAN -> U3 Keystone 1 (Rear)) |
-| `cat6a` | **0.75 m** (750 mm) | `#10B981` | 2 | `trunk-pve1-eth1-to-patch2`, `trunk-pve2-eth1-to-patch3` (PVE-01 2.5G ETH1 -> Patch P2 (Rear), PVE-02 2.5G ETH1 -> Patch P3 (Rear)) |
+| `cat6a` | **0.75 m** (750 mm) | `#10B981` | 1 | `trunk-pve2-eth1-to-patch3` (PVE-02 2.5G ETH1 -> Patch P3 (Rear)) |
 | `cat6a` | **0.75 m** (750 mm) | `#6366F1` | 1 | `trunk-pve2-eth0-to-patch5` (PVE-02 Mgmt ETH0 -> Patch P5 (Rear)) |
-| `cat6a` | **1.00 m** (1000 mm) | `#3B82F6` | 1 | `trunk-ucg-lan1-to-patch1` (UCG-Max LAN1 -> Patch P1 (Rear)) |
+| `cat6a` | **1.00 m** (1000 mm) | `#10B981` | 1 | `trunk-pve1-eth1-to-patch2` (PVE-01 2.5G ETH1 -> Patch P2 (Rear)) |
 | `cat6a` | **1.00 m** (1000 mm) | `#6366F1` | 1 | `trunk-pve1-eth0-to-patch4` (PVE-01 Mgmt ETH0 -> Patch P4 (Rear)) |
 | `cat6a` | **1.00 m** (1000 mm) | `#06B6D4` | 1 | `cross-sw6-to-ucg-lan2` (Switch Port 6 (Front) -> U6 Brush Portal -> UCG-Max LAN2 (Rear)) |
+| `cat6a` | **1.50 m** (1500 mm) | `#3B82F6` | 1 | `trunk-ucg-lan1-to-patch1` (UCG-Max LAN1 -> Patch P1 (Rear)) |
 | `power-c13-c14` | **1.00 m** (1000 mm) | `#EF4444` | 1 | `pwr-ups-to-sw` (UPS C13-2 -> USW-Flex-2.5G) |
 | `power-dc-5525` | **0.50 m** (500 mm) | `#F59E0B` | 2 | `pwr-pdu-to-pve1`, `pwr-pdu-to-pve2` (PDU Schuko 2 -> PVE-01 20V DC Brick, PDU Schuko 3 -> PVE-02 20V DC Brick) |
 | `power-schuko-c13` | **0.25 m** (250 mm) | `#EF4444` | 1 | `pwr-ups-to-pdu` (UPS C13-1 -> Rear PDU Input) |
@@ -77,8 +78,8 @@
 - [ ] Patch **0.75m USB-C PD** [`pwr-pdu-to-ucg`, `#F97316`]: Connect `pdu-u2-rear:outlet1` $\rightarrow$ `ucg-max:usbc_pwr` (rear) — _PDU Schuko 1 -> UCG-Max USB-C PD_.
 - [ ] Patch **0.50m DC Barrel** [`pwr-pdu-to-pve1`, `#F59E0B`]: Connect `pdu-u2-rear:outlet2` $\rightarrow$ `pve-node-01:dc_in` (rear) — _PDU Schuko 2 -> PVE-01 20V DC Brick_.
 - [ ] Patch **0.50m DC Barrel** [`pwr-pdu-to-pve2`, `#F59E0B`]: Connect `pdu-u2-rear:outlet3` $\rightarrow$ `pve-node-02:dc_in` (rear) — _PDU Schuko 3 -> PVE-02 20V DC Brick_.
-- [ ] Patch **1.00m Cat6A** [`trunk-ucg-lan1-to-patch1`, `#3B82F6`]: Connect `ucg-max:lan1` (rear) $\rightarrow$ `patch-u7:p1` (rear) — _UCG-Max LAN1 -> Patch P1 (Rear)_.
-- [ ] Patch **0.75m Cat6A** [`trunk-pve1-eth1-to-patch2`, `#10B981`]: Connect `pve-node-01:eth1` (rear) $\rightarrow$ `patch-u7:p2` (rear) — _PVE-01 2.5G ETH1 -> Patch P2 (Rear)_.
+- [ ] Patch **1.50m Cat6A** [`trunk-ucg-lan1-to-patch1`, `#3B82F6`]: Connect `ucg-max:lan1` (rear) $\rightarrow$ `patch-u7:p1` (rear) — _UCG-Max LAN1 -> Patch P1 (Rear)_.
+- [ ] Patch **1.00m Cat6A** [`trunk-pve1-eth1-to-patch2`, `#10B981`]: Connect `pve-node-01:eth1` (rear) $\rightarrow$ `patch-u7:p2` (rear) — _PVE-01 2.5G ETH1 -> Patch P2 (Rear)_.
 - [ ] Patch **0.75m Cat6A** [`trunk-pve2-eth1-to-patch3`, `#10B981`]: Connect `pve-node-02:eth1` (rear) $\rightarrow$ `patch-u7:p3` (rear) — _PVE-02 2.5G ETH1 -> Patch P3 (Rear)_.
 - [ ] Patch **1.00m Cat6A** [`trunk-pve1-eth0-to-patch4`, `#6366F1`]: Connect `pve-node-01:eth0` (rear) $\rightarrow$ `patch-u7:p4` (rear) — _PVE-01 Mgmt ETH0 -> Patch P4 (Rear)_.
 - [ ] Patch **0.75m Cat6A** [`trunk-pve2-eth0-to-patch5`, `#6366F1`]: Connect `pve-node-02:eth0` (rear) $\rightarrow$ `patch-u7:p5` (rear) — _PVE-02 Mgmt ETH0 -> Patch P5 (Rear)_.
