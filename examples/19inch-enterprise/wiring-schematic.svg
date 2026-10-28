@@ -17,8 +17,8 @@
     <text x="630" y="130" fill="#94A3B8" font-size="10.5" font-weight="700">TIER 2: DISTRIBUTION (PDU &amp; PoE PSE)</text>
     <g data-power-node="sw-poe-core-01" data-role="pse-switch">
       <rect x="630" y="142" width="340" height="74" rx="6" fill="#1E293B" stroke="#F59E0B" stroke-width="1.6" />
-      <text x="642" y="162" fill="#F8FAFC" font-size="11" font-weight="700">USW-Pro-Max 24 PoE++ Switch (U10) (sw-poe-core-01)</text>
-      <text x="642" y="179" fill="#94A3B8" font-size="9.5">U10 FRONT • PSE-SWITCH • Own Draw: 35W Idle / 50W Max</text>
+      <text x="642" y="162" fill="#F8FAFC" font-size="11" font-weight="700">USW-Pro-Max 24 PoE++ Switch (U11) (sw-poe-core-01)</text>
+      <text x="642" y="179" fill="#94A3B8" font-size="9.5">U11 FRONT • PSE-SWITCH • Own Draw: 35W Idle / 50W Max</text>
       <rect x="642" y="192" width="120" height="8" rx="4" fill="#090D16" />
       <rect x="642" y="192" width="73.8" height="8" rx="4" fill="#F59E0B" />
       <text x="770" y="199" fill="#FDE68A" font-size="9">PoE Budget: 246W / 400W (61.5%)</text>
@@ -46,18 +46,18 @@
     </g>
     <g data-power-node="udm-pro-sec-01" data-role="consumer">
       <rect x="1212" y="510" width="340" height="74" rx="6" fill="#1E293B" stroke="#38BDF8" stroke-width="1.6" />
-      <text x="1224" y="530" fill="#F8FAFC" font-size="11" font-weight="700">UniFi UDM-Pro NVR &amp; Controller (U7) (udm-pro-sec-01)</text>
-      <text x="1224" y="547" fill="#94A3B8" font-size="9.5">U7 FRONT • CONSUMER • Own Draw: 22W Idle / 33W Max</text>
+      <text x="1224" y="530" fill="#F8FAFC" font-size="11" font-weight="700">UniFi UDM-Pro NVR &amp; Controller (U8) (udm-pro-sec-01)</text>
+      <text x="1224" y="547" fill="#94A3B8" font-size="9.5">U8 FRONT • CONSUMER • Own Draw: 22W Idle / 33W Max</text>
     </g>
     <g data-power-node="fw-ngfw-01" data-role="consumer">
       <rect x="1212" y="602" width="340" height="74" rx="6" fill="#1E293B" stroke="#38BDF8" stroke-width="1.6" />
-      <text x="1224" y="622" fill="#F8FAFC" font-size="11" font-weight="700">FortiGate 200F Enterprise NGFW (U8) (fw-ngfw-01)</text>
-      <text x="1224" y="639" fill="#94A3B8" font-size="9.5">U8 FRONT • CONSUMER • Own Draw: 38W Idle / 68W Max</text>
+      <text x="1224" y="622" fill="#F8FAFC" font-size="11" font-weight="700">FortiGate 200F Enterprise NGFW (U9) (fw-ngfw-01)</text>
+      <text x="1224" y="639" fill="#94A3B8" font-size="9.5">U9 FRONT • CONSUMER • Own Draw: 38W Idle / 68W Max</text>
     </g>
     <g data-power-node="sw-core-agg-01" data-role="consumer">
       <rect x="1212" y="694" width="340" height="74" rx="6" fill="#1E293B" stroke="#38BDF8" stroke-width="1.6" />
-      <text x="1224" y="714" fill="#F8FAFC" font-size="11" font-weight="700">USW-Aggregation 10G Core Switch (U9) (sw-core-agg-01)</text>
-      <text x="1224" y="731" fill="#94A3B8" font-size="9.5">U9 FRONT • CONSUMER • Own Draw: 12W Idle / 30W Max</text>
+      <text x="1224" y="714" fill="#F8FAFC" font-size="11" font-weight="700">USW-Aggregation 10G Core Switch (U10) (sw-core-agg-01)</text>
+      <text x="1224" y="731" fill="#94A3B8" font-size="9.5">U10 FRONT • CONSUMER • Own Draw: 12W Idle / 30W Max</text>
     </g>
     <path data-power-edge="pwr-ups-to-nas" d="M 388 166 L 1212 166" fill="none" stroke="#18181B" stroke-width="2" stroke-dasharray="4,2" opacity="0.88" />
     <circle cx="388" cy="166" r="3" fill="#18181B" stroke="#090D16" stroke-width="1" />
@@ -87,8 +87,8 @@
     <g data-schematic-device="patch-ext-u11">
       <rect x="48" y="916" width="320" height="532" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
       <rect x="48" y="916" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
-      <text x="60" y="933" fill="#F8FAFC" font-size="10.5" font-weight="700">24-Port Cat6A Building Patch Panel (U11)</text>
-      <text x="60" y="947" fill="#94A3B8" font-size="9">U11 FRONT • patch-panel</text>
+      <text x="60" y="933" fill="#F8FAFC" font-size="10.5" font-weight="700">24-Port Cat6A Building Patch Panel (U12)</text>
+      <text x="60" y="947" fill="#94A3B8" font-size="9">U12 FRONT • patch-panel</text>
       <line x1="54" y1="956" x2="362" y2="956" stroke="#334155" stroke-width="0.6" />
       <rect x="58" y="963.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="105" y="974" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • PASSTHROU</text>
@@ -205,8 +205,8 @@
     <g data-schematic-device="fw-ngfw-01">
       <rect x="48" y="1468" width="320" height="142" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
       <rect x="48" y="1468" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
-      <text x="60" y="1485" fill="#F8FAFC" font-size="10.5" font-weight="700">FortiGate 200F Enterprise NGFW (U8) (fw-</text>
-      <text x="60" y="1499" fill="#94A3B8" font-size="9">U8 FRONT • router</text>
+      <text x="60" y="1485" fill="#F8FAFC" font-size="10.5" font-weight="700">FortiGate 200F Enterprise NGFW (U9) (fw-</text>
+      <text x="60" y="1499" fill="#94A3B8" font-size="9">U9 FRONT • router</text>
       <line x1="54" y1="1508" x2="362" y2="1508" stroke="#334155" stroke-width="0.6" />
       <rect x="58" y="1515.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="105" y="1526" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">SFP-PLUS • 10GBA</text>
@@ -232,8 +232,8 @@
     <g data-schematic-device="sw-core-agg-01">
       <rect x="48" y="1630" width="320" height="172" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
       <rect x="48" y="1630" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
-      <text x="60" y="1647" fill="#F8FAFC" font-size="10.5" font-weight="700">USW-Aggregation 10G Core Switch (U9) (sw</text>
-      <text x="60" y="1661" fill="#94A3B8" font-size="9">U9 FRONT • switch</text>
+      <text x="60" y="1647" fill="#F8FAFC" font-size="10.5" font-weight="700">USW-Aggregation 10G Core Switch (U10) (s</text>
+      <text x="60" y="1661" fill="#94A3B8" font-size="9">U10 FRONT • switch</text>
       <line x1="54" y1="1670" x2="362" y2="1670" stroke="#334155" stroke-width="0.6" />
       <rect x="58" y="1677.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="105" y="1688" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">SFP-PLUS • 10GBA</text>
@@ -266,8 +266,8 @@
     <g data-schematic-device="sw-poe-core-01">
       <rect x="48" y="1822" width="320" height="142" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
       <rect x="48" y="1822" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
-      <text x="60" y="1839" fill="#F8FAFC" font-size="10.5" font-weight="700">USW-Pro-Max 24 PoE++ Switch (U10) (sw-po</text>
-      <text x="60" y="1853" fill="#94A3B8" font-size="9">U10 FRONT • switch</text>
+      <text x="60" y="1839" fill="#F8FAFC" font-size="10.5" font-weight="700">USW-Pro-Max 24 PoE++ Switch (U11) (sw-po</text>
+      <text x="60" y="1853" fill="#94A3B8" font-size="9">U11 FRONT • switch</text>
       <line x1="54" y1="1862" x2="362" y2="1862" stroke="#334155" stroke-width="0.6" />
       <rect x="58" y="1869.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="105" y="1880" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
@@ -361,8 +361,8 @@
     <g data-schematic-device="fw-ngfw-01">
       <rect x="1232" y="916" width="320" height="142" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
       <rect x="1232" y="916" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
-      <text x="1244" y="933" fill="#F8FAFC" font-size="10.5" font-weight="700">FortiGate 200F Enterprise NGFW (U8) (fw-</text>
-      <text x="1244" y="947" fill="#94A3B8" font-size="9">U8 FRONT • router</text>
+      <text x="1244" y="933" fill="#F8FAFC" font-size="10.5" font-weight="700">FortiGate 200F Enterprise NGFW (U9) (fw-</text>
+      <text x="1244" y="947" fill="#94A3B8" font-size="9">U9 FRONT • router</text>
       <line x1="1238" y1="956" x2="1546" y2="956" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="963.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="974" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
@@ -388,105 +388,105 @@
     <g data-schematic-device="sw-poe-core-01">
       <rect x="1232" y="1078" width="320" height="562" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
       <rect x="1232" y="1078" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
-      <text x="1244" y="1095" fill="#F8FAFC" font-size="10.5" font-weight="700">USW-Pro-Max 24 PoE++ Switch (U10) (sw-po</text>
-      <text x="1244" y="1109" fill="#94A3B8" font-size="9">U10 FRONT • switch</text>
+      <text x="1244" y="1095" fill="#F8FAFC" font-size="10.5" font-weight="700">USW-Pro-Max 24 PoE++ Switch (U11) (sw-po</text>
+      <text x="1244" y="1109" fill="#94A3B8" font-size="9">U11 FRONT • switch</text>
       <line x1="1238" y1="1118" x2="1546" y2="1118" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1125.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1136" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1128" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1131" x2="1247.5" y2="1131" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1136.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth13 [front]</text>
+      <text x="1256" y="1136.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth8 [front]</text>
       <circle data-pin-key="poe-patch-ap-01:right" data-pin-x="1232" data-pin-y="1133" cx="1232" cy="1133" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1148" x2="1546" y2="1148" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1155.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1166" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1158" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1161" x2="1247.5" y2="1161" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1166.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth14 [front]</text>
+      <text x="1256" y="1166.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth9 [front]</text>
       <circle data-pin-key="poe-patch-ap-02:right" data-pin-x="1232" data-pin-y="1163" cx="1232" cy="1163" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1178" x2="1546" y2="1178" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1185.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1196" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1188" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1191" x2="1247.5" y2="1191" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1196.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth15 [front]</text>
+      <text x="1256" y="1196.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth10 [front]</text>
       <circle data-pin-key="poe-patch-ap-03:right" data-pin-x="1232" data-pin-y="1193" cx="1232" cy="1193" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1208" x2="1546" y2="1208" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1215.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1226" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1218" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1221" x2="1247.5" y2="1221" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1226.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth16 [front]</text>
+      <text x="1256" y="1226.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth11 [front]</text>
       <circle data-pin-key="poe-patch-ap-04:right" data-pin-x="1232" data-pin-y="1223" cx="1232" cy="1223" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1238" x2="1546" y2="1238" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1245.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1256" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1248" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1251" x2="1247.5" y2="1251" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1256.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth17 [front]</text>
+      <text x="1256" y="1256.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth12 [front]</text>
       <circle data-pin-key="poe-patch-ap-05:right" data-pin-x="1232" data-pin-y="1253" cx="1232" cy="1253" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1268" x2="1546" y2="1268" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1275.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1286" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1278" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1281" x2="1247.5" y2="1281" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1286.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth18 [front]</text>
+      <text x="1256" y="1286.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth13 [front]</text>
       <circle data-pin-key="poe-patch-ap-06:right" data-pin-x="1232" data-pin-y="1283" cx="1232" cy="1283" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1298" x2="1546" y2="1298" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1305.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1316" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1308" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1311" x2="1247.5" y2="1311" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1316.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth19 [front]</text>
+      <text x="1256" y="1316.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth14 [front]</text>
       <circle data-pin-key="poe-patch-cam-01:right" data-pin-x="1232" data-pin-y="1313" cx="1232" cy="1313" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1328" x2="1546" y2="1328" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1335.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1346" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1338" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1341" x2="1247.5" y2="1341" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1346.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth20 [front]</text>
+      <text x="1256" y="1346.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth15 [front]</text>
       <circle data-pin-key="poe-patch-cam-02:right" data-pin-x="1232" data-pin-y="1343" cx="1232" cy="1343" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1358" x2="1546" y2="1358" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1365.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1376" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1368" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1371" x2="1247.5" y2="1371" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1376.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth21 [front]</text>
+      <text x="1256" y="1376.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth16 [front]</text>
       <circle data-pin-key="poe-patch-cam-03:right" data-pin-x="1232" data-pin-y="1373" cx="1232" cy="1373" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1388" x2="1546" y2="1388" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1395.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1406" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1398" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1401" x2="1247.5" y2="1401" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1406.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth22 [front]</text>
+      <text x="1256" y="1406.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth17 [front]</text>
       <circle data-pin-key="poe-patch-cam-04:right" data-pin-x="1232" data-pin-y="1403" cx="1232" cy="1403" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1418" x2="1546" y2="1418" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1425.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1436" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1428" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1431" x2="1247.5" y2="1431" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1436.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth23 [front]</text>
+      <text x="1256" y="1436.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth18 [front]</text>
       <circle data-pin-key="poe-patch-cam-05:right" data-pin-x="1232" data-pin-y="1433" cx="1232" cy="1433" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1448" x2="1546" y2="1448" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1455.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1466" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1458" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1461" x2="1247.5" y2="1461" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1466.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth24 [front]</text>
+      <text x="1256" y="1466.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth19 [front]</text>
       <circle data-pin-key="poe-patch-cam-06:right" data-pin-x="1232" data-pin-y="1463" cx="1232" cy="1463" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1478" x2="1546" y2="1478" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1485.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1496" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1488" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1491" x2="1247.5" y2="1491" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1496.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth11 [front]</text>
+      <text x="1256" y="1496.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth20 [front]</text>
       <circle data-pin-key="poe-patch-door-01:right" data-pin-x="1232" data-pin-y="1493" cx="1232" cy="1493" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1508" x2="1546" y2="1508" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1515.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1526" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">RJ45 • 1000BASE-</text>
       <rect data-pin-connector="rj45" x="1240" y="1518" width="10" height="10" rx="1.5" fill="#090D16" stroke="#64748B" stroke-width="1" />
       <line x1="1242.5" y1="1521" x2="1247.5" y2="1521" stroke="#F59E0B" stroke-width="1" />
-      <text x="1256" y="1526.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth12 [front]</text>
+      <text x="1256" y="1526.5" fill="#E2E8F0" font-size="10" font-weight="700" text-anchor="start">eth21 [front]</text>
       <circle data-pin-key="poe-patch-door-02:right" data-pin-x="1232" data-pin-y="1523" cx="1232" cy="1523" r="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
       <line x1="1238" y1="1538" x2="1546" y2="1538" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1545.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
@@ -513,8 +513,8 @@
     <g data-schematic-device="sw-core-agg-01">
       <rect x="1232" y="1660" width="320" height="142" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
       <rect x="1232" y="1660" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
-      <text x="1244" y="1677" fill="#F8FAFC" font-size="10.5" font-weight="700">USW-Aggregation 10G Core Switch (U9) (sw</text>
-      <text x="1244" y="1691" fill="#94A3B8" font-size="9">U9 FRONT • switch</text>
+      <text x="1244" y="1677" fill="#F8FAFC" font-size="10.5" font-weight="700">USW-Aggregation 10G Core Switch (U10) (s</text>
+      <text x="1244" y="1691" fill="#94A3B8" font-size="9">U10 FRONT • switch</text>
       <line x1="1238" y1="1700" x2="1546" y2="1700" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1707.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1718" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">SFP-PLUS • 10GBA</text>
@@ -540,8 +540,8 @@
     <g data-schematic-device="udm-pro-sec-01">
       <rect x="1232" y="1822" width="320" height="142" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
       <rect x="1232" y="1822" width="320" height="40" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
-      <text x="1244" y="1839" fill="#F8FAFC" font-size="10.5" font-weight="700">UniFi UDM-Pro NVR &amp; Controller (U7) (udm</text>
-      <text x="1244" y="1853" fill="#94A3B8" font-size="9">U7 FRONT • router</text>
+      <text x="1244" y="1839" fill="#F8FAFC" font-size="10.5" font-weight="700">UniFi UDM-Pro NVR &amp; Controller (U8) (udm</text>
+      <text x="1244" y="1853" fill="#94A3B8" font-size="9">U8 FRONT • router</text>
       <line x1="1238" y1="1862" x2="1546" y2="1862" stroke="#334155" stroke-width="0.6" />
       <rect x="1448" y="1869.5" width="94" height="15" rx="3" fill="#090D16" stroke="#475569" stroke-width="0.8" />
       <text x="1495" y="1880" fill="#94A3B8" font-size="7.5" font-weight="600" text-anchor="middle">SFP-PLUS • 10GBA</text>
@@ -691,56 +691,56 @@
       <circle class="schematic-pin-plug" cx="368" cy="1151" r="3.2" fill="#0EA5E9" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="1232" cy="1253" r="3.2" fill="#0EA5E9" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="1141.5" width="316" height="19" rx="9.5" fill="#090D16" stroke="#0EA5E9" stroke-width="1.3" />
-      <text x="540" y="1154.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-ap-05 | 0.15m Cat6A • VLAN20 10.20.0.1</text>
+      <text x="540" y="1154.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-ap-05 | 0.25m Cat6A • VLAN20 10.20.0.1</text>
     </g>
     <g data-schematic-cable="poe-patch-ap-06" data-track-index="7" data-channel-x="776" data-start-pin="368,1181" data-end-pin="1232,1283" data-cable-type="cat6a" data-vlan-id="20" data-ip-cidr="10.20.0.16/24">
       <path d="M 368 1181 L 768 1181 Q 776 1181 776 1189 L 776 1275 Q 776 1283 784 1283 L 1232 1283" fill="none" stroke="#0EA5E9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
       <circle class="schematic-pin-plug" cx="368" cy="1181" r="3.2" fill="#0EA5E9" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="1232" cy="1283" r="3.2" fill="#0EA5E9" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="1171.5" width="316" height="19" rx="9.5" fill="#090D16" stroke="#0EA5E9" stroke-width="1.3" />
-      <text x="540" y="1184.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-ap-06 | 0.15m Cat6A • VLAN20 10.20.0.1</text>
+      <text x="540" y="1184.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-ap-06 | 0.25m Cat6A • VLAN20 10.20.0.1</text>
     </g>
     <g data-schematic-cable="poe-patch-cam-01" data-track-index="8" data-channel-x="792" data-start-pin="368,1211" data-end-pin="1232,1313" data-cable-type="cat6a" data-vlan-id="30" data-ip-cidr="10.30.0.11/24">
       <path d="M 368 1211 L 784 1211 Q 792 1211 792 1219 L 792 1305 Q 792 1313 800 1313 L 1232 1313" fill="none" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
       <circle class="schematic-pin-plug" cx="368" cy="1211" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="1232" cy="1313" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="1201.5" width="316" height="19" rx="9.5" fill="#090D16" stroke="#F59E0B" stroke-width="1.3" />
-      <text x="540" y="1214.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-cam-01 | 0.15m Cat6A • VLAN30 10.30.0.</text>
+      <text x="540" y="1214.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-cam-01 | 0.25m Cat6A • VLAN30 10.30.0.</text>
     </g>
     <g data-schematic-cable="poe-patch-cam-02" data-track-index="9" data-channel-x="808" data-start-pin="368,1241" data-end-pin="1232,1343" data-cable-type="cat6a" data-vlan-id="30" data-ip-cidr="10.30.0.12/24">
       <path d="M 368 1241 L 800 1241 Q 808 1241 808 1249 L 808 1335 Q 808 1343 816 1343 L 1232 1343" fill="none" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
       <circle class="schematic-pin-plug" cx="368" cy="1241" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="1232" cy="1343" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="1231.5" width="316" height="19" rx="9.5" fill="#090D16" stroke="#F59E0B" stroke-width="1.3" />
-      <text x="540" y="1244.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-cam-02 | 0.15m Cat6A • VLAN30 10.30.0.</text>
+      <text x="540" y="1244.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-cam-02 | 0.25m Cat6A • VLAN30 10.30.0.</text>
     </g>
     <g data-schematic-cable="poe-patch-cam-03" data-track-index="10" data-channel-x="824" data-start-pin="368,1271" data-end-pin="1232,1373" data-cable-type="cat6a" data-vlan-id="30" data-ip-cidr="10.30.0.13/24">
       <path d="M 368 1271 L 816 1271 Q 824 1271 824 1279 L 824 1365 Q 824 1373 832 1373 L 1232 1373" fill="none" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
       <circle class="schematic-pin-plug" cx="368" cy="1271" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="1232" cy="1373" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="1261.5" width="316" height="19" rx="9.5" fill="#090D16" stroke="#F59E0B" stroke-width="1.3" />
-      <text x="540" y="1274.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-cam-03 | 0.15m Cat6A • VLAN30 10.30.0.</text>
+      <text x="540" y="1274.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-cam-03 | 0.25m Cat6A • VLAN30 10.30.0.</text>
     </g>
     <g data-schematic-cable="poe-patch-cam-04" data-track-index="11" data-channel-x="840" data-start-pin="368,1301" data-end-pin="1232,1403" data-cable-type="cat6a" data-vlan-id="30" data-ip-cidr="10.30.0.14/24">
       <path d="M 368 1301 L 832 1301 Q 840 1301 840 1309 L 840 1395 Q 840 1403 848 1403 L 1232 1403" fill="none" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
       <circle class="schematic-pin-plug" cx="368" cy="1301" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="1232" cy="1403" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="1291.5" width="316" height="19" rx="9.5" fill="#090D16" stroke="#F59E0B" stroke-width="1.3" />
-      <text x="540" y="1304.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-cam-04 | 0.15m Cat6A • VLAN30 10.30.0.</text>
+      <text x="540" y="1304.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-cam-04 | 0.25m Cat6A • VLAN30 10.30.0.</text>
     </g>
     <g data-schematic-cable="poe-patch-cam-05" data-track-index="12" data-channel-x="856" data-start-pin="368,1331" data-end-pin="1232,1433" data-cable-type="cat6a" data-vlan-id="30" data-ip-cidr="10.30.0.15/24">
       <path d="M 368 1331 L 848 1331 Q 856 1331 856 1339 L 856 1425 Q 856 1433 864 1433 L 1232 1433" fill="none" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
       <circle class="schematic-pin-plug" cx="368" cy="1331" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="1232" cy="1433" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="1321.5" width="316" height="19" rx="9.5" fill="#090D16" stroke="#F59E0B" stroke-width="1.3" />
-      <text x="540" y="1334.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-cam-05 | 0.15m Cat6A • VLAN30 10.30.0.</text>
+      <text x="540" y="1334.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-cam-05 | 0.25m Cat6A • VLAN30 10.30.0.</text>
     </g>
     <g data-schematic-cable="poe-patch-cam-06" data-track-index="13" data-channel-x="872" data-start-pin="368,1361" data-end-pin="1232,1463" data-cable-type="cat6a" data-vlan-id="30" data-ip-cidr="10.30.0.16/24">
       <path d="M 368 1361 L 864 1361 Q 872 1361 872 1369 L 872 1455 Q 872 1463 880 1463 L 1232 1463" fill="none" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
       <circle class="schematic-pin-plug" cx="368" cy="1361" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="1232" cy="1463" r="3.2" fill="#F59E0B" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="1351.5" width="316" height="19" rx="9.5" fill="#090D16" stroke="#F59E0B" stroke-width="1.3" />
-      <text x="540" y="1364.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-cam-06 | 0.15m Cat6A • VLAN30 10.30.0.</text>
+      <text x="540" y="1364.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">poe-patch-cam-06 | 0.25m Cat6A • VLAN30 10.30.0.</text>
     </g>
     <g data-schematic-cable="poe-patch-door-01" data-track-index="14" data-channel-x="888" data-start-pin="368,1391" data-end-pin="1232,1493" data-cable-type="cat6a" data-vlan-id="40" data-ip-cidr="10.40.0.11/24">
       <path d="M 368 1391 L 880 1391 Q 888 1391 888 1399 L 888 1485 Q 888 1493 896 1493 L 1232 1493" fill="none" stroke="#10B981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
@@ -775,14 +775,14 @@
       <circle class="schematic-pin-plug" cx="368" cy="1685" r="3.2" fill="#38BDF8" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="1232" cy="1553" r="3.2" fill="#38BDF8" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="1675.5" width="316" height="19" rx="9.5" fill="#090D16" stroke="#38BDF8" stroke-width="1.3" />
-      <text x="540" y="1688.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">dac-agg-to-poesw-1 | 0.30m 10G DAC • VLAN1</text>
+      <text x="540" y="1688.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">dac-agg-to-poesw-1 | 0.50m 10G DAC • VLAN1</text>
     </g>
     <g data-schematic-cable="dac-agg-to-poesw-2" data-track-index="19" data-channel-x="968" data-start-pin="368,1715" data-end-pin="1232,1583" data-cable-type="sfp-plus-dac" data-vlan-id="1">
       <path d="M 368 1715 L 960 1715 Q 968 1715 968 1707 L 968 1591 Q 968 1583 976 1583 L 1232 1583" fill="none" stroke="#38BDF8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
       <circle class="schematic-pin-plug" cx="368" cy="1715" r="3.2" fill="#38BDF8" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="1232" cy="1583" r="3.2" fill="#38BDF8" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="1705.5" width="316" height="19" rx="9.5" fill="#090D16" stroke="#38BDF8" stroke-width="1.3" />
-      <text x="540" y="1718.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">dac-agg-to-poesw-2 | 0.25m 10G DAC • VLAN1</text>
+      <text x="540" y="1718.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">dac-agg-to-poesw-2 | 0.30m 10G DAC • VLAN1</text>
     </g>
     <g data-schematic-cable="dac-agg-to-udm" data-track-index="20" data-channel-x="984" data-start-pin="368,1745" data-end-pin="1232,1877" data-cable-type="sfp-plus-dac" data-vlan-id="30" data-ip-cidr="10.30.0.2/24">
       <path d="M 368 1745 L 976 1745 Q 984 1745 984 1753 L 984 1869 Q 984 1877 992 1877 L 1232 1877" fill="none" stroke="#8B5CF6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
@@ -817,7 +817,7 @@
       <circle class="schematic-pin-plug" cx="368" cy="1937" r="3.2" fill="#2563EB" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="1232" cy="2405" r="3.2" fill="#2563EB" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="1927.5" width="316" height="19" rx="9.5" fill="#090D16" stroke="#2563EB" stroke-width="1.3" />
-      <text x="540" y="1940.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">cross-pve2-to-poesw | 1.50m Cat6A • VLAN10 10.10</text>
+      <text x="540" y="1940.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">cross-pve2-to-poesw | 2.00m Cat6A • VLAN10 10.10</text>
     </g>
     <g data-schematic-cable="rear-pve1-to-pve2-ceph" data-track-index="25" data-channel-x="1064" data-start-pin="368,2039" data-end-pin="1232,2435" data-cable-type="cat6a" data-vlan-id="99" data-ip-cidr="172.16.99.1/30">
       <path d="M 368 2039 L 1056 2039 Q 1064 2039 1064 2047 L 1064 2427 Q 1064 2435 1072 2435 L 1232 2435" fill="none" stroke="#14B8A6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />

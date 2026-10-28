@@ -920,16 +920,32 @@ export class RackMcpToolHandlers {
         input.auto_connect_switch_instance_id !== undefined &&
         switchLookup !== undefined
       ) {
-        while (
-          nextSwitchIndex < switchEthPorts.length &&
-          occupiedSwitchPorts.has(switchEthPorts[nextSwitchIndex]!.port_id)
-        ) {
+        let swPortId: string | undefined;
+        // Prefer 1:1 vertical port alignment (e.g. Patch Panel p8 -> Switch eth8)
+        // when auto_connect_switch_start_port was not explicitly overridden.
+        if (input.auto_connect_switch_start_port === undefined) {
+          const ppPortIdx = ppPorts.findIndex((p) => p.port_id === ppPortId);
+          const alignedSwPort =
+            ppPortIdx >= 0 ? switchEthPorts[ppPortIdx] : undefined;
+          if (
+            alignedSwPort !== undefined &&
+            !occupiedSwitchPorts.has(alignedSwPort.port_id)
+          ) {
+            swPortId = alignedSwPort.port_id;
+          }
+        }
+        if (swPortId === undefined) {
+          while (
+            nextSwitchIndex < switchEthPorts.length &&
+            occupiedSwitchPorts.has(switchEthPorts[nextSwitchIndex]!.port_id)
+          ) {
+            nextSwitchIndex++;
+          }
+          swPortId =
+            switchEthPorts[nextSwitchIndex]?.port_id ??
+            `eth${nextSwitchIndex + 1}`;
           nextSwitchIndex++;
         }
-        const swPortId =
-          switchEthPorts[nextSwitchIndex]?.port_id ??
-          `eth${nextSwitchIndex + 1}`;
-        nextSwitchIndex++;
         occupiedSwitchPorts.add(swPortId);
 
         const cableId = `patch-${endpointId}`;

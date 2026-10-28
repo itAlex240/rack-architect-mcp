@@ -5,6 +5,19 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] - 2026-10-28
+
+### Added & Improved
+- **Real-World ANSI/TIA-942 & Homelab Rack Architecture Skill, 1:1 Port-Aligned Patching & 4 Ready-to-Build Use-Case Archetypes (`skills/rack-architect/SKILL.md`, `@rack-mcp/mcp-server`, `@rack-mcp/hardware-catalog`):**
+  - Upgraded [`skills/rack-architect/SKILL.md`](file:///home/alexb/projects/rack-designer/skills/rack-architect/SKILL.md) and [`.agents/skills/rack-architect/SKILL.md`](file:///home/alexb/projects/rack-designer/.agents/skills/rack-architect/SKILL.md) with a clear **User Sovereignty vs. Consultative Architecture Mode** (*Mode A*: when a user specifies exact hardware or U-slots, respect their design 100% without fighting them; *Mode B*: when a user only has a rough idea or room/building requirements, apply industry-standard schematics instead of guessing randomly).
+  - Documented the **5-Zone Bottom-to-Top Elevation Standard** (ANSI/TIA-942, Ubiquiti UniFi Design Center & DeskPi RackMate best practices), the **1:1 Vertical Port Alignment Law (`pN <-> ethN`)**, **Rear-to-Rear Internal Server Patching**, **Single Strategic 1U Brush Panel placement ("Less is More")**, and a **6-VLAN Enterprise/Homelab Segmentation Matrix** (`VLAN 1/99 Mgmt`, `VLAN 10 Trusted LAN`, `VLAN 20 Wi-Fi`, `VLAN 30 Cameras No-WAN`, `VLAN 40 IoT/Door`, `VLAN 50 Storage/Ceph`).
+  - Added **4 Concrete Use-Case Archetypes** to `SKILL.md` and the MCP server guided prompts ([`server.ts`](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/mcp/server.ts)):
+    1. *Archetype 1:* `8U 10-Inch Silent Smart-Home, Media & NAS Starter Rack` (`< 45W` idle)
+    2. *Archetype 2:* `8U 10-Inch Proxmox 2.5G High-Availability Cluster & Dev-Lab`
+    3. *Archetype 3:* `9U–12U 19-Inch Smart-Building, PoE Surveillance & Wi-Fi 7 House Rack`
+    4. *Archetype 4:* `12U 19-Inch Redundant Enterprise Core, Dual-WAN NGFW & Proxmox HA Stack`
+  - Updated [`ubiquiti-usw-pro-max-24-poe.yaml`](file:///home/alexb/projects/rack-designer/packages/hardware-catalog/catalog/19inch/ubiquiti-usw-pro-max-24-poe.yaml) to match the physical single-row 24-port Etherlighting layout (`rows: 1, columns: 24`), enhanced `plan_external_endpoints` in [`tool-handlers.ts`](file:///home/alexb/projects/rack-designer/packages/mcp-server/src/mcp/tool-handlers.ts) to default to 1:1 vertical port alignment (`pN -> ethN`), and aligned [`examples/19inch-enterprise/rack.yaml`](file:///home/alexb/projects/rack-designer/examples/19inch-enterprise/rack.yaml) so all 14 building patch cords drop straight down (`p8..p21 <-> eth8..eth21`) with zero diagonal crossings.
+
 ## [0.4.3] - 2026-10-28
 
 ### Added & Improved

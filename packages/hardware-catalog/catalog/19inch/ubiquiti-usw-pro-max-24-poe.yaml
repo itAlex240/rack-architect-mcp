@@ -30,12 +30,12 @@ port_groups:
     capabilities: ["1000base-t", "2500base-t", "poe-out", "poe+", "poe-out-af", "poe-out-at", "poe-out-bt-type3"]
     orientation: "upright"
     grid:
-      origin_x_mm: 165.0
-      origin_y_mm: 14.0
-      columns: 12
-      rows: 2
-      pitch_x_mm: 16.0
-      pitch_y_mm: 15.0
+      origin_x_mm: 46.0
+      origin_y_mm: 22.0
+      columns: 24
+      rows: 1
+      pitch_x_mm: 14.8
+      pitch_y_mm: 0.0
 ports:
   - port_id: "sfp1"
     label: "SFP+ 25"
@@ -44,7 +44,7 @@ ports:
     direction: "bidirectional"
     capabilities: ["10gbase-sr", "10gbase-dac"]
     coordinates:
-      x_mm: 385.0
+      x_mm: 416.0
       y_mm: 29.0
       orientation: "upright"
   - port_id: "sfp2"
@@ -54,7 +54,7 @@ ports:
     direction: "bidirectional"
     capabilities: ["10gbase-sr", "10gbase-dac"]
     coordinates:
-      x_mm: 385.0
+      x_mm: 416.0
       y_mm: 14.0
       orientation: "upright"
   - port_id: "ac_in"

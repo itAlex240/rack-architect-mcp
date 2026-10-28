@@ -46,39 +46,33 @@ mounted_devices:
     children: []
   - instance_id: udm-pro-sec-01
     blueprint_slug: ubiquiti-udm-pro
-    u_position: 7
+    u_position: 8
     face: front
-    hostname: UniFi UDM-Pro NVR & Controller (U7)
+    hostname: UniFi UDM-Pro NVR & Controller (U8)
     children: []
   - instance_id: fw-ngfw-01
     blueprint_slug: fortinet-fortigate-200f-ngfw-1u
-    u_position: 8
+    u_position: 9
     face: front
-    hostname: FortiGate 200F Enterprise NGFW (U8)
+    hostname: FortiGate 200F Enterprise NGFW (U9)
     children: []
   - instance_id: sw-core-agg-01
     blueprint_slug: ubiquiti-usw-aggregation
-    u_position: 9
+    u_position: 10
     face: front
-    hostname: USW-Aggregation 10G Core Switch (U9)
+    hostname: USW-Aggregation 10G Core Switch (U10)
     children: []
   - instance_id: sw-poe-core-01
     blueprint_slug: ubiquiti-usw-pro-max-24-poe
-    u_position: 10
+    u_position: 11
     face: front
-    hostname: USW-Pro-Max 24 PoE++ Switch (U10)
+    hostname: USW-Pro-Max 24 PoE++ Switch (U11)
     children: []
   - instance_id: patch-ext-u11
     blueprint_slug: generic-19inch-patch-panel-24port-cat6a
-    u_position: 11
-    face: front
-    hostname: 24-Port Cat6A Building Patch Panel (U11)
-    children: []
-  - instance_id: brush-portal-u11
-    blueprint_slug: generic-19inch-brush-panel-1u
     u_position: 12
     face: front
-    hostname: 19-Inch Top Brush Strip Cable Portal (U12)
+    hostname: 24-Port Cat6A Building Patch Panel (U12)
     children: []
 cables:
   - cable_id: wan1-patch-to-ngfw
@@ -112,7 +106,7 @@ cables:
   - cable_id: poe-patch-ap-01
     from:
       instance_id: sw-poe-core-01
-      port_id: eth13
+      port_id: eth8
       face: front
     to:
       instance_id: patch-ext-u11
@@ -126,7 +120,7 @@ cables:
   - cable_id: poe-patch-ap-02
     from:
       instance_id: sw-poe-core-01
-      port_id: eth14
+      port_id: eth9
       face: front
     to:
       instance_id: patch-ext-u11
@@ -140,7 +134,7 @@ cables:
   - cable_id: poe-patch-ap-03
     from:
       instance_id: sw-poe-core-01
-      port_id: eth15
+      port_id: eth10
       face: front
     to:
       instance_id: patch-ext-u11
@@ -154,7 +148,7 @@ cables:
   - cable_id: poe-patch-ap-04
     from:
       instance_id: sw-poe-core-01
-      port_id: eth16
+      port_id: eth11
       face: front
     to:
       instance_id: patch-ext-u11
@@ -168,7 +162,7 @@ cables:
   - cable_id: poe-patch-ap-05
     from:
       instance_id: sw-poe-core-01
-      port_id: eth17
+      port_id: eth12
       face: front
     to:
       instance_id: patch-ext-u11
@@ -182,7 +176,7 @@ cables:
   - cable_id: poe-patch-ap-06
     from:
       instance_id: sw-poe-core-01
-      port_id: eth18
+      port_id: eth13
       face: front
     to:
       instance_id: patch-ext-u11
@@ -196,7 +190,7 @@ cables:
   - cable_id: poe-patch-cam-01
     from:
       instance_id: sw-poe-core-01
-      port_id: eth19
+      port_id: eth14
       face: front
     to:
       instance_id: patch-ext-u11
@@ -210,7 +204,7 @@ cables:
   - cable_id: poe-patch-cam-02
     from:
       instance_id: sw-poe-core-01
-      port_id: eth20
+      port_id: eth15
       face: front
     to:
       instance_id: patch-ext-u11
@@ -224,7 +218,7 @@ cables:
   - cable_id: poe-patch-cam-03
     from:
       instance_id: sw-poe-core-01
-      port_id: eth21
+      port_id: eth16
       face: front
     to:
       instance_id: patch-ext-u11
@@ -238,7 +232,7 @@ cables:
   - cable_id: poe-patch-cam-04
     from:
       instance_id: sw-poe-core-01
-      port_id: eth22
+      port_id: eth17
       face: front
     to:
       instance_id: patch-ext-u11
@@ -252,7 +246,7 @@ cables:
   - cable_id: poe-patch-cam-05
     from:
       instance_id: sw-poe-core-01
-      port_id: eth23
+      port_id: eth18
       face: front
     to:
       instance_id: patch-ext-u11
@@ -266,7 +260,7 @@ cables:
   - cable_id: poe-patch-cam-06
     from:
       instance_id: sw-poe-core-01
-      port_id: eth24
+      port_id: eth19
       face: front
     to:
       instance_id: patch-ext-u11
@@ -280,7 +274,7 @@ cables:
   - cable_id: poe-patch-door-01
     from:
       instance_id: sw-poe-core-01
-      port_id: eth11
+      port_id: eth20
       face: front
     to:
       instance_id: patch-ext-u11
@@ -294,7 +288,7 @@ cables:
   - cable_id: poe-patch-door-02
     from:
       instance_id: sw-poe-core-01
-      port_id: eth12
+      port_id: eth21
       face: front
     to:
       instance_id: patch-ext-u11

@@ -46,7 +46,7 @@ export function createRackMcpServer(
   const mcpServer = new McpServer(
     {
       name: RACK_MCP_SERVER_NAME,
-      version: '0.4.3'
+      version: '0.4.4'
     },
     {
       capabilities: {
@@ -341,13 +341,17 @@ export function createRackMcpServer(
               text: [
                 `Plan a complete ${std} rack (${uHeight}U) for the following requirements: ${reqs}`,
                 '',
-                'Follow these mandatory steps:',
+                'Collaboration Rule (User Sovereignty vs. Consultative Architecture):',
+                '- If the user specified exact devices or U-positions, respect their wishes 100% without overriding them (only remediate hard physical/electrical validation errors).',
+                '- If the user only gave a rough idea or use case, select a proven reference architecture (e.g. 8U 10" Silent Smart-Home/Media NAS Rack, 8U 10" Proxmox 2.5G HA Cluster, or 10U-12U 19" Smart-Building/Enterprise PoE Rack) and explain the role of each device.',
+                '',
+                'Follow these mandatory TIA-942 & Homelab steps:',
                 '1. Call `search_catalog` to discover compatible switches, routers, modular 3D-printed carriers, sub-modules, patch panels, and PDUs/UPS units.',
                 '2. Call `init_rack` with the chosen standard, u_height, and rail_depth_mm.',
-                '3. Mount heavy UPS/PDU hardware on U1/U2 (`mount_equipment`), modular carriers + compute sub-modules in the middle U slots, and patch panels/switches near the top.',
-                '4. Inspect exact port IDs with `get_device_blueprint` and wire all power and data links using `connect_cables` (include a brush-panel if any cable crosses front-to-rear).',
+                '3. Follow the 5-Zone Bottom-to-Top Elevation Blueprint: Zone 1 (U1-U2 front) heavy UPS (`CoG < 50%`); Zone 2 (U1-U2 rear) PDU; Zone 3 (U3-U5) 2U NAS & 3D-printed Mini-PC/RPi5 carriers; Zone 4 (middle U6) a SINGLE 1U brush panel + core gateway/firewall; Zone 5 (top U_max-1 & U_max) main PoE switch directly below the keystone patch panel.',
+                '4. Inspect exact port IDs with `get_device_blueprint`. Route rear Mini-PC/Gateway RJ45 cables in the rear (`rear -> rear`) up to the rear of the Patch Panel (`p1..p6`), and connect Patch Panel front ports `pN` 1:1 vertically (`p1 -> eth1`, `p2 -> eth2`) to the adjacent switch. Use `plan_external_endpoints` for all external building drops (cameras, APs, rooms).',
                 '5. Call `validate_rack` and follow every `remediation_suggestions` entry until 0 Errors remain.',
-                '6. Call `export_deliverables` to generate `elevation.svg`, `wiring-schematic.svg`, `BOM.md`, and `rack-scene.glb`.'
+                '6. Call `export_deliverables` to generate `elevation.svg`, `wiring-schematic.svg`, `BOM.md`, `rack-scene.glb`, and `.scad`/`.stl` 3D-print files.'
               ].join('\n')
             }
           }
@@ -426,12 +430,12 @@ export function createRackMcpServer(
               type: 'text',
               text: [
                 `Design a 19-inch Enterprise / Prosumer Rack (${uHeight}U, ${railDepth}mm depth) using RackArchitect MCP:`,
-                '1. Call `search_catalog({ form_factor: "19inch" })` to inspect available 19-inch gateways (`ubiquiti-udm-pro-max`, `mikrotik-ccr2004-16g-2s-plus`), switches (`ubiquiti-usw-pro-max-24-poe`, `mikrotik-crs326-24g-2s-plus-rm`), storage/NVR (`ubiquiti-unvr-pro`, `synology-rs822-plus`), and UPS/PDU units (`apc-smart-ups-1500va-2u`, `brennenstuhl-19inch-pdu-8way-c13`).',
-                `2. Initialize the rack via \`init_rack({ project_name: "Enterprise 19-Inch Core Rack", standard: "19inch", u_height: ${uHeight}, rail_depth_mm: ${railDepth}, enclosure_type: "closed-mesh-doors" })\`.`,
-                '3. Mount the heavy 2U UPS at U1 (`apc-smart-ups-1500va-2u`) and rear PDU so Center of Gravity stays below 50%.',
-                '4. Mount NAS/NVR storage, core switches, brush panel, and 24-port keystone patch panel near the top.',
-                '5. If the user specifies external building or room drops (PoE cameras, Wi-Fi APs, office PCs, projectors, laptops, docking stations), call `plan_external_endpoints` to terminate them on the REAR of the patch panel and auto-create labeled front patch cables to the switch — never waste a rack unit (`U`) on external room devices.',
-                '6. Wire 10G SFP+ DAC uplinks (`sfp-plus-dac`), Cat6A links, and IEC C13-C14 power cables (`connect_cables`), then validate (`validate_rack`) for 0 Errors.'
+                '1. Respect any explicit user hardware or U-slot requests 100%. For open/consultative requests, apply the ANSI/TIA-942 5-Zone Elevation Standard.',
+                '2. Call `search_catalog({ form_factor: "19inch" })` to inspect available 19-inch gateways (`ubiquiti-udm-pro`), switches (`ubiquiti-usw-pro-max-24-poe`, `ubiquiti-usw-aggregation`), storage (`ubiquiti-unas-pro-2u`), carriers (`3dprint-19inch-triple-mini-pc-carrier`), and UPS units (`apc-smart-ups-1500-2u`).',
+                `3. Initialize the rack via \`init_rack({ project_name: "Enterprise 19-Inch Core Rack", standard: "19inch", u_height: ${uHeight}, rail_depth_mm: ${railDepth}, enclosure_type: "closed-vented-front" })\`.`,
+                '4. Mount the heavy 2U UPS at U1-U2 (`CoG < 50%`), 2U NAS at U3-U4, compute carriers at U5, a single central 1U brush panel at U6 (leaving U7 free for thermal headroom), Firewall/UDM-Pro/Aggregation at U8-U10, the 24-Port PoE++ Switch at U11, and the 24-Port Patch Panel at the top (`U12`).',
+                '5. If the user specifies external building or room drops (PoE cameras, Wi-Fi APs, office PCs, projectors, laptops, docking stations), call `plan_external_endpoints` to terminate them on the REAR of the patch panel (`U12`) and auto-create 1:1 vertically aligned (`pN -> ethN`) front patch cables to the switch (`U11`) — never waste a rack unit (`U`) on external room devices.',
+                '6. Wire 10G SFP+ DAC uplinks (`sfp-plus-dac`), Cat6A links (with VLAN IDs: 10 Trusted, 20 Wi-Fi, 30 Cameras, 40 IoT/Door, 50 Storage), and IEC C13-C14 power cables (`connect_cables`), then validate (`validate_rack`) for 0 Errors.'
               ].join('\n')
             }
           }
