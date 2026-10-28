@@ -609,4 +609,134 @@ describe('@rack-mcp/mcp-server End-to-End Agentic Workflow & Sidecar Suite', () 
     );
     expect(bomText).toContain('Heimkino — 4K Laser-Beamer');
   });
+
+  it('exposes TDQS Tier-A tool definitions (titles, 100% input/output schema descriptions, and full MCP annotations) and validates structuredContent', async () => {
+    const tmpDir = createTempDir();
+    const projectPath = path.join(tmpDir, 'rack.yaml');
+    const stateManager = new ProjectStateManager({ projectPath });
+    const mcpInstance = createRackMcpServer(stateManager);
+
+    try {
+      const internalServer = mcpInstance.mcpServer.server as unknown as {
+        _requestHandlers: Map<
+          string,
+          (req: unknown, extra: unknown) => Promise<unknown>
+        >;
+      };
+
+      const listToolsHandler = internalServer._requestHandlers.get('tools/list');
+      expect(listToolsHandler).toBeDefined();
+
+      const listToolsRes = (await listToolsHandler!(
+        { method: 'tools/list', params: {} },
+        {}
+      )) as {
+        readonly tools: ReadonlyArray<{
+          readonly name: string;
+          readonly title?: string;
+          readonly description?: string;
+          readonly inputSchema: {
+            readonly properties?: Record<string, { readonly description?: string }>;
+          };
+          readonly outputSchema?: {
+            readonly properties?: Record<string, { readonly description?: string }>;
+          };
+          readonly annotations?: {
+            readonly title?: string;
+            readonly readOnlyHint?: boolean;
+            readonly destructiveHint?: boolean;
+            readonly idempotentHint?: boolean;
+            readonly openWorldHint?: boolean;
+          };
+        }>;
+      };
+
+      expect(listToolsRes.tools).toHaveLength(12);
+
+      for (const tool of listToolsRes.tools) {
+        // 1. Meaningful Title & Rich Non-Tautological Description
+        expect(tool.title).toBeDefined();
+        expect(tool.title!.length).toBeGreaterThan(tool.name.length);
+        expect(tool.title!.toLowerCase()).not.toBe(tool.name.toLowerCase());
+        expect(tool.description).toBeDefined();
+        expect(tool.description!.length).toBeGreaterThan(200);
+        expect(tool.description!.toLowerCase()).not.toBe(tool.name.toLowerCase());
+
+        // 2. 100% Input Schema Description Coverage (TDQS Stage 1 Context Signal)
+        const props = Object.values(tool.inputSchema.properties ?? {});
+        for (const prop of props) {
+          expect(prop.description).toBeDefined();
+          expect(prop.description!.trim().length).toBeGreaterThan(0);
+        }
+
+        // 3. Documented Output Schema Present (TDQS Stage 1 & 3)
+        expect(tool.outputSchema).toBeDefined();
+        const outProps = tool.outputSchema!.properties ?? {};
+        expect(outProps['status']?.description).toBeDefined();
+        expect(outProps['summary']?.description).toBeDefined();
+        expect(outProps['data']?.description).toBeDefined();
+        expect(outProps['issues']?.description).toBeDefined();
+
+        // 4. All 4 MCP Behavioral Annotations Declared
+        expect(tool.annotations).toBeDefined();
+        expect(typeof tool.annotations!.readOnlyHint).toBe('boolean');
+        expect(typeof tool.annotations!.destructiveHint).toBe('boolean');
+        expect(typeof tool.annotations!.idempotentHint).toBe('boolean');
+        expect(typeof tool.annotations!.openWorldHint).toBe('boolean');
+      }
+
+      // 5. Verify tools/call validates structuredContent against outputSchema for key tools
+      const callToolHandler = internalServer._requestHandlers.get('tools/call');
+      expect(callToolHandler).toBeDefined();
+
+      for (const callSpec of [
+        { name: 'search_catalog', arguments: { form_factor: '10inch' } },
+        {
+          name: 'get_device_blueprint',
+          arguments: { slug: 'ubiquiti-usw-flex-2-5g-8-poe' }
+        },
+        {
+          name: 'init_rack',
+          arguments: {
+            project_name: 'TDQS Verification Rack',
+            standard: '10inch',
+            u_height: 8,
+            rail_depth_mm: 260
+          }
+        },
+        {
+          name: 'mount_equipment',
+          arguments: {
+            instance_id: 'sw-tdqs-1',
+            blueprint_slug: 'ubiquiti-usw-flex-2-5g-8-poe',
+            u_position: 8,
+            face: 'front'
+          }
+        },
+        { name: 'validate_rack', arguments: {} },
+        {
+          name: 'export_deliverables',
+          arguments: { formats: ['bom-md'], output_dir: path.join(tmpDir, 'out') }
+        },
+        { name: 'disconnect_cables', arguments: {} },
+        { name: 'undo_redo', arguments: { action: 'undo' } }
+      ]) {
+        const res = (await callToolHandler!(
+          {
+            method: 'tools/call',
+            params: callSpec
+          },
+          {}
+        )) as {
+          readonly isError?: boolean;
+          readonly structuredContent?: Record<string, unknown>;
+        };
+        expect(res.isError).toBe(false);
+        expect(res.structuredContent).toBeDefined();
+        expect(res.structuredContent!['status']).toMatch(/^(VALID|INVALID)$/);
+      }
+    } finally {
+      await mcpInstance.close();
+    }
+  });
 });

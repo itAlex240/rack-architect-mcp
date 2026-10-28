@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.4.6`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.4.7`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.4.6`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.4.7`)
 
 ### 📦 `v0.4.x` Series — 3D Port & Brush-Panel Realism, External Building Drops & Collision-Free Routing
 
+- **[`v0.4.7`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.7) (2026-10-28) — English-First, German-Second Release Notes, Archive & Changelog Consistency:**
+  - Unified `docs/RELEASE_NOTES.md`, `docs/RELEASE_ARCHIVE.md`, `CHANGELOG.md`, and `.github/workflows/release.yml` so English always appears first followed by the complete German version.
 - **[`v0.4.6`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.6) (2026-10-28) — Zero Cable-Through-Rail Penetration, De Casteljau Corner Fillets & Clean Rear/Top Conduit Routing:**
   - Bounded all vertical cable ducts within the inner EIA-310 aperture (`X >= 21.875 mm`, `0` rail/post collisions) and replaced outward-bulging Catmull-Rom corners with convex-hull-bounded De Casteljau quadratic Bezier fillets (`0.0000 mm` overshoot).
 - **[`v0.4.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.5) (2026-10-28) — Automated GitHub Releases Page Curation (Keep Top 3 Recent Releases) & Release Archive:**
@@ -46,10 +48,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.4.6`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.4.7`)
 
 ### 📦 Serie `v0.4.x` — 3D-Ports, Bürstenpanels, Externe Haus-Verkabelung & Kollisionsfreie Kabelführung
 
+- **[`v0.4.7`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.7) (2026-10-28) — Einheitliche Struktur „Englisch zuerst, Deutsch danach" in allen Releases, im Archiv & im Changelog:**
+  - `docs/RELEASE_NOTES.md`, `docs/RELEASE_ARCHIVE.md`, `CHANGELOG.md` und `.github/workflows/release.yml` durchgehend auf die Reihenfolge Englisch zuerst, Deutsch danach vereinheitlicht.
 - **[`v0.4.6`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.6) (2026-10-28) — Kein Kabel-Clipping durch den Rack-Rahmen mehr, De-Casteljau-Kurven-Fillets & saubere Dach-/Rückseiten-Kabelführung:**
   - Alle vertikalen Kabelschächte liegen innerhalb der lichten EIA-310-Öffnung (`X >= 21,875 mm`, `0` Treffer an Schienen/Eckpfosten) und nutzen De-Casteljau-Bezier-Innenbögen ohne Überschwingen (`0,00 mm` Overshoot).
 - **[`v0.4.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.5) (2026-10-28) — Automatische Bereinigung der GitHub-Releases-Seite (Top 3 Releases) & Release-Archiv:**

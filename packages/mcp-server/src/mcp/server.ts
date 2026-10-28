@@ -4,7 +4,9 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import {
   MCP_TOOL_DEFINITIONS,
-  RACK_MCP_SERVER_NAME
+  RACK_MCP_SERVER_INSTRUCTIONS,
+  RACK_MCP_SERVER_NAME,
+  type McpToolAnnotations
 } from '@rack-mcp/core-domain';
 import { generateBomMarkdown } from '@rack-mcp/exporters';
 import { generateAsciiElevation } from '../ascii-elevation.js';
@@ -17,12 +19,25 @@ import {
 function toCallToolResult(envelope: ToolExecutionEnvelope): CallToolResult {
   return {
     isError: false,
+    structuredContent: envelope as unknown as Record<string, unknown>,
     content: [
       {
         type: 'text',
         text: JSON.stringify(envelope, null, 2)
       }
     ]
+  };
+}
+
+function toMcpAnnotations(title: string, annotations: McpToolAnnotations) {
+  return {
+    title,
+    readOnlyHint: annotations.readOnlyHint,
+    destructiveHint: Boolean(
+      annotations.destructiveHint ?? annotations.consequentialHint ?? false
+    ),
+    idempotentHint: Boolean(annotations.idempotentHint ?? false),
+    openWorldHint: Boolean(annotations.openWorldHint ?? false)
   };
 }
 
@@ -35,7 +50,7 @@ export interface RackMcpServerInstance {
 }
 
 /**
- * Creates and wires the official MCP server (`rack_architect_mcp`) with all 11 tools,
+ * Creates and wires the official MCP server (`rack_architect_mcp`) with all 12 tools,
  * 4 resources, and 5 guided planning prompts.
  */
 export function createRackMcpServer(
@@ -46,9 +61,10 @@ export function createRackMcpServer(
   const mcpServer = new McpServer(
     {
       name: RACK_MCP_SERVER_NAME,
-      version: '0.4.9'
+      version: '0.4.10'
     },
     {
+      instructions: RACK_MCP_SERVER_INSTRUCTIONS,
       capabilities: {
         tools: {},
         resources: {},
@@ -58,18 +74,21 @@ export function createRackMcpServer(
   );
 
   // ---------------------------------------------------------------------------
-  // 1. Register Canonical 11 MCP Tools from MCP_TOOL_DEFINITIONS
+  // 1. Register Canonical 12 MCP Tools from MCP_TOOL_DEFINITIONS
   // ---------------------------------------------------------------------------
   const tools = MCP_TOOL_DEFINITIONS;
 
   mcpServer.registerTool(
     tools.search_catalog.name,
     {
+      title: tools.search_catalog.title,
       description: tools.search_catalog.description,
       inputSchema: tools.search_catalog.inputSchema.shape,
-      annotations: {
-        readOnlyHint: tools.search_catalog.annotations.readOnlyHint
-      }
+      outputSchema: tools.search_catalog.outputSchema.shape,
+      annotations: toMcpAnnotations(
+        tools.search_catalog.title,
+        tools.search_catalog.annotations
+      )
     },
     async (args) => toCallToolResult(handlers.searchCatalog(args))
   );
@@ -77,11 +96,14 @@ export function createRackMcpServer(
   mcpServer.registerTool(
     tools.get_device_blueprint.name,
     {
+      title: tools.get_device_blueprint.title,
       description: tools.get_device_blueprint.description,
       inputSchema: tools.get_device_blueprint.inputSchema.shape,
-      annotations: {
-        readOnlyHint: tools.get_device_blueprint.annotations.readOnlyHint
-      }
+      outputSchema: tools.get_device_blueprint.outputSchema.shape,
+      annotations: toMcpAnnotations(
+        tools.get_device_blueprint.title,
+        tools.get_device_blueprint.annotations
+      )
     },
     async (args) => toCallToolResult(handlers.getDeviceBlueprint(args))
   );
@@ -89,11 +111,14 @@ export function createRackMcpServer(
   mcpServer.registerTool(
     tools.define_custom_blueprint.name,
     {
+      title: tools.define_custom_blueprint.title,
       description: tools.define_custom_blueprint.description,
       inputSchema: tools.define_custom_blueprint.inputSchema.shape,
-      annotations: {
-        readOnlyHint: tools.define_custom_blueprint.annotations.readOnlyHint
-      }
+      outputSchema: tools.define_custom_blueprint.outputSchema.shape,
+      annotations: toMcpAnnotations(
+        tools.define_custom_blueprint.title,
+        tools.define_custom_blueprint.annotations
+      )
     },
     async (args) => toCallToolResult(handlers.defineCustomBlueprint(args))
   );
@@ -101,12 +126,14 @@ export function createRackMcpServer(
   mcpServer.registerTool(
     tools.init_rack.name,
     {
+      title: tools.init_rack.title,
       description: tools.init_rack.description,
       inputSchema: tools.init_rack.inputSchema.shape,
-      annotations: {
-        readOnlyHint: tools.init_rack.annotations.readOnlyHint,
-        destructiveHint: Boolean(tools.init_rack.annotations.consequentialHint)
-      }
+      outputSchema: tools.init_rack.outputSchema.shape,
+      annotations: toMcpAnnotations(
+        tools.init_rack.title,
+        tools.init_rack.annotations
+      )
     },
     async (args) => toCallToolResult(handlers.initRack(args))
   );
@@ -114,11 +141,14 @@ export function createRackMcpServer(
   mcpServer.registerTool(
     tools.mount_equipment.name,
     {
+      title: tools.mount_equipment.title,
       description: tools.mount_equipment.description,
       inputSchema: tools.mount_equipment.inputSchema.shape,
-      annotations: {
-        readOnlyHint: tools.mount_equipment.annotations.readOnlyHint
-      }
+      outputSchema: tools.mount_equipment.outputSchema.shape,
+      annotations: toMcpAnnotations(
+        tools.mount_equipment.title,
+        tools.mount_equipment.annotations
+      )
     },
     async (args) => toCallToolResult(handlers.mountEquipment(args))
   );
@@ -126,11 +156,14 @@ export function createRackMcpServer(
   mcpServer.registerTool(
     tools.modify_equipment.name,
     {
+      title: tools.modify_equipment.title,
       description: tools.modify_equipment.description,
       inputSchema: tools.modify_equipment.inputSchema.shape,
-      annotations: {
-        readOnlyHint: tools.modify_equipment.annotations.readOnlyHint
-      }
+      outputSchema: tools.modify_equipment.outputSchema.shape,
+      annotations: toMcpAnnotations(
+        tools.modify_equipment.title,
+        tools.modify_equipment.annotations
+      )
     },
     async (args) => toCallToolResult(handlers.modifyEquipment(args))
   );
@@ -138,11 +171,14 @@ export function createRackMcpServer(
   mcpServer.registerTool(
     tools.connect_cables.name,
     {
+      title: tools.connect_cables.title,
       description: tools.connect_cables.description,
       inputSchema: tools.connect_cables.inputSchema.shape,
-      annotations: {
-        readOnlyHint: tools.connect_cables.annotations.readOnlyHint
-      }
+      outputSchema: tools.connect_cables.outputSchema.shape,
+      annotations: toMcpAnnotations(
+        tools.connect_cables.title,
+        tools.connect_cables.annotations
+      )
     },
     async (args) => toCallToolResult(handlers.connectCables(args))
   );
@@ -150,11 +186,14 @@ export function createRackMcpServer(
   mcpServer.registerTool(
     tools.disconnect_cables.name,
     {
+      title: tools.disconnect_cables.title,
       description: tools.disconnect_cables.description,
       inputSchema: tools.disconnect_cables.inputSchema.shape,
-      annotations: {
-        readOnlyHint: tools.disconnect_cables.annotations.readOnlyHint
-      }
+      outputSchema: tools.disconnect_cables.outputSchema.shape,
+      annotations: toMcpAnnotations(
+        tools.disconnect_cables.title,
+        tools.disconnect_cables.annotations
+      )
     },
     async (args) => toCallToolResult(handlers.disconnectCables(args))
   );
@@ -162,11 +201,14 @@ export function createRackMcpServer(
   mcpServer.registerTool(
     tools.plan_external_endpoints.name,
     {
+      title: tools.plan_external_endpoints.title,
       description: tools.plan_external_endpoints.description,
       inputSchema: tools.plan_external_endpoints.inputSchema.shape,
-      annotations: {
-        readOnlyHint: tools.plan_external_endpoints.annotations.readOnlyHint
-      }
+      outputSchema: tools.plan_external_endpoints.outputSchema.shape,
+      annotations: toMcpAnnotations(
+        tools.plan_external_endpoints.title,
+        tools.plan_external_endpoints.annotations
+      )
     },
     async (args) => toCallToolResult(handlers.planExternalEndpoints(args))
   );
@@ -174,11 +216,14 @@ export function createRackMcpServer(
   mcpServer.registerTool(
     tools.validate_rack.name,
     {
+      title: tools.validate_rack.title,
       description: tools.validate_rack.description,
       inputSchema: tools.validate_rack.inputSchema.shape,
-      annotations: {
-        readOnlyHint: tools.validate_rack.annotations.readOnlyHint
-      }
+      outputSchema: tools.validate_rack.outputSchema.shape,
+      annotations: toMcpAnnotations(
+        tools.validate_rack.title,
+        tools.validate_rack.annotations
+      )
     },
     async (args) => toCallToolResult(handlers.validateRack(args))
   );
@@ -186,11 +231,14 @@ export function createRackMcpServer(
   mcpServer.registerTool(
     tools.export_deliverables.name,
     {
+      title: tools.export_deliverables.title,
       description: tools.export_deliverables.description,
       inputSchema: tools.export_deliverables.inputSchema.shape,
-      annotations: {
-        readOnlyHint: tools.export_deliverables.annotations.readOnlyHint
-      }
+      outputSchema: tools.export_deliverables.outputSchema.shape,
+      annotations: toMcpAnnotations(
+        tools.export_deliverables.title,
+        tools.export_deliverables.annotations
+      )
     },
     async (args) => toCallToolResult(handlers.exportDeliverables(args))
   );
@@ -198,11 +246,14 @@ export function createRackMcpServer(
   mcpServer.registerTool(
     tools.undo_redo.name,
     {
+      title: tools.undo_redo.title,
       description: tools.undo_redo.description,
       inputSchema: tools.undo_redo.inputSchema.shape,
-      annotations: {
-        readOnlyHint: tools.undo_redo.annotations.readOnlyHint
-      }
+      outputSchema: tools.undo_redo.outputSchema.shape,
+      annotations: toMcpAnnotations(
+        tools.undo_redo.title,
+        tools.undo_redo.annotations
+      )
     },
     async (args) => toCallToolResult(handlers.undoRedo(args))
   );

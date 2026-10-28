@@ -610,18 +610,53 @@ export class RackMcpToolHandlers {
   ): ToolExecutionEnvelope {
     const input = DisconnectCablesInputSchema.parse(rawInput);
     const currentProject = this.stateManager.getProject();
-    const nextProject = structuredClone(currentProject);
 
     const cableIdSet = new Set(input.cable_ids ?? []);
     const targetInstanceId = input.instance_id;
+
+    if (cableIdSet.size === 0 && targetInstanceId === undefined) {
+      const issue: DiagnosticIssue = {
+        code: 'PORT_NOT_FOUND',
+        severity: 'ERROR',
+        message:
+          'disconnect_cables requires at least one of cable_ids (non-empty) or instance_id.',
+        affected_instances: [],
+        remediation_suggestions: [
+          'Provide cable_ids with one or more cable identifiers, or specify a mounted device/carrier instance_id.'
+        ]
+      };
+      return this.finalize('disconnect_cables', {
+        status: 'INVALID',
+        summary: issue.message,
+        data: {
+          removed_cable_ids: [],
+          remaining_cables_count: currentProject.cables.length
+        },
+        issues: [issue]
+      });
+    }
+
+    const nextProject = structuredClone(currentProject);
+    const targetDeviceIds = new Set<string>();
+    if (targetInstanceId !== undefined) {
+      targetDeviceIds.add(targetInstanceId);
+      const carrier = nextProject.mounted_devices.find(
+        (d) => d.instance_id === targetInstanceId
+      );
+      if (carrier !== undefined) {
+        for (const child of carrier.children) {
+          targetDeviceIds.add(child.instance_id);
+        }
+      }
+    }
+
     const removedCableIds: string[] = [];
 
     nextProject.cables = nextProject.cables.filter((cable) => {
       const matchesId = cableIdSet.has(cable.cable_id);
       const matchesDevice =
-        targetInstanceId !== undefined &&
-        (cable.from.instance_id === targetInstanceId ||
-          cable.to.instance_id === targetInstanceId);
+        targetDeviceIds.has(cable.from.instance_id) ||
+        targetDeviceIds.has(cable.to.instance_id);
       if (matchesId || matchesDevice) {
         removedCableIds.push(cable.cable_id);
         return false;

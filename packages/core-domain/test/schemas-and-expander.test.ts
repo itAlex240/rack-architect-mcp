@@ -11,6 +11,7 @@ import {
   MCP_TOOL_DEFINITIONS,
   MM_PER_U,
   normalizeHardwareBlueprint,
+  RACK_MCP_SERVER_INSTRUCTIONS,
   RACK_MCP_SERVER_NAME,
   RackProjectSchema,
   U_HOLE_OFFSETS_MM
@@ -302,6 +303,22 @@ describe('HardwareBlueprintSchema & Port Matrix Expansion', () => {
     expect(
       MCP_TOOL_DEFINITIONS.init_rack.annotations.consequentialHint
     ).toBe(true);
+    expect(RACK_MCP_SERVER_INSTRUCTIONS.length).toBeGreaterThan(100);
+
+    for (const [key, def] of Object.entries(MCP_TOOL_DEFINITIONS)) {
+      expect(def.name).toBe(key);
+      expect(def.title.length).toBeGreaterThan(def.name.length);
+      expect(def.title.toLowerCase()).not.toBe(def.name.toLowerCase());
+      expect(def.description.length).toBeGreaterThan(200);
+      expect(def.outputSchema).toBeDefined();
+      expect(typeof def.annotations.readOnlyHint).toBe('boolean');
+      expect(typeof def.annotations.destructiveHint).toBe('boolean');
+      expect(typeof def.annotations.idempotentHint).toBe('boolean');
+      expect(typeof def.annotations.openWorldHint).toBe('boolean');
+      if (def.annotations.readOnlyHint) {
+        expect(def.annotations.destructiveHint).toBe(false);
+      }
+    }
 
     // Reject unknown/arbitrary cable_type strings (no z.string() union fallback)
     expect(() =>

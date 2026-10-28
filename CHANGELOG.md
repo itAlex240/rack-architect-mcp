@@ -5,6 +5,21 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.10] - 2026-10-28
+
+### Added & Improved (🇬🇧 English)
+- **TDQS (Tool Definition Quality Score) Tier-A Overhaul Across All 12 MCP Tools, Documented `outputSchema` Contracts & Server Instructions (`@rack-mcp/core-domain`, `@rack-mcp/mcp-server`):**
+  - **Upgraded All 12 Tool Definitions in `MCP_TOOL_DEFINITIONS` (`mcp-tools.ts`) to TDQS Tier A across All 6 Rubric Dimensions:** Rewrote tool descriptions to explicitly cover **Purpose Clarity** (specific verb + resource + sibling differentiation), **Usage Guidelines** (explicit when-to-use, preconditions, and named alternative tools), **Behavioral Transparency** (exact state/filesystem overwrite semantics, undo-stack behavior, and non-throwing `status: 'INVALID'` error handling), and **Parameter Semantics** (mutually exclusive modes, alias precedence, and filter combination rules) — specifically resolving the previous Glama TDQS ratings on `init_rack` (was Tier C `2.9`), `search_catalog` (was Tier B `3.2`), `validate_rack` (was Tier B `3.3`), and `export_deliverables` (was Tier B `3.3`).
+  - **Documented `outputSchema` & `structuredContent` for Every Tool (`mcp-tools.ts`, `server.ts`):** Added fully described Zod output schemas (`SearchCatalogOutputSchema` through `UndoRedoOutputSchema`) and wired `outputSchema` + `structuredContent` into `McpServer.registerTool(...)` so MCP clients and TDQS evaluators receive 100% documented return schemas alongside 100% recursive input parameter description coverage.
+  - **Complete MCP Behavioral Annotations & Meaningful Tool Titles:** Declared `title`, `readOnlyHint`, `destructiveHint`, `idempotentHint`, and `openWorldHint` on all 12 tools plus server-level `instructions` (`RACK_MCP_SERVER_INSTRUCTIONS`) on `McpServer`.
+  - **Hardened `disconnect_cables` Input & Carrier Cascade Semantics (`tool-handlers.ts`):** Calling `disconnect_cables` with neither `cable_ids` nor `instance_id` now safely returns `status: 'INVALID'` with remediation guidance without mutating state, and supplying a parent `modular-carrier` `instance_id` also disconnects cables attached to its child sub-modules.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **TDQS (Tool Definition Quality Score) Tier-A-Upgrade für alle 12 MCP-Tools, dokumentierte `outputSchema`-Definitionen & Server-Instructions (`@rack-mcp/core-domain`, `@rack-mcp/mcp-server`):**
+  - **Alle 12 MCP-Tools auf TDQS Tier A optimiert (`mcp-tools.ts`):** Vollständige Überarbeitung der Tool-Beschreibungen nach den 6 Glama-TDQS-Dimensionen (*Purpose Clarity*, *Usage Guidelines*, *Behavioral Transparency*, *Parameter Semantics*, *Conciseness* und *Contextual Completeness*) — behebt gezielt die bisherigen Abzüge bei `init_rack` (vorher C / `2.9`), `search_catalog` (vorher B / `3.2`), `validate_rack` (vorher B / `3.3`) und `export_deliverables` (vorher B / `3.3`) sowie bei allen übrigen Tools.
+  - **Dokumentierte `outputSchema`-Verträge & `structuredContent` für alle 12 Tools:** Jedes Tool veröffentlicht nun ein vollständig beschriebenes JSON-Output-Schema (`status`, `summary`, `data`, `issues`) in `tools/list` und liefert validiertes `structuredContent` bei `tools/call`.
+  - **Vollständige MCP-Annotationen, Tool-Titel & Server-Instructions:** Alle 12 Tools deklarieren `title`, `readOnlyHint`, `destructiveHint`, `idempotentHint` und `openWorldHint`; zudem veröffentlicht der MCP-Server `RACK_MCP_SERVER_INSTRUCTIONS`.
+
 ## [0.4.9] - 2026-10-28
 
 ### Added & Improved (🇬🇧 English)

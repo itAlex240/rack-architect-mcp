@@ -1,6 +1,6 @@
 {
   "name": "@rack-mcp/core-domain",
-  "version": "0.4.9",
+  "version": "0.4.10",
   "license": "MIT",
   "description": "Pure TypeScript/Zod 3D spatial coordinate math, AABB collision solver, PoE/power DAG analyzer, Stage-5 thermal/acoustic engine, and clamped Catmull-Rom 3D cable router.",
   "type": "module",
