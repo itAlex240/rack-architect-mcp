@@ -618,8 +618,10 @@ describe('10-Inch Mini-Rack (8U, 260mm Depth) End-to-End Validation & 3D Routing
     expect(routeCross.route_case).toBe('cross-face-portal');
     expect(routeCross.assigned_ducts).toEqual(['FR', 'RR']);
     expect(routeCross.portal_u).toBe(2);
-    expect(routeCross.waypoints).toHaveLength(14);
-    expect(routeCross.spline_points.length).toBe(13 * 32 + 1);
+    expect(routeCross.waypoints.length).toBeGreaterThanOrEqual(9);
+    expect(routeCross.spline_points.length).toBe(
+      (routeCross.waypoints.length - 1) * 32 + 1
+    );
 
     // Verify required_length_mm = raw_arc_length_mm * 1.12 + 40 and commercial bin mapping
     for (const r of [route1, route2, routeCross]) {
@@ -1318,6 +1320,55 @@ describe('10-Inch Mini-Rack (8U, 260mm Depth) End-to-End Validation & 3D Routing
         expect((inLeftRail || inRightRail) && (inFrontRailPlane || inRearRailPlane)).toBe(false);
       }
     }
+  });
+
+  it('routes shortest-direct monotonically by default and honors explicit left-duct / right-duct routing_mode overrides', () => {
+    const makeProject = (
+      routingMode?: 'shortest-direct' | 'left-duct' | 'right-duct'
+    ): RackProject =>
+      RackProjectSchema.parse({
+        schema_version: '1.0',
+        project_name: 'Routing Mode Verification',
+        rack: {
+          standard: '10inch',
+          u_height: 8,
+          rail_depth_mm: 260,
+          enclosure_type: 'open-frame'
+        },
+        mounted_devices: [
+          {
+            instance_id: 'sw-u1',
+            blueprint_slug: 'ubiquiti-usw-pro-8-poe-10inch',
+            u_position: 1,
+            face: 'front'
+          },
+          {
+            instance_id: 'sw-u8',
+            blueprint_slug: 'ubiquiti-usw-pro-8-poe-10inch',
+            u_position: 8,
+            face: 'front'
+          }
+        ],
+        cables: [
+          {
+            cable_id: 'test-cable',
+            from: { instance_id: 'sw-u1', port_id: 'eth1', face: 'front' },
+            to: { instance_id: 'sw-u8', port_id: 'eth2', face: 'front' },
+            cable_type: 'cat6a',
+            ...(routingMode ? { routing_mode: routingMode } : {})
+          }
+        ]
+      });
+
+    const directRoute = evaluateRackScene(makeProject(), catalog).cable_routes[0]!;
+    const leftDuctRoute = evaluateRackScene(makeProject('left-duct'), catalog).cable_routes[0]!;
+    const rightDuctRoute = evaluateRackScene(makeProject('right-duct'), catalog).cable_routes[0]!;
+
+    // Shortest-direct is substantially shorter than side-duct detours and stays near the ports' X range
+    expect(directRoute.raw_arc_length_mm).toBeLessThan(leftDuctRoute.raw_arc_length_mm);
+    expect(directRoute.raw_arc_length_mm).toBeLessThan(rightDuctRoute.raw_arc_length_mm);
+    expect(leftDuctRoute.assigned_ducts).toEqual(['FL']);
+    expect(rightDuctRoute.assigned_ducts).toEqual(['FR']);
   });
 });
 

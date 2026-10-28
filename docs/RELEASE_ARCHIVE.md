@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.4.4`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.4.5`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.4.4`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.4.5`)
 
 ### 📦 `v0.4.x` Series — 3D Port & Brush-Panel Realism, External Building Drops & Collision-Free Routing
 
+- **[`v0.4.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.5) (2026-10-28) — Automated GitHub Releases Page Curation (Keep Top 3 Recent Releases) & Release Archive:**
+  - Added automated GitHub Releases curation to `.github/workflows/release.yml` so the GitHub Releases page retains only the 3 most recent releases and collapses the Quick-Start guide on the 2nd and 3rd releases into an accordion.
 - **[`v0.4.4`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.4) (2026-10-28) — Real-World ANSI/TIA-942 & Homelab Schematics, 1:1 Port Alignment & 4 Use-Case Archetypes:**
   - Upgraded `skills/rack-architect/SKILL.md` with strict **User Sovereignty vs. Consultative Mode**, the 5-Zone Elevation Standard, 1:1 vertical port alignment (`p1..p24 <-> eth1..eth24`), and 4 ready-to-build reference rack archetypes.
 - **[`v0.4.3`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.3) (2026-10-28) — Human-Readable Device Descriptions, Full Manufacturer/Model Titles & 3D-Printed Desktop Switch Cradles:**
@@ -42,10 +44,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.4.4`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.4.5`)
 
 ### 📦 Serie `v0.4.x` — 3D-Ports, Bürstenpanels, Externe Haus-Verkabelung & Kollisionsfreie Kabelführung
 
+- **[`v0.4.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.5) (2026-10-28) — Automatische Bereinigung der GitHub-Releases-Seite (Top 3 Releases) & Release-Archiv:**
+  - Automatische Kuration der GitHub-Releases-Seite (`.github/workflows/release.yml`), sodass immer nur die 3 aktuellsten Versionen im Feed verbleiben und ältere Versionen hier archiviert werden.
 - **[`v0.4.4`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.4) (2026-10-28) — Echte Server-Rack-Schaltpläne (ANSI/TIA-942 & Homelab-Best-Practices), 1:1 Port-Alignment & 4 Praxis-Archetypen:**
   - `rack-architect` Skill um Nutzer-Souveränität vs. Beratungs-Modus, den 5-Zonen-Etagenplan, automatisches 1:1-Port-Alignment (`p1..p24 <-> eth1..eth24`) und 4 Referenz-Archetypen erweitert.
 - **[`v0.4.3`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.3) (2026-10-28) — Verständliche Geräte-Beschreibungen, echter Hersteller-/Modellname & 3D-Druck-Halterung für Desktop-Switches:**

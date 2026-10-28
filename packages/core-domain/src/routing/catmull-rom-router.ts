@@ -87,6 +87,19 @@ export function computeHexagonalBundleOffset(
   return { du, dv };
 }
 
+function dedupWaypoints(waypoints: readonly Vector3D[]): Vector3D[] {
+  if (waypoints.length === 0) return [];
+  const result: Vector3D[] = [waypoints[0]!];
+  for (let i = 1; i < waypoints.length; i++) {
+    const prev = result[result.length - 1]!;
+    const curr = waypoints[i]!;
+    if (vec3Distance(prev, curr) > 1e-3) {
+      result.push(curr);
+    }
+  }
+  return result;
+}
+
 /**
  * Evaluates a corner-filleted, convex-hull-bounded 3D spline through `waypoints`
  * with exact endpoint clamping (`splinePoints[0] === P_start`, `splinePoints[last] === P_end`)
@@ -98,22 +111,10 @@ export function evaluateCentripetalCatmullRomSpline(
   subdivisionsPerSegment = 32,
   _alpha = 0.5
 ): Vector3D[] {
-  if (waypoints.length === 0) {
+  const uniquePoints = dedupWaypoints(waypoints);
+  if (uniquePoints.length === 0) {
     return [];
   }
-  if (waypoints.length === 1) {
-    return [vec3(waypoints[0]!.x, waypoints[0]!.y, waypoints[0]!.z)];
-  }
-
-  const uniquePoints: Vector3D[] = [waypoints[0]!];
-  for (let i = 1; i < waypoints.length; i++) {
-    const prev = uniquePoints[uniquePoints.length - 1]!;
-    const curr = waypoints[i]!;
-    if (vec3Distance(prev, curr) > 1e-3) {
-      uniquePoints.push(curr);
-    }
-  }
-
   if (uniquePoints.length === 1) {
     return [vec3(uniquePoints[0]!.x, uniquePoints[0]!.y, uniquePoints[0]!.z)];
   }
@@ -472,6 +473,52 @@ export function computeMinSplineClearanceMm(
 }
 
 /**
+ * Checks whether a candidate spline passes too close to the coaxial plug-boot exit shaft
+ * of any OTHER port on the rack (excluding `ignoreP1` and `ignoreP2`),
+ * preventing early-routed cables from blocking sockets needed by subsequent cables.
+ */
+function computeMinPortBootClearanceMm(
+  candidateSpline: readonly Vector3D[],
+  geometry: ComputedRackGeometry,
+  ignoreP1: Vector3D,
+  ignoreP2: Vector3D
+): number {
+  let minClearance = Number.POSITIVE_INFINITY;
+  const stride = 2;
+
+  for (const dev of geometry.devices) {
+    for (const p of dev.ports) {
+      const pos = p.world_position;
+      if (
+        vec3Distance(pos, ignoreP1) < 1.0 ||
+        vec3Distance(pos, ignoreP2) < 1.0
+      ) {
+        continue;
+      }
+      const shaftLenMm =
+        p.world_face === 'rear' && pos.z < geometry.rail_depth_mm - 15.0
+          ? Math.max(24.0, Math.min(105.0, geometry.rail_depth_mm - 10.0 - pos.z))
+          : 22.0;
+      const bootTip = vec3Add(pos, vec3Scale(p.world_normal, shaftLenMm));
+      for (let i = 0; i < candidateSpline.length - 1; i += stride) {
+        const a = candidateSpline[i]!;
+        const b =
+          candidateSpline[Math.min(i + stride, candidateSpline.length - 1)]!;
+        const d = segmentToSegmentDistance3D(a, b, pos, bootTip);
+        if (d < minClearance) {
+          minClearance = d;
+          if (minClearance < 3.5) {
+            return minClearance;
+          }
+        }
+      }
+    }
+  }
+
+  return minClearance;
+}
+
+/**
  * Checks whether stepping vertically from `portPos` to `yRunner` on `portFace`
  * passes across another port on the same face at the same X column (e.g. a 2-row switch
  * or 2U UPS), and shifts the vertical riser X into the inter-column gap (`±7.8 mm`) when needed.
@@ -493,6 +540,14 @@ function computePortRiserX(
         if (
           Math.abs(p.world_position.x - portPos.x) < 0.5 &&
           Math.abs(p.world_position.y - portPos.y) < 0.5
+        ) {
+          continue;
+        }
+        // Only shift the initial port riser X for multi-row port banks on the same/adjacent row (<= 38mm in Y)
+        // at the same Z plane (e.g. a 2-row 24-port switch or 2U UPS).
+        if (
+          Math.abs(p.world_position.y - portPos.y) > 38.0 ||
+          Math.abs(p.world_position.z - portPos.z) > 15.0
         ) {
           continue;
         }
@@ -528,6 +583,67 @@ function computePortRiserX(
     return cand2;
   }
   return cand1;
+}
+
+/**
+ * Checks whether a horizontal segment at `(yRow, zPlane)` from `xStart` to `xEnd` on `face`
+ * passes across any other port on the same row (`|p.y - yRow| < 6.0`) whose Z depth is close to `zPlane`.
+ */
+function hasHorizontalRowPortObstruction(
+  geometry: ComputedRackGeometry,
+  face: 'front' | 'rear',
+  yRow: number,
+  xStart: number,
+  xEnd: number,
+  zPlane: number,
+  ignoreP1: Vector3D,
+  ignoreP2: Vector3D
+): boolean {
+  const minX = Math.min(xStart, xEnd) - 4.0;
+  const maxX = Math.max(xStart, xEnd) + 4.0;
+  for (const dev of geometry.devices) {
+    for (const p of dev.ports) {
+      if (p.world_face !== face) continue;
+      const pos = p.world_position;
+      if (
+        vec3Distance(pos, ignoreP1) < 1.0 ||
+        vec3Distance(pos, ignoreP2) < 1.0
+      ) {
+        continue;
+      }
+      if (
+        Math.abs(pos.y - yRow) < 6.2 &&
+        pos.x >= minX &&
+        pos.x <= maxX &&
+        (Math.abs(pos.z - zPlane) < 35.0 ||
+          Math.abs(pos.z - ignoreP1.z) < 35.0 ||
+          (face === 'rear' && pos.z > 100.0 && pos.z <= zPlane))
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Computes a deterministic rear plenum Z coordinate on a uniform grid with `>= 6.75 mm`
+ * spacing between adjacent Z layers so cables on distinct rear layers never collide.
+ */
+function computeRearPlenumZ(
+  geometry: ComputedRackGeometry,
+  maxFrontDeviceZ: number,
+  slot: number
+): { zRear: number; numPlanes: number } {
+  const minZ = Math.max(
+    maxFrontDeviceZ + 10.0,
+    Math.min(geometry.rail_depth_mm - 38.0, 196.0)
+  );
+  const maxZ = Math.max(minZ + 14.0, geometry.rail_depth_mm - 8.5);
+  const numPlanes = 8;
+  const planeIdx = (slot * 3) % numPlanes;
+  const zRear = roundMm(minZ + (planeIdx * (maxZ - minZ)) / (numPlanes - 1));
+  return { zRear, numPlanes };
 }
 
 /**
@@ -780,34 +896,84 @@ export function routeSingleCable(
 
       if (fromDev.u_position === toDev.u_position) {
         // Same-U Rear Sub-Module Jumper:
-        // Step coaxially back to zClearPlane, step up above neighboring ports on the same row,
-        // traverse horizontally at yJumper, then step down to p2.y and enter p2 coaxially along -Z.
+        // If no intermediate port on the same row blocks the direct horizontal line at zClearPlane,
+        // connect via a direct L-arch in Z; otherwise step slightly in Y before crossing horizontally.
+        const rowBlocked = hasHorizontalRowPortObstruction(
+          geometry,
+          'rear',
+          p1.y,
+          p1.x,
+          p2.x,
+          zClearPlane,
+          p1,
+          p2
+        );
+        if (!rowBlocked && Math.abs(p1.y - p2.y) <= 6.0) {
+          return [
+            p1,
+            a1,
+            vec3(p1.x, p1.y, zClearPlane),
+            vec3(p2.x, p2.y, zClearPlane),
+            a2,
+            p2
+          ];
+        }
         const uTop = (fromParent ?? fromDev).u_range[1] * MM_PER_U;
         const yJumper = roundMm(
-          Math.min(uTop - 3.5, Math.max(p1.y, p2.y) + 11.5 + (slot % 2) * 6.5)
+          Math.min(uTop - 3.5, Math.max(p1.y, p2.y) + 8.5 + (slot % 2) * 6.0)
         );
-        const b1 = vec3(p1.x, p1.y, zClearPlane);
-        const b2 = vec3(p2.x, p2.y, roundMm(Math.min(zClearPlane, a2.z + 10.0)));
         return [
           p1,
           a1,
-          b1,
+          vec3(p1.x, p1.y, zClearPlane),
           vec3(p1.x, yJumper, zClearPlane),
           vec3(p2.x, yJumper, zClearPlane),
-          b2,
+          vec3(p2.x, p2.y, zClearPlane),
           a2,
           p2
         ];
       }
 
-      const b1 = vec3(p1.x, p1.y, roundMm(Math.min(zClearPlane, a1.z + 10.0)));
-      const b2 = vec3(p2.x, p2.y, roundMm(Math.min(zClearPlane, a2.z + 10.0)));
+      // Adjacent-U Rear Jumper (e.g. U1 UPS -> U2 Rear PDU):
+      // Keep X & Y transitions orthogonal instead of diagonal.
+      if (p2.z >= geometry.rail_depth_mm - 2.0 && p1.z < geometry.rail_depth_mm - 15.0) {
+        const zInside = roundMm(a1.z + 8.0);
+        const yEdge = roundMm(((toParent ?? toDev).u_range[0] - 1) * MM_PER_U - 4.0);
+        return [
+          p1,
+          a1,
+          vec3(p1.x, p1.y, zInside),
+          vec3(p1.x, yEdge, zInside),
+          vec3(p2.x, yEdge, zInside),
+          vec3(p2.x, yEdge, zClearPlane),
+          vec3(p2.x, p2.y, zClearPlane),
+          a2,
+          p2
+        ];
+      }
+      if (p1.z >= geometry.rail_depth_mm - 2.0 && p2.z < geometry.rail_depth_mm - 15.0) {
+        const zInside = roundMm(a2.z + 8.0);
+        const yEdge = roundMm(((fromParent ?? fromDev).u_range[0] - 1) * MM_PER_U - 4.0);
+        return [
+          p1,
+          a1,
+          vec3(p1.x, p1.y, zClearPlane),
+          vec3(p1.x, yEdge, zClearPlane),
+          vec3(p1.x, yEdge, zInside),
+          vec3(p2.x, yEdge, zInside),
+          vec3(p2.x, p2.y, zInside),
+          a2,
+          p2
+        ];
+      }
+
+      const b1 = vec3(p1.x, p1.y, zClearPlane);
+      const b2 = vec3(p2.x, p2.y, zClearPlane);
       return [
         p1,
         a1,
         b1,
-        vec3(p1.x, p1.y, zClearPlane),
-        vec3(p2.x, p2.y, zClearPlane),
+        vec3(p2.x, p1.y, zClearPlane),
         b2,
         a2,
         p2
@@ -854,7 +1020,7 @@ export function routeSingleCable(
       bundle_index: bundleIdx,
       bundle_offset_mm: offset,
       portal_u: null,
-      waypoints: bestWaypoints,
+      waypoints: dedupWaypoints(bestWaypoints),
       spline_points: bestSpline,
       raw_arc_length_mm: arcLength,
       required_length_mm: requiredLengthMm,
@@ -863,15 +1029,19 @@ export function routeSingleCable(
   }
 
   // =========================================================================
-  // CASE B: Same-Face Vertical Duct Route (`front -> front` or `rear -> rear`)
+  // CASE B: Same-Face Route (`front -> front` or `rear -> rear`)
+  // Defaults to Shortest-Direct Monotonic L/Z Routing; uses Side Ducts only
+  // when `routing_mode` is `'left-duct' | 'right-duct'` or when crossing
+  // intermediate front devices whose ports obstruct both endpoint columns.
   // =========================================================================
   if (sameFace) {
+    const routingMode = cable.routing_mode ?? 'shortest-direct';
     const ductId: CableDuctId =
       port1.world_face === 'front'
-        ? isPower
+        ? routingMode === 'left-duct' || (routingMode === 'shortest-direct' && isPower)
           ? 'FL'
           : 'FR'
-        : isPower
+        : routingMode === 'left-duct' || (routingMode === 'shortest-direct' && isPower)
           ? 'RL'
           : 'RR';
 
@@ -899,167 +1069,395 @@ export function routeSingleCable(
       }
     }
 
-    // If both ports of a front data cable on a wide 19-inch rack are near the X=0 side rail,
-    // use the nearer X=0 side channel so the cable does not cross the entire 482.6mm rack width.
-    const useNearLeftSideChannelForFrontData =
-      port1.world_face === 'front' &&
-      !isPower &&
-      geometry.panel_width_mm > 300.0 &&
-      Math.max(p1.x, p2.x) < geometry.panel_width_mm * 0.35;
+    const dirX = p2.x >= p1.x ? 1 : -1;
+    const dirY = p2.y >= p1.y ? 1 : -1;
+    const railWidth =
+      (geometry.panel_width_mm - geometry.aperture_width_mm) / 2;
+    const innerRailClearX = roundMm(railWidth + 6.0);
+    const ductMargins = [
+      innerRailClearX,
+      roundMm(innerRailClearX + 6.5),
+      roundMm(innerRailClearX + 13.0)
+    ];
 
     const buildCaseBWaypoints = (attempt: number): Vector3D[] => {
       const slot = basePlaneSlot + attempt;
-      const railWidth =
-        (geometry.panel_width_mm - geometry.aperture_width_mm) / 2;
-      const innerRailClearX = roundMm(railWidth + 6.0);
-      const ductMargins = [
-        innerRailClearX,
-        roundMm(innerRailClearX + 6.5),
-        roundMm(innerRailClearX + 13.0)
-      ];
       const sideMarginMm =
         ductMargins[Math.floor(slot / 2) % ductMargins.length]!;
-      const ductX = roundMm(
-        isPower || useNearLeftSideChannelForFrontData
-          ? sideMarginMm
-          : geometry.panel_width_mm - sideMarginMm
-      );
+      const leftDuctX = roundMm(sideMarginMm);
+      const rightDuctX = roundMm(geometry.panel_width_mm - sideMarginMm);
+      const nearestDuctX =
+        Math.abs(p1.x - leftDuctX) + Math.abs(p2.x - leftDuctX) <=
+        Math.abs(p1.x - rightDuctX) + Math.abs(p2.x - rightDuctX)
+          ? leftDuctX
+          : rightDuctX;
+      const explicitDuctX =
+        routingMode === 'left-duct'
+          ? leftDuctX
+          : routingMode === 'right-duct'
+            ? rightDuctX
+            : nearestDuctX;
 
       if (port1.world_face === 'front') {
         const frontDuctZPlanes = [
-          -25.0, -31.5, -38.0, -18.8, -44.2, -21.8, -28.2, -34.8
+          -24.0, -30.5, -37.0, -18.8, -43.5, -21.5, -27.2, -33.8
         ];
         const zFrontDuct = frontDuctZPlanes[slot % frontDuctZPlanes.length]!;
-        const yTrackSlot = Math.floor(slot / frontDuctZPlanes.length);
+        const rX1 = computePortRiserX(geometry, p1, 'front', p2.y, dirX);
+        const rX2 = computePortRiserX(geometry, p2, 'front', p1.y, -dirX);
 
+        // If explicit side-duct routing was requested, use the side duct
+        if (routingMode === 'left-duct' || routingMode === 'right-duct') {
+          const yTrackSlot = Math.floor(slot / frontDuctZPlanes.length);
+          const yRunner1 = computeDeviceHorizontalRunnerY(
+            fromParent ?? fromDev,
+            p1.y,
+            p2.y,
+            yTrackSlot,
+            geometry.total_height_mm,
+            'front'
+          );
+          const yRunner2 = computeDeviceHorizontalRunnerY(
+            toParent ?? toDev,
+            p2.y,
+            p1.y,
+            yTrackSlot,
+            geometry.total_height_mm,
+            'front'
+          );
+          return [
+            p1,
+            a1,
+            vec3(rX1, p1.y, zFrontDuct),
+            vec3(rX1, yRunner1, zFrontDuct),
+            vec3(explicitDuctX, yRunner1, zFrontDuct),
+            vec3(explicitDuctX, yRunner2, zFrontDuct),
+            vec3(rX2, yRunner2, zFrontDuct),
+            vec3(rX2, p2.y, zFrontDuct),
+            a2,
+            p2
+          ];
+        }
+
+        // Shortest-Direct Front Route:
+        // 1. If the two ports are nearly aligned in X (|rX1 - rX2| <= 16mm), go straight vertically!
+        if (Math.abs(rX1 - rX2) <= 16.0 && attempt < 8) {
+          return [
+            p1,
+            a1,
+            vec3(rX1, p1.y, zFrontDuct),
+            vec3(rX2, p2.y, zFrontDuct),
+            a2,
+            p2
+          ];
+        }
+
+        // 2. Otherwise use a single monotonic horizontal transfer at a U-boundary between p1.y and p2.y
+        // (never going out to the side wall and back!).
+        const stepTier = Math.floor(attempt / frontDuctZPlanes.length);
+        const fromBottomY = ((fromParent ?? fromDev).u_range[0] - 1) * MM_PER_U;
+        const fromTopY = (fromParent ?? fromDev).u_range[1] * MM_PER_U;
+        const rawBoundaryY =
+          dirY > 0
+            ? fromTopY + (stepTier % 2 === 0 ? -3.2 : 3.2)
+            : fromBottomY + (stepTier % 2 === 0 ? 3.2 : -3.2);
+        const minY = Math.min(p1.y, p2.y);
+        const maxY = Math.max(p1.y, p2.y);
+        const yTurn = roundMm(Math.max(minY, Math.min(maxY, rawBoundaryY)));
+
+        return [
+          p1,
+          a1,
+          vec3(rX1, p1.y, zFrontDuct),
+          vec3(rX1, yTurn, zFrontDuct),
+          vec3(rX2, yTurn, zFrontDuct),
+          vec3(rX2, p2.y, zFrontDuct),
+          a2,
+          p2
+        ];
+      }
+
+      // =======================================================================
+      // Rear Face Route (`rear -> rear`):
+      // =======================================================================
+      const isP1OuterRear =
+        p1.z >= geometry.rail_depth_mm - 5.0 && n1.z > 0;
+      const isP2OuterRear =
+        p2.z >= geometry.rail_depth_mm - 5.0 && n2.z > 0;
+      const maxInteriorBootZ = Math.max(
+        isP1OuterRear ? 0 : a1.z + 5.0,
+        isP2OuterRear ? 0 : a2.z + 5.0
+      );
+      const { zRear: zRearVerticalDuct, numPlanes: rearPlaneSteps } =
+        computeRearPlenumZ(
+          geometry,
+          Math.max(maxFrontDeviceZInSpan, maxInteriorBootZ - 9.5),
+          slot
+        );
+
+      const rX1 = computePortRiserX(geometry, p1, 'rear', p2.y, dirX);
+      const rX2 = computePortRiserX(geometry, p2, 'rear', p1.y, -dirX);
+
+      // If explicit side-duct routing was requested by the user/agent:
+      if (routingMode === 'left-duct' || routingMode === 'right-duct') {
+        const yTrackSlot = Math.floor(slot / 3) + attempt;
         const yRunner1 = computeDeviceHorizontalRunnerY(
           fromParent ?? fromDev,
           p1.y,
           p2.y,
           yTrackSlot,
           geometry.total_height_mm,
-          'front'
+          'rear'
         );
         const yRunner2 = computeDeviceHorizontalRunnerY(
           toParent ?? toDev,
           p2.y,
           p1.y,
-          yTrackSlot,
+          yTrackSlot + 1,
           geometry.total_height_mm,
-          'front'
+          'rear'
         );
-
-        const rX1 = computePortRiserX(geometry, p1, 'front', yRunner1, 1);
-        const rX2 = computePortRiserX(geometry, p2, 'front', yRunner2, 1);
-
-        const b1 = vec3(rX1, p1.y, zFrontDuct);
-        const b2 = vec3(rX2, p2.y, zFrontDuct);
         return [
           p1,
           a1,
-          b1,
-          vec3(rX1, yRunner1, zFrontDuct),
-          vec3(ductX, yRunner1, zFrontDuct),
-          vec3(ductX, yRunner2, zFrontDuct),
-          vec3(rX2, yRunner2, zFrontDuct),
-          b2,
+          vec3(rX1, p1.y, zRearVerticalDuct),
+          vec3(rX1, yRunner1, zRearVerticalDuct),
+          vec3(explicitDuctX, yRunner1, zRearVerticalDuct),
+          vec3(explicitDuctX, yRunner2, zRearVerticalDuct),
+          vec3(rX2, yRunner2, zRearVerticalDuct),
+          vec3(rX2, p2.y, zRearVerticalDuct),
           a2,
           p2
         ];
       }
 
-      // Rear Duct Route:
-      const interiorMinRearZ = Math.max(
-        maxFrontDeviceZInSpan + 10.0,
-        Math.min(geometry.rail_depth_mm - 38.0, 194.0)
-      );
-      const interiorMaxRearZ = Math.max(
-        interiorMinRearZ + 14.0,
-        geometry.rail_depth_mm - 8.5
-      );
-      const interiorSpanZ = interiorMaxRearZ - interiorMinRearZ;
-      const rearPlaneSteps = 8;
-      const zRearVerticalDuct = roundMm(
-        interiorMinRearZ +
-          (((slot * 3) % rearPlaneSteps) * interiorSpanZ) /
-            (rearPlaneSteps - 1)
-      );
-
-      const yTrackSlot = Math.floor(slot / 3) + attempt;
-      const yRunner1 = computeDeviceHorizontalRunnerY(
-        fromParent ?? fromDev,
-        p1.y,
-        p2.y,
-        yTrackSlot,
-        geometry.total_height_mm,
-        'rear'
-      );
-      const yRunner2 = computeDeviceHorizontalRunnerY(
-        toParent ?? toDev,
-        p2.y,
-        p1.y,
-        yTrackSlot + 1,
-        geometry.total_height_mm,
-        'rear'
-      );
-
-      const rX1 = computePortRiserX(geometry, p1, 'rear', yRunner1, 1);
-      const rX2 = computePortRiserX(geometry, p2, 'rear', yRunner2, 1);
-
-      const zBehindRearRail = roundMm(a1.z + 5.0 + (slot % 5) * 5.2);
-      const yPassOverStart = roundMm(
-        Math.min(
-          geometry.total_height_mm - 5.0,
-          (fromParent ?? fromDev).u_range[1] * MM_PER_U +
-            4.5 +
-            (slot % 3) * 4.5
-        )
-      );
-      const departWaypoints: Vector3D[] =
-        a1.z > zRearVerticalDuct - 4.0
-          ? [
+      // Case B-Rear-1: Source port is on the outer rear face of a rear-mounted device (e.g. Rear PDU at Z = rail_depth_mm)
+      // Step directly over the top/bottom edge of that rear device at rX1 into zRearVerticalDuct, then take a single L-bend to p2!
+      if (isP1OuterRear) {
+        const zBehindRearRail = roundMm(a1.z + 4.0 + (slot % 4) * 6.5);
+        const devU = fromParent ?? fromDev;
+        const edgeBandIdx = (bundleIdx + Math.floor(attempt / 2)) % 5;
+        const rawEdgeY =
+          dirY >= 0
+            ? devU.u_range[1] * MM_PER_U + 4.5 + edgeBandIdx * 6.8
+            : (devU.u_range[0] - 1) * MM_PER_U - 4.5 - edgeBandIdx * 6.8;
+        const yEdge = roundMm(
+          Math.max(
+            5.0,
+            Math.min(
+              geometry.total_height_mm - 5.0,
+              dirY >= 0 ? Math.min(p2.y, rawEdgeY) : Math.max(p2.y, rawEdgeY)
+            )
+          )
+        );
+        // Alternate between H-at-yEdge -> V-at-rX2 (even attempts) and V-at-rX1 -> H-at-yTarget (odd attempts)
+        if (attempt % 2 === 1) {
+          const rowBlockedAtP2 = hasHorizontalRowPortObstruction(
+            geometry,
+            'rear',
+            p2.y,
+            rX1,
+            p2.x,
+            zRearVerticalDuct,
+            p1,
+            p2
+          );
+          if (!rowBlockedAtP2) {
+            return [
+              p1,
+              a1,
               vec3(rX1, p1.y, zBehindRearRail),
-              vec3(rX1, yPassOverStart, zBehindRearRail),
-              vec3(ductX, yPassOverStart, zBehindRearRail),
-              vec3(ductX, yPassOverStart, zRearVerticalDuct)
-            ]
-          : [
-              vec3(rX1, p1.y, zRearVerticalDuct),
-              vec3(rX1, yRunner1, zRearVerticalDuct),
-              vec3(ductX, yRunner1, zRearVerticalDuct)
+              vec3(rX1, yEdge, zBehindRearRail),
+              vec3(rX1, yEdge, zRearVerticalDuct),
+              vec3(rX1, p2.y, zRearVerticalDuct),
+              vec3(p2.x, p2.y, zRearVerticalDuct),
+              a2,
+              p2
             ];
+          }
+          const yTarget = roundMm(
+            dirY >= 0
+              ? Math.max(yEdge, p2.y - 10.5 - ((attempt >> 1) % 3) * 6.5)
+              : Math.min(yEdge, p2.y + 10.5 + ((attempt >> 1) % 3) * 6.5)
+          );
+          return [
+            p1,
+            a1,
+            vec3(rX1, p1.y, zBehindRearRail),
+            vec3(rX1, yEdge, zBehindRearRail),
+            vec3(rX1, yEdge, zRearVerticalDuct),
+            vec3(rX1, yTarget, zRearVerticalDuct),
+            vec3(rX2, yTarget, zRearVerticalDuct),
+            vec3(rX2, p2.y, zRearVerticalDuct),
+            vec3(p2.x, p2.y, zRearVerticalDuct),
+            a2,
+            p2
+          ];
+        }
+        return [
+          p1,
+          a1,
+          vec3(rX1, p1.y, zBehindRearRail),
+          vec3(rX1, yEdge, zBehindRearRail),
+          vec3(rX1, yEdge, zRearVerticalDuct),
+          vec3(rX2, yEdge, zRearVerticalDuct),
+          vec3(rX2, p2.y, zRearVerticalDuct),
+          vec3(p2.x, p2.y, zRearVerticalDuct),
+          a2,
+          p2
+        ];
+      }
 
-      const zBehindRearRail2 = roundMm(a2.z + 5.0 + (slot % 5) * 5.2);
-      const yPassOverEnd = roundMm(
-        Math.min(
-          geometry.total_height_mm - 5.0,
-          (toParent ?? toDev).u_range[1] * MM_PER_U + 4.5 + (slot % 3) * 4.5
-        )
+      // Case B-Rear-2: Destination port is on the outer rear face of a rear-mounted device
+      if (isP2OuterRear) {
+        const zBehindRearRail2 = roundMm(a2.z + 4.0 + (slot % 4) * 6.5);
+        const devU = toParent ?? toDev;
+        const edgeBandIdx = (bundleIdx + Math.floor(attempt / 2)) % 5;
+        const rawEdgeY =
+          dirY >= 0
+            ? (devU.u_range[0] - 1) * MM_PER_U - 4.5 - edgeBandIdx * 6.8
+            : devU.u_range[1] * MM_PER_U + 4.5 + edgeBandIdx * 6.8;
+        const yEdge = roundMm(
+          Math.max(
+            5.0,
+            Math.min(
+              geometry.total_height_mm - 5.0,
+              dirY >= 0 ? Math.max(p1.y, rawEdgeY) : Math.min(p1.y, rawEdgeY)
+            )
+          )
+        );
+        return [
+          p1,
+          a1,
+          vec3(rX1, p1.y, zRearVerticalDuct),
+          vec3(rX1, yEdge, zRearVerticalDuct),
+          vec3(rX2, yEdge, zRearVerticalDuct),
+          vec3(rX2, yEdge, zBehindRearRail2),
+          vec3(rX2, p2.y, zBehindRearRail2),
+          a2,
+          p2
+        ];
+      }
+
+      // Case B-Rear-3: Both ports are interior rear ports (`p1.z < rail_depth` and `p2.z < rail_depth`).
+      // Route via Shortest-Direct Monotonic L-Bend or gentle 1-step in the open rear plenum `z = zRearVerticalDuct`!
+      const tier = Math.floor(attempt / rearPlaneSteps);
+      const rowBlockedAtP1 = hasHorizontalRowPortObstruction(
+        geometry,
+        'rear',
+        p1.y,
+        p1.x,
+        rX2,
+        zRearVerticalDuct,
+        p1,
+        p2
       );
-      const arriveWaypoints: Vector3D[] =
-        a2.z > zRearVerticalDuct + 4.0
-          ? [
-              vec3(ductX, yPassOverEnd, zRearVerticalDuct),
-              vec3(ductX, yPassOverEnd, zBehindRearRail2),
-              vec3(rX2, yPassOverEnd, zBehindRearRail2),
-              vec3(rX2, p2.y, zBehindRearRail2)
-            ]
-          : [
-              vec3(ductX, yRunner2, zRearVerticalDuct),
-              vec3(rX2, yRunner2, zRearVerticalDuct),
-              vec3(rX2, p2.y, zRearVerticalDuct),
-              vec3(p2.x, p2.y, roundMm(Math.min(zRearVerticalDuct, a2.z + 8.0)))
-            ];
 
-      return [p1, a1, ...departWaypoints, ...arriveWaypoints, a2, p2];
+      // Tier 0: Pure 1-bend L-route (Horizontal at p1.y -> Vertical along rX2 into p2) when row is clear,
+      // or gentle monotonic step (9.5mm toward p2.y) when another port sits on the same row at p1.y.
+      if (tier === 0) {
+        if (!rowBlockedAtP1) {
+          return [
+            p1,
+            a1,
+            vec3(p1.x, p1.y, zRearVerticalDuct),
+            vec3(rX2, p1.y, zRearVerticalDuct),
+            vec3(rX2, p2.y, zRearVerticalDuct),
+            vec3(p2.x, p2.y, zRearVerticalDuct),
+            a2,
+            p2
+          ];
+        }
+        const yStep = roundMm(
+          dirY > 0
+            ? Math.min(p2.y, p1.y + 9.5 + (attempt % 3) * 6.5)
+            : Math.max(p2.y, p1.y - 9.5 - (attempt % 3) * 6.5)
+        );
+        return [
+          p1,
+          a1,
+          vec3(rX1, p1.y, zRearVerticalDuct),
+          vec3(rX1, yStep, zRearVerticalDuct),
+          vec3(rX2, yStep, zRearVerticalDuct),
+          vec3(rX2, p2.y, zRearVerticalDuct),
+          vec3(p2.x, p2.y, zRearVerticalDuct),
+          a2,
+          p2
+        ];
+      }
+
+      // Tier 1: Vertical-first along rX1 -> Horizontal at yStep -> into p2
+      if (tier === 1) {
+        const rowBlockedAtP2 = hasHorizontalRowPortObstruction(
+          geometry,
+          'rear',
+          p2.y,
+          rX1,
+          p2.x,
+          zRearVerticalDuct,
+          p1,
+          p2
+        );
+        if (!rowBlockedAtP2 && attempt % 2 === 0) {
+          return [
+            p1,
+            a1,
+            vec3(rX1, p1.y, zRearVerticalDuct),
+            vec3(rX1, p2.y, zRearVerticalDuct),
+            vec3(p2.x, p2.y, zRearVerticalDuct),
+            a2,
+            p2
+          ];
+        }
+        const yStep2 = roundMm(
+          dirY > 0
+            ? Math.max(p1.y, p2.y - 10.5 - (attempt % 3) * 6.5)
+            : Math.min(p1.y, p2.y + 10.5 + (attempt % 3) * 6.5)
+        );
+        return [
+          p1,
+          a1,
+          vec3(rX1, p1.y, zRearVerticalDuct),
+          vec3(rX1, yStep2, zRearVerticalDuct),
+          vec3(rX2, yStep2, zRearVerticalDuct),
+          vec3(rX2, p2.y, zRearVerticalDuct),
+          vec3(p2.x, p2.y, zRearVerticalDuct),
+          a2,
+          p2
+        ];
+      }
+
+      // Tier 2+: Monotonic intermediate U-boundary horizontal transfer
+      const yMid = roundMm(
+        dirY > 0
+          ? Math.min(p2.y, p1.y + 16.5 + (attempt % 4) * 6.8)
+          : Math.max(p2.y, p1.y - 16.5 - (attempt % 4) * 6.8)
+      );
+      return [
+        p1,
+        a1,
+        vec3(rX1, p1.y, zRearVerticalDuct),
+        vec3(rX1, yMid, zRearVerticalDuct),
+        vec3(rX2, yMid, zRearVerticalDuct),
+        vec3(rX2, p2.y, zRearVerticalDuct),
+        vec3(p2.x, p2.y, zRearVerticalDuct),
+        a2,
+        p2
+      ];
     };
 
     let chosenAttempt = 0;
     let bestWaypoints = buildCaseBWaypoints(0);
     let bestSpline = evaluateCentripetalCatmullRomSpline(bestWaypoints, 32);
     let bestClearance = computeMinSplineClearanceMm(bestSpline, existingRoutes);
+    let bestPortBootClearance = computeMinPortBootClearanceMm(
+      bestSpline,
+      geometry,
+      p1,
+      p2
+    );
 
-    if (bestClearance < 6.2) {
+    if (bestClearance < 6.2 || bestPortBootClearance < 5.2) {
       for (let attempt = 1; attempt < 24; attempt++) {
         const candWaypoints = buildCaseBWaypoints(attempt);
         const candSpline = evaluateCentripetalCatmullRomSpline(
@@ -1070,13 +1468,33 @@ export function routeSingleCable(
           candSpline,
           existingRoutes
         );
-        if (clearance > bestClearance) {
+        const portBootClearance = computeMinPortBootClearanceMm(
+          candSpline,
+          geometry,
+          p1,
+          p2
+        );
+        const isCurrentAcceptable =
+          bestClearance >= 6.2 && bestPortBootClearance >= 5.2;
+        const isCandAcceptable =
+          clearance >= 6.2 && portBootClearance >= 5.2;
+
+        if (
+          (isCandAcceptable && !isCurrentAcceptable) ||
+          (!isCurrentAcceptable &&
+            clearance >= 6.2 &&
+            bestClearance < 6.2) ||
+          (!isCurrentAcceptable &&
+            clearance > bestClearance &&
+            portBootClearance >= Math.min(bestPortBootClearance, 5.2))
+        ) {
           bestClearance = clearance;
+          bestPortBootClearance = portBootClearance;
           chosenAttempt = attempt;
           bestWaypoints = candWaypoints;
           bestSpline = candSpline;
         }
-        if (bestClearance >= 6.2) {
+        if (bestClearance >= 6.2 && bestPortBootClearance >= 5.2) {
           break;
         }
       }
@@ -1101,7 +1519,7 @@ export function routeSingleCable(
       bundle_index: bundleIdx,
       bundle_offset_mm: offset,
       portal_u: null,
-      waypoints: bestWaypoints,
+      waypoints: dedupWaypoints(bestWaypoints),
       spline_points: bestSpline,
       raw_arc_length_mm: arcLength,
       required_length_mm: requiredLengthMm,
@@ -1112,8 +1530,15 @@ export function routeSingleCable(
   // =========================================================================
   // CASE C: Cross-Face Portal Route (`front <-> rear` via Brush-Panel / Open U)
   // =========================================================================
-  const frontDuctId: CableDuctId = isPower ? 'FL' : 'FR';
-  const rearDuctId: CableDuctId = isPower ? 'RL' : 'RR';
+  const routingMode = cable.routing_mode ?? 'shortest-direct';
+  const frontDuctId: CableDuctId =
+    routingMode === 'left-duct' || (routingMode === 'shortest-direct' && isPower)
+      ? 'FL'
+      : 'FR';
+  const rearDuctId: CableDuctId =
+    routingMode === 'left-duct' || (routingMode === 'shortest-direct' && isPower)
+      ? 'RL'
+      : 'RR';
   const startDuctId = port1.world_face === 'front' ? frontDuctId : rearDuctId;
   const endDuctId = port2.world_face === 'front' ? frontDuctId : rearDuctId;
 
@@ -1176,85 +1601,75 @@ export function routeSingleCable(
   const rearPlaneBase = ductOccupancyCounters.get('PLANE:REAR') ?? 0;
   const portalCounterKey = `PORTAL:${chosenPortalU}`;
   const portalBase = ductOccupancyCounters.get(portalCounterKey) ?? 0;
+  const railWidth =
+    (geometry.panel_width_mm - geometry.aperture_width_mm) / 2;
+  const portalMinX = roundMm(railWidth + 16.0);
+  const portalMaxX = roundMm(geometry.panel_width_mm - railWidth - 16.0);
 
   const buildCaseCWaypoints = (attempt: number): Vector3D[] => {
     const fSlot = frontPlaneBase + attempt;
-    const rSlot = rearPlaneBase + attempt * 2;
+    const rSlot = rearPlaneBase + attempt;
     const pSlot = portalBase + attempt;
 
-    const useLeftPortalSide =
-      isPower ||
-      (geometry.panel_width_mm > 300.0 &&
-        Math.min(p1.x, p2.x) < geometry.panel_width_mm * 0.45);
-    const portalX = roundMm(
-      useLeftPortalSide
-        ? 38.0 + (pSlot % 10) * 8.5
-        : geometry.panel_width_mm - 38.0 - (pSlot % 10) * 8.5
-    );
     const yPortal = roundMm(
       (chosenPortalU - 0.5) * MM_PER_U + ((pSlot % 3) - 1) * 5.0
     );
 
-    const frontDuctZPlanes = [
-      -25.0, -31.5, -38.0, -18.8, -44.2, -21.8, -28.2, -34.8
-    ];
-    const zFrontDuct = frontDuctZPlanes[fSlot % frontDuctZPlanes.length]!;
-
-    const interiorMinRearZ = Math.max(
-      maxFrontZForPortal + 10.0,
-      Math.min(geometry.rail_depth_mm - 38.0, 194.0)
-    );
-    const interiorMaxRearZ = Math.max(
-      interiorMinRearZ + 14.0,
-      geometry.rail_depth_mm - 8.5
-    );
-    const interiorSpanZ = interiorMaxRearZ - interiorMinRearZ;
-    const rearPlaneSteps = 8;
-    const zRearDuct = roundMm(
-      interiorMinRearZ +
-        (((rSlot * 3) % rearPlaneSteps) * interiorSpanZ) /
-          (rearPlaneSteps - 1)
-    );
-
-    const yRunner1 = computeDeviceHorizontalRunnerY(
-      fromParent ?? fromDev,
-      p1.y,
-      yPortal,
-      Math.floor(attempt / frontDuctZPlanes.length),
-      geometry.total_height_mm,
-      port1.world_face
-    );
-    const yRunner2 = computeDeviceHorizontalRunnerY(
-      toParent ?? toDev,
-      p2.y,
-      yPortal,
-      attempt % 4,
-      geometry.total_height_mm,
-      port2.world_face
-    );
-
-    const startDuctZ = port1.world_face === 'front' ? zFrontDuct : zRearDuct;
-    const endDuctZ = port2.world_face === 'front' ? zFrontDuct : zRearDuct;
-
+    const dirX = p2.x >= p1.x ? 1 : -1;
     const rX1 = computePortRiserX(
       geometry,
       p1,
       port1.world_face,
-      yRunner1,
-      1
+      yPortal,
+      attempt % 2 === 0 ? dirX : -dirX
     );
     const rX2 = computePortRiserX(
       geometry,
       p2,
       port2.world_face,
-      yRunner2,
-      1
+      yPortal,
+      attempt % 2 === 0 ? -dirX : dirX
     );
 
+    // Choose portalX directly aligned with rX1 (or between rX1 and rX2) to eliminate
+    // pointless horizontal detours across the brush panel, unless side-duct mode is requested.
+    let portalX: number;
+    if (routingMode === 'left-duct') {
+      portalX = roundMm(portalMinX + (pSlot % 6) * 7.5);
+    } else if (routingMode === 'right-duct') {
+      portalX = roundMm(portalMaxX - (pSlot % 6) * 7.5);
+    } else {
+      const clampedStartX = Math.max(portalMinX, Math.min(portalMaxX, rX1));
+      const nudgeSteps = [0, 7.5, -7.5, 15.0, -15.0, 22.5, -22.5, 30.0];
+      const nudge = nudgeSteps[Math.floor(attempt / 2) % nudgeSteps.length]! * dirX;
+      portalX = roundMm(
+        Math.max(portalMinX, Math.min(portalMaxX, clampedStartX + nudge))
+      );
+    }
+
+    const frontDuctZPlanes = [
+      -24.0, -30.5, -37.0, -18.8, -43.5, -21.5, -27.2, -33.8
+    ];
+    const zFrontDuct = frontDuctZPlanes[fSlot % frontDuctZPlanes.length]!;
+
+    const { zRear: zRearDuct } = computeRearPlenumZ(
+      geometry,
+      maxFrontZForPortal,
+      rSlot
+    );
+
+    const startDuctZ = port1.world_face === 'front' ? zFrontDuct : zRearDuct;
+    const endDuctZ = port2.world_face === 'front' ? zFrontDuct : zRearDuct;
+
     const b1 = vec3(rX1, p1.y, startDuctZ);
-    const dStartRunner = vec3(rX1, yRunner1, startDuctZ);
-    const dStartEntry = vec3(portalX, yRunner1, startDuctZ);
-    const dPortalStartOuter = vec3(portalX, yPortal, startDuctZ);
+    const startToPortalWaypoints: Vector3D[] =
+      Math.abs(portalX - rX1) <= 1.0
+        ? [vec3(portalX, yPortal, startDuctZ)]
+        : [
+            vec3(rX1, yPortal, startDuctZ),
+            vec3(portalX, yPortal, startDuctZ)
+          ];
+
     const dPortalBrushIn = vec3(
       portalX,
       yPortal,
@@ -1267,19 +1682,29 @@ export function routeSingleCable(
     );
     const dPortalEndOuter = vec3(portalX, yPortal, endDuctZ);
 
-    const endArriveWaypoints: Vector3D[] = [
-      vec3(portalX, yRunner2, endDuctZ),
-      vec3(rX2, yRunner2, endDuctZ),
-      vec3(rX2, p2.y, endDuctZ)
-    ];
+    // On the destination face, take a single L-bend from (portalX, yPortal, endDuctZ) to (rX2, p2.y, endDuctZ)
+    const endArriveWaypoints: Vector3D[] =
+      Math.abs(portalX - rX2) <= 1.0
+        ? [
+            vec3(rX2, p2.y, endDuctZ),
+            vec3(p2.x, p2.y, endDuctZ)
+          ]
+        : attempt % 2 === 0
+          ? [
+              vec3(rX2, yPortal, endDuctZ),
+              vec3(rX2, p2.y, endDuctZ),
+              vec3(p2.x, p2.y, endDuctZ)
+            ]
+          : [
+              vec3(portalX, p2.y, endDuctZ),
+              vec3(p2.x, p2.y, endDuctZ)
+            ];
 
     return [
       p1,
       a1,
       b1,
-      dStartRunner,
-      dStartEntry,
-      dPortalStartOuter,
+      ...startToPortalWaypoints,
       dPortalBrushIn,
       dPortalBrushOut,
       dPortalEndOuter,
@@ -1293,8 +1718,14 @@ export function routeSingleCable(
   let bestWaypoints = buildCaseCWaypoints(0);
   let bestSpline = evaluateCentripetalCatmullRomSpline(bestWaypoints, 32);
   let bestClearance = computeMinSplineClearanceMm(bestSpline, existingRoutes);
+  let bestPortBootClearance = computeMinPortBootClearanceMm(
+    bestSpline,
+    geometry,
+    p1,
+    p2
+  );
 
-  if (bestClearance < 6.2) {
+  if (bestClearance < 6.2 || bestPortBootClearance < 5.2) {
     for (let attempt = 1; attempt < 24; attempt++) {
       const candWaypoints = buildCaseCWaypoints(attempt);
       const candSpline = evaluateCentripetalCatmullRomSpline(candWaypoints, 32);
@@ -1302,13 +1733,33 @@ export function routeSingleCable(
         candSpline,
         existingRoutes
       );
-      if (clearance > bestClearance) {
+      const portBootClearance = computeMinPortBootClearanceMm(
+        candSpline,
+        geometry,
+        p1,
+        p2
+      );
+      const isCurrentAcceptable =
+        bestClearance >= 6.2 && bestPortBootClearance >= 5.2;
+      const isCandAcceptable =
+        clearance >= 6.2 && portBootClearance >= 5.2;
+
+      if (
+        (isCandAcceptable && !isCurrentAcceptable) ||
+        (!isCurrentAcceptable &&
+          clearance >= 6.2 &&
+          bestClearance < 6.2) ||
+        (!isCurrentAcceptable &&
+          clearance > bestClearance &&
+          portBootClearance >= Math.min(bestPortBootClearance, 5.2))
+      ) {
         bestClearance = clearance;
+        bestPortBootClearance = portBootClearance;
         chosenAttempt = attempt;
         bestWaypoints = candWaypoints;
         bestSpline = candSpline;
       }
-      if (bestClearance >= 6.2) {
+      if (bestClearance >= 6.2 && bestPortBootClearance >= 5.2) {
         break;
       }
     }
@@ -1332,7 +1783,7 @@ export function routeSingleCable(
     bundle_index: bundleIdx,
     bundle_offset_mm: offset,
     portal_u: chosenPortalU,
-    waypoints: bestWaypoints,
+    waypoints: dedupWaypoints(bestWaypoints),
     spline_points: bestSpline,
     raw_arc_length_mm: arcLength,
     required_length_mm: requiredLengthMm,

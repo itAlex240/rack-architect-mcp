@@ -122,6 +122,14 @@ export const CableTypeSchema = z
   .describe('Standardized physical cable and connector assembly type.');
 export type CableType = z.infer<typeof CableTypeSchema>;
 
+export const CableRoutingModeSchema = z
+  .enum(['shortest-direct', 'left-duct', 'right-duct'])
+  .default('shortest-direct')
+  .describe(
+    'Physical cable routing strategy: shortest-direct (default collision-free L/C-route minimizing cable length and bends) or explicit side-duct detour (left-duct / right-duct) when requested by the user.'
+  );
+export type CableRoutingMode = z.infer<typeof CableRoutingModeSchema>;
+
 export const CableConnectionSchema = z
   .object({
     cable_id: z.string().min(1).describe('Unique identifier for the cable connection.'),
@@ -150,7 +158,10 @@ export const CableConnectionSchema = z
       .int()
       .positive()
       .optional()
-      .describe('Optional 1-indexed U hint for front-to-rear cable portal routing.')
+      .describe('Optional 1-indexed U hint for front-to-rear cable portal routing.'),
+    routing_mode: CableRoutingModeSchema.optional().describe(
+      'Optional routing strategy override: defaults to shortest-direct (shortest collision-free path); set to left-duct or right-duct only when the user explicitly requests routing via a side cable duct.'
+    )
   })
   .describe('Point-to-point physical cable connection between two ports.');
 export type CableConnection = z.infer<typeof CableConnectionSchema>;

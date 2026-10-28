@@ -5,6 +5,22 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.8] - 2026-10-28
+
+### Added & Improved (🇬🇧 English)
+- **Shortest-Direct Monotonic 3D Cable Routing by Default & Optional Side-Duct Overrides (`@rack-mcp/core-domain`, `skills/rack-architect/SKILL.md`):**
+  - Refactored `routeSingleCable` in [`catmull-rom-router.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/routing/catmull-rom-router.ts) so `same-face-duct` (`Case B`) and `cross-face-portal` (`Case C`) default to **Shortest-Direct Monotonic Orthogonal L-Bend / 1-Step Routing** (`routing_mode: 'shortest-direct'`) instead of forcing every multi-U cable all the way out to the extreme left/right rack side walls and back.
+  - **20%–55% Shorter Cable Paths & Lower BOM Costs:** Eliminated horizontal zig-zags (`Right -> Up -> Far-Left -> Up -> Right`) across rear and front plenums (e.g., `trunk-ucg-lan1-to-patch1` dropped from `810.2 mm` to `444.6 mm`; `pwr-pdu-to-ucg` dropped from `523.4 mm` to `261.7 mm`; `cross-sw6-to-ucg-lan2` dropped from `836.4 mm` to `618.5 mm`) while preserving **100% collision-free 3D centerline separation (`>= 6.50 mm` across all 34 cables in `19inch-enterprise` and `>= 7.38 mm` across all 18 cables in `10inch-homelab`)**.
+  - **Direct Rear PDU Over-Edge Entry:** Rear PDU cables (`p1.z >= rail_depth_mm - 5 mm`) now step vertically over the PDU's top/bottom edge directly at their socket column `rX1` into the interior rear plenum rather than looping horizontally behind the rear rack posts.
+  - **Aligned Brush-Panel Portal Entry (`Case C`):** Cross-face cables now pass through the brush panel at a `portalX` aligned directly with the starting port column `rX1` instead of detouring to the far corner of the brush strip.
+  - **Optional Explicit Side-Duct Mode (`routing_mode: 'left-duct' | 'right-duct'`):** Added `CableRoutingModeSchema` to `CableConnectionSchema` in [`rack-project.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/schemas/rack-project.ts) so an MCP user or AI agent can explicitly request routing a cable via the left (`FL`/`RL`) or right (`FR`/`RR`) vertical side channel whenever desired.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Kürzeste, sinnvolle & kollisionsfreie 3D-Kabelführung als Standard (`routing_mode: 'shortest-direct'`) + optionale Seitenkanal-Wahl (`left-duct` / `right-duct`):**
+  - Die 3D-Kabelführung in [`catmull-rom-router.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/routing/catmull-rom-router.ts) führt Kabel ab sofort standardmäßig auf dem **kürzesten monotonen orthogonalen Weg (direkte L-Kurve bzw. 1-Stufen-Weg)** von Port zu Port, statt jedes Kabel unnötig im Zickzack bis ganz an die linke/rechte Außenwand und wieder zurück zu schicken.
+  - **20 % bis 55 % kürzere Kabellängen (spart reale Kabelkosten in der BOM):** Unnötige Hin-und-her-Schlaufen sind komplett beseitigt (`trunk-ucg-lan1-to-patch1` sinkt z. B. von `810 mm` auf `445 mm`, `pwr-pdu-to-ucg` von `523 mm` auf `262 mm`), während alle Kabel weiterhin **100 % kollisionsfrei** bleiben (`>= 7,38 mm` Mindestabstand im 10"-Rack, `>= 6,50 mm` im 19"-Enterprise-Rack).
+  - **Optionaler Umweg auf Nutzerwunsch (`routing_mode`):** Möchte ein Nutzer im Gespräch mit dem AI-Agent bewusst eine Führung über den linken oder rechten Seitenkanal, kann pro Kabel `routing_mode: "left-duct"` oder `"right-duct"` übergeben werden.
+
 ## [0.4.7] - 2026-10-28
 
 ### Added & Improved (🇬🇧 English)

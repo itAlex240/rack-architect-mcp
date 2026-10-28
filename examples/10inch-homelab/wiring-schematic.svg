@@ -402,14 +402,14 @@
       <circle class="schematic-pin-plug" cx="368" cy="633" r="3.2" fill="#EF4444" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="976" cy="705" r="3.2" fill="#EF4444" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="623.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#EF4444" stroke-width="1.3" />
-      <text x="514" y="636.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">pwr-ups-to-sw | 1.00m IEC C13-C14</text>
+      <text x="514" y="636.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">pwr-ups-to-sw | 0.75m IEC C13-C14</text>
     </g>
     <g data-schematic-cable="pwr-pdu-to-ucg" data-track-index="2" data-channel-x="696" data-start-pin="368,735" data-end-pin="976,957" data-cable-type="power-usb-c">
       <path d="M 368 735 L 688 735 Q 696 735 696 743 L 696 949 Q 696 957 704 957 L 976 957" fill="none" stroke="#F97316" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
       <circle class="schematic-pin-plug" cx="368" cy="735" r="3.2" fill="#F97316" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="976" cy="957" r="3.2" fill="#F97316" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="725.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#F97316" stroke-width="1.3" />
-      <text x="514" y="738.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">pwr-pdu-to-ucg | 0.75m USB-C PD</text>
+      <text x="514" y="738.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">pwr-pdu-to-ucg | 0.50m USB-C PD</text>
     </g>
     <g data-schematic-cable="pwr-pdu-to-pve1" data-track-index="3" data-channel-x="712" data-start-pin="368,765" data-end-pin="976,1119" data-cable-type="power-dc-5525">
       <path d="M 368 765 L 704 765 Q 712 765 712 773 L 712 1111 Q 712 1119 720 1119 L 976 1119" fill="none" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
@@ -430,7 +430,7 @@
       <circle class="schematic-pin-plug" cx="368" cy="897" r="3.2" fill="#3B82F6" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="976" cy="987" r="3.2" fill="#3B82F6" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="887.5" width="316" height="19" rx="9.5" fill="#090D16" stroke="#3B82F6" stroke-width="1.3" />
-      <text x="540" y="900.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">trunk-ucg-lan1-to-patch1 | 1.00m Cat6A • VLAN1 1</text>
+      <text x="540" y="900.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">trunk-ucg-lan1-to-patch1 | 0.75m Cat6A • VLAN1 1</text>
     </g>
     <g data-schematic-cable="trunk-pve1-eth1-to-patch2" data-track-index="6" data-channel-x="760" data-start-pin="368,927" data-end-pin="976,1149" data-cable-type="cat6a">
       <path d="M 368 927 L 752 927 Q 760 927 760 935 L 760 1141 Q 760 1149 768 1149 L 976 1149" fill="none" stroke="#10B981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
@@ -444,21 +444,21 @@
       <circle class="schematic-pin-plug" cx="368" cy="957" r="3.2" fill="#10B981" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="976" cy="1311" r="3.2" fill="#10B981" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="947.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#10B981" stroke-width="1.3" />
-      <text x="514" y="960.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">trunk-pve2-eth1-to-patch3 | 0.75m Cat6A</text>
+      <text x="514" y="960.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">trunk-pve2-eth1-to-patch3 | 0.50m Cat6A</text>
     </g>
     <g data-schematic-cable="trunk-pve1-eth0-to-patch4" data-track-index="8" data-channel-x="792" data-start-pin="368,987" data-end-pin="976,1179" data-cable-type="cat6a">
       <path d="M 368 987 L 784 987 Q 792 987 792 995 L 792 1171 Q 792 1179 800 1179 L 976 1179" fill="none" stroke="#6366F1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
       <circle class="schematic-pin-plug" cx="368" cy="987" r="3.2" fill="#6366F1" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="976" cy="1179" r="3.2" fill="#6366F1" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="977.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#6366F1" stroke-width="1.3" />
-      <text x="514" y="990.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">trunk-pve1-eth0-to-patch4 | 1.00m Cat6A</text>
+      <text x="514" y="990.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">trunk-pve1-eth0-to-patch4 | 0.50m Cat6A</text>
     </g>
     <g data-schematic-cable="trunk-pve2-eth0-to-patch5" data-track-index="9" data-channel-x="808" data-start-pin="368,1017" data-end-pin="976,1341" data-cable-type="cat6a">
       <path d="M 368 1017 L 800 1017 Q 808 1017 808 1025 L 808 1333 Q 808 1341 816 1341 L 976 1341" fill="none" stroke="#6366F1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
       <circle class="schematic-pin-plug" cx="368" cy="1017" r="3.2" fill="#6366F1" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="976" cy="1341" r="3.2" fill="#6366F1" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="1007.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#6366F1" stroke-width="1.3" />
-      <text x="514" y="1020.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">trunk-pve2-eth0-to-patch5 | 0.75m Cat6A</text>
+      <text x="514" y="1020.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">trunk-pve2-eth0-to-patch5 | 0.50m Cat6A</text>
     </g>
     <g data-schematic-cable="trunk-ucg-wan-to-ks" data-track-index="10" data-channel-x="824" data-start-pin="368,1269" data-end-pin="976,1473" data-cable-type="cat6a">
       <path d="M 368 1269 L 816 1269 Q 824 1269 824 1277 L 824 1465 Q 824 1473 832 1473 L 976 1473" fill="none" stroke="#EC4899" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
@@ -514,7 +514,7 @@
       <circle class="schematic-pin-plug" cx="368" cy="1473" r="3.2" fill="#06B6D4" stroke="#090D16" stroke-width="1" />
       <circle class="schematic-pin-plug" cx="976" cy="1017" r="3.2" fill="#06B6D4" stroke="#090D16" stroke-width="1" />
       <rect x="382" y="1463.5" width="264" height="19" rx="9.5" fill="#090D16" stroke="#06B6D4" stroke-width="1.3" />
-      <text x="514" y="1476.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">cross-sw6-to-ucg-lan2 | 1.00m Cat6A</text>
+      <text x="514" y="1476.2" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">cross-sw6-to-ucg-lan2 | 0.75m Cat6A</text>
     </g>
   </g>
 </svg>
