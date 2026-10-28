@@ -42,6 +42,15 @@ export class RackMcpToolHandlers {
     this.stateManager = stateManager;
   }
 
+  private finalize<T>(
+    tool: string,
+    env: ToolExecutionEnvelope<T>
+  ): ToolExecutionEnvelope<T> {
+    const firstLine = env.summary.split('\n')[0] ?? env.summary;
+    this.stateManager.recordToolCall(tool, firstLine, env.status);
+    return env;
+  }
+
   public searchCatalog(
     rawInput: z.input<typeof SearchCatalogInputSchema>
   ): ToolExecutionEnvelope {
@@ -80,7 +89,7 @@ export class RackMcpToolHandlers {
       port_count: bp.ports.length
     }));
 
-    return {
+    return this.finalize('search_catalog', {
       status: 'VALID',
       summary: `Found ${summaries.length} matching hardware blueprint(s) in catalog.`,
       data: {
@@ -88,7 +97,7 @@ export class RackMcpToolHandlers {
         blueprints: summaries
       },
       issues: []
-    };
+    });
   }
 
   public getDeviceBlueprint(
@@ -113,20 +122,20 @@ export class RackMcpToolHandlers {
           `Call search_catalog to find valid hardware slugs (e.g. ${availableSlugs}) or register a custom blueprint with define_custom_blueprint.`
         ]
       };
-      return {
+      return this.finalize('get_device_blueprint', {
         status: 'INVALID',
         summary: issue.message,
         data: { requested_slug: input.slug },
         issues: [issue]
-      };
+      });
     }
 
-    return {
+    return this.finalize('get_device_blueprint', {
       status: 'VALID',
       summary: `Loaded blueprint '${bp.slug}' (${bp.manufacturer} ${bp.model}) with ${bp.ports.length} expanded ports and ${bp.slots.length} carrier slots.`,
       data: { blueprint: bp },
       issues: []
-    };
+    });
   }
 
   public defineCustomBlueprint(
@@ -143,17 +152,17 @@ export class RackMcpToolHandlers {
           'Ensure all required geometry, power_and_thermal, and port fields match HardwareBlueprintSchema.'
         ]
       };
-      return {
+      return this.finalize('define_custom_blueprint', {
         status: 'INVALID',
         summary: issue.message,
         data: { validation_errors: parsed.error.issues },
         issues: [issue]
-      };
+      });
     }
 
     try {
       const res = this.stateManager.registerCustomBlueprint(parsed.data.blueprint);
-      return {
+      return this.finalize('define_custom_blueprint', {
         status: 'VALID',
         summary: `Registered custom hardware blueprint '${res.blueprint.slug}' with ${res.blueprint.ports.length} expanded ports.`,
         data: {
@@ -162,7 +171,7 @@ export class RackMcpToolHandlers {
           blueprint: res.blueprint
         },
         issues: []
-      };
+      });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       const issue: DiagnosticIssue = {
@@ -174,12 +183,12 @@ export class RackMcpToolHandlers {
           'Fix overlapping local port coordinates or out-of-bounds port positions and retry define_custom_blueprint.'
         ]
       };
-      return {
+      return this.finalize('define_custom_blueprint', {
         status: 'INVALID',
         summary: issue.message,
         data: { slug: parsed.data.blueprint.slug },
         issues: [issue]
-      };
+      });
     }
   }
 
@@ -204,7 +213,7 @@ export class RackMcpToolHandlers {
 
     const scene = this.stateManager.applyMutation(nextProject, 'init');
 
-    return {
+    return this.finalize('init_rack', {
       status: scene.validation.is_valid ? 'VALID' : 'INVALID',
       summary: `Initialized ${input.standard} rack '${input.project_name}' (${input.u_height}U, ${input.rail_depth_mm}mm depth, ${input.enclosure_type}).`,
       data: {
@@ -218,7 +227,7 @@ export class RackMcpToolHandlers {
         validation: scene.validation
       },
       issues: scene.validation.issues
-    };
+    });
   }
 
   public mountEquipment(
@@ -246,12 +255,12 @@ export class RackMcpToolHandlers {
           `Choose a unique instance_id or use modify_equipment({ instance_id: '${input.instance_id}', action: 'move' }) to relocate the existing device.`
         ]
       };
-      return {
+      return this.finalize('mount_equipment', {
         status: 'INVALID',
         summary: issue.message,
         data: { instance_id: input.instance_id },
         issues: [issue]
-      };
+      });
     }
 
     const bp = catalog.getBlueprintBySlug(input.blueprint_slug);
@@ -265,12 +274,12 @@ export class RackMcpToolHandlers {
           `Call search_catalog to find a valid blueprint slug or register '${input.blueprint_slug}' via define_custom_blueprint.`
         ]
       };
-      return {
+      return this.finalize('mount_equipment', {
         status: 'INVALID',
         summary: issue.message,
         data: { instance_id: input.instance_id, blueprint_slug: input.blueprint_slug },
         issues: [issue]
-      };
+      });
     }
 
     const nextProject = structuredClone(currentProject);
@@ -286,12 +295,12 @@ export class RackMcpToolHandlers {
             `Provide a valid slot_id from carrier '${input.parent_carrier_id}'.`
           ]
         };
-        return {
+        return this.finalize('mount_equipment', {
           status: 'INVALID',
           summary: issue.message,
           data: { instance_id: input.instance_id },
           issues: [issue]
-        };
+        });
       }
 
       const carrier = nextProject.mounted_devices.find(
@@ -310,12 +319,12 @@ export class RackMcpToolHandlers {
               : `Mount a modular-carrier onto a rack unit first before mounting sub-module '${input.instance_id}'.`
           ]
         };
-        return {
+        return this.finalize('mount_equipment', {
           status: 'INVALID',
           summary: issue.message,
           data: { instance_id: input.instance_id },
           issues: [issue]
-        };
+        });
       }
 
       const childEntry: MountedChildDevice = {
@@ -336,12 +345,12 @@ export class RackMcpToolHandlers {
             `Specify u_position (1..${currentProject.rack.u_height}) for direct rack mounting, or parent_carrier_id + slot_id for sub-modules.`
           ]
         };
-        return {
+        return this.finalize('mount_equipment', {
           status: 'INVALID',
           summary: issue.message,
           data: { instance_id: input.instance_id },
           issues: [issue]
-        };
+        });
       }
 
       const mountedEntry: MountedDevice = {
@@ -358,7 +367,7 @@ export class RackMcpToolHandlers {
     const scene = this.stateManager.applyMutation(nextProject, 'mutation');
     const mountedGeometry = scene.geometry.devices_by_id.get(input.instance_id);
 
-    return {
+    return this.finalize('mount_equipment', {
       status: scene.validation.is_valid ? 'VALID' : 'INVALID',
       summary: scene.validation.is_valid
         ? `Mounted '${input.instance_id}' (${input.blueprint_slug}) cleanly with 0 validation errors.`
@@ -368,7 +377,7 @@ export class RackMcpToolHandlers {
         validation: scene.validation
       },
       issues: scene.validation.issues
-    };
+    });
   }
 
   public modifyEquipment(
@@ -411,12 +420,12 @@ export class RackMcpToolHandlers {
             : 'No devices are currently mounted. Call mount_equipment first.'
         ]
       };
-      return {
+      return this.finalize('modify_equipment', {
         status: 'INVALID',
         summary: issue.message,
         data: { instance_id: input.instance_id },
         issues: [issue]
-      };
+      });
     }
 
     const removedDeviceIds = new Set<string>();
@@ -497,12 +506,12 @@ export class RackMcpToolHandlers {
                 `Specify a valid mounted carrier instance_id.`
               ]
             };
-            return {
+            return this.finalize('modify_equipment', {
               status: 'INVALID',
               summary: issue.message,
               data: { instance_id: input.instance_id },
               issues: [issue]
-            };
+            });
           }
           parentCarrier.children.splice(childIndex, 1);
           newCarrier.children.push({
@@ -521,7 +530,7 @@ export class RackMcpToolHandlers {
     const scene = this.stateManager.applyMutation(nextProject, 'mutation');
     const updatedDevice = scene.geometry.devices_by_id.get(input.instance_id) ?? null;
 
-    return {
+    return this.finalize('modify_equipment', {
       status: scene.validation.is_valid ? 'VALID' : 'INVALID',
       summary: `Executed '${input.action}' on '${input.instance_id}'. Validation status: ${scene.validation.is_valid ? 'VALID (0 Errors)' : `INVALID (${scene.validation.error_count} Errors)`}.`,
       data: {
@@ -538,7 +547,7 @@ export class RackMcpToolHandlers {
         validation: scene.validation
       },
       issues: scene.validation.issues
-    };
+    });
   }
 
   public connectCables(
@@ -574,7 +583,7 @@ export class RackMcpToolHandlers {
         assigned_ducts: r.assigned_ducts
       }));
 
-    return {
+    return this.finalize('connect_cables', {
       status: scene.validation.is_valid ? 'VALID' : 'INVALID',
       summary: scene.validation.is_valid
         ? `Connected ${input.cables.length} cable(s) and computed 3D Catmull-Rom routes cleanly.`
@@ -585,7 +594,7 @@ export class RackMcpToolHandlers {
         validation: scene.validation
       },
       issues: scene.validation.issues
-    };
+    });
   }
 
   public disconnectCables(
@@ -614,7 +623,7 @@ export class RackMcpToolHandlers {
 
     const scene = this.stateManager.applyMutation(nextProject, 'mutation');
 
-    return {
+    return this.finalize('disconnect_cables', {
       status: scene.validation.is_valid ? 'VALID' : 'INVALID',
       summary: `Disconnected ${removedCableIds.length} cable(s). Remaining cables: ${scene.project.cables.length}.`,
       data: {
@@ -623,7 +632,7 @@ export class RackMcpToolHandlers {
         validation: scene.validation
       },
       issues: scene.validation.issues
-    };
+    });
   }
 
   public validateRack(
@@ -634,7 +643,7 @@ export class RackMcpToolHandlers {
     const catalog = this.stateManager.getCatalog();
     const asciiElevation = generateAsciiElevation(scene, catalog);
 
-    return {
+    return this.finalize('validate_rack', {
       status: scene.validation.is_valid ? 'VALID' : 'INVALID',
       summary: scene.validation.is_valid
         ? `Rack '${scene.project.project_name}' is VALID (0 Errors, ${scene.validation.warning_count} Warnings).\n\n${asciiElevation}`
@@ -645,7 +654,7 @@ export class RackMcpToolHandlers {
         validation: scene.validation
       },
       issues: scene.validation.issues
-    };
+    });
   }
 
   public exportDeliverables(
@@ -742,7 +751,7 @@ export class RackMcpToolHandlers {
     const pwr = scene.validation.power_summary;
     const totalPoeBudget = pwr.pse_budgets.reduce((s, b) => s + b.poe_budget_watts, 0);
 
-    return {
+    return this.finalize('export_deliverables', {
       status: scene.validation.is_valid ? 'VALID' : 'INVALID',
       summary: `Exported ${exportedFiles.length} deliverable file(s) to '${outDir}'.`,
       data: {
@@ -758,7 +767,7 @@ export class RackMcpToolHandlers {
         validation: scene.validation
       },
       issues: scene.validation.issues
-    };
+    });
   }
 
   public undoRedo(
@@ -772,7 +781,7 @@ export class RackMcpToolHandlers {
         : this.stateManager.redo();
     const asciiElevation = generateAsciiElevation(res.scene, catalog);
 
-    return {
+    return this.finalize('undo_redo', {
       status: res.scene.validation.is_valid ? 'VALID' : 'INVALID',
       summary: res.applied
         ? `Successfully applied '${input.action}'. Undo stack: ${res.undoAvailable}, Redo stack: ${res.redoAvailable}.`
@@ -786,6 +795,6 @@ export class RackMcpToolHandlers {
         validation: res.scene.validation
       },
       issues: res.scene.validation.issues
-    };
+    });
   }
 }

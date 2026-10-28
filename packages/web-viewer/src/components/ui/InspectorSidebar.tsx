@@ -2,9 +2,11 @@ import {
   roundTenths,
   type SerializedRackScene,
 } from '@rack-mcp/core-domain';
+import type { McpToolCallItem } from '../../state/useRackState.js';
 
 export interface InspectorSidebarProps {
   readonly scene: SerializedRackScene;
+  readonly mcpToolLog?: readonly McpToolCallItem[] | undefined;
   readonly selectedDeviceId: string | null;
   readonly selectedCableId: string | null;
   readonly onSelectDevice: (instanceId: string | null) => void;
@@ -12,10 +14,14 @@ export interface InspectorSidebarProps {
   readonly onMoveDeviceU: (instanceId: string, newU: number) => void;
   readonly onRemoveDevice?: (instanceId: string) => void;
   readonly onDisconnectCable?: (cableId: string) => void;
+  readonly onSimulateAgentStep?:
+    | ((stage: 'collision' | 'resolved') => void)
+    | undefined;
 }
 
 export function InspectorSidebar({
   scene,
+  mcpToolLog = [],
   selectedDeviceId,
   selectedCableId,
   onSelectDevice,
@@ -23,6 +29,7 @@ export function InspectorSidebar({
   onMoveDeviceU,
   onRemoveDevice,
   onDisconnectCable,
+  onSimulateAgentStep,
 }: InspectorSidebarProps) {
   const pwr = scene.validation.power_summary;
   const mech = scene.validation.mechanical_summary;
@@ -362,6 +369,130 @@ export function InspectorSidebar({
             ))}
           </div>
         )}
+      </section>
+
+      {/* 2b. Live MCP Agent Tool-Call Feed & Self-Correction Replay */}
+      <section
+        data-testid="mcp-agent-feed"
+        style={{
+          padding: '16px',
+          borderBottom: '1px solid #1E293B',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+        }}
+      >
+        <div
+          className="mono"
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontSize: '11.5px',
+            fontWeight: 700,
+            color: '#38BDF8',
+          }}
+        >
+          <span>MCP AGENT TOOL-CALL FEED</span>
+          <span style={{ color: '#94A3B8', fontSize: '10.5px' }}>
+            {mcpToolLog.length} Calls
+          </span>
+        </div>
+
+        {onSimulateAgentStep && (
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button
+              type="button"
+              data-testid="agent-sim-step-collision"
+              onClick={() => onSimulateAgentStep('collision')}
+              style={{
+                flex: 1,
+                padding: '6px 8px',
+                borderRadius: '5px',
+                border: '1px solid #F59E0B',
+                background: '#451A03',
+                color: '#FDE68A',
+                fontSize: '10.5px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              ⚡ 1. Trigger Plug Collision
+            </button>
+            <button
+              type="button"
+              data-testid="agent-sim-step-resolved"
+              onClick={() => onSimulateAgentStep('resolved')}
+              style={{
+                flex: 1,
+                padding: '6px 8px',
+                borderRadius: '5px',
+                border: '1px solid #10B981',
+                background: '#064E3B',
+                color: '#34D399',
+                fontSize: '10.5px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              ✓ 2. LLM Self-Correction
+            </button>
+          </div>
+        )}
+
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            maxHeight: '165px',
+            overflowY: 'auto',
+          }}
+        >
+          {mcpToolLog.map((entry) => (
+            <div
+              key={entry.id}
+              data-testid={`mcp-tool-call-${entry.tool}`}
+              style={{
+                padding: '7px 9px',
+                borderRadius: '6px',
+                background: '#1E293B',
+                border:
+                  entry.status === 'VALID'
+                    ? '1px solid #334155'
+                    : '1px solid #EF4444',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '3px',
+              }}
+            >
+              <div
+                className="mono"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontSize: '10.5px',
+                }}
+              >
+                <span style={{ fontWeight: 700, color: '#F8FAFC' }}>
+                  {entry.tool}()
+                </span>
+                <span
+                  style={{
+                    fontWeight: 700,
+                    color: entry.status === 'VALID' ? '#34D399' : '#FCA5A5',
+                  }}
+                >
+                  {entry.status}
+                </span>
+              </div>
+              <div style={{ fontSize: '11px', color: '#CBD5E1' }}>
+                {entry.summary}
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* 3. Selection Inspector (Device or Cable) */}

@@ -5,6 +5,17 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-10-28
+
+### Added
+- **Live MCP Agent Tool-Call Feed & Interactive Self-Correction Replay (`@rack-mcp/mcp-server` & `@rack-mcp/web-viewer`):**
+  - Added `McpToolCallEntry` tracking in `ProjectStateManager` (`getToolCallLog()`, `recordToolCall()`) and real-time `toolCallLog` streaming over `/api/state` and WebSocket (`INITIAL_STATE`, `STATE_UPDATED`).
+  - Added the **`MCP AGENT TOOL-CALL FEED`** panel in `InspectorSidebar.tsx` and the **`⚡ Simulate LLM Collision` / `✓ Apply LLM Self-Correction`** replay button in `TopNavBar.tsx` so users can inspect every MCP tool call (`init_rack`, `mount_equipment`, `connect_cables`, `modify_equipment`, `validate_rack`) and watch the LLM resolve a 3D `PLUG_CLEARANCE_COLLISION` autonomously.
+- **Expanded Guided MCP Prompts to 5 Workflows (`@rack-mcp/mcp-server`):**
+  - Added `design-19inch-enterprise-rack`, `design-3d-printed-carrier-bay`, and `audit-poe-and-thermals` alongside `plan-homelab-from-scratch` and `optimize-and-fix-rack`.
+- **Automated GHCR Docker Image Publishing (`ghcr.io/italex240/rack-architect-mcp`):**
+  - Added `LABEL io.modelcontextprotocol.server.name="io.github.itAlex240/rack-architect-mcp"` to `Dockerfile` and automated `ghcr.io/italex240/rack-architect-mcp:latest` & `:0.2.0` container publishing in `.github/workflows/release.yml`.
+
 ## [0.1.3] - 2026-10-28
 
 ### Added

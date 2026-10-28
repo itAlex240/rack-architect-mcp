@@ -158,4 +158,32 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     expect(screen.getByTestId('download-scad-carrier-u4')).toBeDefined();
     expect(screen.getByTestId('download-stl-carrier-u4')).toBeDefined();
   });
+
+  it('displays the MCP Agent Tool-Call Feed and replays LLM Plug-Clearance Collision & Self-Correction', () => {
+    render(<AppDashboard />);
+
+    const feed = screen.getByTestId('mcp-agent-feed');
+    expect(feed.textContent).toContain('MCP AGENT TOOL-CALL FEED');
+    expect(feed.textContent).toContain('validate_rack()');
+
+    // Trigger Step 1: LLM Plug Collision on U1
+    const simBtn = screen.getByTestId('btn-simulate-mcp-agent');
+    expect(simBtn.textContent).toContain('Simulate LLM Collision');
+    fireEvent.click(simBtn);
+
+    expect(screen.getByTestId('validation-status-pill').textContent).toContain(
+      'INVALID',
+    );
+    expect(
+      screen.getAllByTestId('diagnostic-issue-PLUG_CLEARANCE_COLLISION').length,
+    ).toBeGreaterThanOrEqual(1);
+
+    // Trigger Step 2: Apply LLM Self-Correction (moves PDU to U2 Rear)
+    expect(simBtn.textContent).toContain('Apply LLM Self-Correction');
+    fireEvent.click(simBtn);
+
+    expect(screen.getByTestId('validation-status-pill').textContent).toContain(
+      'VALID (0 ERRORS)',
+    );
+  });
 });

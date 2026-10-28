@@ -302,6 +302,13 @@ describe('@rack-mcp/mcp-server End-to-End Agentic Workflow & Sidecar Suite', () 
     expect(fs.existsSync(path.join(exportDir, 'wiring-schematic.svg'))).toBe(true);
     expect(fs.existsSync(path.join(exportDir, 'BOM.md'))).toBe(true);
     expect(fs.existsSync(path.join(exportDir, 'rack-scene.glb'))).toBe(true);
+
+    // 9. Verify live MCP Tool-Call Log recorded every step
+    const toolLog = stateManager.getToolCallLog();
+    expect(toolLog.length).toBeGreaterThanOrEqual(15);
+    expect(toolLog[0]?.tool).toBe('export_deliverables');
+    expect(toolLog.some((e) => e.tool === 'connect_cables' && e.status === 'INVALID')).toBe(true);
+    expect(toolLog.some((e) => e.tool === 'validate_rack' && e.status === 'VALID')).toBe(true);
   });
 
   it('pushes real-time STATE_UPDATED over WebSocket and serves HTTP export endpoints', async () => {

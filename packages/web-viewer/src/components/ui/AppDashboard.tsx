@@ -42,6 +42,7 @@ export function AppDashboard() {
         onUndo={state.undo}
         onRedo={state.redo}
         onResetDemo={state.resetDemoScene}
+        onSimulateAgentStep={state.simulateAgentStep}
       />
 
       {/* Main Split Workspace + Left Builder Drawer + Right Inspector Sidebar */}
@@ -135,6 +136,7 @@ export function AppDashboard() {
         {/* Right Telemetry, Validation & Selection Inspector Sidebar */}
         <InspectorSidebar
           scene={state.scene}
+          mcpToolLog={state.mcpToolLog}
           selectedDeviceId={state.selectedDeviceId}
           selectedCableId={state.selectedCableId}
           onSelectDevice={state.selectDevice}
@@ -142,6 +144,7 @@ export function AppDashboard() {
           onMoveDeviceU={state.moveDeviceU}
           onRemoveDevice={state.removeEquipment}
           onDisconnectCable={state.disconnectCable}
+          onSimulateAgentStep={state.simulateAgentStep}
         />
       </div>
     </div>

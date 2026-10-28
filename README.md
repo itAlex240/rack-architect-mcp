@@ -12,7 +12,7 @@
 [![Agent Skill: SKILL.md](https://img.shields.io/badge/Agent_Skill-SKILL.md_(Free)-EC4899.svg)](./skills/rack-architect/SKILL.md)
 [![EIA-310 Standards](https://img.shields.io/badge/EIA--310-19%22_%7C_10%22_%7C_6%22-06B6D4.svg)](./ARCHITECTURE.md)
 [![3D Print Ready](https://img.shields.io/badge/3D--Print-OpenSCAD_.SCAD_%2B_.STL-F59E0B.svg)](./packages/exporters/src/openscad-carrier.ts)
-[![Tests](https://img.shields.io/badge/Vitest-34%2F34_Passing-10B981.svg)](./vitest.config.ts)
+[![Tests](https://img.shields.io/badge/Vitest-35%2F35_Passing-10B981.svg)](./vitest.config.ts)
 
 [**🌐 Launch Live 3D/2D Browser Demo**](https://italex240.github.io/rack-architect-mcp/) · [**Quickstart**](#-30-second-quickstart) · [**MCP Client & Agent Skill**](#-connect-claude-desktop-cursor-or-antigravity) · [**3D-Print (.SCAD / .STL)**](#-parametric-3d-print-generator-scad--stl) · [**Add Hardware Blueprint**](./CONTRIBUTING.md) · [**Complete Handbook (DE)**](./docs/COMPLETE_SYSTEM_HANDBOOK.md)
 
@@ -72,6 +72,10 @@ Open **`http://127.0.0.1:3100/`** in your browser to inspect the 3D Digital Twin
 ### Option B: Docker (Zero Local Dependencies)
 
 ```bash
+# Run the pre-built image from GitHub Container Registry:
+docker run --rm -p 3100:3100 ghcr.io/italex240/rack-architect-mcp:latest
+
+# Or build locally:
 docker build -t rack-architect-mcp .
 docker run --rm -p 3100:3100 rack-architect-mcp
 # Open http://127.0.0.1:3100/

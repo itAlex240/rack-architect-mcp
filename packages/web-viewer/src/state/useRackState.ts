@@ -37,10 +37,84 @@ export interface HoveredPortInfo {
   readonly peerDescription: string | undefined;
 }
 
+export interface McpToolCallItem {
+  readonly id: string;
+  readonly timestamp: string;
+  readonly tool: string;
+  readonly summary: string;
+  readonly status: 'VALID' | 'INVALID';
+  readonly errorCount: number;
+  readonly warningCount: number;
+}
+
+const DEFAULT_STANDALONE_TOOL_LOG: readonly McpToolCallItem[] = [
+  {
+    id: 'mcp-call-6',
+    timestamp: '10:14:22',
+    tool: 'validate_rack',
+    summary:
+      "Rack '8U 10-Inch Proxmox & UniFi Homelab' is VALID (0 Errors, 0 Warnings).",
+    status: 'VALID',
+    errorCount: 0,
+    warningCount: 0,
+  },
+  {
+    id: 'mcp-call-5',
+    timestamp: '10:14:19',
+    tool: 'connect_cables',
+    summary:
+      'Connected 18 cable(s) and computed 3D Catmull-Rom routes cleanly (including U6 Brush Portal).',
+    status: 'VALID',
+    errorCount: 0,
+    warningCount: 0,
+  },
+  {
+    id: 'mcp-call-4',
+    timestamp: '10:14:15',
+    tool: 'modify_equipment',
+    summary:
+      "Self-Correction: Moved 'pdu-u2-rear' from U1 Rear -> U2 Rear to clear 45mm Schuko/IEC plug zone.",
+    status: 'VALID',
+    errorCount: 0,
+    warningCount: 0,
+  },
+  {
+    id: 'mcp-call-3',
+    timestamp: '10:14:12',
+    tool: 'connect_cables',
+    summary:
+      "PLUG_CLEARANCE_COLLISION on U1: 'ups-u1' rear plug (+45mm) collides with 'pdu-u2-rear' at U1 Rear.",
+    status: 'INVALID',
+    errorCount: 1,
+    warningCount: 0,
+  },
+  {
+    id: 'mcp-call-2',
+    timestamp: '10:14:08',
+    tool: 'mount_equipment',
+    summary:
+      'Mounted 8 top-level units + 10 sub-modules (UCG-Max, 2x Lenovo M920q, 7x Cat6A Keystones).',
+    status: 'VALID',
+    errorCount: 0,
+    warningCount: 0,
+  },
+  {
+    id: 'mcp-call-1',
+    timestamp: '10:14:02',
+    tool: 'init_rack',
+    summary:
+      "Initialized 10inch rack '8U 10-Inch Proxmox & UniFi Homelab' (8U, 240mm depth, closed-glass-front).",
+    status: 'VALID',
+    errorCount: 0,
+    warningCount: 0,
+  },
+];
+
 export interface RackViewerState {
   readonly connectionMode: 'sidecar-live' | 'standalone-demo';
   readonly scene: SerializedRackScene;
   readonly catalog: readonly HardwareBlueprint[];
+  readonly mcpToolLog: readonly McpToolCallItem[];
   readonly undoAvailable: number;
   readonly redoAvailable: number;
   readonly elevationSvg: string;
@@ -87,6 +161,7 @@ export interface RackViewerState {
   ): void;
   disconnectCable(cableId: string): void;
   importProjectJson(rawJsonText: string): boolean;
+  simulateAgentStep(stage: 'collision' | 'resolved'): void;
   undo(): void;
   redo(): void;
   resetDemoScene(): void;
@@ -102,6 +177,7 @@ interface SidecarWsIncoming {
   readonly scene?: SerializedRackScene | undefined;
   readonly undoAvailable?: number | undefined;
   readonly redoAvailable?: number | undefined;
+  readonly toolCallLog?: readonly McpToolCallItem[] | undefined;
 }
 
 /**
@@ -125,6 +201,9 @@ export function useRackState(): RackViewerState {
   );
   const [catalog, setCatalog] = useState<readonly HardwareBlueprint[]>(() =>
     defaultCatalogRegistry.getAllBlueprints(),
+  );
+  const [mcpToolLog, setMcpToolLog] = useState<readonly McpToolCallItem[]>(
+    DEFAULT_STANDALONE_TOOL_LOG,
   );
   const [undoAvailable, setUndoAvailable] = useState<number>(0);
   const [redoAvailable, setRedoAvailable] = useState<number>(0);
@@ -299,11 +378,70 @@ export function useRackState(): RackViewerState {
     initialInputRef.current = fresh;
     const nextScene = evaluateStandaloneScene(fresh);
     setScene(nextScene);
+    setMcpToolLog(DEFAULT_STANDALONE_TOOL_LOG);
     setUndoAvailable(0);
     setRedoAvailable(0);
     setElevationSvg(renderClientSideElevationSvg(nextScene));
     setWiringSvg(renderClientSideWiringSvg(nextScene));
     setBomMarkdown(renderClientSideBomMarkdown(nextScene));
+  }, []);
+
+  const simulateAgentStep = useCallback((stage: 'collision' | 'resolved') => {
+    if (stage === 'collision') {
+      const base = createStandaloneHomelabProjectInput();
+      const collisionInput: RackProjectInput = {
+        ...base,
+        mounted_devices: (base.mounted_devices ?? []).map((dev) =>
+          dev.instance_id === 'pdu-u2-rear'
+            ? { ...dev, u_position: 1, face: 'rear' }
+            : dev,
+        ),
+      };
+      undoStackRef.current.push(structuredClone(initialInputRef.current));
+      redoStackRef.current = [];
+      initialInputRef.current = collisionInput;
+      const nextScene = evaluateStandaloneScene(collisionInput);
+      setScene(nextScene);
+      setUndoAvailable(undoStackRef.current.length);
+      setRedoAvailable(0);
+      setElevationSvg(renderClientSideElevationSvg(nextScene));
+      setWiringSvg(renderClientSideWiringSvg(nextScene));
+      setBomMarkdown(renderClientSideBomMarkdown(nextScene));
+      setActiveTab('3d');
+      setShowClearanceBoxes(true);
+      setCameraPreset('side-cutaway');
+      setSelectedDeviceId('ups-u1');
+      setMcpToolLog([
+        {
+          id: `sim-collision-${Date.now()}`,
+          timestamp: 'LIVE',
+          tool: 'connect_cables',
+          summary:
+            "PLUG_CLEARANCE_COLLISION on U1: 'ups-u1' rear Schuko/IEC plug (+45mm) collides with 'pdu-u2-rear' on U1 Rear.",
+          status: 'INVALID',
+          errorCount: nextScene.validation.error_count,
+          warningCount: nextScene.validation.warning_count,
+        },
+        ...DEFAULT_STANDALONE_TOOL_LOG.slice(-2),
+      ]);
+      return;
+    }
+
+    const resolvedInput = createStandaloneHomelabProjectInput();
+    undoStackRef.current.push(structuredClone(initialInputRef.current));
+    redoStackRef.current = [];
+    initialInputRef.current = resolvedInput;
+    const nextScene = evaluateStandaloneScene(resolvedInput);
+    setScene(nextScene);
+    setUndoAvailable(undoStackRef.current.length);
+    setRedoAvailable(0);
+    setElevationSvg(renderClientSideElevationSvg(nextScene));
+    setWiringSvg(renderClientSideWiringSvg(nextScene));
+    setBomMarkdown(renderClientSideBomMarkdown(nextScene));
+    setShowClearanceBoxes(false);
+    setCameraPreset('isometric');
+    setSelectedDeviceId('pdu-u2-rear');
+    setMcpToolLog(DEFAULT_STANDALONE_TOOL_LOG);
   }, []);
 
   const mountEquipmentFromCatalog = useCallback(
@@ -557,10 +695,14 @@ export function useRackState(): RackViewerState {
             scene: SerializedRackScene;
             undoAvailable: number;
             redoAvailable: number;
+            toolCallLog?: readonly McpToolCallItem[] | undefined;
           };
           setScene(stateData.scene);
           setUndoAvailable(stateData.undoAvailable);
           setRedoAvailable(stateData.redoAvailable);
+          if (Array.isArray(stateData.toolCallLog) && stateData.toolCallLog.length > 0) {
+            setMcpToolLog(stateData.toolCallLog);
+          }
           setConnectionMode('sidecar-live');
           await refreshSidecarExports(apiBase);
         }
@@ -601,6 +743,9 @@ export function useRackState(): RackViewerState {
               setScene(msg.scene);
               setUndoAvailable(msg.undoAvailable ?? 0);
               setRedoAvailable(msg.redoAvailable ?? 0);
+              if (Array.isArray(msg.toolCallLog) && msg.toolCallLog.length > 0) {
+                setMcpToolLog(msg.toolCallLog);
+              }
               setElevationSvg(renderClientSideElevationSvg(msg.scene));
               setWiringSvg(renderClientSideWiringSvg(msg.scene));
               setBomMarkdown(renderClientSideBomMarkdown(msg.scene));
@@ -754,6 +899,7 @@ export function useRackState(): RackViewerState {
     connectionMode,
     scene,
     catalog,
+    mcpToolLog,
     undoAvailable,
     redoAvailable,
     elevationSvg,
@@ -787,6 +933,7 @@ export function useRackState(): RackViewerState {
     connectInteractiveCable,
     disconnectCable,
     importProjectJson,
+    simulateAgentStep,
     undo,
     redo,
     resetDemoScene,

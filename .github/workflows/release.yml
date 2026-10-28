@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  packages: write
   id-token: write
 
 jobs:
@@ -39,6 +40,23 @@ jobs:
 
       - name: Generate Reference CAD Deliverables (SVG, BOM, GLB, OpenSCAD, STL)
         run: pnpm export:demo
+
+      - name: Log in to GitHub Container Registry (ghcr.io)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image to ghcr.io/italex240/rack-architect-mcp
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          docker build \
+            -t "ghcr.io/italex240/rack-architect-mcp:${VERSION}" \
+            -t "ghcr.io/italex240/rack-architect-mcp:latest" \
+            .
+          docker push "ghcr.io/italex240/rack-architect-mcp:${VERSION}"
+          docker push "ghcr.io/italex240/rack-architect-mcp:latest"
 
       - name: Build MCPB Bundle (rack-architect-mcp.mcpb) and Update server.json SHA-256
         run: |

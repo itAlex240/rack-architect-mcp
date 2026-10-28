@@ -14,7 +14,11 @@ import {
   generateWiringSchematicSvg
 } from '@rack-mcp/exporters';
 import { RackMcpToolHandlers } from '../mcp/tool-handlers.js';
-import type { ProjectStateManager, StateChangeEvent } from '../state-manager.js';
+import type {
+  McpToolCallEntry,
+  ProjectStateManager,
+  StateChangeEvent
+} from '../state-manager.js';
 
 export interface SidecarWsMessage {
   readonly type: 'INITIAL_STATE' | 'STATE_UPDATED' | 'COMMAND_RESULT' | 'ERROR';
@@ -22,6 +26,7 @@ export interface SidecarWsMessage {
   readonly scene?: SerializedRackScene | undefined;
   readonly undoAvailable?: number | undefined;
   readonly redoAvailable?: number | undefined;
+  readonly toolCallLog?: readonly McpToolCallEntry[] | undefined;
   readonly tool?: string | undefined;
   readonly result?: unknown;
   readonly message?: string | undefined;
@@ -155,7 +160,8 @@ export async function startRackSidecarServer(
         const payload = {
           scene: serializeRackScene(stateManager.getScene()),
           undoAvailable: history.undoAvailable,
-          redoAvailable: history.redoAvailable
+          redoAvailable: history.redoAvailable,
+          toolCallLog: stateManager.getToolCallLog()
         };
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
         res.end(JSON.stringify(payload));
@@ -257,7 +263,8 @@ export async function startRackSidecarServer(
       reason: 'init',
       scene: serializeRackScene(stateManager.getScene()),
       undoAvailable: history.undoAvailable,
-      redoAvailable: history.redoAvailable
+      redoAvailable: history.redoAvailable,
+      toolCallLog: stateManager.getToolCallLog()
     };
     ws.send(JSON.stringify(initialMsg));
 
@@ -320,7 +327,8 @@ export async function startRackSidecarServer(
       reason: event.reason,
       scene: serializeRackScene(event.scene),
       undoAvailable: event.undoAvailable,
-      redoAvailable: event.redoAvailable
+      redoAvailable: event.redoAvailable,
+      toolCallLog: event.toolCallLog
     };
     const serialized = JSON.stringify(broadcastMsg);
     for (const client of wss.clients) {

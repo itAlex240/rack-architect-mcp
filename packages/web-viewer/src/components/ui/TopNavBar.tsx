@@ -15,6 +15,9 @@ export interface TopNavBarProps {
   readonly onUndo: () => void;
   readonly onRedo: () => void;
   readonly onResetDemo: () => void;
+  readonly onSimulateAgentStep?:
+    | ((stage: 'collision' | 'resolved') => void)
+    | undefined;
 }
 
 const WORKSPACE_TABS: ReadonlyArray<{
@@ -40,6 +43,7 @@ export function TopNavBar({
   onUndo,
   onRedo,
   onResetDemo,
+  onSimulateAgentStep,
 }: TopNavBarProps) {
   const isValid = scene.validation.is_valid;
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -178,6 +182,30 @@ export function TopNavBar({
             ? '● MCP Sidecar Connected'
             : '○ Demo Mode (Standalone)'}
         </span>
+
+        {onSimulateAgentStep && (
+          <button
+            type="button"
+            data-testid="btn-simulate-mcp-agent"
+            onClick={() =>
+              onSimulateAgentStep(isValid ? 'collision' : 'resolved')
+            }
+            style={{
+              padding: '5px 10px',
+              borderRadius: '6px',
+              border: isValid ? '1px solid #F59E0B' : '1px solid #10B981',
+              background: isValid ? '#451A03' : '#064E3B',
+              color: isValid ? '#FDE68A' : '#34D399',
+              fontSize: '11.5px',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            {isValid
+              ? '⚡ Simulate LLM Collision'
+              : '✓ Apply LLM Self-Correction'}
+          </button>
+        )}
 
         <button
           type="button"

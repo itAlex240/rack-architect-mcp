@@ -14,6 +14,16 @@ import {
   parseAndValidateBlueprintYaml
 } from '@rack-mcp/hardware-catalog';
 
+export interface McpToolCallEntry {
+  readonly id: string;
+  readonly timestamp: string;
+  readonly tool: string;
+  readonly summary: string;
+  readonly status: 'VALID' | 'INVALID';
+  readonly errorCount: number;
+  readonly warningCount: number;
+}
+
 export interface StateChangeEvent {
   readonly reason:
     | 'init'
@@ -21,10 +31,12 @@ export interface StateChangeEvent {
     | 'undo'
     | 'redo'
     | 'external_file_change'
-    | 'custom_blueprint';
+    | 'custom_blueprint'
+    | 'tool_call';
   readonly scene: ComputedRackScene;
   readonly undoAvailable: number;
   readonly redoAvailable: number;
+  readonly toolCallLog: readonly McpToolCallEntry[];
 }
 
 export type StateChangeListener = (event: StateChangeEvent) => void;
@@ -72,6 +84,7 @@ export class ProjectStateManager {
 
   private readonly undoStack: RackProject[] = [];
   private readonly redoStack: RackProject[] = [];
+  private readonly toolCallLog: McpToolCallEntry[] = [];
   private readonly listeners = new Set<StateChangeListener>();
 
   private watcher: fs.FSWatcher | undefined;
@@ -403,6 +416,32 @@ export class ProjectStateManager {
     }
   }
 
+  public getToolCallLog(): readonly McpToolCallEntry[] {
+    return this.toolCallLog;
+  }
+
+  public recordToolCall(
+    tool: string,
+    summary: string,
+    status: 'VALID' | 'INVALID'
+  ): McpToolCallEntry {
+    const entry: McpToolCallEntry = {
+      id: `call-${this.toolCallLog.length + 1}-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      tool,
+      summary,
+      status,
+      errorCount: this.scene.validation.error_count,
+      warningCount: this.scene.validation.warning_count
+    };
+    this.toolCallLog.unshift(entry);
+    while (this.toolCallLog.length > this.maxHistory) {
+      this.toolCallLog.pop();
+    }
+    this.emitChange('tool_call');
+    return entry;
+  }
+
   public onStateChange(listener: StateChangeListener): () => void {
     this.listeners.add(listener);
     return () => {
@@ -415,7 +454,8 @@ export class ProjectStateManager {
       reason,
       scene: this.scene,
       undoAvailable: this.undoStack.length,
-      redoAvailable: this.redoStack.length
+      redoAvailable: this.redoStack.length,
+      toolCallLog: [...this.toolCallLog]
     };
     for (const listener of this.listeners) {
       listener(event);

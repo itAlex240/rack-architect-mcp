@@ -18,6 +18,10 @@ RUN pnpm build
 
 FROM node:22-alpine AS runner
 
+LABEL io.modelcontextprotocol.server.name="io.github.itAlex240/rack-architect-mcp"
+LABEL org.opencontainers.image.source="https://github.com/itAlex240/rack-architect-mcp"
+LABEL org.opencontainers.image.description="RackArchitect MCP — 3D/2D Rack-as-Code homelab planner, 5-stage validator, CAD SVG/BOM & watertight STL generator."
+
 WORKDIR /app
 ENV NODE_ENV=production
 
