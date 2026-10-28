@@ -5,6 +5,14 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-10-28
+
+### Fixed
+- **Zero 3D Cable-to-Cable Tube Interpenetration (`@rack-mcp/core-domain`, `@rack-mcp/web-viewer`):**
+  - Added exact 3D segment-to-segment distance clearance solver (`computeMinSplineClearanceMm`, `>= 6.2 mm` minimum centerline separation) and inter-column port riser shifting (`computePortRiserX`, `±7.8 mm` for 2-row switches and 2U UPS banks) to [`catmull-rom-router.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/routing/catmull-rom-router.ts).
+  - Stratified front and rear Z-depth planes (`7.0 mm` lattice spacing), unified front/rear plane allocation across `Case A`, `Case B`, and `Case C` routes, and routed 1–2U vertically aligned patch cables (`dx <= 55.0 mm`) as parallel row-stratified C-arches so patch panels at either `U11` or `U12` have `0` cable-to-cable collisions.
+  - Routed short-X front data uplinks on 19-inch racks (`wan1`/`wan2`) via the nearer outer rail channel instead of crossing the entire rack width, and widened 3D rear building drop spacing in [`RackSceneCanvas.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/canvas/RackSceneCanvas.tsx).
+
 ## [0.4.0] - 2026-10-28
 
 ### Added & Fixed

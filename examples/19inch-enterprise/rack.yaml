@@ -68,17 +68,17 @@ mounted_devices:
     face: front
     hostname: USW-Pro-Max 24 PoE++ Switch (U10)
     children: []
-  - instance_id: brush-portal-u11
-    blueprint_slug: generic-19inch-brush-panel-1u
-    u_position: 11
-    face: front
-    hostname: 19-Inch Top Brush Strip Cable Portal (U11)
-    children: []
   - instance_id: patch-ext-u11
     blueprint_slug: generic-19inch-patch-panel-24port-cat6a
+    u_position: 11
+    face: front
+    hostname: 24-Port Cat6A Building Patch Panel (U11)
+    children: []
+  - instance_id: brush-portal-u11
+    blueprint_slug: generic-19inch-brush-panel-1u
     u_position: 12
     face: front
-    hostname: 24-Port Cat6A Building Patch Panel (U12)
+    hostname: 19-Inch Top Brush Strip Cable Portal (U12)
     children: []
 cables:
   - cable_id: wan1-patch-to-ngfw

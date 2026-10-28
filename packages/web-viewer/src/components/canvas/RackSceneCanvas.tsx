@@ -177,16 +177,17 @@ function ExternalBuildingDrops3D({
       const spreadX =
         panelWidthMm / 2 +
         (idx - (externalEndpoints.length - 1) / 2) *
-          Math.min(5.5, (panelWidthMm * 0.42) / Math.max(1, externalEndpoints.length));
+          Math.min(8.5, (panelWidthMm * 0.68) / Math.max(1, externalEndpoints.length));
+      const dropZ = conduitZ + (idx % 2) * 5.5;
 
       const pts = [
-        new THREE.Vector3(spreadX, conduitY, conduitZ),
+        new THREE.Vector3(spreadX, conduitY, dropZ),
         new THREE.Vector3(
-          spreadX * 0.65 + portX * 0.35,
+          spreadX * 0.5 + portX * 0.5,
           portY + (ext.entry_position === 'bottom-rear' ? -18 : 22),
-          conduitZ - 15,
+          dropZ - 14,
         ),
-        new THREE.Vector3(portX, portY + ((idx % 3) - 1) * 1.8, rearFaceZ + 24),
+        new THREE.Vector3(portX, portY, rearFaceZ + 22),
         new THREE.Vector3(portX, portY, rearFaceZ),
       ];
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   computeHexagonalBundleOffset,
+  computeMinSplineClearanceMm,
   evaluateRackScene,
   type HardwareBlueprint,
   normalizeHardwareBlueprint,
@@ -1156,6 +1157,135 @@ describe('10-Inch Mini-Rack (8U, 260mm Depth) End-to-End Validation & 3D Routing
     expect(
       scene.validation.mechanical_summary.total_thermal_btu_hr
     ).toBeGreaterThan(700);
+  });
+
+  it('guarantees zero 3D cable-to-cable interpenetration (>= 6.0mm centerline clearance) across dense mixed routes', () => {
+    const project: RackProject = RackProjectSchema.parse({
+      schema_version: '1.0',
+      project_name: 'Collision-Free 3D Cable Routing Verification',
+      rack: {
+        standard: '10inch',
+        u_height: 8,
+        rail_depth_mm: 260,
+        enclosure_type: 'open-frame'
+      },
+      mounted_devices: [
+        {
+          instance_id: 'pdu-u1',
+          blueprint_slug: 'intellinet-10inch-pdu-4way',
+          u_position: 1,
+          face: 'rear'
+        },
+        {
+          instance_id: 'carrier-u3',
+          blueprint_slug: '3dprint-10inch-lenovo-tiny-plus-2keystone',
+          u_position: 3,
+          face: 'front',
+          children: [
+            {
+              instance_id: 'pve-node-01',
+              blueprint_slug: 'lenovo-thinkcentre-m920q',
+              slot_id: 'left-mini-pc-bay'
+            },
+            {
+              instance_id: 'ks-01',
+              blueprint_slug: 'keystone-rj45-cat6a-coupler',
+              slot_id: 'keystone-1'
+            },
+            {
+              instance_id: 'ks-02',
+              blueprint_slug: 'keystone-rj45-cat6a-coupler',
+              slot_id: 'keystone-2'
+            }
+          ]
+        },
+        {
+          instance_id: 'blade-u6',
+          blueprint_slug: 'poe-ai-cluster-blade-10inch',
+          u_position: 6,
+          face: 'front'
+        },
+        {
+          instance_id: 'sw-u7',
+          blueprint_slug: 'ubiquiti-usw-pro-8-poe-10inch',
+          u_position: 7,
+          face: 'front'
+        },
+        {
+          instance_id: 'sw-u8',
+          blueprint_slug: 'ubiquiti-usw-pro-8-poe-10inch',
+          u_position: 8,
+          face: 'front'
+        }
+      ],
+      cables: [
+        {
+          cable_id: 'patch-u8-u7-1',
+          from: { instance_id: 'sw-u8', port_id: 'eth1', face: 'front' },
+          to: { instance_id: 'sw-u7', port_id: 'eth1', face: 'front' },
+          cable_type: 'cat6a'
+        },
+        {
+          cable_id: 'patch-u8-u7-2',
+          from: { instance_id: 'sw-u8', port_id: 'eth2', face: 'front' },
+          to: { instance_id: 'sw-u7', port_id: 'eth2', face: 'front' },
+          cable_type: 'cat6a'
+        },
+        {
+          cable_id: 'bridge-u8-u7-offset-1',
+          from: { instance_id: 'sw-u8', port_id: 'eth7', face: 'front' },
+          to: { instance_id: 'sw-u7', port_id: 'eth3', face: 'front' },
+          cable_type: 'cat6a'
+        },
+        {
+          cable_id: 'bridge-u8-u7-offset-2',
+          from: { instance_id: 'sw-u8', port_id: 'eth8', face: 'front' },
+          to: { instance_id: 'sw-u7', port_id: 'eth4', face: 'front' },
+          cable_type: 'cat6a'
+        },
+        {
+          cable_id: 'duct-u8-to-ks1',
+          from: { instance_id: 'sw-u8', port_id: 'eth3', face: 'front' },
+          to: { instance_id: 'ks-01', port_id: 'rj45', face: 'front' },
+          cable_type: 'cat6a'
+        },
+        {
+          cable_id: 'duct-u7-to-ks2',
+          from: { instance_id: 'sw-u7', port_id: 'eth5', face: 'front' },
+          to: { instance_id: 'ks-02', port_id: 'rj45', face: 'front' },
+          cable_type: 'cat6a'
+        },
+        {
+          cable_id: 'cross-u7-to-pve',
+          from: { instance_id: 'sw-u7', port_id: 'eth6', face: 'front' },
+          to: { instance_id: 'pve-node-01', port_id: 'eth0', face: 'rear' },
+          cable_type: 'cat6a',
+          preferred_portal_u: 5
+        },
+        {
+          cable_id: 'pwr-pdu-to-sw7',
+          from: { instance_id: 'pdu-u1', port_id: 'outlet1' },
+          to: { instance_id: 'sw-u7', port_id: 'pwr_in', face: 'rear' },
+          cable_type: 'power-schuko-c13'
+        },
+        {
+          cable_id: 'pwr-pdu-to-sw8',
+          from: { instance_id: 'pdu-u1', port_id: 'outlet2' },
+          to: { instance_id: 'sw-u8', port_id: 'pwr_in', face: 'rear' },
+          cable_type: 'power-schuko-c13'
+        }
+      ]
+    });
+
+    const scene = evaluateRackScene(project, catalog);
+    expect(scene.cable_routes).toHaveLength(9);
+
+    for (let i = 0; i < scene.cable_routes.length; i++) {
+      const routeA = scene.cable_routes[i]!;
+      const others = scene.cable_routes.slice(0, i);
+      const minDist = computeMinSplineClearanceMm(routeA.spline_points, others);
+      expect(minDist).toBeGreaterThanOrEqual(6.0);
+    }
   });
 });
 
