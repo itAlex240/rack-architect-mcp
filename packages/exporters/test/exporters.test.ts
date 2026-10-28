@@ -54,6 +54,14 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     );
     expect(frontPatch).toBeDefined();
     expect(frontPatch!.recommended_commercial_mm).toBe(150);
+
+    // Verify all 18 3D cable splines stay strictly within rack vertical bounds [0 .. total_height_mm] (no overshoot above U8)
+    for (const route of scene.cable_routes) {
+      for (const pt of route.spline_points) {
+        expect(pt.y).toBeGreaterThanOrEqual(0);
+        expect(pt.y).toBeLessThanOrEqual(scene.geometry.total_height_mm);
+      }
+    }
   });
 
   it('generates CAD-grade synchronized 2D Elevation & Depth Cutaway SVG with PortAnchorRegistry attachment and Brush-Panel Grommet Portal', () => {

@@ -1856,14 +1856,32 @@ export function generateElevationSvg(
         ];
       } else if (fromFace === 'rear' && toFace === 'rear') {
         const sIdx = sideRearTrackIdx++;
-        const rearTrackZMm = railDepthMm - 8 + sIdx * 3.8;
+        const isSameURearJumper = fromDev.u_position === toDev.u_position;
+        const maxEndpointZ = Math.max(
+          port1.world_position.z,
+          port2.world_position.z,
+        );
+        const rearTrackZMm = isSameURearJumper
+          ? maxEndpointZ + 12 + (sIdx % 3) * 3.5
+          : railDepthMm - 8 + sIdx * 3.8;
+        const stepOutY = isSameURearJumper
+          ? roundCentis(Math.min(sideStartY, sideEndY) - 6 - (sIdx % 3) * 2.5)
+          : sideEndY;
         const trackX = worldZToSideSvgX(rearTrackZMm);
-        sidePts = [
-          { x: sideStartX, y: sideStartY },
-          { x: trackX, y: sideStartY },
-          { x: trackX, y: sideEndY },
-          { x: sideEndX, y: sideEndY },
-        ];
+        sidePts = isSameURearJumper
+          ? [
+              { x: sideStartX, y: sideStartY },
+              { x: trackX, y: sideStartY },
+              { x: trackX, y: stepOutY },
+              { x: sideEndX, y: stepOutY },
+              { x: sideEndX, y: sideEndY },
+            ]
+          : [
+              { x: sideStartX, y: sideStartY },
+              { x: trackX, y: sideStartY },
+              { x: trackX, y: sideEndY },
+              { x: sideEndX, y: sideEndY },
+            ];
       } else {
         // Cross-Face Cable passing horizontally through U6 Brush Portal in Side Cutaway
         const portalU = route?.portal_u ?? 6;

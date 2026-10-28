@@ -1,5 +1,6 @@
 import {
   type BlueprintCatalogMap,
+  type ComputedDeviceGeometry,
   type ComputedRackGeometry,
   computeRackGeometry,
   resolveCableEndpointPortGeometry,
@@ -89,8 +90,8 @@ export function computeHexagonalBundleOffset(
 /**
  * Evaluates a Centripetal Catmull-Rom Spline (`alpha = 0.5`) through `waypoints`
  * with explicit endpoint clamping (`[P_start, P_start, A_1, ...middleWaypoints, A_2, P_end, P_end]`)
- * so that `splinePoints[0]` is strictly identical to `P_start` and
- * `splinePoints[splinePoints.length - 1]` is strictly identical to `P_end`.
+ * and corner-tangent lever-arm bounding so long duct segments never overshoot
+ * past 90-degree bends while `splinePoints[0] === P_start` and `splinePoints[last] === P_end`.
  */
 export function evaluateCentripetalCatmullRomSpline(
   waypoints: readonly Vector3D[],
@@ -133,17 +134,47 @@ export function evaluateCentripetalCatmullRomSpline(
     };
   };
 
+  const clampNeighborArm = (
+    anchor: Vector3D,
+    neighbor: Vector3D,
+    maxArmMm: number
+  ): Vector3D => {
+    const dist = vec3Distance(anchor, neighbor);
+    if (dist <= maxArmMm || dist <= 1e-4) {
+      return neighbor;
+    }
+    const ratio = maxArmMm / dist;
+    return {
+      x: anchor.x + (neighbor.x - anchor.x) * ratio,
+      y: anchor.y + (neighbor.y - anchor.y) * ratio,
+      z: anchor.z + (neighbor.z - anchor.z) * ratio
+    };
+  };
+
   const splinePoints: Vector3D[] = [];
   const numSegments = uniquePoints.length - 1;
 
   for (let seg = 0; seg < numSegments; seg++) {
-    const p0 = controlPoints[seg]!;
+    const rawP0 = controlPoints[seg]!;
     const p1 = controlPoints[seg + 1]!;
     const p2 = controlPoints[seg + 2]!;
-    const p3 = controlPoints[seg + 3]!;
+    const rawP3 = controlPoints[seg + 3]!;
+
+    const spanDist = vec3Distance(p1, p2);
+    const isStartBootSpan = seg === 0;
+    const isEndBootSpan = seg === numSegments - 1;
+    const maxArm0 = isStartBootSpan
+      ? Math.min(4.0, spanDist * 0.2)
+      : Math.min(12.0, spanDist * 0.34);
+    const maxArm3 = isEndBootSpan
+      ? Math.min(4.0, spanDist * 0.2)
+      : Math.min(12.0, spanDist * 0.34);
+
+    const p0 = clampNeighborArm(p1, rawP0, maxArm0);
+    const p3 = clampNeighborArm(p2, rawP3, maxArm3);
 
     const d01 = Math.max(Math.pow(vec3Distance(p0, p1), alpha), 1e-4);
-    const d12 = Math.max(Math.pow(vec3Distance(p1, p2), alpha), 1e-4);
+    const d12 = Math.max(Math.pow( spanDist, alpha), 1e-4);
     const d23 = Math.max(Math.pow(vec3Distance(p2, p3), alpha), 1e-4);
 
     const t0 = 0;
@@ -227,8 +258,40 @@ export function isPowerCableType(cableType: string): boolean {
 }
 
 /**
- * Routes a single cable in 3D space using the 3-Case Waypoint Resolver, Hexagonal Duct Bundling,
- * and Clamped Centripetal Catmull-Rom Spline interpolation (`[P_start, P_start, A_1, ..., A_2, P_end, P_end]`).
+ * Computes a safe U-boundary horizontal cable runner Y coordinate so cables
+ * exit their port vertically by ~12mm into a horizontal comb track instead of
+ * crossing horizontally in front of neighboring sockets on the same device.
+ */
+function computeDeviceHorizontalRunnerY(
+  dev: ComputedDeviceGeometry,
+  portY: number,
+  targetY: number,
+  trackSlotIndex: number,
+  totalHeightMm: number
+): number {
+  const uBottom = (dev.u_range[0] - 1) * MM_PER_U;
+  const uTop = dev.u_range[1] * MM_PER_U;
+  const laneSpread = ((trackSlotIndex % 4) - 1.5) * 2.2;
+
+  // Prefer stepping toward targetY (up if target is above, down if target is below),
+  // unless at the very top or bottom of the rack.
+  const goUp =
+    targetY > portY + 8
+      ? uTop <= totalHeightMm - 3
+      : targetY < portY - 8
+        ? false
+        : portY - uBottom > uTop - portY;
+
+  if (goUp) {
+    return roundMm(Math.min(totalHeightMm - 4, uTop - 4.5 + laneSpread));
+  }
+  return roundMm(Math.max(4, uBottom + 4.5 + laneSpread));
+}
+
+/**
+ * Routes a single cable in 3D space using the 3-Case Waypoint Resolver,
+ * U-boundary horizontal cable runners, collision-free side ducts, and
+ * corner-stabilized Centripetal Catmull-Rom Spline interpolation.
  */
 export function routeSingleCable(
   cable: CableConnection,
@@ -271,21 +334,18 @@ export function routeSingleCable(
   const p2 = port2.world_position;
   const n2 = port2.world_normal;
 
-  const a1 = vec3Add(p1, vec3Scale(n1, DEFAULT_PLUG_BOOT_EXIT_MM));
-  const a2 = vec3Add(p2, vec3Scale(n2, DEFAULT_PLUG_BOOT_EXIT_MM));
+  const bootExitMm = DEFAULT_PLUG_BOOT_EXIT_MM;
+  const a1 = vec3Add(p1, vec3Scale(n1, bootExitMm));
+  const a2 = vec3Add(p2, vec3Scale(n2, bootExitMm));
 
   const isPower = isPowerCableType(cable.cable_type);
-  const ductX = isPower ? 28.0 : geometry.panel_width_mm - 28.0;
-  const frontDuctZ = -18.0;
-  const rearDuctZ = Math.max(
-    geometry.rail_depth_mm - 12.0,
-    port1.world_face === 'rear' ? p1.z + 12.0 : 0,
-    port2.world_face === 'rear' ? p2.z + 12.0 : 0
-  );
-
   const sameFace = port1.world_face === port2.world_face;
   const dy = Math.abs(p1.y - p2.y);
   const dx = Math.abs(p1.x - p2.x);
+  const dz = Math.abs(p1.z - p2.z);
+
+  const isSameOrAdjacentU =
+    Math.abs(fromDev.u_position - toDev.u_position) <= 1;
   const isAdjacentTopLevelFrontPatch =
     sameFace &&
     port1.world_face === 'front' &&
@@ -293,47 +353,96 @@ export function routeSingleCable(
     fromDev.parent_carrier_id === null &&
     toDev.parent_carrier_id === null;
 
-  // Case A: Short Patch Bridge between adjacent U rows (`|Y1 - Y2| <= 95mm`)
-  if (sameFace && dy <= 95.0 && (dx <= 50.0 || isAdjacentTopLevelFrontPatch)) {
+  // =========================================================================
+  // CASE A: Direct / Intra-Bay / Adjacent-U Patch Bridge
+  // =========================================================================
+  if (
+    sameFace &&
+    isSameOrAdjacentU &&
+    dy <= 95.0 &&
+    (dx <= 50.0 ||
+      fromDev.u_position === toDev.u_position ||
+      isAdjacentTopLevelFrontPatch)
+  ) {
     const patchKey = `PATCH:${port1.world_face}:${Math.min(fromDev.u_position, toDev.u_position)}`;
     const bundleIdx = ductOccupancyCounters.get(patchKey) ?? 0;
     ductOccupancyCounters.set(patchKey, bundleIdx + 1);
     const offset = computeHexagonalBundleOffset(bundleIdx);
 
     let waypoints: Vector3D[];
-    if (dx <= 35.0) {
-      // Subcase A1: Almost vertically aligned (`|X1 - X2| <= 35mm`) -> Clean direct vertical arch (`Z_peak = -22mm` on front)
-      const zPeak =
-        port1.world_face === 'front'
-          ? -22.0 - Math.min(bundleIdx, 4) * 1.5
-          : Math.max(a1.z, a2.z) + 12.0 + Math.min(bundleIdx, 4) * 1.5;
-      const midA = vec3(
-        (a1.x + a2.x) / 2 + offset.du * 0.35,
-        (a1.y + a2.y) / 2,
-        zPeak
-      );
-      waypoints = [p1, a1, midA, a2, p2];
+
+    if (port1.world_face === 'front') {
+      const zPeak = roundMm(-20.0 - Math.min(bundleIdx, 5) * 1.6);
+      if (dx <= 36.0) {
+        // Clean vertical arch between aligned ports (e.g. U7 Patch Panel <-> U8 Switch)
+        const midA = vec3(
+          roundMm((a1.x + a2.x) / 2 + offset.du * 0.25),
+          roundMm((a1.y + a2.y) / 2),
+          zPeak
+        );
+        waypoints = [p1, a1, midA, a2, p2];
+      } else {
+        const lowerU = Math.min(fromDev.u_position, toDev.u_position);
+        const yBoundary = roundMm(lowerU * MM_PER_U + ((bundleIdx % 4) - 1.5) * 2.5);
+        waypoints = [
+          p1,
+          a1,
+          vec3(p1.x, yBoundary, zPeak),
+          vec3(p2.x, yBoundary, zPeak),
+          a2,
+          p2
+        ];
+      }
     } else {
-      // Subcase A2: Horizontally offset on adjacent U -> Dedicated horizontal micro-track along the U boundary
-      const lowerU = Math.min(fromDev.u_position, toDev.u_position);
-      const yBoundary = roundMm(lowerU * MM_PER_U + (bundleIdx - 2) * 3.5);
-      const zChannel =
-        port1.world_face === 'front'
-          ? -20.0 - Math.min(bundleIdx, 6) * 1.2
-          : Math.max(a1.z, a2.z) + 10.0 + Math.min(bundleIdx, 6) * 1.2;
-      const c1 = vec3(p1.x, yBoundary, zChannel);
-      const c2 = vec3(p2.x, yBoundary, zChannel);
-      waypoints = [p1, a1, c1, c2, a2, p2];
+      // Rear Same-U or Adjacent-U Jumper (e.g. U3 UCG-Max WAN -> U3 Keystone, U1 UPS -> U2 Rear PDU, U4 PVE1 <-> U5 PVE2 Ceph)
+      const zClearPlane = roundMm(
+        Math.max(a1.z, a2.z) + 6.0 + Math.min(bundleIdx, 4) * 2.0
+      );
+
+      if (dx <= 28.0 && dz <= 15.0) {
+        // Vertically aligned rear ports at same depth (e.g. PVE-01 ETH2 <-> PVE-02 ETH2)
+        const midRear = vec3(
+          roundMm((a1.x + a2.x) / 2 + offset.du * 0.2),
+          roundMm((a1.y + a2.y) / 2),
+          zClearPlane
+        );
+        waypoints = [p1, a1, midRear, a2, p2];
+      } else if (fromDev.u_position === toDev.u_position) {
+        // Same-U Rear Sub-Module Jumper (e.g. U3 UCG-Max Z=142mm -> U3 Keystone Z=28mm):
+        // Step out behind the deeper module first at (p1.x, yRunner, zClearPlane),
+        // then move horizontally into the open keystone bay at (p2.x, yRunner, zClearPlane),
+        // then step straight forward along -Z to a2 -> p2!
+        const yRunner = computeDeviceHorizontalRunnerY(
+          fromParent ?? fromDev,
+          p1.y,
+          p2.y,
+          bundleIdx,
+          geometry.total_height_mm
+        );
+        waypoints = [
+          p1,
+          a1,
+          vec3(p1.x, yRunner, zClearPlane),
+          vec3(p2.x, yRunner, zClearPlane),
+          vec3(p2.x, p2.y, zClearPlane),
+          a2,
+          p2
+        ];
+      } else {
+        // Adjacent-U Rear Jumper with different Z depths (e.g. U1 UPS Z=190mm -> U2 Rear PDU Z=240mm):
+        // Reach zClearPlane (Z=264mm) at p1.y BEFORE rising to p2.y so the cable never clips the bottom of U2 PDU!
+        waypoints = [
+          p1,
+          a1,
+          vec3(p1.x, p1.y, zClearPlane),
+          vec3(p2.x, p2.y, zClearPlane),
+          a2,
+          p2
+        ];
+      }
     }
 
-    const clampedInput: Vector3D[] = [
-      p1,
-      p1,
-      ...waypoints.slice(1, -1),
-      p2,
-      p2
-    ];
-    const splinePoints = evaluateCentripetalCatmullRomSpline(clampedInput, 32);
+    const splinePoints = evaluateCentripetalCatmullRomSpline(waypoints, 32);
     const arcLength = computeSplineArcLengthMm(splinePoints);
     const { requiredLengthMm, recommendedCommercialMm } =
       computeCommercialCableLength(arcLength);
@@ -356,7 +465,9 @@ export function routeSingleCable(
     };
   }
 
-  // Case B: Same-Face Duct Route (Front->Front stays Z <= 0; Rear->Rear stays Z > 0 in rear channel)
+  // =========================================================================
+  // CASE B: Same-Face Vertical Duct Route (`front -> front` or `rear -> rear`)
+  // =========================================================================
   if (sameFace) {
     const ductId: CableDuctId =
       port1.world_face === 'front'
@@ -371,18 +482,97 @@ export function routeSingleCable(
     ductOccupancyCounters.set(ductId, bundleIdx + 1);
     const offset = computeHexagonalBundleOffset(bundleIdx);
 
-    const baseDuctZ = port1.world_face === 'front' ? frontDuctZ : rearDuctZ;
-    const safeDuctZ =
-      port1.world_face === 'front'
-        ? Math.min(-6.0, baseDuctZ + offset.dv * 0.5)
-        : Math.max(Math.min(p1.z, p2.z) + 6.0, baseDuctZ + offset.dv * 0.5);
+    // Place vertical cable ducts in the side channel near the left/right rails,
+    // staggered neatly by bundleIdx so parallel cables never overlap.
+    const sideMarginMm = 14.0 + (bundleIdx % 5) * 3.2;
+    const ductX = roundMm(
+      isPower ? sideMarginMm : geometry.panel_width_mm - sideMarginMm
+    );
 
-    const d1 = vec3(ductX + offset.du, p1.y, safeDuctZ);
-    const d2 = vec3(ductX + offset.du, p2.y, safeDuctZ);
+    const yRunner1 = computeDeviceHorizontalRunnerY(
+      fromParent ?? fromDev,
+      p1.y,
+      p2.y,
+      bundleIdx,
+      geometry.total_height_mm
+    );
+    const yRunner2 = computeDeviceHorizontalRunnerY(
+      toParent ?? toDev,
+      p2.y,
+      p1.y,
+      bundleIdx,
+      geometry.total_height_mm
+    );
 
-    const waypoints: Vector3D[] = [p1, a1, d1, d2, a2, p2];
-    const clampedInput: Vector3D[] = [p1, p1, a1, d1, d2, a2, p2, p2];
-    const splinePoints = evaluateCentripetalCatmullRomSpline(clampedInput, 32);
+    let waypoints: Vector3D[];
+
+    if (port1.world_face === 'front') {
+      const zFrontDuct = roundMm(-18.0 - (bundleIdx % 4) * 2.0);
+      waypoints = [
+        p1,
+        a1,
+        vec3(p1.x, yRunner1, zFrontDuct),
+        vec3(ductX, yRunner1, zFrontDuct),
+        vec3(ductX, yRunner2, zFrontDuct),
+        vec3(p2.x, yRunner2, zFrontDuct),
+        a2,
+        p2
+      ];
+    } else {
+      // Rear Duct Route:
+      // Determine maximum rear Z of intermediate front-mounted devices between U1 and U2
+      // so the vertical rear duct plane stays behind all front-mounted chassis (e.g. Z = 202..214mm),
+      // while depth transitions into shallower U bays (like U7 Patch Panel at Z=30mm or U8 Switch at Z=99mm)
+      // happen strictly at the target U's height!
+      const minU = Math.min(fromDev.u_position, toDev.u_position);
+      const maxU = Math.max(fromDev.u_position, toDev.u_position);
+
+      let maxFrontDeviceZInSpan = 185.0;
+      for (const dev of geometry.devices) {
+        if (
+          dev.face === 'front' &&
+          dev.u_range[1] >= minU &&
+          dev.u_range[0] <= maxU
+        ) {
+          maxFrontDeviceZInSpan = Math.max(
+            maxFrontDeviceZInSpan,
+            dev.chassis_box.max.z
+          );
+        }
+      }
+
+      const zRearVerticalDuct = roundMm(
+        Math.min(
+          geometry.rail_depth_mm - 8.0,
+          Math.max(maxFrontDeviceZInSpan + 14.0, 200.0) + (bundleIdx % 4) * 2.4
+        )
+      );
+
+      const zPlane1 = roundMm(Math.max(a1.z, (fromParent ?? fromDev).chassis_box.max.z + 12.0));
+      const zPlane2 = roundMm(Math.max(a2.z, (toParent ?? toDev).chassis_box.max.z + 12.0));
+
+      waypoints = [
+        p1,
+        a1,
+        // 1. Step vertically to U-boundary runner at zPlane1 (clears neighboring sockets on fromDev!)
+        vec3(p1.x, yRunner1, zPlane1),
+        // 2. Run horizontally along U-boundary runner to side duct X
+        vec3(ductX, yRunner1, zPlane1),
+        // 3. Transition along side wall at yRunner1 to the main vertical rear duct Z
+        vec3(ductX, yRunner1, zRearVerticalDuct),
+        // 4. Pure vertical run in the rear side duct to target U's runner height yRunner2
+        vec3(ductX, yRunner2, zRearVerticalDuct),
+        // 5. Transition along side wall at yRunner2 into target U's depth plane zPlane2
+        vec3(ductX, yRunner2, zPlane2),
+        // 6. Run horizontally behind target device to p2.x
+        vec3(p2.x, yRunner2, zPlane2),
+        // 7. Step vertically to target port height and plug straight in
+        a2,
+        p2
+      ];
+    }
+
+    const splinePoints = evaluateCentripetalCatmullRomSpline(waypoints, 32);
     const arcLength = computeSplineArcLengthMm(splinePoints);
     const { requiredLengthMm, recommendedCommercialMm } =
       computeCommercialCableLength(arcLength);
@@ -405,9 +595,9 @@ export function routeSingleCable(
     };
   }
 
-  // Case C: Cross-Face Portal Route (front <-> rear via Brush-Panel / Portal U)
-  // Runs cleanly in side duct to Portal U, passes straight along Z at X = ductX (28mm or W_panel - 28mm)
-  // through the brush panel without cutting diagonally through middle equipment!
+  // =========================================================================
+  // CASE C: Cross-Face Portal Route (`front <-> rear` via Brush-Panel / Open U)
+  // =========================================================================
   const frontDuctId: CableDuctId = isPower ? 'FL' : 'FR';
   const rearDuctId: CableDuctId = isPower ? 'RL' : 'RR';
   const startDuctId = port1.world_face === 'front' ? frontDuctId : rearDuctId;
@@ -418,7 +608,6 @@ export function routeSingleCable(
   ductOccupancyCounters.set(crossKey, bundleIdx + 1);
   const offset = computeHexagonalBundleOffset(bundleIdx);
 
-  // Prefer brush-panel U if mounted, otherwise nearest available portal U
   const brushPanelDevs = geometry.devices.filter(
     (d) =>
       d.blueprint.category === 'brush-panel' ||
@@ -448,21 +637,46 @@ export function routeSingleCable(
       cable.preferred_portal_u ?? Math.max(1, Math.round(targetMeanU));
   }
 
-  const yPortal = roundMm((chosenPortalU - 0.5) * MM_PER_U + offset.dv * 0.5);
-  const startDuctZ =
-    port1.world_face === 'front'
-      ? frontDuctZ
-      : Math.max(geometry.rail_depth_mm - 15.0, p1.z + 10.0);
-  const endDuctZ =
-    port2.world_face === 'front'
-      ? frontDuctZ
-      : Math.max(geometry.rail_depth_mm - 15.0, p2.z + 10.0);
+  // Pass through the open bristle slot of the brush panel (inset 42mm from panel edge so it passes
+  // cleanly through the black brush strip rather than the metal mounting ear!)
+  const portalX = roundMm(
+    isPower
+      ? 42.0 + bundleIdx * 4.5
+      : geometry.panel_width_mm - 42.0 - bundleIdx * 4.5
+  );
+  const yPortal = roundMm((chosenPortalU - 0.5) * MM_PER_U + offset.dv * 0.35);
 
-  const portalX = roundMm(ductX + offset.du * 0.5);
-  const dStartEntry = vec3(portalX, p1.y, startDuctZ);
+  const zFrontDuct = roundMm(-18.0 - (bundleIdx % 4) * 2.0);
+  const zRearDuct = roundMm(
+    Math.min(geometry.rail_depth_mm - 12.0, 198.0 + (bundleIdx % 4) * 2.5)
+  );
+
+  const yRunner1 = computeDeviceHorizontalRunnerY(
+    fromParent ?? fromDev,
+    p1.y,
+    yPortal,
+    bundleIdx,
+    geometry.total_height_mm
+  );
+  const yRunner2 = computeDeviceHorizontalRunnerY(
+    toParent ?? toDev,
+    p2.y,
+    yPortal,
+    bundleIdx,
+    geometry.total_height_mm
+  );
+
+  const startDuctZ = port1.world_face === 'front' ? zFrontDuct : zRearDuct;
+  const endDuctZ = port2.world_face === 'front' ? zFrontDuct : zRearDuct;
+  const endZPlane =
+    port2.world_face === 'front'
+      ? zFrontDuct
+      : roundMm(Math.max(a2.z, (toParent ?? toDev).chassis_box.max.z + 12.0));
+
+  const dStartEntry = vec3(portalX, yRunner1, startDuctZ);
   const dPortalStart = vec3(portalX, yPortal, startDuctZ);
   const dPortalEnd = vec3(portalX, yPortal, endDuctZ);
-  const dEndExit = vec3(portalX, p2.y, endDuctZ);
+  const dEndExit = vec3(portalX, yRunner2, endZPlane);
 
   const waypoints: Vector3D[] = [
     p1,
@@ -474,20 +688,8 @@ export function routeSingleCable(
     a2,
     p2
   ];
-  const clampedInput: Vector3D[] = [
-    p1,
-    p1,
-    a1,
-    dStartEntry,
-    dPortalStart,
-    dPortalEnd,
-    dEndExit,
-    a2,
-    p2,
-    p2
-  ];
 
-  const splinePoints = evaluateCentripetalCatmullRomSpline(clampedInput, 32);
+  const splinePoints = evaluateCentripetalCatmullRomSpline(waypoints, 32);
   const arcLength = computeSplineArcLengthMm(splinePoints);
   const { requiredLengthMm, recommendedCommercialMm } =
     computeCommercialCableLength(arcLength);

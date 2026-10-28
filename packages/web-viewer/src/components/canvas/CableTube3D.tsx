@@ -81,10 +81,17 @@ export function CableTube3D({
       );
 
       const pStart = vectors[0]!;
-      const pNext = vectors[Math.min(2, vectors.length - 1)]!;
-      const dirStart = new THREE.Vector3()
-        .subVectors(pNext, pStart)
-        .normalize();
+      const wp = route.waypoints;
+      const dirStart =
+        wp.length >= 2
+          ? new THREE.Vector3(
+              wp[1]!.x - wp[0]!.x,
+              wp[1]!.y - wp[0]!.y,
+              wp[1]!.z - wp[0]!.z,
+            ).normalize()
+          : new THREE.Vector3()
+              .subVectors(vectors[Math.min(1, vectors.length - 1)]!, pStart)
+              .normalize();
       if (dirStart.lengthSq() < 1e-6) {
         dirStart.set(0, 0, -1);
       }
@@ -95,8 +102,16 @@ export function CableTube3D({
       const posStart = pStart.clone().addScaledVector(dirStart, 4.5);
 
       const pEnd = vectors[vectors.length - 1]!;
-      const pPrev = vectors[Math.max(0, vectors.length - 3)]!;
-      const dirEnd = new THREE.Vector3().subVectors(pPrev, pEnd).normalize();
+      const dirEnd =
+        wp.length >= 2
+          ? new THREE.Vector3(
+              wp[wp.length - 2]!.x - wp[wp.length - 1]!.x,
+              wp[wp.length - 2]!.y - wp[wp.length - 1]!.y,
+              wp[wp.length - 2]!.z - wp[wp.length - 1]!.z,
+            ).normalize()
+          : new THREE.Vector3()
+              .subVectors(vectors[Math.max(0, vectors.length - 2)]!, pEnd)
+              .normalize();
       if (dirEnd.lengthSq() < 1e-6) {
         dirEnd.set(0, 0, -1);
       }
@@ -113,7 +128,13 @@ export function CableTube3D({
         endBootPos: [posEnd.x, posEnd.y, posEnd.z] as const,
         endBootQuat: qEnd,
       };
-    }, [endOffsetZ, route.spline_points, startOffsetZ, tubeRadiusMm]);
+    }, [
+      endOffsetZ,
+      route.spline_points,
+      route.waypoints,
+      startOffsetZ,
+      tubeRadiusMm,
+    ]);
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();

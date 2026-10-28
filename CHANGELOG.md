@@ -5,6 +5,17 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-10-28
+
+### Fixed & Improved
+- **Physical 3D Cable Routing & Open 3D-Printed Carrier Trays (`@rack-mcp/core-domain` & `@rack-mcp/web-viewer`):**
+  - Eliminated Catmull-Rom tangent overshoot on long vertical/horizontal duct segments (`clampNeighborArm` in [`catmull-rom-router.ts`](file:///home/alexb/projects/rack-designer/packages/core-domain/src/routing/catmull-rom-router.ts)), preventing cables from bowing above `U8` (`sw-u8`) or outside the rack footprint.
+  - Added U-boundary horizontal cable comb runners (`computeDeviceHorizontalRunnerY`) and per-U depth-plane transitions (`zPlane1` / `zRearVerticalDuct` / `zPlane2`) so rear cables step out cleanly behind their devices before entering the side ducts and never clip diagonally through `carrier-u3`/`u4`/`u5`, `pdu-u2-rear`, or neighboring sockets.
+  - Rendered 3D-printed modular carriers (`category === 'modular-carrier'`) in [`MountedDevice3D.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/canvas/MountedDevice3D.tsx) as open L-shaped PETG trays (`3.2mm` bottom support floor + `3.5mm` side gussets + `4.2mm` slotted front bezel frame) instead of opaque solid boxes, making sub-modules (`ucg-max`, `pve-node-01`/`02`), Keystone couplers, and rear cables 100% visible in 3D without needing X-Ray mode.
+  - Aligned 3D cable strain-relief boots in [`CableTube3D.tsx`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/components/canvas/CableTube3D.tsx) strictly along the port normal (`waypoints[1] - waypoints[0]`).
+- **2D Side-Profile Depth Cutaway Cable Harness (`@rack-mcp/web-viewer` & `@rack-mcp/exporters`):**
+  - Upgraded [`renderClientSideElevationSvg`](file:///home/alexb/projects/rack-designer/packages/web-viewer/src/state/standalone-homelab.ts) and [`generateElevationSvg`](file:///home/alexb/projects/rack-designer/packages/exporters/src/elevation-svg.ts) so all 18 cables are rendered in the **Side-Profile Depth Cutaway (`Z-Y` plane)** alongside L-shaped carrier trays, plug clearance boxes, and U6 Brush-Panel Portal grommets.
+
 ## [0.3.0] - 2026-10-28
 
 ### Changed & Improved

@@ -5,6 +5,7 @@ import {
   AppDashboard,
   computeDeviceExplodeOffsetZMm,
   evaluateStandaloneScene,
+  renderClientSideElevationSvg,
 } from '../src/index.js';
 
 afterEach(() => {
@@ -12,12 +13,19 @@ afterEach(() => {
 });
 
 describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', () => {
-  it('evaluates the standalone 8U 10-Inch Homelab reference scene with 18 devices and 18 clamped cable routes', () => {
+  it('evaluates the standalone 8U 10-Inch Homelab reference scene with 18 devices, 18 clamped cable routes, and all 18 Side-Profile Cutaway SVG cables', () => {
     const scene = evaluateStandaloneScene();
     expect(scene.validation.is_valid).toBe(true);
     expect(scene.validation.error_count).toBe(0);
     expect(scene.geometry.devices.length).toBe(18);
     expect(scene.cable_routes.length).toBe(18);
+
+    // Verify client-side 2D Elevation SVG renders all 18 cables in the Side-Profile Depth Cutaway
+    const clientElevationSvg = renderClientSideElevationSvg(scene);
+    const sideCableMatches = [
+      ...clientElevationSvg.matchAll(/data-cable-view="side"/g),
+    ];
+    expect(sideCableMatches.length).toBe(18);
 
     const pdu = scene.geometry.devices.find(
       (d) => d.instance_id === 'pdu-u2-rear',

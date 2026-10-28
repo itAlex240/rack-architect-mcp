@@ -81,25 +81,158 @@ export function MountedDevice3D({
     onSelectDevice(device.instance_id);
   };
 
+  const isModularCarrier = device.blueprint.category === 'modular-carrier';
+  const sortedSlots = isModularCarrier
+    ? [...device.slots].sort(
+        (a, b) => a.world_bounds.min.x - b.world_bounds.min.x,
+      )
+    : [];
+  const carrierFaceZ =
+    (device.face === 'front' ? box.min.z + 2.1 : box.max.z - 2.1) + offsetZ;
+
+  const carrierFrontPanels: Array<{
+    readonly key: string;
+    readonly cx: number;
+    readonly cy: number;
+    readonly w: number;
+    readonly h: number;
+  }> = [];
+
+  if (isModularCarrier) {
+    let cursorX = box.min.x;
+    for (const slot of sortedSlots) {
+      const sMinX = Math.max(box.min.x, slot.world_bounds.min.x);
+      const sMaxX = Math.min(box.max.x, slot.world_bounds.max.x);
+      const sMinY = Math.max(box.min.y, slot.world_bounds.min.y);
+      const sMaxY = Math.min(box.max.y, slot.world_bounds.max.y);
+
+      if (sMinX - cursorX > 0.5) {
+        const pw = sMinX - cursorX;
+        carrierFrontPanels.push({
+          key: `pillar-${slot.slot_definition.slot_id}`,
+          cx: cursorX + pw / 2,
+          cy,
+          w: pw,
+          h,
+        });
+      }
+      const slotW = Math.max(1, sMaxX - sMinX);
+      if (sMinY - box.min.y > 0.5) {
+        const bh = sMinY - box.min.y;
+        carrierFrontPanels.push({
+          key: `below-${slot.slot_definition.slot_id}`,
+          cx: sMinX + slotW / 2,
+          cy: box.min.y + bh / 2,
+          w: slotW,
+          h: bh,
+        });
+      }
+      if (box.max.y - sMaxY > 0.5) {
+        const th = box.max.y - sMaxY;
+        carrierFrontPanels.push({
+          key: `above-${slot.slot_definition.slot_id}`,
+          cx: sMinX + slotW / 2,
+          cy: sMaxY + th / 2,
+          w: slotW,
+          h: th,
+        });
+      }
+      cursorX = Math.max(cursorX, sMaxX);
+    }
+    if (box.max.x - cursorX > 0.5) {
+      const pw = box.max.x - cursorX;
+      carrierFrontPanels.push({
+        key: 'pillar-right-end',
+        cx: cursorX + pw / 2,
+        cy,
+        w: pw,
+        h,
+      });
+    }
+  }
+
   return (
     <group>
-      {/* Main Device Chassis */}
-      <mesh position={[cx, cy, cz]} onClick={handleClick}>
-        <boxGeometry args={[w, h, d]} />
-        <meshStandardMaterial
-          color={chassisColor}
-          metalness={matParams.metalness}
-          roughness={matParams.roughness}
-          emissive={isSelected ? '#3B82F6' : '#000000'}
-          emissiveIntensity={isSelected ? 0.18 : 0}
-          transparent={xrayMode}
-          opacity={xrayMode ? 0.16 : 1.0}
-          depthWrite={!xrayMode}
-        />
-      </mesh>
+      {/* Main Device Chassis (or Open L-Shaped 3D-Printed Tray for Modular Carriers) */}
+      {isModularCarrier ? (
+        <group onClick={handleClick}>
+          {/* 3.2mm Bottom Support Tray Floor */}
+          <mesh position={[cx, box.min.y + 1.6, cz]}>
+            <boxGeometry args={[w, 3.2, d]} />
+            <meshStandardMaterial
+              color={chassisColor}
+              metalness={matParams.metalness}
+              roughness={matParams.roughness}
+              emissive={isSelected ? '#3B82F6' : '#000000'}
+              emissiveIntensity={isSelected ? 0.18 : 0}
+              transparent={xrayMode}
+              opacity={xrayMode ? 0.16 : 1.0}
+              depthWrite={!xrayMode}
+            />
+          </mesh>
+          {/* Left & Right 3.5mm Structural Side Gussets */}
+          <mesh position={[box.min.x + 1.75, box.min.y + h * 0.28, cz]}>
+            <boxGeometry args={[3.5, h * 0.56, d]} />
+            <meshStandardMaterial
+              color={chassisColor}
+              metalness={matParams.metalness}
+              roughness={matParams.roughness}
+              emissive={isSelected ? '#3B82F6' : '#000000'}
+              emissiveIntensity={isSelected ? 0.18 : 0}
+              transparent={xrayMode}
+              opacity={xrayMode ? 0.16 : 1.0}
+              depthWrite={!xrayMode}
+            />
+          </mesh>
+          <mesh position={[box.max.x - 1.75, box.min.y + h * 0.28, cz]}>
+            <boxGeometry args={[3.5, h * 0.56, d]} />
+            <meshStandardMaterial
+              color={chassisColor}
+              metalness={matParams.metalness}
+              roughness={matParams.roughness}
+              emissive={isSelected ? '#3B82F6' : '#000000'}
+              emissiveIntensity={isSelected ? 0.18 : 0}
+              transparent={xrayMode}
+              opacity={xrayMode ? 0.16 : 1.0}
+              depthWrite={!xrayMode}
+            />
+          </mesh>
+          {/* 4.2mm Front Faceplate Frame around Slot Cutouts */}
+          {carrierFrontPanels.map((fp) => (
+            <mesh key={fp.key} position={[fp.cx, fp.cy, carrierFaceZ]}>
+              <boxGeometry args={[fp.w, fp.h, 4.2]} />
+              <meshStandardMaterial
+                color={chassisColor}
+                metalness={matParams.metalness}
+                roughness={matParams.roughness}
+                emissive={isSelected ? '#3B82F6' : '#000000'}
+                emissiveIntensity={isSelected ? 0.18 : 0}
+                transparent={xrayMode}
+                opacity={xrayMode ? 0.16 : 1.0}
+                depthWrite={!xrayMode}
+              />
+            </mesh>
+          ))}
+        </group>
+      ) : (
+        <mesh position={[cx, cy, cz]} onClick={handleClick}>
+          <boxGeometry args={[w, h, d]} />
+          <meshStandardMaterial
+            color={chassisColor}
+            metalness={matParams.metalness}
+            roughness={matParams.roughness}
+            emissive={isSelected ? '#3B82F6' : '#000000'}
+            emissiveIntensity={isSelected ? 0.18 : 0}
+            transparent={xrayMode}
+            opacity={xrayMode ? 0.16 : 1.0}
+            depthWrite={!xrayMode}
+          />
+        </mesh>
+      )}
 
       {/* Recessed Front Faceplate Bezel & Power Status LED */}
-      {device.blueprint.category !== 'keystone-module' &&
+      {!isModularCarrier &&
+        device.blueprint.category !== 'keystone-module' &&
         device.blueprint.category !== 'brush-panel' && (
           <>
             <mesh
