@@ -14,7 +14,7 @@
 5. [Datenmodelle & Strikte Zod-Schemas (`rack.yaml` & Blueprints)](#5-datenmodelle--strikte-zod-schemas-rackyaml--blueprints)
 6. [Die 5-stufige Deterministische Validierungs-Engine (`validateRackProject`)](#6-die-5-stufige-deterministische-validierungs-engine-validaterackproject)
 7. [Die 3D-Kabel-Routing- & Längenberechnungs-Engine (`catmull-rom-router.ts`)](#7-die-3d-kabel-routing---längenberechnungs-engine-catmull-rom-routerts)
-8. [Der Hardware-Katalog (`@rack-mcp/hardware-catalog`) — Alle 20 Blueprints](#8-der-hardware-katalog-rack-mcphardware-catalog--alle-20-blueprints)
+8. [Der Hardware-Katalog (`@rack-mcp/hardware-catalog`) — Alle 30 Blueprints](#8-der-hardware-katalog-rack-mcphardware-catalog--alle-30-blueprints)
 9. [Der MCP-Server, State-Manager & Sidecar-Server (`@rack-mcp/mcp-server`)](#9-der-mcp-server-state-manager--sidecar-server-rack-mcpmcp-server)
 10. [Das Dashboard & 3D/2D Web-Viewer UI — Jede Schaltfläche im Detail (`@rack-mcp/web-viewer`)](#10-das-dashboard--3d2d-web-viewer-ui--jede-schaltfläche-im-detail-rack-mcpweb-viewer)
 11. [Die 4 CAD- & Dokumentations-Exporter (`@rack-mcp/exporters`)](#11-die-4-cad---dokumentations-exporter-rack-mcpexporters)
@@ -105,7 +105,7 @@ flowchart TD
 | Paket | Pfad | Erlaubte interne Abhängigkeiten | Hauptaufgabe |
 | :--- | :--- | :--- | :--- |
 | **`@rack-mcp/core-domain`** | [`packages/core-domain`](../packages/core-domain/src/index.ts) | **KEINE** (`"types": []` in `tsconfig.json`) | Reine Mathematik, Konstanten, Zod-Schemas, Port-Matrix-Expander, 3D-Koordinaten-Transformer, 5-Stufen-Validierungs-Engine, 3D-Catmull-Rom-Kabelrouter. Läuft identisch in Node.js und im Browser. |
-| **`@rack-mcp/hardware-catalog`** | [`packages/hardware-catalog`](../packages/hardware-catalog/src/index.ts) | `@rack-mcp/core-domain` | 20 kuratierte YAML-Hardware-Blueprints (`catalog/10inch`, `catalog/19inch`, `catalog/carriers`, `catalog/sub-modules`), eingebettetes TS-Bundle (`embedded-catalog.ts`), Geometrie-Integritäts-Validator und Such-/Filter-Registry (`CatalogRegistry`). |
+| **`@rack-mcp/hardware-catalog`** | [`packages/hardware-catalog`](../packages/hardware-catalog/src/index.ts) | `@rack-mcp/core-domain` | 30 kuratierte YAML-Hardware-Blueprints (`catalog/10inch`, `catalog/19inch`, `catalog/carriers`, `catalog/sub-modules`), eingebettetes TS-Bundle (`embedded-catalog.ts`), Geometrie-Integritäts-Validator und Such-/Filter-Registry (`CatalogRegistry`). |
 | **`@rack-mcp/exporters`** | [`packages/exporters`](../packages/exporters/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` | Deterministische Generatoren für `elevation.svg` (2D-Ansichten + Z-Y-Tiefenschnitt), `wiring-schematic.svg` (Strom-DAG + orthogonales Pin-zu-Pin-Schaltbild), `BOM.md` (Stückliste + 3D-Druck-Queue + Patch-Checkliste) und `rack-scene.glb` (binäres 3D glTF 2.0 Modell). |
 | **`@rack-mcp/mcp-server`** | [`packages/mcp-server`](../packages/mcp-server/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters` | `ProjectStateManager` (Undo/Redo, File-Watcher, Atomic-Save), `RackMcpToolHandlers` (11 Tools), `createRackMcpServer` (MCP über `stdio`, 4 Resources, 2 Prompts), `generateAsciiElevation` und `startRackSidecarServer` (`HTTP + WebSocket`). |
 | **`@rack-mcp/web-viewer`** | [`packages/web-viewer`](../packages/web-viewer/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` | Interaktives React 19 + Three.js (`@react-three/fiber`) CAD-Dashboard mit Dual-Mode (`sidecar-live` per WebSocket oder `standalone-demo` direkt im Browser) und Client-Side WebMCP (`document.modelContext`). |
@@ -373,7 +373,7 @@ Laufen mehrere Kabel durch denselben Schacht, erhält das $k$-te Kabel ($k = 0, 
 
 ---
 
-## 8. Der Hardware-Katalog (`@rack-mcp/hardware-catalog`) — Alle 20 Blueprints
+## 8. Der Hardware-Katalog (`@rack-mcp/hardware-catalog`) — Alle 30 Blueprints
 
 Der Katalog liegt sowohl als Einzeldateien unter [`packages/hardware-catalog/catalog/`](../packages/hardware-catalog/catalog/) als auch als vorab eingebettetes TypeScript-Array in [`embedded-catalog.ts`](../packages/hardware-catalog/src/embedded-catalog.ts) vor. Das Skript `pnpm validate:catalog` ([`validate-cli.ts`](../packages/hardware-catalog/src/validate-cli.ts)) stellt sicher, dass alle YAML-Dateien auf der Festplatte und das eingebettete Bundle zu 100 % synchron sind, keine Ports außerhalb der Gehäusemaße liegen und der Mindestabstand zwischen zwei Ports auf derselben Seite `MIN_PORT_CENTER_DISTANCE_MM = 8.0 mm` beträgt.
 
@@ -386,7 +386,10 @@ Der Katalog liegt sowohl als Einzeldateien unter [`packages/hardware-catalog/cat
 | `generic-10inch-blank-panel-1u` | Generic 10-Inch 1U Steel Blanking Panel | `blank-panel` | `1U` | `222 × 44 × 10` | Passiv (`0W`) | Keine Ports (versiegelt die Front). |
 | `generic-10inch-brush-panel-1u` | Generic 10-Inch 1U Cable Brush Strip Panel | `brush-panel` | `1U` | `222 × 44 × 15` | Passiv (`0W`) | `has_cable_pass_through: true` (dient als Front-Rear-Kabelportal). |
 | `generic-10inch-shelf-1u` | Generic 10-Inch 1U Vented Cantilever Shelf | `shelf` | `1U` | `254 × 44 × 180` | Passiv (`0W`) | 1 Slot `shelf-tray-1` (`open-shelf-area`, `218 × 40 × 175 mm`). |
+| `mikrotik-crs310-8g-plus-2s-plus-in` | MikroTik CRS310-8G+2S+IN (8x 2.5G + 2x 10G SFP+ Switch) | `switch` | `1U` | `200 × 44 × 165` | Eigen: `21W` | Front: `eth1..8` (2.5G `rj45`), `sfp_plus1..2` (10G SFP+); Rear: `ac_in` (`iec-c14`). |
 | `mikrotik-rb5009upr-s-in` | MikroTik RB5009UPr+S+IN (PoE-In/Out Router) | `router` | `1U` | `220 × 44 × 125` | Eigen: `20W`, PoE-Budget: `130W` | Front: `sfp_plus1`, `eth1` (2.5G PoE), `eth2..8` (1G PoE), `usb1`; Rear: `pwr_in` (`iec-c14`). |
+| `synology-ds224-plus-10inch-2u` | Synology DiskStation DS224+ 2-Bay NAS (10-Inch 2U Tray) | `nas` | `2U` | `222 × 88 × 232.7` | Eigen: `60W` | Front: `usb_front`; Rear: `lan1`, `lan2` (1G `rj45`), `usb_rear`, `dc_in` (`dc-5525`). |
+| `tp-link-tl-sg2210mp` | TP-Link Omada JetStream TL-SG2210MP (8-Port PoE+ 150W) | `switch` | `1U` | `209 × 44 × 126` | Eigen: `18W`, PoE-Budget: `150W` | Front: `eth1..8` (PoE+ `at`), `sfp9..10` (1G SFP); Rear: `ac_in` (`iec-c14`). |
 | `ubiquiti-usw-flex-2-5g-8-poe` | Ubiquiti UniFi Flex 2.5G PoE (`USW-Flex-2.5G-8-PoE`) | `switch` | `1U` | `212.9 × 32.5 × 99.4` | Eigen: `14W`, PoE-Budget: `196W` | Front: `eth1..8` (2.5G PoE++ `bt-type3`), `sfp1` (10G), `eth9` (10G PoE-In); Rear: `pwr_in` (`iec-c14`). |
 | `ubiquiti-usw-lite-8-poe` | Ubiquiti UniFi Switch Lite 8 PoE (`USW-Lite-8-PoE`) | `switch` | `1U` | `200 × 31 × 99.6` | Eigen: `8W`, PoE-Budget: `52W` | Front: `eth1..4` (PoE+ `at`), `eth5..8` (GbE); Rear: `dc_in` (`dc-5525`). |
 
@@ -394,7 +397,11 @@ Der Katalog liegt sowohl als Einzeldateien unter [`packages/hardware-catalog/cat
 | Slug | Hersteller & Modell | Kategorie | HE (`U`) | Maße `B × H × T` (`mm`) | Leistung / Kapazität | Ports |
 | :--- | :--- | :--- | :---: | :---: | :--- | :--- |
 | `apc-smart-ups-1500-2u` | APC Smart-UPS 1500VA LCD RM 2U (`SMT1500RMI2UC`) | `ups` | `2U` | `432 × 86 × 477` (`24 kg`) | Eigen: `45W`, Kapazität: `1000W` | Rear: `iec_out1..8` (`iec-c13`), `ac_in` (`iec-c14`), `smartconnect_eth` (`rj45`). Hat OLED. |
+| `generic-19inch-brush-panel-1u` | Generic 19-Inch 1U High-Density Brush Strip Panel | `brush-panel` | `1U` | `482.6 × 44 × 18` | Passiv (`0W`) | `has_cable_pass_through: true` (19-Zoll Front-Rear-Kabelportal). |
+| `generic-19inch-patch-panel-24port-cat6a` | Generic 19-Inch 1U 24-Port Cat6A Shielded Patch Panel | `patch-panel` | `1U` | `482.6 × 44 × 35` | Passiv (`0W`) | `p1..p24` (`rj45` Passthrough-Coupler, vorne & hinten steckbar). |
 | `ubiquiti-udm-pro` | Ubiquiti UniFi Dream Machine Pro (`UDM-Pro`) | `router` | `1U` | `442.4 × 43.7 × 285.6` | Eigen: `33W` | Front: `eth1..8` (GbE), `wan1` (2.5G), `sfp_wan2`, `sfp_lan11`; Rear: `ac_in` (`iec-c14`). Hat OLED. |
+| `ubiquiti-unas-pro-2u` | Ubiquiti UniFi UNAS Pro (7-Bay 2U 10G SFP+ NAS) | `nas` | `2U` | `442 × 87.4 × 325` | Eigen: `160W` | Rear: `eth1` (2.5G `rj45`), `sfp_plus1` (10G SFP+), `ac_in` (`iec-c14`). Hat OLED. |
+| `ubiquiti-usw-aggregation` | Ubiquiti UniFi Switch Aggregation (`USW-Aggregation`) | `switch` | `1U` | `442.4 × 43.7 × 120` | Eigen: `30W` | Front: `sfp_plus1..8` (8× 10G SFP+); Rear: `ac_in` (`iec-c14`). Hat OLED. |
 | `ubiquiti-usw-pro-max-24-poe` | Ubiquiti UniFi Switch Pro Max 24 PoE | `switch` | `1U` | `442.4 × 43.7 × 325` | Eigen: `50W`, PoE-Budget: `400W` | Front: `eth1..24` (PoE++ `bt-type3`), `sfp1`, `sfp2`; Rear: `ac_in` (`iec-c14`). Hat OLED. |
 
 ### 8.3 3D-gedruckte Modular-Carrier (`catalog/carriers/*.yaml`)
@@ -402,12 +409,15 @@ Der Katalog liegt sowohl als Einzeldateien unter [`packages/hardware-catalog/cat
 | :--- | :--- | :---: | :--- | :--- |
 | `3dprint-10inch-dual-rpi5-plus-4keystone` | 10-Inch 1U Carrier for 2x Raspberry Pi 5 + 4x Keystone | `rackmount-10` | `135 g` PETG/ABS | `rpi-bay-1` (`sbc-rpi5`), `rpi-bay-2` (`sbc-rpi5`), `keystone-1..4` (`standard-keystone`) |
 | `3dprint-10inch-lenovo-tiny-plus-2keystone` | 10-Inch 1U Carrier for Lenovo Tiny + 2x Keystone | `rackmount-10` | `165 g` PETG/ABS | `left-mini-pc-bay` (`mini-pc-1liter`), `keystone-1..2` (`standard-keystone`) |
+| `3dprint-10inch-rpi5-jetkvm-2keystone` | 10-Inch 1U Carrier for 1x Raspberry Pi 5 + 1x JetKVM + 2x Keystone | `rackmount-10` | `145 g` PETG/ABS | `rpi-bay-1` (`sbc-rpi5`), `jetkvm-bay-1` (`jetkvm-bay`), `keystone-1..2` (`standard-keystone`) |
 | `3dprint-10inch-ucg-ultra-plus-3keystone` | 10-Inch 1U Carrier for UniFi Cloud Gateway Ultra/Max + 3x Keystone | `rackmount-10` | `150 g` PETG/ABS | `gateway-bay` (`unifi-compact-gateway`), `keystone-1..3` (`standard-keystone`) |
 | `3dprint-19inch-triple-mini-pc-carrier` | 19-Inch 1U Carrier for 3x 1L Mini-PCs | `rackmount-19` | `340 g` ABS/ASA | `mini-pc-bay-1..3` (`mini-pc-1liter`) |
 
 ### 8.4 Sub-Module für Carrier-Slots (`catalog/sub-modules/*.yaml`)
 | Slug | Hersteller & Modell | Kategorie | `slot_compatibility` | Maße `B × H × T` (`mm`) | Max. Watt | Ports |
 | :--- | :--- | :--- | :--- | :---: | :---: | :--- |
+| `dell-optiplex-7010-micro` | Dell OptiPlex 7010 Micro (1L Proxmox Node + 2.5G NIC) | `mini-pc` | `mini-pc-1liter` | `178 × 36 × 182` | `65 W` | Front: `usb_c_front`, `usb_a_front`; Rear: `dc_in` (`dc-5525`), `eth0` (1G), `eth1_25g` (2.5G), `dp1` |
+| `jetkvm-smart-ip-kvm` | JetKVM Open-Source Out-of-Band IP-KVM with Touchscreen | `kvm` | `jetkvm-bay` | `60 × 31 × 79` | `4 W` | Rear: `eth0` (`rj45`), `usbc_pwr` (`usb-c`), `hdmi_in` (`hdmi`). Hat OLED-Touchscreen. |
 | `keystone-rj45-cat6a-coupler` | Shielded RJ45 Cat6A Passthrough Keystone Coupler | `keystone-module` | `standard-keystone` | `16 × 20 × 30` | `0 W` | `coupler` (`rj45` Passthrough-Coupler, vorne & hinten steckbar) |
 | `lenovo-thinkcentre-m920q` | Lenovo ThinkCentre M920q Tiny (Dual-Port PCIe NIC) | `mini-pc` | `mini-pc-1liter` | `179 × 34.5 × 182` | `65 W` | Front: `usb_c_front`, `usb_a_front`, `audio_front`; Rear: `dc_in` (`dc-5525`), `eth0` (1G), `eth1` (2.5G), `eth2` (2.5G) |
 | `raspberry-pi-5-poe-hat` | Raspberry Pi 5 (8GB) with Official PoE+ HAT | `sbc` | `sbc-rpi5` | `62 × 32 × 92` | `12 W` | Front: `eth0` (`rj45` mit `poe-in-af`/`poe-in-at`), `usb3_1`, `usb2_1`; Rear: `usbc_pwr` (`usb-c`) |

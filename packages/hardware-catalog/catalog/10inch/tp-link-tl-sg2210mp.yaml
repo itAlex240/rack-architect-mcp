@@ -1,0 +1,75 @@
+slug: "tp-link-tl-sg2210mp"
+manufacturer: "TP-Link"
+model: "Omada JetStream TL-SG2210MP (8x 1G PoE+ 150W + 2x SFP)"
+category: "switch"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 220.0
+  height_mm: 44.0
+  depth_mm: 180.0
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 1250
+power_and_thermal:
+  electrical_role: "pse-switch"
+  idle_watts: 11
+  max_system_watts: 23
+  poe_budget_watts: 150
+  airflow: "side-to-side"
+  noise_db_a: 32.0
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "PoE+ "
+    start_index: 1
+    count: 8
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["100base-tx", "1000base-t", "poe-out", "poe+", "poe-out-af", "poe-out-at"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 28.0
+      origin_y_mm: 20.0
+      columns: 8
+      rows: 1
+      pitch_x_mm: 15.5
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "sfp1"
+    label: "SFP 9"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 164.0
+      y_mm: 20.0
+      orientation: "upright"
+  - port_id: "sfp2"
+    label: "SFP 10"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 184.0
+      y_mm: 20.0
+      orientation: "upright"
+  - port_id: "ac_in"
+    label: "100-240V AC"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 185.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#1F2937"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

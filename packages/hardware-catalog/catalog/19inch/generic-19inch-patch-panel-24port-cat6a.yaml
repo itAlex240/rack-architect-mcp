@@ -1,0 +1,44 @@
+slug: "generic-19inch-patch-panel-24port-cat6a"
+manufacturer: "Generic"
+model: "19-Inch 1U 24-Port Cat6A Shielded Passthrough Patch Panel"
+category: "patch-panel"
+mount_type: "rackmount-19"
+is_passthrough_coupler: true
+geometry:
+  u_height: 1.0
+  width_mm: 482.6
+  height_mm: 44.0
+  depth_mm: 35.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 640
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "p"
+    label_prefix: "Port "
+    start_index: 1
+    count: 24
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["passthrough-coupler", "10gbase-t", "2500base-t", "1000base-t"]
+    orientation: "upright"
+    is_passthrough_coupler: true
+    grid:
+      origin_x_mm: 42.0
+      origin_y_mm: 22.0
+      columns: 24
+      rows: 1
+      pitch_x_mm: 17.2
+      pitch_y_mm: 0.0
+visuals:
+  chassis_color_hex: "#111827"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

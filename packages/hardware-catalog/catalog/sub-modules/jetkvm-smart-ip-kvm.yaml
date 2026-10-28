@@ -1,0 +1,47 @@
+slug: "jetkvm-smart-ip-kvm"
+manufacturer: "JetKVM"
+model: "JetKVM Open-Source Out-of-Band IP-KVM with Touchscreen"
+category: "compute-node"
+mount_type: "sub-module"
+slot_compatibility: "jetkvm-bay"
+geometry:
+  u_height: 0.8
+  width_mm: 43.0
+  height_mm: 36.0
+  depth_mm: 60.0
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 1.5
+  rear_protrusion_mm: 0.0
+  weight_grams: 165
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 2.5
+  max_system_watts: 4.5
+  airflow: "passive-convection"
+ports:
+  - port_id: "eth0"
+    label: "RJ45 LAN"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["100base-tx", "1000base-t"]
+    coordinates:
+      x_mm: 12.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "usb_c_pwr"
+    label: "USB-C Power/HID"
+    face: "rear"
+    connector_type: "usb-c"
+    direction: "input"
+    capabilities: ["usb-pd", "usb-3.0"]
+    coordinates:
+      x_mm: 31.0
+      y_mm: 16.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#374151"
+  material_preset: "coated-aluminum"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

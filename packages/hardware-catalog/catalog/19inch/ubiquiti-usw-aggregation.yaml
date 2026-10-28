@@ -1,0 +1,53 @@
+slug: "ubiquiti-usw-aggregation"
+manufacturer: "Ubiquiti"
+model: "UniFi Switch Aggregation (USW-Aggregation 8x 10G SFP+)"
+category: "switch"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 442.4
+  height_mm: 43.7
+  depth_mm: 120.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 2650
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 12
+  max_system_watts: 30
+  airflow: "passive-convection"
+port_groups:
+  - id_prefix: "sfp"
+    label_prefix: "10G SFP+ "
+    start_index: 1
+    count: 8
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-lr", "10gbase-dac"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 260.0
+      origin_y_mm: 20.0
+      columns: 8
+      rows: 1
+      pitch_x_mm: 18.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "ac_in"
+    label: "100-240V AC"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 390.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#E5E7EB"
+  material_preset: "coated-aluminum"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

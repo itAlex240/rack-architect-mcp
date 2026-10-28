@@ -5,6 +5,18 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-10-28
+
+### Added
+- **Expanded Hardware Catalog to 30 Precision-Measured Blueprints (`@rack-mcp/hardware-catalog`):**
+  - Added 10 new, millimeter-accurate YAML hardware blueprints across all 4 categories:
+    - **10-Inch Rackmount:** `mikrotik-crs310-8g-plus-2s-plus-in` (MikroTik CRS310 8x 2.5G + 2x 10G SFP+ Switch), `tp-link-tl-sg2210mp` (TP-Link Omada 8-Port PoE+ 150W + 2x SFP Switch), `synology-ds224-plus-10inch-2u` (Synology DiskStation DS224+ 2-Bay NAS on 10-Inch 2U Tray).
+    - **19-Inch Rackmount:** `ubiquiti-unas-pro-2u` (Ubiquiti UniFi UNAS Pro 7-Bay 2U 10G SFP+ NAS), `ubiquiti-usw-aggregation` (Ubiquiti UniFi Switch Aggregation 8x 10G SFP+), `generic-19inch-patch-panel-24port-cat6a` (24-Port Cat6A Passthrough Patch Panel), `generic-19inch-brush-panel-1u` (19-Inch 1U Cable Management Brush Strip Panel).
+    - **Sub-U Modules:** `dell-optiplex-7010-micro` (Dell OptiPlex 7010 Micro 1L Proxmox Node with dual 1G/2.5G RJ45, `mini-pc-1liter`), `jetkvm-smart-ip-kvm` (JetKVM Open-Source Out-of-Band IP-KVM with Touchscreen, `jetkvm-bay`).
+    - **3D-Printable Modular Carrier:** `3dprint-10inch-rpi5-jetkvm-2keystone` (10-Inch 1U PETG Carrier for 1x Raspberry Pi 5 + 1x JetKVM + 2x Keystone Jacks).
+- **Official Open-Source Agent Skill (`skills/rack-architect/SKILL.md` & `.agents/skills/rack-architect/SKILL.md`):**
+  - Published the complete autonomous 6-Step "Rack-as-Code" Engineering Workflow as an open-source Agent Skill compatible with Claude Code, Cursor, GitHub Copilot, Windsurf, and Google Antigravity (`npx skills add itAlex240/rack-architect-mcp`).
+
 ## [0.1.1] - 2026-10-27
 
 ### Added & Improved

@@ -1,0 +1,57 @@
+slug: "ubiquiti-unas-pro-2u"
+manufacturer: "Ubiquiti"
+model: "UniFi UNAS Pro (7-Bay 2U 10G SFP+ Rackmount NAS)"
+category: "nas"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 2.0
+  width_mm: 442.4
+  height_mm: 87.4
+  depth_mm: 325.1
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 4.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 9200
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 25
+  max_system_watts: 160
+  airflow: "front-to-rear"
+  noise_db_a: 34.0
+ports:
+  - port_id: "eth1"
+    label: "1GbE RJ45"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 340.0
+      y_mm: 28.0
+      orientation: "upright"
+  - port_id: "sfp_plus1"
+    label: "10G SFP+"
+    face: "rear"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-lr", "10gbase-dac"]
+    coordinates:
+      x_mm: 365.0
+      y_mm: 28.0
+      orientation: "upright"
+  - port_id: "ac_in"
+    label: "100-240V AC"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 65.0
+      y_mm: 32.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#E5E7EB"
+  material_preset: "coated-aluminum"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null

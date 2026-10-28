@@ -1,0 +1,77 @@
+slug: "synology-ds224-plus-10inch-2u"
+manufacturer: "Synology"
+model: "DiskStation DS224+ 2-Bay NAS (10-Inch 2U Rack Tray)"
+category: "nas"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 2.0
+  width_mm: 222.0
+  height_mm: 88.0
+  depth_mm: 232.5
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 3.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 2100
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 7
+  max_system_watts: 18
+  airflow: "front-to-rear"
+  noise_db_a: 22.0
+ports:
+  - port_id: "usb_front_1"
+    label: "USB 3.2 Copy"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0", "usb-3.1"]
+    coordinates:
+      x_mm: 188.0
+      y_mm: 24.0
+      orientation: "upright"
+  - port_id: "lan1"
+    label: "1GbE LAN 1"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 162.0
+      y_mm: 32.0
+      orientation: "upright"
+  - port_id: "lan2"
+    label: "1GbE LAN 2"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 180.0
+      y_mm: 32.0
+      orientation: "upright"
+  - port_id: "usb_rear_1"
+    label: "USB 3.2 Rear"
+    face: "rear"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0", "usb-3.1"]
+    coordinates:
+      x_mm: 162.0
+      y_mm: 52.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "12V 60W DC"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 180.0
+      y_mm: 16.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null

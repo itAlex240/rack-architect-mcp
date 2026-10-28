@@ -9,16 +9,16 @@ import {
 import { validateCatalogDirectory } from '../src/validate-cli.js';
 
 describe('@rack-mcp/hardware-catalog', () => {
-  it('validates all 20 YAML hardware blueprints on disk with zero schema, port, or slot errors', () => {
+  it('validates all 30 YAML hardware blueprints on disk with zero schema, port, or slot errors', () => {
     const report = validateCatalogDirectory();
-    expect(report.totalFiles).toBe(20);
+    expect(report.totalFiles).toBe(30);
     expect(report.issues).toEqual([]);
-    expect(report.validFiles).toBe(20);
+    expect(report.validFiles).toBe(30);
   });
 
-  it('loads all 20 blueprints in CatalogRegistry with expanded port_groups', () => {
+  it('loads all 30 blueprints in CatalogRegistry with expanded port_groups', () => {
     const all = getAllBlueprints();
-    expect(all.length).toBe(20);
+    expect(all.length).toBe(30);
 
     const flex25g = getBlueprintBySlug('ubiquiti-usw-flex-2-5g-8-poe');
     expect(flex25g).toBeDefined();
@@ -35,6 +35,23 @@ describe('@rack-mcp/hardware-catalog', () => {
     expect(deskpiPatch).toBeDefined();
     expect(deskpiPatch!.ports.length).toBe(12);
     expect(deskpiPatch!.ports.every((p) => p.is_passthrough_coupler)).toBe(true);
+
+    const patch24 = getBlueprintBySlug('generic-19inch-patch-panel-24port-cat6a');
+    expect(patch24).toBeDefined();
+    expect(patch24!.ports.length).toBe(24);
+    expect(patch24!.ports.every((p) => p.is_passthrough_coupler)).toBe(true);
+
+    const unasPro = getBlueprintBySlug('ubiquiti-unas-pro-2u');
+    expect(unasPro).toBeDefined();
+    expect(unasPro!.category).toBe('nas');
+
+    const crs310 = getBlueprintBySlug('mikrotik-crs310-8g-plus-2s-plus-in');
+    expect(crs310).toBeDefined();
+    expect(crs310!.ports.length).toBe(11);
+
+    const jetkvmCarrier = getBlueprintBySlug('3dprint-10inch-rpi5-jetkvm-2keystone');
+    expect(jetkvmCarrier).toBeDefined();
+    expect(jetkvmCarrier!.slots.length).toBe(4);
   });
 
   it('supports searchCatalog filtering by query, form_factor/mount_type, category, max_depth_mm, min_poe_budget_watts, and accepted_slot_type', () => {
@@ -52,12 +69,14 @@ describe('@rack-mcp/hardware-catalog', () => {
     const shallow10InchSwitches = searchCatalog({
       mount_type: '10inch',
       category: 'switch',
-      max_depth_mm: 150,
+      max_depth_mm: 210,
     });
     expect(shallow10InchSwitches.map((b) => b.slug)).toEqual(
       expect.arrayContaining([
         'ubiquiti-usw-flex-2-5g-8-poe',
         'ubiquiti-usw-lite-8-poe',
+        'mikrotik-crs310-8g-plus-2s-plus-in',
+        'tp-link-tl-sg2210mp',
       ]),
     );
 
@@ -73,7 +92,14 @@ describe('@rack-mcp/hardware-catalog', () => {
     expect(miniPcCompatible.map((b) => b.slug).sort()).toEqual([
       '3dprint-10inch-lenovo-tiny-plus-2keystone',
       '3dprint-19inch-triple-mini-pc-carrier',
+      'dell-optiplex-7010-micro',
       'lenovo-thinkcentre-m920q',
+    ]);
+
+    const jetkvmCompatible = searchCatalog({ accepted_slot_type: 'jetkvm-bay' });
+    expect(jetkvmCompatible.map((b) => b.slug).sort()).toEqual([
+      '3dprint-10inch-rpi5-jetkvm-2keystone',
+      'jetkvm-smart-ip-kvm',
     ]);
   });
 
