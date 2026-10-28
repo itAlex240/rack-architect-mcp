@@ -46,7 +46,7 @@ export function createRackMcpServer(
   const mcpServer = new McpServer(
     {
       name: RACK_MCP_SERVER_NAME,
-      version: '0.3.3'
+      version: '0.4.0'
     },
     {
       capabilities: {
@@ -157,6 +157,18 @@ export function createRackMcpServer(
       }
     },
     async (args) => toCallToolResult(handlers.disconnectCables(args))
+  );
+
+  mcpServer.registerTool(
+    tools.plan_external_endpoints.name,
+    {
+      description: tools.plan_external_endpoints.description,
+      inputSchema: tools.plan_external_endpoints.inputSchema.shape,
+      annotations: {
+        readOnlyHint: tools.plan_external_endpoints.annotations.readOnlyHint
+      }
+    },
+    async (args) => toCallToolResult(handlers.planExternalEndpoints(args))
   );
 
   mcpServer.registerTool(
@@ -418,7 +430,8 @@ export function createRackMcpServer(
                 `2. Initialize the rack via \`init_rack({ project_name: "Enterprise 19-Inch Core Rack", standard: "19inch", u_height: ${uHeight}, rail_depth_mm: ${railDepth}, enclosure_type: "closed-mesh-doors" })\`.`,
                 '3. Mount the heavy 2U UPS at U1 (`apc-smart-ups-1500va-2u`) and rear PDU so Center of Gravity stays below 50%.',
                 '4. Mount NAS/NVR storage, core switches, brush panel, and 24-port keystone patch panel near the top.',
-                '5. Wire 10G SFP+ DAC uplinks (`sfp-plus-dac`), Cat6A links, and IEC C13-C14 power cables (`connect_cables`), then validate (`validate_rack`) for 0 Errors.'
+                '5. If the user specifies external building or room drops (PoE cameras, Wi-Fi APs, office PCs, projectors, laptops, docking stations), call `plan_external_endpoints` to terminate them on the REAR of the patch panel and auto-create labeled front patch cables to the switch — never waste a rack unit (`U`) on external room devices.',
+                '6. Wire 10G SFP+ DAC uplinks (`sfp-plus-dac`), Cat6A links, and IEC C13-C14 power cables (`connect_cables`), then validate (`validate_rack`) for 0 Errors.'
               ].join('\n')
             }
           }

@@ -629,6 +629,12 @@ export function InspectorSidebar({
                       (c.to.instance_id === selectedDevice.instance_id &&
                         c.to.port_id === p.port_id),
                   );
+                  const connExt = scene.project.external_endpoints.find(
+                    (ext) =>
+                      ext.patch_panel_instance_id ===
+                        selectedDevice.instance_id &&
+                      ext.patch_panel_port_id === p.port_id,
+                  );
                   return (
                     <div
                       key={`${p.port_id}-${p.world_face}`}
@@ -639,12 +645,15 @@ export function InspectorSidebar({
                         padding: '6px 8px',
                         borderRadius: '6px',
                         background: '#15151A',
-                        border: connCable
-                          ? '1px solid rgba(255, 255, 255, 0.14)'
-                          : '1px solid rgba(255, 255, 255, 0.05)',
+                        border:
+                          connCable || connExt
+                            ? '1px solid rgba(255, 255, 255, 0.14)'
+                            : '1px solid rgba(255, 255, 255, 0.05)',
                         borderLeft: connCable
                           ? `2.5px solid ${connCable.color_hex}`
-                          : '1px solid rgba(255, 255, 255, 0.05)',
+                          : connExt
+                            ? `2.5px solid ${connExt.color_hex}`
+                            : '1px solid rgba(255, 255, 255, 0.05)',
                         fontSize: '10.5px',
                         cursor: connCable ? 'pointer' : 'default',
                         display: 'flex',
@@ -663,20 +672,25 @@ export function InspectorSidebar({
                       >
                         <span>{p.port_id}</span>
                         <span style={{ color: '#71717A', fontSize: '9.5px' }}>
-                          {p.world_face}
+                          {connExt ? 'rear+front' : p.world_face}
                         </span>
                       </div>
                       <div
                         className="mono"
                         style={{
-                          color: connCable ? '#A1A1AA' : '#52525B',
+                          color:
+                            connCable || connExt ? '#A1A1AA' : '#52525B',
                           fontSize: '9.5px',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {connCable ? connCable.cable_id : p.connector_type}
+                        {connExt
+                          ? `🏠 ${connExt.label}`
+                          : connCable
+                            ? (connCable.label ?? connCable.cable_id)
+                            : p.connector_type}
                       </div>
                     </div>
                   );
@@ -684,78 +698,143 @@ export function InspectorSidebar({
               </div>
             </div>
           ) : selectedCable && selectedRoute ? (
-            <div
-              style={{
-                padding: '12px',
-                borderRadius: '8px',
-                background: '#15151A',
-                border: '1px solid rgba(255, 255, 255, 0.09)',
-                borderLeft: `3px solid ${selectedCable.color_hex}`,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}
-            >
-              <div
-                className="mono"
-                style={{
-                  fontSize: '12.5px',
-                  fontWeight: 600,
-                  color: '#F4F4F5',
-                }}
-              >
-                {selectedCable.cable_id}
-              </div>
-              <div style={{ fontSize: '11.5px', color: '#A1A1AA' }}>
-                {selectedCable.label ?? selectedCable.cable_type}
-              </div>
-              <div
-                className="mono"
-                style={{ fontSize: '11px', color: '#D4D4D8' }}
-              >
-                {selectedCable.from.instance_id}:{selectedCable.from.port_id} →{' '}
-                {selectedCable.to.instance_id}:{selectedCable.to.port_id}
-              </div>
-              <div
-                className="mono"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  paddingTop: '6px',
-                  borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-                  fontSize: '11px',
-                  color: '#A1A1AA',
-                }}
-              >
-                <span>
-                  Spline: {roundTenths(selectedRoute.required_length_mm)}mm
-                </span>
-                <span style={{ color: '#10B981', fontWeight: 600 }}>
-                  SKU:{' '}
-                  {(selectedRoute.recommended_commercial_mm / 1000).toFixed(2)}m
-                </span>
-              </div>
-              {onDisconnectCable && (
-                <button
-                  type="button"
-                  data-testid="btn-disconnect-cable"
-                  onClick={() => onDisconnectCable(selectedCable.cable_id)}
+            (() => {
+              const linkedExt = scene.project.external_endpoints.find(
+                (ext) =>
+                  (selectedCable.from.instance_id ===
+                    ext.patch_panel_instance_id &&
+                    selectedCable.from.port_id === ext.patch_panel_port_id) ||
+                  (selectedCable.to.instance_id ===
+                    ext.patch_panel_instance_id &&
+                    selectedCable.to.port_id === ext.patch_panel_port_id),
+              );
+              const swEnd =
+                linkedExt &&
+                selectedCable.from.instance_id ===
+                  linkedExt.patch_panel_instance_id
+                  ? selectedCable.to
+                  : selectedCable.from;
+
+              return (
+                <div
                   style={{
-                    marginTop: '6px',
-                    padding: '6px 10px',
-                    borderRadius: '6px',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    background: 'rgba(239, 68, 68, 0.08)',
-                    color: '#FCA5A5',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    background: '#15151A',
+                    border: '1px solid rgba(255, 255, 255, 0.09)',
+                    borderLeft: `3px solid ${selectedCable.color_hex}`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '7px',
                   }}
                 >
-                  Disconnect Cable ({selectedCable.cable_id})
-                </button>
-              )}
-            </div>
+                  <div
+                    className="mono"
+                    style={{
+                      fontSize: '12.5px',
+                      fontWeight: 600,
+                      color: '#F4F4F5',
+                    }}
+                  >
+                    {linkedExt
+                      ? `🏠 ${linkedExt.label}`
+                      : (selectedCable.label ?? selectedCable.cable_id)}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#A1A1AA' }}>
+                    {linkedExt
+                      ? `${linkedExt.room_or_zone ?? 'Gebäude'} · ${linkedExt.poe_draw_watts > 0 ? `PoE ${linkedExt.poe_draw_watts}W` : 'Standard LAN'} · ${linkedExt.required_speed.toUpperCase()}`
+                      : `${selectedCable.cable_id} (${selectedCable.cable_type})`}
+                  </div>
+
+                  {linkedExt ? (
+                    <div
+                      style={{
+                        padding: '8px 10px',
+                        borderRadius: '6px',
+                        background: '#111115',
+                        border: '1px solid rgba(255, 255, 255, 0.06)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '5px',
+                        fontSize: '11px',
+                      }}
+                    >
+                      <div style={{ color: '#D4D4D8' }}>
+                        <strong style={{ color: '#A1A1AA' }}>
+                          Schritt 1 (Hinten):
+                        </strong>{' '}
+                        Hauskabel in{' '}
+                        <span className="mono" style={{ color: '#38BDF8' }}>
+                          {linkedExt.patch_panel_instance_id}:
+                          {linkedExt.patch_panel_port_id}
+                        </span>
+                      </div>
+                      <div style={{ color: '#D4D4D8' }}>
+                        <strong style={{ color: '#A1A1AA' }}>
+                          Schritt 2 (Vorne):
+                        </strong>{' '}
+                        Patchkabel in Switch{' '}
+                        <span className="mono" style={{ color: '#10B981' }}>
+                          {swEnd.instance_id}:{swEnd.port_id}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="mono"
+                      style={{ fontSize: '11px', color: '#D4D4D8' }}
+                    >
+                      {selectedCable.from.instance_id}:
+                      {selectedCable.from.port_id} →{' '}
+                      {selectedCable.to.instance_id}:{selectedCable.to.port_id}
+                    </div>
+                  )}
+
+                  <div
+                    className="mono"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      paddingTop: '6px',
+                      borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                      fontSize: '11px',
+                      color: '#A1A1AA',
+                    }}
+                  >
+                    <span>
+                      Spline: {roundTenths(selectedRoute.required_length_mm)}mm
+                    </span>
+                    <span style={{ color: '#10B981', fontWeight: 600 }}>
+                      SKU:{' '}
+                      {(selectedRoute.recommended_commercial_mm / 1000).toFixed(
+                        2,
+                      )}
+                      m
+                    </span>
+                  </div>
+                  {onDisconnectCable && (
+                    <button
+                      type="button"
+                      data-testid="btn-disconnect-cable"
+                      onClick={() => onDisconnectCable(selectedCable.cable_id)}
+                      style={{
+                        marginTop: '4px',
+                        padding: '6px 10px',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        background: 'rgba(239, 68, 68, 0.08)',
+                        color: '#FCA5A5',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Disconnect Cable ({selectedCable.cable_id})
+                    </button>
+                  )}
+                </div>
+              );
+            })()
           ) : (
             <div
               style={{
@@ -769,6 +848,152 @@ export function InspectorSidebar({
             >
               Select any device, sub-module, or 3D cable spline in the viewport
               to inspect its dimensions, ports, and clearances.
+            </div>
+          )}
+
+          {/* Beginner-Friendly Building / Room Patching Guide (`external_endpoints`) */}
+          {scene.project.external_endpoints.length > 0 && (
+            <div
+              data-testid="external-endpoints-guide"
+              style={{
+                marginTop: '4px',
+                padding: '11px 12px',
+                borderRadius: '8px',
+                background: '#15151A',
+                border: '1px solid rgba(255, 255, 255, 0.07)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '7px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '11.5px',
+                    fontWeight: 600,
+                    color: '#F4F4F5',
+                  }}
+                >
+                  🏠 Haus- &amp; Raum-Verkabelung (Steckplan)
+                </span>
+                <span
+                  className="mono"
+                  style={{ fontSize: '10px', color: '#A1A1AA' }}
+                >
+                  {scene.project.external_endpoints.length} Leitungen
+                </span>
+              </div>
+              <div style={{ fontSize: '10.5px', color: '#71717A' }}>
+                Klicke auf eine Leitung, um das zugehörige Kabel im 3D-Rack
+                hervorzuheben:
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '5px',
+                }}
+              >
+                {scene.project.external_endpoints.map((ext, idx) => {
+                  const frontCable = scene.project.cables.find(
+                    (c) =>
+                      (c.from.instance_id === ext.patch_panel_instance_id &&
+                        c.from.port_id === ext.patch_panel_port_id &&
+                        c.from.face !== 'rear') ||
+                      (c.to.instance_id === ext.patch_panel_instance_id &&
+                        c.to.port_id === ext.patch_panel_port_id &&
+                        c.to.face !== 'rear'),
+                  );
+                  const swPeer = frontCable
+                    ? frontCable.from.instance_id ===
+                        ext.patch_panel_instance_id &&
+                      frontCable.from.port_id === ext.patch_panel_port_id
+                      ? `${frontCable.to.instance_id}:${frontCable.to.port_id}`
+                      : `${frontCable.from.instance_id}:${frontCable.from.port_id}`
+                    : 'Offen';
+                  const isRowSelected =
+                    frontCable !== undefined &&
+                    selectedCableId === frontCable.cable_id;
+
+                  return (
+                    <div
+                      key={ext.endpoint_id}
+                      onClick={() => {
+                        if (frontCable) {
+                          onSelectCable(frontCable.cable_id);
+                        }
+                      }}
+                      style={{
+                        padding: '7px 9px',
+                        borderRadius: '6px',
+                        background: isRowSelected ? '#1E1E28' : '#111115',
+                        border: isRowSelected
+                          ? '1px solid rgba(59, 130, 246, 0.45)'
+                          : '1px solid rgba(255, 255, 255, 0.05)',
+                        borderLeft: `2.5px solid ${ext.color_hex}`,
+                        cursor: frontCable ? 'pointer' : 'default',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '3px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            color: '#F4F4F5',
+                          }}
+                        >
+                          #{String(idx + 1).padStart(2, '0')} · {ext.label}
+                        </span>
+                        <span
+                          className="mono"
+                          style={{
+                            fontSize: '9.5px',
+                            padding: '1px 5px',
+                            borderRadius: '4px',
+                            background:
+                              ext.poe_draw_watts > 0
+                                ? 'rgba(245, 158, 11, 0.14)'
+                                : 'rgba(16, 185, 129, 0.12)',
+                            color:
+                              ext.poe_draw_watts > 0 ? '#FBBF24' : '#34D399',
+                          }}
+                        >
+                          {ext.poe_draw_watts > 0
+                            ? `PoE ${ext.poe_draw_watts}W`
+                            : 'LAN'}
+                        </span>
+                      </div>
+                      <div
+                        className="mono"
+                        style={{ fontSize: '10px', color: '#A1A1AA' }}
+                      >
+                        1. Hinten:{' '}
+                        <span style={{ color: '#38BDF8' }}>
+                          {ext.patch_panel_instance_id}:{ext.patch_panel_port_id}
+                        </span>{' '}
+                        → 2. Vorne:{' '}
+                        <span style={{ color: '#10B981' }}>{swPeer}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </section>

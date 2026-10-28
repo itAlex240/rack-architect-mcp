@@ -27,8 +27,8 @@ This skill equips you with the complete engineering runbook to design, validate,
    Never finish a rack design task while `validation.error_count > 0`. Read the structured `issues[].remediation_suggestions` returned by every tool call and apply fixes autonomously until the rack achieves **`VALID (0 Errors)`**.
 
 ### Connecting to the Local MCP Workbench (`http://127.0.0.1:3100`)
-- If `rack_architect_mcp` tools (`init_rack`, `search_catalog`, `get_device_blueprint`, `define_custom_blueprint`, `mount_equipment`, `modify_equipment`, `connect_cables`, `disconnect_cables`, `validate_rack`, `export_deliverables`, `undo_redo`) are registered natively in your MCP tool list, call them directly.
-- If `rack_architect_mcp` is not registered as a native MCP server in your session, you can execute all 11 MCP tools directly against the running local Sidecar WebSocket at `ws://127.0.0.1:3100/ws` (sending `{ "type": "EXECUTE_TOOL", "tool": "<tool_name>", "args": { ... } }` and reading `{ "type": "COMMAND_RESULT", "tool": "<tool_name>", "result": { ... } }`) or via `node ./packages/cli/dist/bin.js serve`. Every tool call automatically streams live into the user's open browser workbench at `http://127.0.0.1:3100`.
+- If `rack_architect_mcp` tools (`init_rack`, `search_catalog`, `get_device_blueprint`, `define_custom_blueprint`, `mount_equipment`, `modify_equipment`, `connect_cables`, `disconnect_cables`, `plan_external_endpoints`, `validate_rack`, `export_deliverables`, `undo_redo`) are registered natively in your MCP tool list, call them directly.
+- If `rack_architect_mcp` is not registered as a native MCP server in your session, you can execute all 12 MCP tools directly against the running local Sidecar WebSocket at `ws://127.0.0.1:3100/ws` (sending `{ "type": "COMMAND", "tool": "<tool_name>", "args": { ... } }` and reading `{ "type": "COMMAND_RESULT", "tool": "<tool_name>", "result": { ... } }`) or via `node ./packages/cli/dist/bin.js serve`. Every tool call automatically streams live into the user's open browser workbench at `http://127.0.0.1:3100`.
 
 ---
 
@@ -70,8 +70,63 @@ Whenever the user asks you to design, modify, or audit a rack, execute these **6
 2. Call `get_device_blueprint` on each mounted carrier to verify its exact `slots[].slot_id` and `ports[].port_id` names.
 3. Mount all `sub-module` devices into their carrier slots (`parent_carrier_id`, `slot_id`), including `keystone-rj45-cat6a-coupler` couplers into any `"standard-keystone"` slots you plan to wire.
 
-### Phase 4: Power & Network Cable Routing (`connect_cables`)
-1. Call `get_device_blueprint` for every device you are wiring so you never guess a `port_id` (e.g. `eth1`..`eth8`, `wan1`, `lan1`..`lan4`, `sfp1`, `outlet1`..`outlet4`, `iec_out1`..`iec_out4`, `pwr_in`, `front_rj45`, `rear_punchdown`).
+### Phase 4: External Building / Room Drops (`plan_external_endpoints`) & Cable Routing (`connect_cables`)
+1. **External Building / House Drops (`plan_external_endpoints` — NEVER waste a rack U slot for external rooms/cameras/APs!):**
+   - When the user mentions external building endpoints (e.g., *10 PoE cameras, 5 Wi-Fi Access Points, 5 rooms with PC, projector/Beamer, laptop, workstation, or docking station*), **do NOT mount a fake "external endpoints" box into a rack unit (`U12`)**.
+   - Instead, mount a real patch panel (`generic-19inch-patch-panel-24port-cat6a` or `deskpi-10inch-patch-panel-12port`) at the top of the rack and call **`plan_external_endpoints`**:
+     ```json
+     {
+       "patch_panel_instance_id": "patch-u12",
+       "entry_position": "top-rear",
+       "auto_connect_switch_instance_id": "sw-pro-24",
+       "auto_connect_switch_start_port": 1,
+       "clear_existing": true,
+       "groups": [
+         {
+           "id_prefix": "cam",
+           "label_prefix": "PoE Kamera",
+           "category": "poe-camera",
+           "room_or_zone": "Außenbereich",
+           "count": 10,
+           "poe_draw_watts": 9,
+           "required_speed": "1gbe",
+           "color_hex": "#F59E0B",
+           "vlan_id": 30
+         },
+         {
+           "id_prefix": "ap",
+           "label_prefix": "WLAN Access Point",
+           "category": "wifi-ap",
+           "room_or_zone": "Haus WLAN",
+           "count": 5,
+           "poe_draw_watts": 18,
+           "required_speed": "2.5gbe",
+           "color_hex": "#06B6D4",
+           "vlan_id": 20
+         },
+         {
+           "id_prefix": "room",
+           "label_prefix": "Raum LAN",
+           "custom_labels": [
+             "Büro – Desktop PC",
+             "Heimkino – 4K Beamer",
+             "Schlafzimmer – Laptop",
+             "Studio – Workstation",
+             "Home-Office – Dockingstation"
+           ],
+           "category": "wall-outlet-pc",
+           "room_or_zone": "Wohnräume",
+           "count": 5,
+           "poe_draw_watts": 0,
+           "required_speed": "2.5gbe",
+           "color_hex": "#10B981",
+           "vlan_id": 10
+         }
+       ]
+     }
+     ```
+   - `plan_external_endpoints` terminates all incoming building cables from the rear conduit (`top-rear`) onto the rear of `patch-u12` (`p1..p20`), automatically creates labeled front `cat6a` patch cables to `sw-pro-24` (`eth1..eth20`), validates total PoE budget through the passive patch panel couplers, and generates a beginner-friendly step-by-step patching guide!
+2. Call `get_device_blueprint` for every internal device you are wiring so you never guess a `port_id` (e.g. `eth1`..`eth8`, `wan1`, `lan1`..`lan4`, `sfp1`, `outlet1`..`outlet4`, `iec_out1`..`iec_out4`, `pwr_in`, `front_rj45`, `rear_punchdown`).
 2. **Choose the Right Cable & Plug Geometry (`cable_type`):**
    - **Tight Front Glass Door (`closed-glass-front` with `45–50 mm` clearance) or Tight Rear Depth:**
      Use **`-angled`** cable variants (`cat6a-angled`, `sfp-plus-dac-angled`, `power-schuko-c13-angled`, `power-c13-c14-angled`, `power-dc-5525-angled`, `power-usb-c-angled`) to cut plug protrusion $\Delta Z_{\text{plug}}$ by ~50% (`55 mm` $\rightarrow$ `28 mm` for Schuko, `35 mm` $\rightarrow$ `18 mm` for RJ45) and prevent `PLUG_CLEARANCE_COLLISION` or `FRONT_DOOR_COLLISION`.

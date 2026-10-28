@@ -35,7 +35,7 @@ export interface SidecarWsMessage {
 }
 
 export interface SidecarClientCommand {
-  readonly type: 'COMMAND';
+  readonly type: 'COMMAND' | 'EXECUTE_TOOL';
   readonly tool:
     | 'search_catalog'
     | 'get_device_blueprint'
@@ -45,6 +45,7 @@ export interface SidecarClientCommand {
     | 'modify_equipment'
     | 'connect_cables'
     | 'disconnect_cables'
+    | 'plan_external_endpoints'
     | 'validate_rack'
     | 'export_deliverables'
     | 'undo_redo'
@@ -302,7 +303,7 @@ export async function startRackSidecarServer(
     ws.on('message', (rawData) => {
       try {
         const parsed = JSON.parse(String(rawData)) as SidecarClientCommand;
-        if (parsed.type !== 'COMMAND') {
+        if (parsed.type !== 'COMMAND' && parsed.type !== 'EXECUTE_TOOL') {
           return;
         }
         const args = (parsed.args ?? {}) as never;
@@ -331,6 +332,9 @@ export async function startRackSidecarServer(
             break;
           case 'disconnect_cables':
             result = handlers.disconnectCables(args);
+            break;
+          case 'plan_external_endpoints':
+            result = handlers.planExternalEndpoints(args);
             break;
           case 'validate_rack':
             result = handlers.validateRack(args);

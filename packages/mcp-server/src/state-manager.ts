@@ -62,7 +62,8 @@ const DEFAULT_EMPTY_PROJECT: RackProject = {
     rear_clearance_mm: 40
   },
   mounted_devices: [],
-  cables: []
+  cables: [],
+  external_endpoints: []
 };
 
 /**

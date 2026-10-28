@@ -2,7 +2,9 @@ import type { ThreeEvent } from '@react-three/fiber';
 import {
   EIA_310_SPECS,
   type CableConnection,
+  type ComputedCableRoute,
   type ComputedDeviceGeometry,
+  type ExternalEndpoint,
   type RackStandardSlug,
 } from '@rack-mcp/core-domain';
 import type { HoveredPortInfo } from '../../state/useRackState.js';
@@ -13,6 +15,8 @@ export interface MountedDevice3DProps {
   readonly device: ComputedDeviceGeometry;
   readonly rackStandard: RackStandardSlug;
   readonly cables: readonly CableConnection[];
+  readonly cableRoutes?: readonly ComputedCableRoute[];
+  readonly externalEndpoints?: readonly ExternalEndpoint[];
   readonly xrayMode: boolean;
   readonly explodeZMm: number;
   readonly showClearanceBoxes: boolean;
@@ -47,6 +51,8 @@ export function MountedDevice3D({
   device,
   rackStandard,
   cables,
+  cableRoutes = [],
+  externalEndpoints = [],
   xrayMode,
   explodeZMm,
   showClearanceBoxes,
@@ -67,6 +73,7 @@ export function MountedDevice3D({
 
   const matParams = getMaterialParams(device.blueprint.visuals.material_preset);
   const chassisColor = device.blueprint.visuals.chassis_color_hex;
+  const isBrushPanel = device.blueprint.category === 'brush-panel';
   const hasEars =
     device.mount_target === 'rack-unit' &&
     device.blueprint.geometry.ear_mount_style !== 'none';
@@ -80,6 +87,21 @@ export function MountedDevice3D({
     e.stopPropagation();
     onSelectDevice(device.instance_id);
   };
+
+  // Collect X positions of cables passing through this brush panel U slot
+  const brushPassThroughXs: number[] = [];
+  if (isBrushPanel) {
+    for (const route of cableRoutes) {
+      if (route.portal_u === device.u_position) {
+        const portalPt = route.waypoints.find(
+          (wp) => Math.abs(wp.y - cy) <= h * 0.65,
+        );
+        if (portalPt) {
+          brushPassThroughXs.push(portalPt.x);
+        }
+      }
+    }
+  }
 
   const isModularCarrier = device.blueprint.category === 'modular-carrier';
   const sortedSlots = isModularCarrier
@@ -228,6 +250,142 @@ export function MountedDevice3D({
             </mesh>
           ))}
         </group>
+      ) : isBrushPanel ? (
+        /* Hollow Anodized Steel Brush-Panel Frame + Segmented Vertical Nylon Bristles */
+        <group onClick={handleClick}>
+          {/* Top & Bottom Horizontal Steel Frame Rails (7.5mm tall) */}
+          <mesh position={[cx, box.max.y - 3.75, cz]}>
+            <boxGeometry args={[w, 7.5, d]} />
+            <meshStandardMaterial
+              color="#27272A"
+              metalness={0.62}
+              roughness={0.34}
+              emissive={isSelected ? '#3B82F6' : '#000000'}
+              emissiveIntensity={isSelected ? 0.18 : 0}
+              transparent={xrayMode}
+              opacity={xrayMode ? 0.16 : 1.0}
+              depthWrite={!xrayMode}
+            />
+          </mesh>
+          <mesh position={[cx, box.min.y + 3.75, cz]}>
+            <boxGeometry args={[w, 7.5, d]} />
+            <meshStandardMaterial
+              color="#27272A"
+              metalness={0.62}
+              roughness={0.34}
+              emissive={isSelected ? '#3B82F6' : '#000000'}
+              emissiveIntensity={isSelected ? 0.18 : 0}
+              transparent={xrayMode}
+              opacity={xrayMode ? 0.16 : 1.0}
+              depthWrite={!xrayMode}
+            />
+          </mesh>
+          {/* Left & Right Vertical Steel Frame End-Caps (18mm wide) */}
+          <mesh position={[box.min.x + 9, cy, cz]}>
+            <boxGeometry args={[18, h, d]} />
+            <meshStandardMaterial
+              color="#27272A"
+              metalness={0.62}
+              roughness={0.34}
+              emissive={isSelected ? '#3B82F6' : '#000000'}
+              emissiveIntensity={isSelected ? 0.18 : 0}
+              transparent={xrayMode}
+              opacity={xrayMode ? 0.16 : 1.0}
+              depthWrite={!xrayMode}
+            />
+          </mesh>
+          <mesh position={[box.max.x - 9, cy, cz]}>
+            <boxGeometry args={[18, h, d]} />
+            <meshStandardMaterial
+              color="#27272A"
+              metalness={0.62}
+              roughness={0.34}
+              emissive={isSelected ? '#3B82F6' : '#000000'}
+              emissiveIntensity={isSelected ? 0.18 : 0}
+              transparent={xrayMode}
+              opacity={xrayMode ? 0.16 : 1.0}
+              depthWrite={!xrayMode}
+            />
+          </mesh>
+          {/* Metallic Clamping Retainer Strips Above & Below the Bristles */}
+          <mesh
+            position={[
+              cx,
+              box.max.y - 8.2,
+              (device.face === 'front' ? box.min.z - 0.5 : box.max.z + 0.5) +
+                offsetZ,
+            ]}
+          >
+            <boxGeometry args={[Math.max(20, w - 32), 1.8, 1.4]} />
+            <meshStandardMaterial color="#71717A" metalness={0.78} roughness={0.25} />
+          </mesh>
+          <mesh
+            position={[
+              cx,
+              box.min.y + 8.2,
+              (device.face === 'front' ? box.min.z - 0.5 : box.max.z + 0.5) +
+                offsetZ,
+            ]}
+          >
+            <boxGeometry args={[Math.max(20, w - 32), 1.8, 1.4]} />
+            <meshStandardMaterial color="#71717A" metalness={0.78} roughness={0.25} />
+          </mesh>
+          {/* Segmented Upper & Lower Vertical Nylon Bristle Strips */}
+          {(() => {
+            const slotW = Math.max(24, w - 36);
+            const bristleCount = Math.max(18, Math.min(44, Math.floor(slotW / 8.5)));
+            const segPitch = slotW / bristleCount;
+            const segW = Math.max(2.0, segPitch * 0.78);
+            const fullHalfH = Math.max(4, (h - 17.5) / 2);
+            const items = [];
+            for (let i = 0; i < bristleCount; i++) {
+              const segX = box.min.x + 18 + (i + 0.5) * segPitch;
+              const hasCableHere = brushPassThroughXs.some(
+                (px) => Math.abs(px - segX) < segPitch * 1.15,
+              );
+              const segH = hasCableHere
+                ? Math.max(2.5, fullHalfH - 3.6)
+                : fullHalfH - 0.7;
+              const zJitter = (i % 2 === 0 ? -0.35 : 0.35);
+              const bristleColor = i % 2 === 0 ? '#09090B' : '#18181B';
+              items.push(
+                <group key={`bristle-${i}`}>
+                  {/* Upper Vertical Bristle Tuft */}
+                  <mesh
+                    position={[
+                      segX,
+                      box.max.y - 8.5 - segH / 2,
+                      cz + zJitter,
+                    ]}
+                  >
+                    <boxGeometry args={[segW, segH, Math.max(4, d * 0.52)]} />
+                    <meshStandardMaterial
+                      color={bristleColor}
+                      roughness={0.94}
+                      metalness={0.04}
+                    />
+                  </mesh>
+                  {/* Lower Vertical Bristle Tuft */}
+                  <mesh
+                    position={[
+                      segX,
+                      box.min.y + 8.5 + segH / 2,
+                      cz - zJitter,
+                    ]}
+                  >
+                    <boxGeometry args={[segW, segH, Math.max(4, d * 0.52)]} />
+                    <meshStandardMaterial
+                      color={bristleColor}
+                      roughness={0.94}
+                      metalness={0.04}
+                    />
+                  </mesh>
+                </group>,
+              );
+            }
+            return items;
+          })()}
+        </group>
       ) : (
         <mesh position={[cx, cy, cz]} onClick={handleClick}>
           <boxGeometry args={[w, h, d]} />
@@ -349,17 +507,17 @@ export function MountedDevice3D({
         </>
       )}
 
-      {/* Glowing Cyan OLED Display (e.g., Ubiquiti Switch / UCG-Max / CyberPower UPS) */}
+      {/* Glowing Cyan OLED Display (e.g., Ubiquiti Switch / UDM-Pro / UCG-Max / CyberPower UPS) */}
       {device.blueprint.visuals.has_oled_display && (
         <mesh
           position={[
-            box.min.x + Math.min(22, w * 0.2),
+            box.min.x + Math.min(24, w * 0.18),
             cy,
-            (device.face === 'front' ? box.min.z - 0.8 : box.max.z + 0.8) +
+            (device.face === 'front' ? box.min.z - 1.3 : box.max.z + 1.3) +
               offsetZ,
           ]}
         >
-          <boxGeometry args={[18, Math.min(14, h * 0.42), 1.4]} />
+          <boxGeometry args={[20, Math.min(16, h * 0.46), 1.4]} />
           <meshStandardMaterial
             color="#0EA5E9"
             emissive="#38BDF8"
@@ -367,20 +525,6 @@ export function MountedDevice3D({
             roughness={0.15}
           />
         </mesh>
-      )}
-
-      {/* Brush-Panel Bristle Slot (spans front and rear faces so cables pass through bristles on both sides) */}
-      {device.blueprint.category === 'brush-panel' && (
-        <group position={[cx, cy, cz + offsetZ]}>
-          <mesh>
-            <boxGeometry args={[w - 22, h - 14, d + 1.4]} />
-            <meshStandardMaterial color="#020617" roughness={0.95} />
-          </mesh>
-          <mesh>
-            <boxGeometry args={[w - 24, 1.2, d + 1.8]} />
-            <meshStandardMaterial color="#000000" roughness={1.0} />
-          </mesh>
-        </group>
       )}
 
       {/* Optional Plug Clearance Box (`B_clearance`) Wireframe */}
@@ -413,17 +557,51 @@ export function MountedDevice3D({
         </mesh>
       )}
 
-      {/* Raised 3D Ports (`1.8mm` extrusion along `world_normal`) */}
-      {device.ports.map((port) => (
-        <PortMesh3D
-          key={`${device.instance_id}:${port.port_id}:${port.world_face}`}
-          port={port}
-          cables={cables}
-          explodeOffsetZMm={offsetZ}
-          isHighlighted={isSelected}
-          onHoverPort={onHoverPort}
-        />
-      ))}
+      {/* Raised 3D Ports projected onto actual outer faceplate (`box.min.z` / `box.max.z`) */}
+      {device.ports.map((port) => {
+        const frontSurfaceZ = box.min.z - 0.8;
+        const rearSurfaceZ = box.max.z + 0.8;
+        const primarySurfaceZ =
+          port.world_face === 'front' ? frontSurfaceZ : rearSurfaceZ;
+
+        return (
+          <group
+            key={`${device.instance_id}:${port.port_id}:${port.world_face}`}
+          >
+            <PortMesh3D
+              port={port}
+              cables={cables}
+              externalEndpoints={externalEndpoints}
+              faceSurfaceZMm={primarySurfaceZ}
+              explodeOffsetZMm={offsetZ}
+              isHighlighted={isSelected}
+              onHoverPort={onHoverPort}
+            />
+            {/* For passthrough couplers (Patch Panels / Keystones), also render the opposite-face coupler jack */}
+            {port.is_passthrough_coupler && (
+              <PortMesh3D
+                port={{
+                  ...port,
+                  world_face: port.world_face === 'front' ? 'rear' : 'front',
+                  world_normal: {
+                    x: 0,
+                    y: 0,
+                    z: port.world_face === 'front' ? 1 : -1,
+                  },
+                }}
+                cables={cables}
+                externalEndpoints={externalEndpoints}
+                faceSurfaceZMm={
+                  port.world_face === 'front' ? rearSurfaceZ : frontSurfaceZ
+                }
+                explodeOffsetZMm={offsetZ}
+                isHighlighted={isSelected}
+                onHoverPort={onHoverPort}
+              />
+            )}
+          </group>
+        );
+      })}
     </group>
   );
 }

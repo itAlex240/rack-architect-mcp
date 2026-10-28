@@ -457,6 +457,7 @@ export function BomAndExportsView({
               }}
             >
               <th style={{ padding: '8px', fontWeight: 500 }}>Cable ID</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Label / Purpose</th>
               <th style={{ padding: '8px', fontWeight: 500 }}>Type</th>
               <th style={{ padding: '8px', fontWeight: 500 }}>From Port</th>
               <th style={{ padding: '8px', fontWeight: 500 }}>To Port</th>
@@ -481,6 +482,9 @@ export function BomAndExportsView({
                     }}
                   >
                     ● {cable.cable_id}
+                  </td>
+                  <td style={{ padding: '8px', color: '#F4F4F5', fontWeight: 500 }}>
+                    {cable.label ?? '—'}
                   </td>
                   <td className="mono" style={{ padding: '8px', color: '#A1A1AA' }}>
                     {cable.cable_type}
@@ -508,6 +512,133 @@ export function BomAndExportsView({
           </tbody>
         </table>
       </section>
+
+      {/* Section 4: Haus- & Raum-Verkabelung (Steck-für-Steck-Anleitung) */}
+      {(scene.project.external_endpoints ?? []).length > 0 && (
+        <section
+          data-testid="bom-external-patching-guide"
+          style={{
+            padding: '18px 20px',
+            borderRadius: '10px',
+            background: '#121216',
+            border: '1px solid rgba(255, 255, 255, 0.07)',
+          }}
+        >
+          <h3
+            style={{
+              margin: '0 0 6px 0',
+              fontSize: '12.5px',
+              fontWeight: 600,
+              letterSpacing: '0.03em',
+              textTransform: 'uppercase',
+              color: '#F4F4F5',
+            }}
+          >
+            4. 🏠 Haus- &amp; Raum-Verkabelung — Steck-für-Steck-Anleitung (
+            {(scene.project.external_endpoints ?? []).length} Gebäude-Leitungen)
+          </h3>
+          <div style={{ fontSize: '11.5px', color: '#A1A1AA', marginBottom: '12px' }}>
+            So schließt du alle ankommenden Verlegekabel aus dem Gebäude (Kameras,
+            Access Points, Büros, Beamer, PCs) Schritt für Schritt an dein Rack an:
+          </div>
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: '12px',
+            }}
+          >
+            <thead>
+              <tr
+                style={{
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.09)',
+                  color: '#71717A',
+                  textAlign: 'left',
+                }}
+              >
+                <th style={{ padding: '8px', fontWeight: 500 }}>#</th>
+                <th style={{ padding: '8px', fontWeight: 500 }}>Raum / Gerät</th>
+                <th style={{ padding: '8px', fontWeight: 500 }}>Typ &amp; PoE</th>
+                <th style={{ padding: '8px', fontWeight: 500 }}>
+                  Schritt 1: Hinten auflegen (Rückseite)
+                </th>
+                <th style={{ padding: '8px', fontWeight: 500 }}>
+                  Schritt 2: Vorne patchen (Vorderseite)
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {(scene.project.external_endpoints ?? []).map((ext, idx) => {
+                const frontPatch = scene.project.cables.find(
+                  (c) =>
+                    (c.from.instance_id === ext.patch_panel_instance_id &&
+                      c.from.port_id === ext.patch_panel_port_id &&
+                      (c.from.face ?? 'front') === 'front') ||
+                    (c.to.instance_id === ext.patch_panel_instance_id &&
+                      c.to.port_id === ext.patch_panel_port_id &&
+                      (c.to.face ?? 'front') === 'front'),
+                );
+                const swEnd = frontPatch
+                  ? frontPatch.from.instance_id ===
+                      ext.patch_panel_instance_id &&
+                    frontPatch.from.port_id === ext.patch_panel_port_id
+                    ? frontPatch.to
+                    : frontPatch.from
+                  : null;
+                return (
+                  <tr
+                    key={ext.endpoint_id}
+                    style={{
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                    }}
+                  >
+                    <td className="mono" style={{ padding: '8px', color: '#71717A' }}>
+                      {idx + 1}
+                    </td>
+                    <td style={{ padding: '8px', fontWeight: 600, color: '#F4F4F5' }}>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          background: ext.color_hex,
+                          marginRight: '8px',
+                        }}
+                      />
+                      {ext.label}
+                      {ext.room_or_zone ? ` (${ext.room_or_zone})` : ''}
+                    </td>
+                    <td className="mono" style={{ padding: '8px', color: '#A1A1AA' }}>
+                      {ext.category} •{' '}
+                      {ext.poe_draw_watts > 0 ? (
+                        <span style={{ color: '#FCD34D', fontWeight: 600 }}>
+                          PoE {ext.poe_draw_watts} W
+                        </span>
+                      ) : (
+                        'Ohne PoE'
+                      )}
+                    </td>
+                    <td className="mono" style={{ padding: '8px', color: '#E4E4E7' }}>
+                      Wandkabel →{' '}
+                      <strong>
+                        {ext.patch_panel_instance_id}:
+                        {ext.patch_panel_port_id.toUpperCase()}
+                      </strong>{' '}
+                      (Hinten)
+                    </td>
+                    <td className="mono" style={{ padding: '8px', color: '#6EE7B7' }}>
+                      {swEnd && frontPatch
+                        ? `Patchkabel (${frontPatch.cable_id}) von ${ext.patch_panel_port_id.toUpperCase()} (Vorne) → ${swEnd.instance_id}:${swEnd.port_id.toUpperCase()}`
+                        : 'Noch kein Patchkabel vorne gesteckt'}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </section>
+      )}
     </div>
   );
 }

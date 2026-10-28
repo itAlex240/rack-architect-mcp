@@ -875,6 +875,79 @@ export function validateRackProject(
     });
   }
 
+  // Validate external building/room drops (`project.external_endpoints`) on rear patch panel ports
+  const externalEndpoints = project.external_endpoints ?? [];
+  const validExternalEndpoints: {
+    ext: (typeof externalEndpoints)[number];
+    ppDev: ComputedDeviceGeometry;
+    ppPort: ComputedPortGeometry;
+  }[] = [];
+
+  for (const ext of externalEndpoints) {
+    const ppDev = geometry.devices_by_id.get(ext.patch_panel_instance_id);
+    if (!ppDev) {
+      issues.push({
+        code: 'PORT_NOT_FOUND',
+        severity: 'ERROR',
+        stage: 2,
+        affected_instances: [ext.patch_panel_instance_id],
+        message: `External endpoint '${ext.endpoint_id}' (${ext.label}) references non-existent patch panel '${ext.patch_panel_instance_id}'.`,
+        remediation_suggestions: [
+          `Mount patch panel '${ext.patch_panel_instance_id}' first or reference an existing patch panel instance_id.`
+        ]
+      });
+      continue;
+    }
+
+    const ppParent = ppDev.parent_carrier_id
+      ? geometry.devices_by_id.get(ppDev.parent_carrier_id)
+      : undefined;
+    const ppPort = resolveCableEndpointPortGeometry(
+      ppDev,
+      ext.patch_panel_port_id,
+      'rear',
+      ppParent
+    );
+
+    if (!ppPort) {
+      const availablePorts = ppDev.ports.map((p) => `'${p.port_id}'`).join(', ');
+      issues.push({
+        code: 'PORT_NOT_FOUND',
+        severity: 'ERROR',
+        stage: 2,
+        affected_instances: [ppDev.instance_id],
+        u_range: [ppDev.u_range[0], ppDev.u_range[1]],
+        message: `Port '${ext.patch_panel_port_id}' does not exist on patch panel '${ppDev.instance_id}' (referenced by external endpoint '${ext.endpoint_id}').`,
+        remediation_suggestions: [
+          `Use one of the valid port IDs on '${ppDev.instance_id}': ${availablePorts || 'none'}.`
+        ]
+      });
+      continue;
+    }
+
+    const rearKey = ppPort.is_passthrough_coupler
+      ? `${ppDev.instance_id}:${ppPort.port_id}:rear`
+      : `${ppDev.instance_id}:${ppPort.port_id}`;
+    const existingRearOccupant = portOccupancy.get(rearKey);
+    if (existingRearOccupant) {
+      issues.push({
+        code: 'PORT_ALREADY_OCCUPIED',
+        severity: 'ERROR',
+        stage: 2,
+        affected_instances: [ppDev.instance_id],
+        u_range: [ppDev.u_range[0], ppDev.u_range[1]],
+        message: `Rear port '${ppPort.port_id}' on '${ppDev.instance_id}' is already occupied by '${existingRearOccupant}' and cannot accept external endpoint '${ext.endpoint_id}' (${ext.label}).`,
+        remediation_suggestions: [
+          `Assign external endpoint '${ext.endpoint_id}' to a free rear port on '${ppDev.instance_id}'.`
+        ]
+      });
+      continue;
+    }
+
+    portOccupancy.set(rearKey, `external:${ext.endpoint_id}`);
+    validExternalEndpoints.push({ ext, ppDev, ppPort });
+  }
+
   // =========================================================================
   // STAGE 3: Electrical Power & PoE Directed Acyclic Graph (DAG)
   // =========================================================================
@@ -1051,6 +1124,138 @@ export function validateRackProject(
   const poePoweredDevices = new Set<string>();
   const acDcPoweredDevices = new Set<string>();
   const powerSourceToDownstream = new Map<string, string[]>();
+  const unpoweredExternalPoeEndpoints: string[] = [];
+
+  // Trace external building/room endpoints through their front patch-panel cable to the connected switch port
+  for (const { ext, ppDev, ppPort } of validExternalEndpoints) {
+    const couplerKey = `${ppDev.instance_id}:${ppPort.port_id}`;
+    const frontSide = couplerSides.get(couplerKey)?.front;
+
+    if (!frontSide) {
+      if (ext.poe_draw_watts > 0) {
+        unpoweredExternalPoeEndpoints.push(ext.endpoint_id);
+        issues.push({
+          code: 'UNPOWERED_DEVICE',
+          severity: 'WARNING',
+          stage: 3,
+          affected_instances: [ppDev.instance_id],
+          u_range: [ppDev.u_range[0], ppDev.u_range[1]],
+          message: `External PoE endpoint '${ext.endpoint_id}' (${ext.label}, ${ext.poe_draw_watts}W) is terminated on the rear of '${ppDev.instance_id}:${ppPort.port_id}', but no front patch cable connects '${ppDev.instance_id}:${ppPort.port_id}' to a PoE switch port.`,
+          remediation_suggestions: [
+            `Connect a front patch cable from '${ppDev.instance_id}:${ppPort.port_id}' (face: "front") to a PoE-capable switch port.`
+          ]
+        });
+      }
+      continue;
+    }
+
+    // Resolve multi-hop coupler chain if frontSide is another coupler
+    let peerSide: CouplerHalfLink | undefined = frontSide;
+    const hopVisited = new Set<string>([couplerKey]);
+    while (peerSide?.otherCouplerKey && peerSide.otherCouplerFace) {
+      const nextKey: string = peerSide.otherCouplerKey;
+      if (hopVisited.has(nextKey)) {
+        peerSide = undefined;
+        break;
+      }
+      hopVisited.add(nextKey);
+      const oppositeFace: RackFace =
+        peerSide.otherCouplerFace === 'front' ? 'rear' : 'front';
+      peerSide = couplerSides.get(nextKey)?.[oppositeFace];
+    }
+
+    if (!peerSide || peerSide.otherCouplerKey) {
+      if (ext.poe_draw_watts > 0) {
+        unpoweredExternalPoeEndpoints.push(ext.endpoint_id);
+      }
+      continue;
+    }
+
+    const peerDev = peerSide.dev;
+    const peerPort = peerSide.port;
+
+    // Speed check for external endpoint
+    const requiredMbps =
+      ext.required_speed === '10gbe'
+        ? 10000
+        : ext.required_speed === '2.5gbe'
+          ? 2500
+          : ext.required_speed === '1gbe'
+            ? 1000
+            : 100;
+    const peerSpeedMbps = extractMaxPortSpeedMbps(peerPort.capabilities);
+    if (peerSpeedMbps > 0 && peerSpeedMbps < requiredMbps) {
+      issues.push({
+        code: 'SPEED_MISMATCH',
+        severity: 'WARNING',
+        stage: 2,
+        affected_instances: [ppDev.instance_id, peerDev.instance_id],
+        u_range: [
+          Math.min(ppDev.u_range[0], peerDev.u_range[0]),
+          Math.max(ppDev.u_range[1], peerDev.u_range[1])
+        ],
+        message: `External endpoint '${ext.endpoint_id}' (${ext.label}) on '${ppDev.instance_id}:${ppPort.port_id}' requires ${ext.required_speed.toUpperCase()} (${requiredMbps >= 1000 ? `${requiredMbps / 1000}G` : `${requiredMbps}M`}), but connected switch port '${peerDev.instance_id}:${peerPort.port_id}' only supports up to ${peerSpeedMbps >= 1000 ? `${peerSpeedMbps / 1000}G` : `${peerSpeedMbps}M`}.`,
+        remediation_suggestions: [
+          `Patch '${ppDev.instance_id}:${ppPort.port_id}' to a ${ext.required_speed.toUpperCase()}-capable port on '${peerDev.instance_id}' or another switch.`
+        ]
+      });
+    }
+
+    // PoE check for external endpoint
+    if (ext.poe_draw_watts > 0) {
+      const pseInfo = extractPoeOutClassWatts(peerPort.capabilities);
+      if (!pseInfo.supported) {
+        unpoweredExternalPoeEndpoints.push(ext.endpoint_id);
+        issues.push({
+          code: 'UNPOWERED_DEVICE',
+          severity: 'WARNING',
+          stage: 3,
+          affected_instances: [ppDev.instance_id, peerDev.instance_id],
+          u_range: [
+            Math.min(ppDev.u_range[0], peerDev.u_range[0]),
+            Math.max(ppDev.u_range[1], peerDev.u_range[1])
+          ],
+          message: `External PoE endpoint '${ext.endpoint_id}' (${ext.label}, ${ext.poe_draw_watts}W) is patched via '${ppDev.instance_id}:${ppPort.port_id}' to '${peerDev.instance_id}:${peerPort.port_id}', which does not provide PoE output.`,
+          remediation_suggestions: [
+            `Connect '${ppDev.instance_id}:${ppPort.port_id}' to a PoE-capable port on '${peerDev.instance_id}' or another PSE switch.`
+          ]
+        });
+      } else {
+        if (ext.poe_draw_watts > pseInfo.maxWatts) {
+          issues.push({
+            code: 'POE_CLASS_EXCEEDED',
+            severity: 'ERROR',
+            stage: 3,
+            affected_instances: [peerDev.instance_id, ppDev.instance_id],
+            u_range: [peerDev.u_range[0], peerDev.u_range[1]],
+            message: `PoE class exceeded on '${peerDev.instance_id}:${peerPort.port_id}' (class '${pseInfo.className}', max ${pseInfo.maxWatts}W): external endpoint '${ext.endpoint_id}' (${ext.label}) requires ${ext.poe_draw_watts}W.`,
+            remediation_suggestions: [
+              `Patch '${ppDev.instance_id}:${ppPort.port_id}' ('${ext.label}') to a higher-class PoE+/PoE++ port (>= ${ext.poe_draw_watts}W).`
+            ]
+          });
+        }
+
+        let pseRecord = pseBudgetsMap.get(peerDev.instance_id);
+        if (!pseRecord) {
+          pseRecord = {
+            pseDev: peerDev,
+            budgetWatts:
+              peerDev.blueprint.power_and_thermal.poe_budget_watts ?? 0,
+            consumedWatts: 0,
+            downstreamIds: []
+          };
+          pseBudgetsMap.set(peerDev.instance_id, pseRecord);
+        }
+
+        pseRecord.consumedWatts = roundCentis(
+          pseRecord.consumedWatts + ext.poe_draw_watts
+        );
+        if (!pseRecord.downstreamIds.includes(ext.endpoint_id)) {
+          pseRecord.downstreamIds.push(ext.endpoint_id);
+        }
+      }
+    }
+  }
 
   for (const link of logicalLinks) {
     const poeA = extractPoeOutClassWatts(link.portA.capabilities);
@@ -1263,7 +1468,7 @@ export function validateRackProject(
     }
   }
 
-  const unpoweredActiveInstances: string[] = [];
+  const unpoweredActiveInstances: string[] = [...unpoweredExternalPoeEndpoints];
   const powerSources = allDevices.filter(
     (d) =>
       d.blueprint.power_and_thermal.electrical_role === 'pdu' ||

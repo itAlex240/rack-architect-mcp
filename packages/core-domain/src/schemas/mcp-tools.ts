@@ -7,6 +7,9 @@ import {
 import {
   CableConnectionSchema,
   EnclosureTypeSchema,
+  ExternalEndpointCategorySchema,
+  ExternalEndpointSpeedSchema,
+  ExternalEntryPositionSchema,
   RackStandardSchema
 } from './rack-project.js';
 
@@ -159,6 +162,130 @@ export const ExportDeliverablesInputSchema = z.object({
     .describe('Optional target directory where deliverable files will be written.')
 });
 
+export const ExternalEndpointGroupInputSchema = z.object({
+  id_prefix: z
+    .string()
+    .min(1)
+    .optional()
+    .describe('Optional ID prefix for generated endpoints (e.g., "cam", "ap", "room").'),
+  label_prefix: z
+    .string()
+    .min(1)
+    .describe('Human-readable label prefix (e.g., "Kamera", "WLAN Access Point", "Raum LAN").'),
+  custom_labels: z
+    .array(z.string().min(1))
+    .optional()
+    .describe(
+      'Optional per-item custom labels overriding numbered prefix (e.g., ["Büro – PC", "Heimkino – Beamer", "Studio – Workstation"]).'
+    ),
+  category: ExternalEndpointCategorySchema.default('other-lan'),
+  room_or_zone: z
+    .string()
+    .optional()
+    .describe('Building zone or room name (e.g., "Außenbereich", "EG Wohnzimmer", "Wohnräume").'),
+  count: z
+    .number()
+    .int()
+    .positive()
+    .default(1)
+    .describe('Number of external cable drops in this group.'),
+  poe_draw_watts: z
+    .number()
+    .nonnegative()
+    .default(0)
+    .describe('PoE power draw in watts per drop (0 for standard LAN; e.g., 9 for PoE camera, 18 for Wi-Fi AP).'),
+  required_speed: ExternalEndpointSpeedSchema.optional().default('1gbe'),
+  color_hex: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .optional()
+    .describe('Hex color code for this group of cables (defaults to category color if omitted).'),
+  vlan_id: z
+    .number()
+    .int()
+    .min(1)
+    .max(4094)
+    .optional()
+    .describe('Optional IEEE 802.1Q VLAN ID assigned to this group.')
+});
+
+export const ExternalEndpointItemInputSchema = z.object({
+  endpoint_id: z
+    .string()
+    .min(1)
+    .optional()
+    .describe('Optional explicit endpoint_id (auto-generated if omitted).'),
+  label: z
+    .string()
+    .min(1)
+    .describe('Human-readable label for this room/device drop (e.g., "Kamera 1 – Einfahrt").'),
+  category: ExternalEndpointCategorySchema.default('other-lan'),
+  room_or_zone: z.string().optional().describe('Optional building zone or room name.'),
+  poe_draw_watts: z
+    .number()
+    .nonnegative()
+    .default(0)
+    .describe('Required PoE power draw in watts (0 for non-PoE LAN).'),
+  required_speed: ExternalEndpointSpeedSchema.optional().default('1gbe'),
+  patch_panel_port_id: z
+    .string()
+    .min(1)
+    .optional()
+    .describe('Optional explicit patch panel port_id (e.g., "p1"); auto-assigned sequentially if omitted.'),
+  color_hex: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .optional()
+    .describe('Optional hex color code for this drop and its front patch cable.'),
+  vlan_id: z.number().int().min(1).max(4094).optional().describe('Optional VLAN ID (1..4094).'),
+  notes: z.string().optional().describe('Optional installation notes.')
+});
+
+export const PlanExternalEndpointsInputSchema = z.object({
+  patch_panel_instance_id: z
+    .string()
+    .min(1)
+    .describe('Mounted patch panel instance_id whose rear ports receive the incoming building cable drops.'),
+  start_port_number: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe('1-indexed starting port number on the patch panel (defaults to next free rear port or 1).'),
+  entry_position: ExternalEntryPositionSchema.optional().default('top-rear'),
+  groups: z
+    .array(ExternalEndpointGroupInputSchema)
+    .optional()
+    .describe(
+      'Batch groups of external drops (e.g., 10x PoE cameras, 5x Wi-Fi APs, 5x room LAN outlets).'
+    ),
+  endpoints: z
+    .array(ExternalEndpointItemInputSchema)
+    .optional()
+    .describe('Individual external building/room drops to terminate on the rear of the patch panel.'),
+  auto_connect_switch_instance_id: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      'Optional switch instance_id to automatically patch from the front of the patch panel using labeled Cat6A cables.'
+    ),
+  auto_connect_switch_start_port: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .default(1)
+    .describe('1-indexed starting Ethernet port number on auto_connect_switch_instance_id (e.g., 1 for eth1).'),
+  clear_existing: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe(
+      'If true, clears existing external_endpoints (and their front patch cables) on patch_panel_instance_id before planning.'
+    )
+});
+
 export const UndoRedoInputSchema = z.object({
   action: z
     .enum(['undo', 'redo'])
@@ -229,6 +356,13 @@ export const MCP_TOOL_DEFINITIONS = {
     description:
       'Disconnect cables by cable_id or remove all cables attached to a device instance_id.',
     inputSchema: DisconnectCablesInputSchema,
+    annotations: { readOnlyHint: false } satisfies McpToolAnnotations
+  },
+  plan_external_endpoints: {
+    name: 'plan_external_endpoints',
+    description:
+      'Terminate external building/house cable drops (PoE cameras, Wi-Fi APs, room LAN outlets) onto the rear of a patch panel without consuming rack U slots, and optionally auto-patch the front ports to a switch with labeled cables.',
+    inputSchema: PlanExternalEndpointsInputSchema,
     annotations: { readOnlyHint: false } satisfies McpToolAnnotations
   },
   validate_rack: {

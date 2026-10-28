@@ -447,4 +447,166 @@ describe('@rack-mcp/mcp-server End-to-End Agentic Workflow & Sidecar Suite', () 
       await primarySidecar.close();
     }
   });
+
+  it('plans external building/room endpoints (cameras, Wi-Fi APs, room drops) on rear patch panel and auto-creates front switch patch cables', () => {
+    const tmpDir = createTempDir();
+    const projectPath = path.join(tmpDir, 'rack.yaml');
+    const exportDir = path.join(tmpDir, 'exports');
+    const stateManager = new ProjectStateManager({ projectPath });
+    const handlers = new RackMcpToolHandlers(stateManager);
+
+    handlers.initRack({
+      project_name: '19-Inch Smart Building & PoE Rack',
+      standard: '19inch',
+      u_height: 12,
+      rail_depth_mm: 450,
+      enclosure_type: 'closed-vented-front'
+    });
+
+    handlers.mountEquipment({
+      instance_id: 'ups-u1',
+      blueprint_slug: 'apc-smart-ups-1500-2u',
+      u_position: 1,
+      face: 'front'
+    });
+    handlers.mountEquipment({
+      instance_id: 'sw-poe-u10',
+      blueprint_slug: 'ubiquiti-usw-pro-max-24-poe',
+      u_position: 10,
+      face: 'front'
+    });
+    handlers.mountEquipment({
+      instance_id: 'patch-u12',
+      blueprint_slug: 'generic-19inch-patch-panel-24port-cat6a',
+      u_position: 12,
+      face: 'front'
+    });
+    handlers.connectCables({
+      cables: [
+        {
+          cable_id: 'pwr-ups-to-sw',
+          cable_type: 'power-c13-c14',
+          from: { instance_id: 'ups-u1', port_id: 'iec_out1', face: 'rear' },
+          to: { instance_id: 'sw-poe-u10', port_id: 'ac_in', face: 'rear' }
+        }
+      ]
+    });
+
+    const planRes = handlers.planExternalEndpoints({
+      patch_panel_instance_id: 'patch-u12',
+      auto_connect_switch_instance_id: 'sw-poe-u10',
+      groups: [
+        {
+          id_prefix: 'cam',
+          label_prefix: 'Außenkamera',
+          category: 'poe-camera',
+          count: 10,
+          poe_draw_watts: 9,
+          required_speed: '1gbe',
+          room_or_zone: 'Außenbereich',
+          color_hex: '#F59E0B',
+          vlan_id: 30
+        },
+        {
+          id_prefix: 'ap',
+          label_prefix: 'UniFi Wi-Fi 7 AP',
+          category: 'wifi-ap',
+          count: 5,
+          poe_draw_watts: 18,
+          required_speed: '2.5gbe',
+          room_or_zone: 'Haus WLAN',
+          color_hex: '#0EA5E9',
+          vlan_id: 20
+        }
+      ],
+      endpoints: [
+        {
+          endpoint_id: 'room-buero-pc',
+          label: 'Büro — Gaming- & Arbeits-PC',
+          category: 'wall-outlet-pc',
+          room_or_zone: 'EG Büro',
+          poe_draw_watts: 0,
+          required_speed: '2.5gbe',
+          color_hex: '#10B981',
+          vlan_id: 10
+        },
+        {
+          endpoint_id: 'room-kino-beamer',
+          label: 'Heimkino — 4K Laser-Beamer',
+          category: 'projector-media',
+          room_or_zone: 'KG Heimkino',
+          poe_draw_watts: 0,
+          required_speed: '1gbe',
+          color_hex: '#A855F7',
+          vlan_id: 40
+        },
+        {
+          endpoint_id: 'room-gast-laptop',
+          label: 'Arbeitszimmer — Laptop Wanddose',
+          category: 'wall-outlet-pc',
+          room_or_zone: '1. OG Arbeitszimmer',
+          poe_draw_watts: 0,
+          required_speed: '1gbe',
+          color_hex: '#10B981',
+          vlan_id: 10
+        },
+        {
+          endpoint_id: 'room-studio-workstation',
+          label: 'Studio — CAD Workstation',
+          category: 'workstation-dock',
+          room_or_zone: '1. OG Studio',
+          poe_draw_watts: 0,
+          required_speed: '2.5gbe',
+          color_hex: '#3B82F6',
+          vlan_id: 10
+        },
+        {
+          endpoint_id: 'room-homeoffice-dock',
+          label: 'Home-Office — Thunderbolt Docking Station',
+          category: 'workstation-dock',
+          room_or_zone: 'DG Home-Office',
+          poe_draw_watts: 0,
+          required_speed: '2.5gbe',
+          color_hex: '#3B82F6',
+          vlan_id: 10
+        }
+      ]
+    });
+
+    expect(planRes.status).toBe('VALID');
+    const planData = planRes.data as {
+      readonly added_endpoints_count: number;
+      readonly auto_patched_cables_count: number;
+      readonly patching_guide: ReadonlyArray<{
+        readonly endpoint_id: string;
+        readonly rear_punchdown: string;
+        readonly front_patch_cable: string;
+      }>;
+    };
+    expect(planData.added_endpoints_count).toBe(20);
+    expect(planData.auto_patched_cables_count).toBe(20);
+    expect(planData.patching_guide).toHaveLength(20);
+    expect(planData.patching_guide[0]?.rear_punchdown).toContain(
+      'patch-u12:p1'
+    );
+    expect(planData.patching_guide[0]?.front_patch_cable).toContain(
+      'sw-poe-u10:'
+    );
+
+    const scene = stateManager.getScene();
+    expect(scene.project.external_endpoints).toHaveLength(20);
+    // 10 * 9W + 5 * 18W = 180W PoE load traced through passive patch panel couplers!
+    expect(scene.validation.power_summary.total_poe_watts).toBe(180);
+
+    const expRes = handlers.exportDeliverables({
+      formats: ['bom-md'],
+      output_dir: exportDir
+    });
+    expect(expRes.status).toBe('VALID');
+    const bomText = fs.readFileSync(path.join(exportDir, 'BOM.md'), 'utf8');
+    expect(bomText).toContain(
+      '### Phase C: External Building / Room Cable Drops (Step-by-Step Patching Guide)'
+    );
+    expect(bomText).toContain('Heimkino — 4K Laser-Beamer');
+  });
 });

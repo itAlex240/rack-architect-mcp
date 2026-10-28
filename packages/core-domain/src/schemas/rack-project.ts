@@ -155,13 +155,117 @@ export const CableConnectionSchema = z
   .describe('Point-to-point physical cable connection between two ports.');
 export type CableConnection = z.infer<typeof CableConnectionSchema>;
 
+export const ExternalEndpointCategorySchema = z
+  .enum([
+    'poe-camera',
+    'wifi-ap',
+    'wall-outlet-pc',
+    'projector-media',
+    'workstation-dock',
+    'iot-controller',
+    'isp-wan-uplink',
+    'other-lan'
+  ])
+  .describe(
+    'Physical category of an external building or room drop entering the rack from outside.'
+  );
+export type ExternalEndpointCategory = z.infer<
+  typeof ExternalEndpointCategorySchema
+>;
+
+export const ExternalEntryPositionSchema = z
+  .enum(['top-rear', 'bottom-rear'])
+  .default('top-rear')
+  .describe('Rear building cable conduit entry point into the rack frame.');
+export type ExternalEntryPosition = z.infer<typeof ExternalEntryPositionSchema>;
+
+export const ExternalEndpointSpeedSchema = z
+  .enum(['100m', '1gbe', '2.5gbe', '10gbe'])
+  .default('1gbe')
+  .describe('Required Ethernet link speed for the external room/device drop.');
+export type ExternalEndpointSpeed = z.infer<typeof ExternalEndpointSpeedSchema>;
+
+export const ExternalEndpointSchema = z
+  .object({
+    endpoint_id: z
+      .string()
+      .min(1)
+      .describe(
+        'Unique project-wide identifier for the external building/room drop (e.g., "cam-01", "ap-eg-01", "room-office-pc").'
+      ),
+    label: z
+      .string()
+      .min(1)
+      .describe(
+        'Human-readable label shown on cable badges and patching instructions (e.g., "Kamera 1 – Einfahrt", "Büro – Workstation").'
+      ),
+    category: ExternalEndpointCategorySchema.default('other-lan'),
+    room_or_zone: z
+      .string()
+      .optional()
+      .describe(
+        'Optional building zone or room name (e.g., "Außenbereich", "EG Wohnzimmer", "OG Büro", "Heimkino").'
+      ),
+    poe_draw_watts: z
+      .number()
+      .nonnegative()
+      .default(0)
+      .describe(
+        'Required PoE power draw in watts (0 for non-PoE LAN drops; e.g., 9W for PoE camera, 18W for Wi-Fi 7 AP).'
+      ),
+    required_speed: ExternalEndpointSpeedSchema,
+    entry_position: ExternalEntryPositionSchema,
+    patch_panel_instance_id: z
+      .string()
+      .min(1)
+      .describe(
+        'Target patch panel instance_id where the incoming building cable is punched down on the rear face.'
+      ),
+    patch_panel_port_id: z
+      .string()
+      .min(1)
+      .describe(
+        'Target port_id on the patch panel rear face (e.g., "p1" .. "p24").'
+      ),
+    color_hex: z
+      .string()
+      .regex(/^#[0-9A-Fa-f]{6}$/)
+      .default('#38BDF8')
+      .describe(
+        'Hex color code for the external cable drop and its front patch guide.'
+      ),
+    vlan_id: z
+      .number()
+      .int()
+      .min(1)
+      .max(4094)
+      .optional()
+      .describe(
+        'Optional IEEE 802.1Q VLAN ID assigned to this room/device drop (1..4094).'
+      ),
+    notes: z
+      .string()
+      .optional()
+      .describe('Optional user-facing installation note.')
+  })
+  .describe(
+    'External building/house cable drop entering from outside the rack and terminating on the rear of a patch panel (consuming 0U of rack space).'
+  );
+export type ExternalEndpoint = z.infer<typeof ExternalEndpointSchema>;
+
 export const RackProjectSchema = z
   .object({
     schema_version: z.literal('1.0').default('1.0'),
     project_name: z.string().min(1).describe('Human-readable name of the rack layout project.'),
     rack: RackConfigSchema,
     mounted_devices: z.array(MountedDeviceSchema).default([]),
-    cables: z.array(CableConnectionSchema).default([])
+    cables: z.array(CableConnectionSchema).default([]),
+    external_endpoints: z
+      .array(ExternalEndpointSchema)
+      .default([])
+      .describe(
+        'External building/room cable drops (PoE cameras, Wi-Fi APs, room wall outlets) entering from the rear conduit onto a patch panel.'
+      )
   })
   .describe('Root declarative Rack-as-Code state schema (rack.yaml).');
 

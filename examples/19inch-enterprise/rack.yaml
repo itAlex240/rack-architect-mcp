@@ -68,227 +68,19 @@ mounted_devices:
     face: front
     hostname: USW-Pro-Max 24 PoE++ Switch (U10)
     children: []
-  - instance_id: patch-ext-u11
-    blueprint_slug: generic-19inch-patch-panel-24port-cat6a
+  - instance_id: brush-portal-u11
+    blueprint_slug: generic-19inch-brush-panel-1u
     u_position: 11
     face: front
-    hostname: 24-Port Cat6A Building Patch Panel (U11)
+    hostname: 19-Inch Top Brush Strip Cable Portal (U11)
     children: []
-  - instance_id: ext-building-demarc
-    blueprint_slug: enterprise-poe-field-demarcation-16port-1u
+  - instance_id: patch-ext-u11
+    blueprint_slug: generic-19inch-patch-panel-24port-cat6a
     u_position: 12
     face: front
-    hostname: External Building LAN & PoE++ Trunk (16x Drops, U12)
+    hostname: 24-Port Cat6A Building Patch Panel (U12)
     children: []
 cables:
-  - cable_id: ext-drop-01
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext1
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p2
-      face: rear
-    cable_type: cat6a
-    color_hex: "#EF4444"
-    label: Incoming ISP WAN 1 Drop
-    vlan_id: 901
-  - cable_id: ext-drop-02
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext2
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p3
-      face: rear
-    cable_type: cat6a
-    color_hex: "#EF4444"
-    label: Incoming ISP WAN 2 Drop
-    vlan_id: 902
-  - cable_id: ext-drop-03
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext3
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p8
-      face: rear
-    cable_type: cat6a
-    color_hex: "#0EA5E9"
-    label: "External Wi-Fi 7 PoE++ AP #1 Drop"
-    vlan_id: 20
-  - cable_id: ext-drop-04
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext4
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p9
-      face: rear
-    cable_type: cat6a
-    color_hex: "#0EA5E9"
-    label: "External Wi-Fi 7 PoE++ AP #2 Drop"
-    vlan_id: 20
-  - cable_id: ext-drop-05
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext5
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p10
-      face: rear
-    cable_type: cat6a
-    color_hex: "#0EA5E9"
-    label: "External Wi-Fi 7 PoE++ AP #3 Drop"
-    vlan_id: 20
-  - cable_id: ext-drop-06
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext6
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p11
-      face: rear
-    cable_type: cat6a
-    color_hex: "#0EA5E9"
-    label: "External Wi-Fi 7 PoE++ AP #4 Drop"
-    vlan_id: 20
-  - cable_id: ext-drop-07
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext7
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p12
-      face: rear
-    cable_type: cat6a
-    color_hex: "#0EA5E9"
-    label: "External Wi-Fi 7 PoE++ AP #5 Drop"
-    vlan_id: 20
-  - cable_id: ext-drop-08
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext8
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p13
-      face: rear
-    cable_type: cat6a
-    color_hex: "#0EA5E9"
-    label: "External Wi-Fi 7 PoE++ AP #6 Drop"
-    vlan_id: 20
-  - cable_id: ext-drop-09
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext9
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p14
-      face: rear
-    cable_type: cat6a
-    color_hex: "#F59E0B"
-    label: "External 4K PoE+ Camera #1 Drop"
-    vlan_id: 30
-  - cable_id: ext-drop-10
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext10
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p15
-      face: rear
-    cable_type: cat6a
-    color_hex: "#F59E0B"
-    label: "External 4K PoE+ Camera #2 Drop"
-    vlan_id: 30
-  - cable_id: ext-drop-11
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext11
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p16
-      face: rear
-    cable_type: cat6a
-    color_hex: "#F59E0B"
-    label: "External 4K PoE+ Camera #3 Drop"
-    vlan_id: 30
-  - cable_id: ext-drop-12
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext12
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p17
-      face: rear
-    cable_type: cat6a
-    color_hex: "#F59E0B"
-    label: "External 4K PoE+ Camera #4 Drop"
-    vlan_id: 30
-  - cable_id: ext-drop-13
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext13
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p18
-      face: rear
-    cable_type: cat6a
-    color_hex: "#F59E0B"
-    label: "External 4K PoE+ Camera #5 Drop"
-    vlan_id: 30
-  - cable_id: ext-drop-14
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext14
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p19
-      face: rear
-    cable_type: cat6a
-    color_hex: "#F59E0B"
-    label: "External 4K PoE+ Camera #6 Drop"
-    vlan_id: 30
-  - cable_id: ext-drop-15
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext15
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p20
-      face: rear
-    cable_type: cat6a
-    color_hex: "#10B981"
-    label: "External PoE+ Door Access #1 Drop"
-    vlan_id: 40
-  - cable_id: ext-drop-16
-    from:
-      instance_id: ext-building-demarc
-      port_id: ext16
-      face: rear
-    to:
-      instance_id: patch-ext-u11
-      port_id: p21
-      face: rear
-    cable_type: cat6a
-    color_hex: "#10B981"
-    label: "External PoE+ Door Access #2 Drop"
-    vlan_id: 40
   - cable_id: wan1-patch-to-ngfw
     from:
       instance_id: patch-ext-u11
@@ -752,3 +544,180 @@ cables:
     cable_type: power-dc-5525
     color_hex: "#27272A"
     label: UPS 20V DC Out 2 -> Proxmox Node 02 (65W)
+external_endpoints:
+  - endpoint_id: ext-wan-01
+    label: Primary Fiber ONT (ISP 1)
+    room_or_zone: Hausanschlussraum (HAR)
+    category: isp-wan-uplink
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p2
+    poe_draw_watts: 0
+    required_speed: 2.5gbe
+    entry_position: top-rear
+    color_hex: "#EF4444"
+    vlan_id: 901
+  - endpoint_id: ext-wan-02
+    label: Backup 5G/Cable Modem (ISP 2)
+    room_or_zone: Hausanschlussraum (HAR)
+    category: isp-wan-uplink
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p3
+    poe_draw_watts: 0
+    required_speed: 1gbe
+    entry_position: top-rear
+    color_hex: "#F97316"
+    vlan_id: 902
+  - endpoint_id: ext-wifi-ap-01
+    label: "Wi-Fi 7 PoE++ AP #1"
+    room_or_zone: Empfang / EG Foyer
+    category: wifi-ap
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p8
+    poe_draw_watts: 22
+    required_speed: 2.5gbe
+    entry_position: top-rear
+    color_hex: "#0EA5E9"
+    vlan_id: 20
+  - endpoint_id: ext-wifi-ap-02
+    label: "Wi-Fi 7 PoE++ AP #2"
+    room_or_zone: Großraumbüro Nord (1. OG)
+    category: wifi-ap
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p9
+    poe_draw_watts: 22
+    required_speed: 2.5gbe
+    entry_position: top-rear
+    color_hex: "#0EA5E9"
+    vlan_id: 20
+  - endpoint_id: ext-wifi-ap-03
+    label: "Wi-Fi 7 PoE++ AP #3"
+    room_or_zone: Großraumbüro Süd (1. OG)
+    category: wifi-ap
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p10
+    poe_draw_watts: 22
+    required_speed: 2.5gbe
+    entry_position: top-rear
+    color_hex: "#0EA5E9"
+    vlan_id: 20
+  - endpoint_id: ext-wifi-ap-04
+    label: "Wi-Fi 7 PoE++ AP #4"
+    room_or_zone: Konferenzraum & Beamer-Zone (2. OG)
+    category: wifi-ap
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p11
+    poe_draw_watts: 22
+    required_speed: 2.5gbe
+    entry_position: top-rear
+    color_hex: "#0EA5E9"
+    vlan_id: 20
+  - endpoint_id: ext-wifi-ap-05
+    label: "Wi-Fi 7 PoE++ AP #5"
+    room_or_zone: Entwickler-Labor (2. OG)
+    category: wifi-ap
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p12
+    poe_draw_watts: 22
+    required_speed: 2.5gbe
+    entry_position: top-rear
+    color_hex: "#0EA5E9"
+    vlan_id: 20
+  - endpoint_id: ext-wifi-ap-06
+    label: "Wi-Fi 7 PoE++ AP #6"
+    room_or_zone: Dachterrasse / Lounge (3. OG)
+    category: wifi-ap
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p13
+    poe_draw_watts: 22
+    required_speed: 2.5gbe
+    entry_position: top-rear
+    color_hex: "#0EA5E9"
+    vlan_id: 20
+  - endpoint_id: ext-cam-01
+    label: "4K PoE+ Security Cam #1"
+    room_or_zone: Haupteingang Außen
+    category: poe-camera
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p14
+    poe_draw_watts: 12
+    required_speed: 1gbe
+    entry_position: top-rear
+    color_hex: "#F59E0B"
+    vlan_id: 30
+  - endpoint_id: ext-cam-02
+    label: "4K PoE+ Security Cam #2"
+    room_or_zone: Tiefgarage Einfahrt
+    category: poe-camera
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p15
+    poe_draw_watts: 12
+    required_speed: 1gbe
+    entry_position: top-rear
+    color_hex: "#F59E0B"
+    vlan_id: 30
+  - endpoint_id: ext-cam-03
+    label: "4K PoE+ Security Cam #3"
+    room_or_zone: Serverraum Schleuse
+    category: poe-camera
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p16
+    poe_draw_watts: 12
+    required_speed: 1gbe
+    entry_position: top-rear
+    color_hex: "#F59E0B"
+    vlan_id: 30
+  - endpoint_id: ext-cam-04
+    label: "4K PoE+ Security Cam #4"
+    room_or_zone: Lieferzone Nord
+    category: poe-camera
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p17
+    poe_draw_watts: 12
+    required_speed: 1gbe
+    entry_position: top-rear
+    color_hex: "#F59E0B"
+    vlan_id: 30
+  - endpoint_id: ext-cam-05
+    label: "4K PoE+ Security Cam #5"
+    room_or_zone: Innenhof Süd
+    category: poe-camera
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p18
+    poe_draw_watts: 12
+    required_speed: 1gbe
+    entry_position: top-rear
+    color_hex: "#F59E0B"
+    vlan_id: 30
+  - endpoint_id: ext-cam-06
+    label: "4K PoE+ Security Cam #6"
+    room_or_zone: Flur 1. OG
+    category: poe-camera
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p19
+    poe_draw_watts: 12
+    required_speed: 1gbe
+    entry_position: top-rear
+    color_hex: "#F59E0B"
+    vlan_id: 30
+  - endpoint_id: ext-door-01
+    label: "PoE+ Door Access Reader #1"
+    room_or_zone: Haupteingang Schleuse
+    category: iot-controller
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p20
+    poe_draw_watts: 15
+    required_speed: 1gbe
+    entry_position: top-rear
+    color_hex: "#10B981"
+    vlan_id: 40
+  - endpoint_id: ext-door-02
+    label: "PoE+ Door Access Reader #2"
+    room_or_zone: Serverraum Tür
+    category: iot-controller
+    patch_panel_instance_id: patch-ext-u11
+    patch_panel_port_id: p21
+    poe_draw_watts: 15
+    required_speed: 1gbe
+    entry_position: top-rear
+    color_hex: "#10B981"
+    vlan_id: 40

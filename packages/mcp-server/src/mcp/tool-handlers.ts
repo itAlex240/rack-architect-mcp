@@ -10,10 +10,14 @@ import {
   InitRackInputSchema,
   ModifyEquipmentInputSchema,
   MountEquipmentInputSchema,
+  PlanExternalEndpointsInputSchema,
   SearchCatalogInputSchema,
   UndoRedoInputSchema,
   ValidateRackInputSchema,
+  type CableConnection,
   type DiagnosticIssue,
+  type ExternalEndpoint,
+  type ExternalEndpointCategory,
   type MountedChildDevice,
   type MountedDevice,
   type RackProject
@@ -208,7 +212,8 @@ export class RackMcpToolHandlers {
         rear_clearance_mm: input.rear_clearance_mm
       },
       mounted_devices: [],
-      cables: []
+      cables: [],
+      external_endpoints: []
     };
 
     const scene = this.stateManager.applyMutation(nextProject, 'init');
@@ -455,6 +460,9 @@ export class RackMcpToolHandlers {
           }
           return !attached;
         });
+        nextProject.external_endpoints = (
+          nextProject.external_endpoints ?? []
+        ).filter((ext) => !removedDeviceIds.has(ext.patch_panel_instance_id));
       }
     } else if (input.action === 'rename') {
       const targetHostname = input.hostname ?? input.new_hostname;
@@ -629,6 +637,361 @@ export class RackMcpToolHandlers {
       data: {
         removed_cable_ids: removedCableIds,
         remaining_cables_count: scene.project.cables.length,
+        validation: scene.validation
+      },
+      issues: scene.validation.issues
+    });
+  }
+
+  public planExternalEndpoints(
+    rawInput: z.input<typeof PlanExternalEndpointsInputSchema>
+  ): ToolExecutionEnvelope {
+    const input = PlanExternalEndpointsInputSchema.parse(rawInput);
+    const currentProject = this.stateManager.getProject();
+    const catalog = this.stateManager.getCatalog();
+
+    // Locate target patch panel
+    const findMounted = (id: string) => {
+      for (const dev of currentProject.mounted_devices) {
+        if (dev.instance_id === id) {
+          return { dev, face: dev.face };
+        }
+        for (const child of dev.children) {
+          if (child.instance_id === id) {
+            return { dev: child, face: dev.face };
+          }
+        }
+      }
+      return undefined;
+    };
+
+    const ppLookup = findMounted(input.patch_panel_instance_id);
+    if (!ppLookup) {
+      const mountedIds = currentProject.mounted_devices.map((d) => d.instance_id);
+      const issue: DiagnosticIssue = {
+        code: 'PORT_NOT_FOUND',
+        severity: 'ERROR',
+        message: `Patch panel '${input.patch_panel_instance_id}' is not mounted in the rack.`,
+        affected_instances: [input.patch_panel_instance_id],
+        remediation_suggestions: [
+          mountedIds.length > 0
+            ? `Mount a patch panel (e.g., 'generic-19inch-keystone-patch-24p-1u' or 'generic-10inch-keystone-patch-12p-1u') first, or use one of the mounted devices: ${mountedIds.join(', ')}.`
+            : `Mount a patch panel first using mount_equipment.`
+        ]
+      };
+      return this.finalize('plan_external_endpoints', {
+        status: 'INVALID',
+        summary: issue.message,
+        data: { patch_panel_instance_id: input.patch_panel_instance_id },
+        issues: [issue]
+      });
+    }
+
+    const ppBp = catalog.getBlueprintBySlug(ppLookup.dev.blueprint_slug);
+    if (!ppBp) {
+      const issue: DiagnosticIssue = {
+        code: 'BLUEPRINT_NOT_FOUND',
+        severity: 'ERROR',
+        message: `Blueprint '${ppLookup.dev.blueprint_slug}' for '${input.patch_panel_instance_id}' was not found.`,
+        affected_instances: [input.patch_panel_instance_id],
+        remediation_suggestions: [`Verify blueprint '${ppLookup.dev.blueprint_slug}' exists in catalog.`]
+      };
+      return this.finalize('plan_external_endpoints', {
+        status: 'INVALID',
+        summary: issue.message,
+        data: { patch_panel_instance_id: input.patch_panel_instance_id },
+        issues: [issue]
+      });
+    }
+
+    let switchLookup: ReturnType<typeof findMounted> | undefined;
+    let switchBp: ReturnType<typeof catalog.getBlueprintBySlug> | undefined;
+    if (input.auto_connect_switch_instance_id !== undefined) {
+      switchLookup = findMounted(input.auto_connect_switch_instance_id);
+      if (!switchLookup) {
+        const issue: DiagnosticIssue = {
+          code: 'PORT_NOT_FOUND',
+          severity: 'ERROR',
+          message: `Target switch '${input.auto_connect_switch_instance_id}' is not mounted in the rack.`,
+          affected_instances: [input.auto_connect_switch_instance_id],
+          remediation_suggestions: [
+            `Mount switch '${input.auto_connect_switch_instance_id}' first or specify a mounted switch instance_id.`
+          ]
+        };
+        return this.finalize('plan_external_endpoints', {
+          status: 'INVALID',
+          summary: issue.message,
+          data: { auto_connect_switch_instance_id: input.auto_connect_switch_instance_id },
+          issues: [issue]
+        });
+      }
+      switchBp = catalog.getBlueprintBySlug(switchLookup.dev.blueprint_slug);
+    }
+
+    const nextProject = structuredClone(currentProject);
+    nextProject.external_endpoints = nextProject.external_endpoints ?? [];
+
+    if (input.clear_existing) {
+      const clearedPorts = new Set(
+        nextProject.external_endpoints
+          .filter((e) => e.patch_panel_instance_id === input.patch_panel_instance_id)
+          .map((e) => e.patch_panel_port_id)
+      );
+      nextProject.external_endpoints = nextProject.external_endpoints.filter(
+        (e) => e.patch_panel_instance_id !== input.patch_panel_instance_id
+      );
+      nextProject.cables = nextProject.cables.filter((c) => {
+        const isFromClearedPp =
+          c.from.instance_id === input.patch_panel_instance_id &&
+          clearedPorts.has(c.from.port_id);
+        const isToClearedPp =
+          c.to.instance_id === input.patch_panel_instance_id &&
+          clearedPorts.has(c.to.port_id);
+        return !isFromClearedPp && !isToClearedPp;
+      });
+    }
+
+    const defaultCategoryColors: Record<ExternalEndpointCategory, string> = {
+      'poe-camera': '#F59E0B',
+      'wifi-ap': '#06B6D4',
+      'wall-outlet-pc': '#3B82F6',
+      'projector-media': '#A855F7',
+      'workstation-dock': '#10B981',
+      'iot-controller': '#EC4899',
+      'isp-wan-uplink': '#EF4444',
+      'other-lan': '#38BDF8'
+    };
+
+    interface PendingDrop {
+      endpoint_id?: string | undefined;
+      label: string;
+      category: ExternalEndpointCategory;
+      room_or_zone?: string | undefined;
+      poe_draw_watts: number;
+      required_speed: '100m' | '1gbe' | '2.5gbe' | '10gbe';
+      patch_panel_port_id?: string | undefined;
+      color_hex: string;
+      vlan_id?: number | undefined;
+      notes?: string | undefined;
+    }
+
+    const pendingDrops: PendingDrop[] = [];
+
+    for (const grp of input.groups ?? []) {
+      const idPrefix =
+        grp.id_prefix ??
+        grp.category
+          .replace(/[^a-z0-9]+/gi, '-')
+          .replace(/^-|-$/g, '')
+          .toLowerCase();
+      const colorHex = grp.color_hex ?? defaultCategoryColors[grp.category];
+      for (let i = 0; i < grp.count; i++) {
+        const customLabel = grp.custom_labels?.[i];
+        const label =
+          customLabel ??
+          (grp.count === 1 ? grp.label_prefix : `${grp.label_prefix} ${i + 1}`);
+        pendingDrops.push({
+          endpoint_id: `${idPrefix}-${String(i + 1).padStart(2, '0')}`,
+          label,
+          category: grp.category,
+          room_or_zone: grp.room_or_zone,
+          poe_draw_watts: grp.poe_draw_watts,
+          required_speed: grp.required_speed ?? '1gbe',
+          color_hex: colorHex,
+          vlan_id: grp.vlan_id
+        });
+      }
+    }
+
+    for (const ep of input.endpoints ?? []) {
+      const colorHex = ep.color_hex ?? defaultCategoryColors[ep.category];
+      pendingDrops.push({
+        endpoint_id: ep.endpoint_id,
+        label: ep.label,
+        category: ep.category,
+        room_or_zone: ep.room_or_zone,
+        poe_draw_watts: ep.poe_draw_watts,
+        required_speed: ep.required_speed ?? '1gbe',
+        patch_panel_port_id: ep.patch_panel_port_id,
+        color_hex: colorHex,
+        vlan_id: ep.vlan_id,
+        notes: ep.notes
+      });
+    }
+
+    const usedEndpointIds = new Set(
+      nextProject.external_endpoints.map((e) => e.endpoint_id)
+    );
+    const usedRearPpPorts = new Set(
+      nextProject.external_endpoints
+        .filter((e) => e.patch_panel_instance_id === input.patch_panel_instance_id)
+        .map((e) => e.patch_panel_port_id)
+    );
+
+    const ppPorts = ppBp.ports.filter((p) => p.connector_type === 'rj45');
+    let nextPpIndex =
+      input.start_port_number !== undefined
+        ? Math.max(0, input.start_port_number - 1)
+        : 0;
+
+    // Prepare available Ethernet ports on auto_connect_switch_instance_id
+    const occupiedSwitchPorts = new Set<string>();
+    if (input.auto_connect_switch_instance_id !== undefined) {
+      for (const c of nextProject.cables) {
+        if (c.from.instance_id === input.auto_connect_switch_instance_id) {
+          occupiedSwitchPorts.add(c.from.port_id);
+        }
+        if (c.to.instance_id === input.auto_connect_switch_instance_id) {
+          occupiedSwitchPorts.add(c.to.port_id);
+        }
+      }
+    }
+    const switchEthPorts =
+      switchBp?.ports.filter((p) => p.connector_type === 'rj45') ?? [];
+    let nextSwitchIndex = Math.max(
+      0,
+      (input.auto_connect_switch_start_port ?? 1) - 1
+    );
+
+    const addedEndpoints: ExternalEndpoint[] = [];
+    const autoCreatedCables: CableConnection[] = [];
+    const patchingGuide: Array<{
+      readonly step_number: number;
+      readonly endpoint_id: string;
+      readonly label: string;
+      readonly room_or_zone: string;
+      readonly poe_draw_watts: number;
+      readonly rear_punchdown: string;
+      readonly front_patch_cable: string;
+      readonly color_hex: string;
+    }> = [];
+
+    for (let idx = 0; idx < pendingDrops.length; idx++) {
+      const item = pendingDrops[idx]!;
+
+      // Resolve unique endpoint_id
+      let endpointId =
+        item.endpoint_id ??
+        `ext-${String(nextProject.external_endpoints.length + 1).padStart(2, '0')}`;
+      let suffix = 2;
+      while (usedEndpointIds.has(endpointId)) {
+        endpointId = `${item.endpoint_id ?? 'ext'}-${suffix}`;
+        suffix++;
+      }
+      usedEndpointIds.add(endpointId);
+
+      // Resolve target patch panel port
+      let ppPortId = item.patch_panel_port_id;
+      if (!ppPortId) {
+        while (
+          nextPpIndex < ppPorts.length &&
+          usedRearPpPorts.has(ppPorts[nextPpIndex]!.port_id)
+        ) {
+          nextPpIndex++;
+        }
+        ppPortId =
+          ppPorts[nextPpIndex]?.port_id ?? `p${nextPpIndex + 1}`;
+        nextPpIndex++;
+      }
+      usedRearPpPorts.add(ppPortId);
+
+      const extObj: ExternalEndpoint = {
+        endpoint_id: endpointId,
+        label: item.label,
+        category: item.category,
+        poe_draw_watts: item.poe_draw_watts,
+        required_speed: item.required_speed,
+        entry_position: input.entry_position ?? 'top-rear',
+        patch_panel_instance_id: input.patch_panel_instance_id,
+        patch_panel_port_id: ppPortId,
+        color_hex: item.color_hex,
+        ...(item.room_or_zone !== undefined
+          ? { room_or_zone: item.room_or_zone }
+          : {}),
+        ...(item.vlan_id !== undefined ? { vlan_id: item.vlan_id } : {}),
+        ...(item.notes !== undefined ? { notes: item.notes } : {})
+      };
+      nextProject.external_endpoints.push(extObj);
+      addedEndpoints.push(extObj);
+
+      let frontPatchDescription = 'Noch nicht vorne gepatcht';
+
+      if (
+        input.auto_connect_switch_instance_id !== undefined &&
+        switchLookup !== undefined
+      ) {
+        while (
+          nextSwitchIndex < switchEthPorts.length &&
+          occupiedSwitchPorts.has(switchEthPorts[nextSwitchIndex]!.port_id)
+        ) {
+          nextSwitchIndex++;
+        }
+        const swPortId =
+          switchEthPorts[nextSwitchIndex]?.port_id ??
+          `eth${nextSwitchIndex + 1}`;
+        nextSwitchIndex++;
+        occupiedSwitchPorts.add(swPortId);
+
+        const cableId = `patch-${endpointId}`;
+        const poeTag =
+          extObj.poe_draw_watts > 0 ? ` [PoE ${extObj.poe_draw_watts}W]` : '';
+        const zoneTag = extObj.room_or_zone ? ` (${extObj.room_or_zone})` : '';
+        const cableLabel = `${ppPortId.toUpperCase()} · ${extObj.label}${zoneTag}${poeTag}`;
+
+        const cable: CableConnection = {
+          cable_id: cableId,
+          from: {
+            instance_id: input.patch_panel_instance_id,
+            port_id: ppPortId,
+            face: 'front'
+          },
+          to: {
+            instance_id: input.auto_connect_switch_instance_id,
+            port_id: swPortId,
+            face: switchLookup.face
+          },
+          cable_type: 'cat6a',
+          color_hex: extObj.color_hex,
+          label: cableLabel,
+          ...(extObj.vlan_id !== undefined ? { vlan_id: extObj.vlan_id } : {})
+        };
+
+        const existingCableIdx = nextProject.cables.findIndex(
+          (c) => c.cable_id === cableId
+        );
+        if (existingCableIdx !== -1) {
+          nextProject.cables[existingCableIdx] = cable;
+        } else {
+          nextProject.cables.push(cable);
+        }
+        autoCreatedCables.push(cable);
+        frontPatchDescription = `${input.patch_panel_instance_id}:${ppPortId} (Vorne) -> ${input.auto_connect_switch_instance_id}:${swPortId}`;
+      }
+
+      patchingGuide.push({
+        step_number: idx + 1,
+        endpoint_id: extObj.endpoint_id,
+        label: extObj.label,
+        room_or_zone: extObj.room_or_zone ?? 'Gebäude',
+        poe_draw_watts: extObj.poe_draw_watts,
+        rear_punchdown: `${input.patch_panel_instance_id}:${ppPortId} (Hinten / Rear)`,
+        front_patch_cable: frontPatchDescription,
+        color_hex: extObj.color_hex
+      });
+    }
+
+    const scene = this.stateManager.applyMutation(nextProject, 'mutation');
+
+    return this.finalize('plan_external_endpoints', {
+      status: scene.validation.is_valid ? 'VALID' : 'INVALID',
+      summary: scene.validation.is_valid
+        ? `Planned ${addedEndpoints.length} external building/room drop(s) on '${input.patch_panel_instance_id}' (rear) and auto-patched ${autoCreatedCables.length} front Cat6A cable(s) with 0 validation errors.`
+        : `Planned ${addedEndpoints.length} external building/room drop(s) on '${input.patch_panel_instance_id}', but ${scene.validation.error_count} validation error(s) occurred. Review remediation_suggestions.`,
+      data: {
+        added_endpoints_count: addedEndpoints.length,
+        auto_patched_cables_count: autoCreatedCables.length,
+        total_external_endpoints: scene.project.external_endpoints.length,
+        patching_guide: patchingGuide,
         validation: scene.validation
       },
       issues: scene.validation.issues

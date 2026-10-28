@@ -1,12 +1,14 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.3.3` — 3D/2D Rack-Planer & 3D-Druck-Paket
+# 🏗️ RackArchitect MCP `v0.4.0` — 3D/2D Rack-Planer & 3D-Druck-Paket
 
-**Willkommen beim Release `v0.3.3` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.4.0` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Neu in Version `v0.3.3`:**
-> - **Echte lokale MCP Engineering Workbench auf `localhost:3100` (Strikte Trennung von der GitHub-Demo):** Sobald der Web-Viewer lokal mit dem MCP-Sidecar verbunden ist (`MCP Live · rack.yaml`), verschwinden sämtliche Demo-Simulations-Buttons (`Simulate LLM Collision`, `Reset Demo`) und fest codierten Demo-Logs. Stattdessen bietet die lokale Workbench **`New Empty Rack` (`init_rack`)**, **`Export to Disk` (`export_deliverables`)**, einen **echten Live-Feed aller externen MCP-Agenten-Aufrufe** (mit Uhrzeit & `Clear`-Button) sowie nahtlose Multi-Prozess-Synchronisation über `stdio` und WebSocket.
+> **✨ Neu in Version `v0.4.0`:**
+> - **Haus- & Raum-Verkabelung (`plan_external_endpoints`) + Steck-für-Steck-Anleitung für Einsteiger:** Externe Gebäudeleitungen (z. B. 10 PoE-Kameras, 5 WLAN Access Points, 5 Räume mit PC, Beamer, Laptop, Workstation oder Docking Station) kommen ab sofort realistisch von hinten aus dem Gebäudeschacht (`top-rear` / `bottom-rear`) direkt auf die **Rückseite des Patch-Panels** (ohne eine eigene Höheneinheit `U` im Rack zu verschwenden!). Vorne werden automatisch beschriftete Patchkabel zum Switch geplant — inklusive verständlicher **Steck-für-Steck-Anleitung** im 3D-Viewer, in der Sidebar und in der `BOM.md`.
+> - **Sichtbare 3D-Ports auf allen Switches/Gateways & realistisches 3D-Bürstenpanel:** Alle RJ45-, SFP+- und Strom-Buchsen (inkl. metallischem Rahmen und Link/PoE-LEDs) sitzen jetzt sichtbar auf der vordersten Frontplatte (`USW-Pro-Max-24-PoE`, `UDM-Pro`, `Smart-UPS`). Zudem bestehen Brush-Panels (`brush-panel`) in 3D jetzt aus einem offenen eloxierten Metallrahmen mit einzeln sichtbaren oberen und unteren Nylon-Bürstenfasern, die sich an den Kabeldurchführungen leicht öffnen.
+> - **Echte lokale MCP Engineering Workbench auf `localhost:3100` (`v0.3.3`):** Strikte Trennung zwischen GitHub-Demo und lokalem Arbeitsmodus (`New Empty Rack`, `Export to Disk`, echter Live-Feed externer MCP-Agenten).
 > - **Koaxiale Stecker-Einführung & 0.00 mm Shelf-Clipping im 3D-Viewer (`v0.3.2`):** Alle 18 Kabel führen exakt geradlinig (koaxial entlang der Buchsen-Normalen) in die schwarzen Knickschutz-Terminatoren ein, das Cross-Face-Kabel läuft horizontal durch die beidseitige Bürstenleiste auf `U6` und im hinteren Kabelkanal (`Z = 206 mm`) hinter den `U5`/`U4`-Trays entlang, und sämtliche 3D-Druck-Trays sitzen passgenau zwischen den linken und rechten Rackschienen.
 > - **Vollständiger Kabelbaum im 2D Side-Profile Depth Cutaway (`v0.3.1`):** In der 2D-Elevation (`SIDE-PROFILE DEPTH CUTAWAY`) werden sowohl im Live- als auch im Standalone-Modus alle 18 Vorder-, Rück- und Brush-Portal-Kabel inklusive L-Tray-Querschnitt und Stecker-Freiräumen dargestellt.
 > - **Komplettes „Precision Hardware & CAD Studio" UI/UX-Redesign (`v0.3.0`):** Ruhiges Carbon/Zinc-Farbschema (`#09090b` / `#121216`) im Stil von Linear, Ubiquiti UniFi Design Center und Shapr3D, schwebendes Bottom-Center 3D-CAD-Dock und einzeilige Studio-Topbar (`52px`).

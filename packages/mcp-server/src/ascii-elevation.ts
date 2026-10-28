@@ -132,7 +132,36 @@ export function generateAsciiElevation(
   lines.push(
     `- Total Equipment Mass: ${mech.total_weight_grams} g (${roundTenths(mech.total_weight_grams / 1000)} kg) | CoG Y: ${mech.center_of_gravity_y_mm} mm (${roundTenths(mech.center_of_gravity_y_mm / MM_PER_U)}U)`
   );
-  lines.push(`- Connected Cables: ${project.cables.length}`);
+  lines.push(
+    `- Connected Cables: ${project.cables.length} | External Building Drops: ${project.external_endpoints.length}`
+  );
+
+  if (project.external_endpoints.length > 0) {
+    lines.push('');
+    lines.push('=== EXTERNAL BUILDING / ROOM DROPS (REAR PATCH PANEL -> FRONT SWITCH) ===');
+    for (const ext of project.external_endpoints) {
+      const frontCable = project.cables.find(
+        (c) =>
+          (c.from.instance_id === ext.patch_panel_instance_id &&
+            c.from.port_id === ext.patch_panel_port_id &&
+            c.from.face !== 'rear') ||
+          (c.to.instance_id === ext.patch_panel_instance_id &&
+            c.to.port_id === ext.patch_panel_port_id &&
+            c.to.face !== 'rear')
+      );
+      const swTarget = frontCable
+        ? frontCable.from.instance_id === ext.patch_panel_instance_id &&
+          frontCable.from.port_id === ext.patch_panel_port_id
+          ? `${frontCable.to.instance_id}:${frontCable.to.port_id}`
+          : `${frontCable.from.instance_id}:${frontCable.from.port_id}`
+        : 'UNPATCHED';
+      const poeStr = ext.poe_draw_watts > 0 ? `PoE ${ext.poe_draw_watts}W` : 'Non-PoE';
+      const zoneStr = ext.room_or_zone ? ` [${ext.room_or_zone}]` : '';
+      lines.push(
+        `  * ${ext.label}${zoneStr} (${poeStr}, ${ext.required_speed}) -> Rear ${ext.patch_panel_instance_id}:${ext.patch_panel_port_id} -> Front Switch ${swTarget}`
+      );
+    }
+  }
 
   if (validation.issues.length > 0) {
     lines.push('');

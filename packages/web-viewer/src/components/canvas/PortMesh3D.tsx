@@ -3,12 +3,15 @@ import type { ThreeEvent } from '@react-three/fiber';
 import type {
   CableConnection,
   ComputedPortGeometry,
+  ExternalEndpoint,
 } from '@rack-mcp/core-domain';
 import type { HoveredPortInfo } from '../../state/useRackState.js';
 
 export interface PortMesh3DProps {
   readonly port: ComputedPortGeometry;
   readonly cables: readonly CableConnection[];
+  readonly externalEndpoints?: readonly ExternalEndpoint[];
+  readonly faceSurfaceZMm?: number;
   readonly explodeOffsetZMm: number;
   readonly isHighlighted: boolean;
   readonly onHoverPort: (info: HoveredPortInfo | null) => void;
@@ -50,6 +53,8 @@ function getPortBoxSizeMm(connectorType: ComputedPortGeometry['connector_type'])
 export function PortMesh3D({
   port,
   cables,
+  externalEndpoints = [],
+  faceSurfaceZMm,
   explodeOffsetZMm,
   isHighlighted,
   onHoverPort,
@@ -73,25 +78,48 @@ export function PortMesh3D({
     [cables, port.instance_id, port.port_id, port.world_face],
   );
 
-  const peerDescription = useMemo(() => {
-    if (!connectedCable) return undefined;
-    const isFrom =
-      connectedCable.from.instance_id === port.instance_id &&
-      connectedCable.from.port_id === port.port_id;
-    const peer = isFrom ? connectedCable.to : connectedCable.from;
-    return `${peer.instance_id}:${peer.port_id}`;
-  }, [connectedCable, port.instance_id, port.port_id]);
-
-  const hasPoe = useMemo(
-    () => port.capabilities.some((cap) => cap.startsWith('poe')),
-    [port.capabilities],
+  const connectedExternalEndpoint = useMemo(
+    () =>
+      externalEndpoints.find(
+        (ext) =>
+          ext.patch_panel_instance_id === port.instance_id &&
+          ext.patch_panel_port_id === port.port_id,
+      ),
+    [externalEndpoints, port.instance_id, port.port_id],
   );
 
-  // Extrude 1.8mm along world_normal to prevent Z-fighting
+  const isOccupied = Boolean(connectedCable || connectedExternalEndpoint);
+
+  const peerDescription = useMemo(() => {
+    if (connectedCable) {
+      const isFrom =
+        connectedCable.from.instance_id === port.instance_id &&
+        connectedCable.from.port_id === port.port_id;
+      const peer = isFrom ? connectedCable.to : connectedCable.from;
+      const extSuffix = connectedExternalEndpoint
+        ? ` · 🏠 ${connectedExternalEndpoint.label}${connectedExternalEndpoint.room_or_zone ? ` (${connectedExternalEndpoint.room_or_zone})` : ''}`
+        : '';
+      return `${peer.instance_id}:${peer.port_id}${extSuffix}`;
+    }
+    if (connectedExternalEndpoint) {
+      return `🏠 ${connectedExternalEndpoint.label}${connectedExternalEndpoint.room_or_zone ? ` (${connectedExternalEndpoint.room_or_zone})` : ''} [Rear Drop]`;
+    }
+    return undefined;
+  }, [connectedCable, connectedExternalEndpoint, port.instance_id, port.port_id]);
+
+  const hasPoe = useMemo(
+    () =>
+      port.capabilities.some((cap) => cap.startsWith('poe')) ||
+      (connectedExternalEndpoint?.poe_draw_watts ?? 0) > 0,
+    [connectedExternalEndpoint, port.capabilities],
+  );
+
+  // Project onto the outer faceplate surface so front_protrusion_mm never buries ports inside the chassis
   const normalZ = port.world_normal.z !== 0 ? port.world_normal.z : -1;
+  const baseZ = faceSurfaceZMm ?? port.world_position.z;
   const cx = port.world_position.x;
   const cy = port.world_position.y;
-  const cz = port.world_position.z + explodeOffsetZMm + normalZ * 1.8;
+  const cz = baseZ + explodeOffsetZMm + normalZ * (size.d * 0.45);
 
   const handlePointerOver = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
@@ -102,7 +130,8 @@ export function PortMesh3D({
       connectorType: port.connector_type,
       worldFace: port.world_face,
       worldPosMm: port.world_position,
-      connectedCableId: connectedCable?.cable_id,
+      connectedCableId:
+        connectedCable?.cable_id ?? connectedExternalEndpoint?.endpoint_id,
       peerDescription,
     });
   };
@@ -118,8 +147,18 @@ export function PortMesh3D({
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}
     >
-      {/* Raised Port Housing */}
+      {/* Metallic Shielded Port Rim */}
       <mesh>
+        <boxGeometry args={[size.w + 1.0, size.h + 1.0, size.d * 0.7]} />
+        <meshStandardMaterial
+          color={isHighlighted ? '#38BDF8' : '#52525B'}
+          metalness={0.78}
+          roughness={0.28}
+        />
+      </mesh>
+
+      {/* Raised Port Housing */}
+      <mesh position={[0, 0, normalZ * 0.35]}>
         <boxGeometry args={[size.w, size.h, size.d]} />
         <meshStandardMaterial
           color={isHighlighted ? '#38BDF8' : size.color}
@@ -128,7 +167,7 @@ export function PortMesh3D({
           emissive={
             isHighlighted
               ? '#0284C7'
-              : connectedCable
+              : isOccupied
                 ? '#0F172A'
                 : '#000000'
           }
@@ -137,9 +176,9 @@ export function PortMesh3D({
       </mesh>
 
       {/* Inner Socket Cavity */}
-      <mesh position={[0, 0, normalZ * (size.d * 0.36)]}>
-        <boxGeometry args={[size.w * 0.72, size.h * 0.68, size.d * 0.45]} />
-        <meshStandardMaterial color="#020617" roughness={0.8} metalness={0.1} />
+      <mesh position={[0, 0, normalZ * (size.d * 0.52)]}>
+        <boxGeometry args={[size.w * 0.74, size.h * 0.68, size.d * 0.48]} />
+        <meshStandardMaterial color="#020617" roughness={0.9} metalness={0.08} />
       </mesh>
 
       {/* RJ45 / SFP+ Top Left Link LED & Right PoE LED */}
@@ -149,40 +188,40 @@ export function PortMesh3D({
             position={[
               -size.w * 0.3,
               size.h * 0.34,
-              normalZ * (size.d * 0.52),
+              normalZ * (size.d * 0.72),
             ]}
           >
-            <boxGeometry args={[2.1, 1.3, 0.6]} />
+            <boxGeometry args={[2.2, 1.4, 0.7]} />
             <meshStandardMaterial
-              color={connectedCable ? '#22C55E' : '#334155'}
-              emissive={connectedCable ? '#22C55E' : '#000000'}
-              emissiveIntensity={connectedCable ? 0.9 : 0}
+              color={isOccupied ? '#22C55E' : '#334155'}
+              emissive={isOccupied ? '#22C55E' : '#000000'}
+              emissiveIntensity={isOccupied ? 0.95 : 0}
             />
           </mesh>
           <mesh
             position={[
               size.w * 0.3,
               size.h * 0.34,
-              normalZ * (size.d * 0.52),
+              normalZ * (size.d * 0.72),
             ]}
           >
-            <boxGeometry args={[2.1, 1.3, 0.6]} />
+            <boxGeometry args={[2.2, 1.4, 0.7]} />
             <meshStandardMaterial
               color={
-                connectedCable && hasPoe
+                isOccupied && hasPoe
                   ? '#F59E0B'
-                  : connectedCable
+                  : isOccupied
                     ? '#10B981'
                     : '#334155'
               }
               emissive={
-                connectedCable && hasPoe
+                isOccupied && hasPoe
                   ? '#F59E0B'
-                  : connectedCable
+                  : isOccupied
                     ? '#10B981'
                     : '#000000'
               }
-              emissiveIntensity={connectedCable ? 0.85 : 0}
+              emissiveIntensity={isOccupied ? 0.9 : 0}
             />
           </mesh>
         </>

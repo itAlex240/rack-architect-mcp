@@ -63,6 +63,37 @@ export function CableTube3D({
         return new THREE.Vector3(p.x, p.y, p.z + zShift);
       });
 
+      if (vectors.length >= 2) {
+        const wp = route.waypoints;
+        const startNormalZ =
+          wp.length >= 2 ? Math.sign(wp[1]!.z - wp[0]!.z) : -1;
+        if (fromDev) {
+          const outerZ =
+            startNormalZ < 0
+              ? Math.min(vectors[0]!.z, fromDev.chassis_box.min.z + startOffsetZ - 1.6)
+              : Math.max(vectors[0]!.z, fromDev.chassis_box.max.z + startOffsetZ + 1.6);
+          vectors[0]!.z = outerZ;
+        }
+        const endNormalZ =
+          wp.length >= 2
+            ? Math.sign(wp[wp.length - 2]!.z - wp[wp.length - 1]!.z)
+            : -1;
+        if (toDev) {
+          const lastIdx = vectors.length - 1;
+          const outerZ =
+            endNormalZ < 0
+              ? Math.min(
+                  vectors[lastIdx]!.z,
+                  toDev.chassis_box.min.z + endOffsetZ - 1.6,
+                )
+              : Math.max(
+                  vectors[lastIdx]!.z,
+                  toDev.chassis_box.max.z + endOffsetZ + 1.6,
+                );
+          vectors[lastIdx]!.z = outerZ;
+        }
+      }
+
       const curve = new THREE.CatmullRomCurve3(
         vectors.length >= 2
           ? vectors
@@ -130,9 +161,11 @@ export function CableTube3D({
       };
     }, [
       endOffsetZ,
+      fromDev,
       route.spline_points,
       route.waypoints,
       startOffsetZ,
+      toDev,
       tubeRadiusMm,
     ]);
 

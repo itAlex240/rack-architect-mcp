@@ -284,6 +284,48 @@ export function generateBomMarkdown(
     );
   }
 
+  if ((project.external_endpoints ?? []).length > 0) {
+    lines.push('');
+    lines.push(
+      `### Phase C: External Building / Room Cable Drops (Step-by-Step Patching Guide)`,
+    );
+    lines.push('');
+    lines.push(
+      `| # | Room / Endpoint | Category & PoE | Step 1: Rear Patch Panel Termination | Step 2: Front Switch Patch Cable |`,
+    );
+    lines.push(`| :---: | :--- | :--- | :--- | :--- |`);
+    project.external_endpoints.forEach((ext, idx) => {
+      const frontPatch = project.cables.find(
+        (c) =>
+          (c.from.instance_id === ext.patch_panel_instance_id &&
+            c.from.port_id === ext.patch_panel_port_id &&
+            (c.from.face ?? 'front') === 'front') ||
+          (c.to.instance_id === ext.patch_panel_instance_id &&
+            c.to.port_id === ext.patch_panel_port_id &&
+            (c.to.face ?? 'front') === 'front'),
+      );
+      const swEnd = frontPatch
+        ? frontPatch.from.instance_id === ext.patch_panel_instance_id &&
+          frontPatch.from.port_id === ext.patch_panel_port_id
+          ? frontPatch.to
+          : frontPatch.from
+        : null;
+      const roomText = ext.room_or_zone
+        ? `${ext.label} (${ext.room_or_zone})`
+        : ext.label;
+      const poeText =
+        ext.poe_draw_watts > 0 ? `PoE ${ext.poe_draw_watts} W` : 'No PoE';
+      const step1 = `Building cable (${ext.entry_position}) $\\rightarrow$ \`${ext.patch_panel_instance_id}:${ext.patch_panel_port_id}\` (REAR)`;
+      const step2 =
+        swEnd && frontPatch
+          ? `Patch cable \`${frontPatch.cable_id}\` (\`${frontPatch.color_hex}\`) from \`${ext.patch_panel_instance_id}:${ext.patch_panel_port_id}\` (FRONT) $\\rightarrow$ \`${swEnd.instance_id}:${swEnd.port_id}\``
+          : 'Unpatched on front';
+      lines.push(
+        `| ${idx + 1} | **${roomText}** | \`${ext.category}\` (${poeText}) | ${step1} | ${step2} |`,
+      );
+    });
+  }
+
   lines.push('');
   return lines.join('\n');
 }
