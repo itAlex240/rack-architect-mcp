@@ -14,6 +14,22 @@ async function main(): Promise<void> {
     }
     process.exit(res.exitCode);
   }
+
+  const shutdown = async () => {
+    try {
+      await res.sidecarServer?.close();
+      await res.mcpServer?.close();
+    } finally {
+      process.exit(0);
+    }
+  };
+
+  process.on('SIGTERM', () => {
+    void shutdown();
+  });
+  process.on('SIGINT', () => {
+    void shutdown();
+  });
 }
 
 main().catch((err) => {

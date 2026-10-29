@@ -7,15 +7,15 @@
     "url": "https://github.com/itAlex240/rack-architect-mcp",
     "source": "github"
   },
-  "version": "0.3.3",
-  "packages": [
+  "version": "0.6.0",
+  "remotes": [
     {
-      "registryType": "mcpb",
-      "identifier": "https://github.com/itAlex240/rack-architect-mcp/releases/download/v0.3.3/rack-architect-mcp.mcpb",
-      "fileSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "transport": {
-        "type": "stdio"
-      }
+      "type": "streamable-http",
+      "url": "https://rack-mcp.167.233.80.33.sslip.io/mcp"
+    },
+    {
+      "type": "sse",
+      "url": "https://rack-mcp.167.233.80.33.sslip.io/sse"
     }
   ]
 }

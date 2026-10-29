@@ -329,26 +329,29 @@ export function useRackState(): RackViewerState {
 
   const wsRef = useRef<WebSocket | null>(null);
 
-  const refreshSidecarExports = useCallback(async (baseUrl: string) => {
-    try {
-      const [elevRes, wireRes, bomRes] = await Promise.all([
-        fetch(`${baseUrl}/api/export/elevation.svg`),
-        fetch(`${baseUrl}/api/export/wiring.svg`),
-        fetch(`${baseUrl}/api/export/bom.md`),
-      ]);
-      if (elevRes.ok) {
-        setElevationSvg(await elevRes.text());
+  const refreshSidecarExports = useCallback(
+    async (baseUrl: string, sessionQuery = '') => {
+      try {
+        const [elevRes, wireRes, bomRes] = await Promise.all([
+          fetch(`${baseUrl}/api/export/elevation.svg${sessionQuery}`),
+          fetch(`${baseUrl}/api/export/wiring.svg${sessionQuery}`),
+          fetch(`${baseUrl}/api/export/bom.md${sessionQuery}`),
+        ]);
+        if (elevRes.ok) {
+          setElevationSvg(await elevRes.text());
+        }
+        if (wireRes.ok) {
+          setWiringSvg(await wireRes.text());
+        }
+        if (bomRes.ok) {
+          setBomMarkdown(await bomRes.text());
+        }
+      } catch {
+        // Keep client-side rendered SVG/BOM fallback
       }
-      if (wireRes.ok) {
-        setWiringSvg(await wireRes.text());
-      }
-      if (bomRes.ok) {
-        setBomMarkdown(await bomRes.text());
-      }
-    } catch {
-      // Keep client-side rendered SVG/BOM fallback
-    }
-  }, []);
+    },
+    [],
+  );
 
   const applyStandaloneMutation = useCallback(
     (mutator: (draft: RackProjectInput) => RackProjectInput) => {
@@ -999,16 +1002,25 @@ export function useRackState(): RackViewerState {
     const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host || '127.0.0.1:3100';
+    const sessionParam = new URLSearchParams(window.location.search).get(
+      'session',
+    );
+    const sessionQuery =
+      sessionParam && sessionParam.trim().length > 0
+        ? `?session=${encodeURIComponent(sessionParam.trim())}`
+        : '';
     const apiBase = `${protocol}//${host}`;
-    const wsUrl = `${wsProtocol}//${host}/ws`;
+    const wsUrl = `${wsProtocol}//${host}/ws${sessionQuery}`;
 
     const connectSidecar = async () => {
+      let sidecarSessionActive = false;
       try {
         const [stateRes, catRes] = await Promise.all([
-          fetch(`${apiBase}/api/state`),
-          fetch(`${apiBase}/api/catalog`),
+          fetch(`${apiBase}/api/state${sessionQuery}`),
+          fetch(`${apiBase}/api/catalog${sessionQuery}`),
         ]);
         if (!cancelled && stateRes.ok) {
+          sidecarSessionActive = true;
           const stateData = (await stateRes.json()) as {
             projectPath?: string | null | undefined;
             scene: SerializedRackScene;
@@ -1024,7 +1036,7 @@ export function useRackState(): RackViewerState {
             Array.isArray(stateData.toolCallLog) ? stateData.toolCallLog : [],
           );
           setConnectionMode('sidecar-live');
-          await refreshSidecarExports(apiBase);
+          await refreshSidecarExports(apiBase, sessionQuery);
         }
         if (!cancelled && catRes.ok) {
           const catData = (await catRes.json()) as {
@@ -1038,7 +1050,7 @@ export function useRackState(): RackViewerState {
         // Sidecar unreachable -> stay in standalone-demo mode
       }
 
-      if (cancelled) return;
+      if (cancelled || !sidecarSessionActive) return;
 
       try {
         const ws = new WebSocket(wsUrl);
@@ -1075,7 +1087,7 @@ export function useRackState(): RackViewerState {
               setElevationSvg(renderClientSideElevationSvg(msg.scene));
               setWiringSvg(renderClientSideWiringSvg(msg.scene));
               setBomMarkdown(renderClientSideBomMarkdown(msg.scene));
-              void refreshSidecarExports(apiBase);
+              void refreshSidecarExports(apiBase, sessionQuery);
             }
           } catch {
             // Ignore malformed message

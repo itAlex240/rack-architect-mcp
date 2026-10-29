@@ -39,11 +39,21 @@ export interface ToolExecutionEnvelope<T = unknown> {
   readonly issues: readonly DiagnosticIssue[];
 }
 
+export interface RemoteToolSessionContext {
+  readonly sessionId: string;
+  readonly getPublicBaseUrl: () => string;
+}
+
 export class RackMcpToolHandlers {
   private readonly stateManager: ProjectStateManager;
+  private readonly remoteSession: RemoteToolSessionContext | undefined;
 
-  public constructor(stateManager: ProjectStateManager) {
+  public constructor(
+    stateManager: ProjectStateManager,
+    remoteSession?: RemoteToolSessionContext
+  ) {
     this.stateManager = stateManager;
+    this.remoteSession = remoteSession;
   }
 
   private finalize<T>(
@@ -52,7 +62,36 @@ export class RackMcpToolHandlers {
   ): ToolExecutionEnvelope<T> {
     const firstLine = env.summary.split('\n')[0] ?? env.summary;
     this.stateManager.recordToolCall(tool, firstLine, env.status);
-    return env;
+
+    if (this.remoteSession === undefined) {
+      return env;
+    }
+
+    const baseUrl = this.remoteSession.getPublicBaseUrl().replace(/\/+$/, '');
+    const encodedSession = encodeURIComponent(this.remoteSession.sessionId);
+    const liveViewerUrl = `${baseUrl}/?session=${encodedSession}`;
+
+    const enrichedData =
+      typeof env.data === 'object' && env.data !== null && !Array.isArray(env.data)
+        ? ({
+            ...(env.data as Record<string, unknown>),
+            live_viewer_url: liveViewerUrl
+          } as T)
+        : env.data;
+
+    const shouldAppendViewerBanner =
+      (tool === 'init_rack' ||
+        tool === 'validate_rack' ||
+        tool === 'export_deliverables') &&
+      !env.summary.includes(liveViewerUrl);
+
+    return {
+      ...env,
+      summary: shouldAppendViewerBanner
+        ? `${env.summary}\nLive 3D Rack Viewer: ${liveViewerUrl}`
+        : env.summary,
+      data: enrichedData
+    };
   }
 
   public searchCatalog(
@@ -1077,6 +1116,122 @@ export class RackMcpToolHandlers {
     const input = ExportDeliverablesInputSchema.parse(rawInput);
     const scene = this.stateManager.getScene();
     const catalog = this.stateManager.getCatalog();
+    const pwr = scene.validation.power_summary;
+    const totalPoeBudget = pwr.pse_budgets.reduce((s, b) => s + b.poe_budget_watts, 0);
+
+    // Hosted Remote Multi-Session Mode: never write arbitrary files to the server filesystem.
+    // Instead, compute deterministic byte sizes in memory and return direct HTTPS download URLs.
+    if (this.remoteSession !== undefined) {
+      const baseUrl = this.remoteSession.getPublicBaseUrl().replace(/\/+$/, '');
+      const sid = encodeURIComponent(this.remoteSession.sessionId);
+      const liveViewerUrl = `${baseUrl}/?session=${sid}`;
+      const rackYamlUrl = `${baseUrl}/api/export/rack.yaml?session=${sid}`;
+
+      const remoteFiles: Array<{
+        readonly format: string;
+        readonly path: string;
+        readonly download_url: string;
+        readonly filename: string;
+        readonly size_bytes: number;
+      }> = [];
+
+      let cachedCarriers: ReturnType<typeof generateProjectPrintableCarriers> | undefined;
+      const getCarriers = () => {
+        if (cachedCarriers === undefined) {
+          cachedCarriers = generateProjectPrintableCarriers(scene);
+        }
+        return cachedCarriers;
+      };
+
+      for (const fmt of input.formats) {
+        if (fmt === 'elevation-svg') {
+          const svg = generateElevationSvg(scene);
+          const url = `${baseUrl}/api/export/elevation.svg?session=${sid}`;
+          remoteFiles.push({
+            format: fmt,
+            path: url,
+            download_url: url,
+            filename: 'elevation.svg',
+            size_bytes: Buffer.byteLength(svg, 'utf8')
+          });
+        } else if (fmt === 'wiring-svg') {
+          const svg = generateWiringSchematicSvg(scene);
+          const url = `${baseUrl}/api/export/wiring.svg?session=${sid}`;
+          remoteFiles.push({
+            format: fmt,
+            path: url,
+            download_url: url,
+            filename: 'wiring-schematic.svg',
+            size_bytes: Buffer.byteLength(svg, 'utf8')
+          });
+        } else if (fmt === 'bom-md') {
+          const md = generateBomMarkdown(scene, catalog.toRecord());
+          const url = `${baseUrl}/api/export/bom.md?session=${sid}`;
+          remoteFiles.push({
+            format: fmt,
+            path: url,
+            download_url: url,
+            filename: 'BOM.md',
+            size_bytes: Buffer.byteLength(md, 'utf8')
+          });
+        } else if (fmt === 'scene-glb') {
+          const glb = generateGlbBinary(scene);
+          const url = `${baseUrl}/api/export/scene.glb?session=${sid}`;
+          remoteFiles.push({
+            format: fmt,
+            path: url,
+            download_url: url,
+            filename: 'rack-scene.glb',
+            size_bytes: glb.byteLength
+          });
+        } else if (fmt === 'carrier-scad') {
+          for (const item of getCarriers()) {
+            const safeName = path.basename(item.filename_scad);
+            const url = `${baseUrl}/api/export/printable/${encodeURIComponent(safeName)}?session=${sid}`;
+            remoteFiles.push({
+              format: fmt,
+              path: url,
+              download_url: url,
+              filename: safeName,
+              size_bytes: Buffer.byteLength(item.openscad_code, 'utf8')
+            });
+          }
+        } else if (fmt === 'carrier-stl') {
+          for (const item of getCarriers()) {
+            const safeName = path.basename(item.filename_stl);
+            const url = `${baseUrl}/api/export/printable/${encodeURIComponent(safeName)}?session=${sid}`;
+            remoteFiles.push({
+              format: fmt,
+              path: url,
+              download_url: url,
+              filename: safeName,
+              size_bytes: Buffer.byteLength(item.stl_ascii, 'utf8')
+            });
+          }
+        }
+      }
+
+      return this.finalize('export_deliverables', {
+        status: scene.validation.is_valid ? 'VALID' : 'INVALID',
+        summary: `Generated ${remoteFiles.length} downloadable deliverable URL(s) for remote session.`,
+        data: {
+          output_dir: `${baseUrl}/api/export?session=${sid}`,
+          live_viewer_url: liveViewerUrl,
+          rack_yaml_url: rackYamlUrl,
+          exported_files: remoteFiles,
+          bom_summary: {
+            mounted_devices_count: scene.geometry.devices.length,
+            cables_count: scene.project.cables.length,
+            total_power_draw_watts: pwr.total_system_watts,
+            total_poe_draw_watts: pwr.total_poe_watts,
+            total_poe_budget_watts: totalPoeBudget
+          },
+          validation: scene.validation
+        },
+        issues: scene.validation.issues
+      });
+    }
+
     const projectPath = this.stateManager.getProjectPath();
 
     const outDir =
@@ -1161,9 +1316,6 @@ export class RackMcpToolHandlers {
         }
       }
     }
-
-    const pwr = scene.validation.power_summary;
-    const totalPoeBudget = pwr.pse_budgets.reduce((s, b) => s + b.poe_budget_watts, 0);
 
     return this.finalize('export_deliverables', {
       status: scene.validation.is_valid ? 'VALID' : 'INVALID',

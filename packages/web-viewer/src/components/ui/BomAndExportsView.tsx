@@ -253,7 +253,14 @@ export function BomAndExportsView({
           </button>
 
           <a
-            href="/api/export/scene.glb"
+            href={
+              typeof window !== 'undefined' &&
+              new URLSearchParams(window.location.search).get('session')
+                ? `/api/export/scene.glb?session=${encodeURIComponent(
+                    new URLSearchParams(window.location.search).get('session')!,
+                  )}`
+                : '/api/export/scene.glb'
+            }
             download="rack-scene.glb"
             data-testid="export-scene-glb"
             style={{

@@ -18,15 +18,33 @@ export interface ParsedCliArgs {
   readonly port: number;
   readonly host?: string | undefined;
   readonly stdio: boolean;
+  readonly remoteMcp: boolean;
+  readonly publicBaseUrl?: string | undefined;
+  readonly maxSessions?: number | undefined;
 }
 
-export function parseCliArgs(argv: readonly string[]): ParsedCliArgs {
+export function parseCliArgs(
+  argv: readonly string[],
+  env: NodeJS.ProcessEnv = process.env
+): ParsedCliArgs {
   let command: 'serve' | 'validate' | 'export' = 'serve';
   let projectPath: string | undefined;
   let outDir: string | undefined;
-  let port = 3100;
-  let host: string | undefined;
+  let port =
+    env['PORT'] !== undefined && !Number.isNaN(Number(env['PORT']))
+      ? Number(env['PORT'])
+      : 3100;
+  let host: string | undefined = env['RACK_MCP_HOST'];
   let stdio = true;
+  let explicitStdio = false;
+  let remoteMcp =
+    env['RACK_MCP_REMOTE'] === '1' || env['RACK_MCP_REMOTE'] === 'true';
+  let publicBaseUrl: string | undefined = env['RACK_MCP_PUBLIC_URL'];
+  let maxSessions: number | undefined =
+    env['RACK_MCP_MAX_SESSIONS'] !== undefined &&
+    !Number.isNaN(Number(env['RACK_MCP_MAX_SESSIONS']))
+      ? Number(env['RACK_MCP_MAX_SESSIONS'])
+      : undefined;
 
   let i = 0;
   if (argv[0] === 'validate' || argv[0] === 'export' || argv[0] === 'serve') {
@@ -46,8 +64,21 @@ export function parseCliArgs(argv: readonly string[]): ParsedCliArgs {
     const arg = argv[i]!;
     if (arg === '--stdio') {
       stdio = true;
+      explicitStdio = true;
     } else if (arg === '--no-stdio') {
       stdio = false;
+      explicitStdio = true;
+    } else if (arg === '--remote-mcp') {
+      remoteMcp = true;
+    } else if (arg === '--public-url' && argv[i + 1] !== undefined) {
+      publicBaseUrl = argv[i + 1]!;
+      i++;
+    } else if (arg === '--max-sessions' && argv[i + 1] !== undefined) {
+      const parsedMax = Number(argv[i + 1]);
+      if (!Number.isNaN(parsedMax) && parsedMax > 0) {
+        maxSessions = Math.floor(parsedMax);
+      }
+      i++;
     } else if (arg === '--port' && argv[i + 1] !== undefined) {
       const parsedPort = Number(argv[i + 1]);
       if (!Number.isNaN(parsedPort) && parsedPort >= 0) {
@@ -69,13 +100,20 @@ export function parseCliArgs(argv: readonly string[]): ParsedCliArgs {
     }
   }
 
+  if (remoteMcp && !explicitStdio) {
+    stdio = false;
+  }
+
   return {
     command,
     ...(projectPath !== undefined ? { projectPath } : {}),
     ...(outDir !== undefined ? { outDir } : {}),
     ...(host !== undefined ? { host } : {}),
+    ...(publicBaseUrl !== undefined ? { publicBaseUrl } : {}),
+    ...(maxSessions !== undefined ? { maxSessions } : {}),
     port,
-    stdio
+    stdio,
+    remoteMcp
   };
 }
 
@@ -211,7 +249,34 @@ export async function runCli(
     };
   }
 
-  // Default: `serve` mode (MCP over stdio + HTTP/WebSocket Sidecar)
+  // Hosted Multi-Session Remote MCP Mode (`--remote-mcp` or `RACK_MCP_REMOTE=1`)
+  if (parsed.remoteMcp) {
+    const stateManager = new ProjectStateManager({
+      watchFile: false
+    });
+    const sidecarServer = await startRackSidecarServer(stateManager, {
+      port: parsed.port,
+      host: parsed.host ?? '0.0.0.0',
+      remoteMcp: true,
+      ...(parsed.publicBaseUrl !== undefined
+        ? { publicBaseUrl: parsed.publicBaseUrl }
+        : {}),
+      ...(parsed.maxSessions !== undefined
+        ? { maxSessions: parsed.maxSessions }
+        : {})
+    });
+
+    const infoMsg = `[rack_architect_mcp] Started Hosted Multi-Session Remote MCP Server at ${sidecarServer.mcpUrl} (SSE: ${sidecarServer.sseUrl}, 3D Studio: ${sidecarServer.url})`;
+    process.stderr.write(`${infoMsg}\n`);
+
+    return {
+      exitCode: 0,
+      output: infoMsg,
+      sidecarServer
+    };
+  }
+
+  // Default: Local `serve` mode (MCP over stdio + HTTP/WebSocket Sidecar)
   const discoveredProjectPath =
     parsed.projectPath === undefined
       ? await discoverActiveSidecarProjectPath(

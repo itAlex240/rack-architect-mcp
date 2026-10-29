@@ -13,7 +13,8 @@
 [![Agent Skill: SKILL.md](https://img.shields.io/badge/Agent_Skill-SKILL.md_(Free)-EC4899.svg)](./skills/rack-architect/SKILL.md)
 [![EIA-310 Standards](https://img.shields.io/badge/EIA--310-19%22_%7C_10%22_%7C_6%22-06B6D4.svg)](./ARCHITECTURE.md)
 [![3D Print Ready](https://img.shields.io/badge/3D--Print-OpenSCAD_.SCAD_%2B_.STL-F59E0B.svg)](./packages/exporters/src/openscad-carrier.ts)
-[![Tests](https://img.shields.io/badge/Vitest-41%2F41_Passing-10B981.svg)](./vitest.config.ts)
+[![Remote MCP](https://img.shields.io/badge/Remote_MCP-Streamable_HTTP-8B5CF6.svg)](https://rack-mcp.167.233.80.33.sslip.io/mcp)
+[![Tests](https://img.shields.io/badge/Vitest-46%2F46_Passing-10B981.svg)](./vitest.config.ts)
 
 [**🌐 Launch Live 3D/2D Browser Demo**](https://italex240.github.io/rack-architect-mcp/) · [**Quickstart**](#-30-second-quickstart) · [**MCP Client & Agent Skill**](#-connect-claude-desktop-cursor-or-antigravity) · [**3D-Print (.SCAD / .STL)**](#-parametric-3d-print-generator-scad--stl) · [**Add Hardware Blueprint**](./CONTRIBUTING.md) · [**Complete Handbook (DE)**](./docs/COMPLETE_SYSTEM_HANDBOOK.md)
 
@@ -95,6 +96,25 @@ pnpm export:demo
 ---
 
 ## 🤖 Connect Claude Desktop, Cursor, or Antigravity
+
+### Option 1: Zero-Install Hosted Remote MCP (`Streamable HTTP` — Instant 1-URL Setup)
+
+Connect any modern MCP client (Claude, Cursor, VS Code Copilot, Windsurf, Google Antigravity, MCP Inspector) directly over HTTPS without installing Node.js or Docker locally:
+
+```json
+{
+  "mcpServers": {
+    "rack_architect_mcp": {
+      "url": "https://rack-mcp.167.233.80.33.sslip.io/mcp"
+    }
+  }
+}
+```
+
+- **Strict Multi-Session Isolation:** Every connecting MCP client receives its own isolated in-memory session (`Mcp-Session-Id`) and a dedicated **Live 3D Digital Twin URL** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>`) that streams every AI tool mutation in real time over `wss://`!
+- *(Legacy HTTP+SSE clients can also connect via `https://rack-mcp.167.233.80.33.sslip.io/sse`.)*
+
+### Option 2: Local `stdio` + Local WebSocket Sidecar (`127.0.0.1:3100`)
 
 Add `rack_architect_mcp` to your `claude_desktop_config.json`, `.cursor/mcp.json`, or Antigravity MCP settings:
 

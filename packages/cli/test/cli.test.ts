@@ -46,6 +46,15 @@ describe('@rack-mcp/cli Subcommands & Argument Parser', () => {
     expect(exp.command).toBe('export');
     expect(exp.projectPath).toBe('examples/10inch-homelab/rack.yaml');
     expect(exp.outDir).toBe('./dist-exports');
+
+    const rem = parseCliArgs(
+      ['serve', '--remote-mcp', '--public-url', 'https://rack-mcp.example.test'],
+      {}
+    );
+    expect(rem.command).toBe('serve');
+    expect(rem.remoteMcp).toBe(true);
+    expect(rem.stdio).toBe(false);
+    expect(rem.publicBaseUrl).toBe('https://rack-mcp.example.test');
   });
 
   it('validates the reference 10inch-homelab rack.yaml with exitCode 0', async () => {

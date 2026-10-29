@@ -287,7 +287,7 @@ export const ExportDeliverablesInputSchema = z.object({
     .string()
     .optional()
     .describe(
-      'Optional target filesystem directory for generated files (defaults to the directory of the active rack.yaml file).'
+      'Optional target filesystem directory for generated files in local stdio mode (defaults to the directory of the active rack.yaml file; ignored on hosted remote MCP servers where HTTPS download URLs are returned instead).'
     )
 });
 
@@ -773,7 +773,21 @@ export const ExportDeliverablesOutputSchema = createToolOutputEnvelopeSchema(
     .object({
       output_dir: z
         .string()
-        .describe('Resolved absolute directory path where deliverable files were written.'),
+        .describe(
+          'Resolved absolute directory path where deliverable files were written (or HTTPS base export endpoint when running on a hosted remote MCP server).'
+        ),
+      live_viewer_url: z
+        .string()
+        .optional()
+        .describe(
+          'Interactive 3D/2D Web-Viewer URL bound live to this remote MCP session (present in hosted remote MCP mode).'
+        ),
+      rack_yaml_url: z
+        .string()
+        .optional()
+        .describe(
+          'Direct HTTPS download URL for the session rack.yaml source of truth (present in hosted remote MCP mode).'
+        ),
       exported_files: z
         .array(
           z
@@ -781,16 +795,30 @@ export const ExportDeliverablesOutputSchema = createToolOutputEnvelopeSchema(
               format: z
                 .string()
                 .describe('Deliverable format identifier (e.g., "elevation-svg", "carrier-stl").'),
-              path: z.string().describe('Absolute filesystem path of the written file.'),
+              path: z
+                .string()
+                .describe(
+                  'Absolute filesystem path of the written file (or direct HTTPS download URL in hosted remote MCP mode).'
+                ),
+              download_url: z
+                .string()
+                .optional()
+                .describe(
+                  'Direct HTTPS download URL for this deliverable when connected to a hosted remote MCP server.'
+                ),
+              filename: z
+                .string()
+                .optional()
+                .describe('Suggested local filename for saving the deliverable.'),
               size_bytes: z
                 .number()
                 .int()
                 .nonnegative()
-                .describe('Size of the written file in bytes.')
+                .describe('Size of the generated deliverable in bytes.')
             })
             .passthrough()
         )
-        .describe('Metadata for each deliverable file written to disk.'),
+        .describe('Metadata for each generated deliverable file or download URL.'),
       bom_summary: z
         .object({
           mounted_devices_count: z

@@ -13,6 +13,7 @@ import { generateAsciiElevation } from '../ascii-elevation.js';
 import type { ProjectStateManager } from '../state-manager.js';
 import {
   RackMcpToolHandlers,
+  type RemoteToolSessionContext,
   type ToolExecutionEnvelope
 } from './tool-handlers.js';
 
@@ -49,19 +50,26 @@ export interface RackMcpServerInstance {
   close(): Promise<void>;
 }
 
+export const RACK_MCP_SERVER_VERSION = '0.6.0';
+
+export interface CreateRackMcpServerOptions {
+  readonly remoteSession?: RemoteToolSessionContext | undefined;
+}
+
 /**
  * Creates and wires the official MCP server (`rack_architect_mcp`) with all 12 tools,
  * 4 resources, and 5 guided planning prompts.
  */
 export function createRackMcpServer(
-  stateManager: ProjectStateManager
+  stateManager: ProjectStateManager,
+  options: CreateRackMcpServerOptions = {}
 ): RackMcpServerInstance {
-  const handlers = new RackMcpToolHandlers(stateManager);
+  const handlers = new RackMcpToolHandlers(stateManager, options.remoteSession);
 
   const mcpServer = new McpServer(
     {
       name: RACK_MCP_SERVER_NAME,
-      version: '0.5.0'
+      version: RACK_MCP_SERVER_VERSION
     },
     {
       instructions: RACK_MCP_SERVER_INSTRUCTIONS,

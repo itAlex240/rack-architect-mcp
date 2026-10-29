@@ -5,6 +5,22 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-10-29
+
+### Added & Improved (🇬🇧 English)
+- **Hosted Multi-Session Remote MCP Server (`Streamable HTTP` & `SSE`), Isolated Live 3D Session Viewer (`/?session=<uuid>`), Zero-Disk URL Exports & Production Security Hardening (`@rack-mcp/mcp-server`, `@rack-mcp/web-viewer`, `@rack-mcp/cli`, `Dockerfile`):**
+  - **Multi-Tenant Remote MCP Transport (`remote-session-registry.ts`, `sidecar-server.ts`, `cli/src/index.ts`):** Added `--remote-mcp` (`RACK_MCP_REMOTE=1`) and `--public-url` (`RACK_MCP_PUBLIC_URL`) supporting both **MCP Streamable HTTP** (`POST / GET / DELETE /mcp` via `StreamableHTTPServerTransport`) and **Legacy HTTP+SSE** (`GET /sse` + `POST /messages` via `SSEServerTransport`), plus `/.well-known/mcp.json` discovery metadata.
+  - **Strict Per-Session Isolation & Live 3D WebSocket Binding (`/?session=<uuid>`):** Each remote MCP connection allocates an isolated in-memory `ProjectStateManager` (bounded by `maxSessions = 200`, `2h` idle TTL sweep, and `512 KB` request body cap) and returns a dedicated `live_viewer_url` (`https://<host>/?session=<uuid>`). Opening that link binds `/api/state?session=<uuid>` and `wss://<host>/ws?session=<uuid>` strictly to that session for real-time bidirectional 3D/2D collaboration, while visiting the root URL `/` without `?session=` safely opens in browser-only `standalone-demo` mode.
+  - **Zero-Disk Remote Deliverable Streaming (`tool-handlers.ts`, `mcp-tools.ts`, `sidecar-server.ts`):** In hosted remote mode, `export_deliverables` never writes arbitrary paths onto the server filesystem; instead, it returns direct HTTPS download URLs (`/api/export/elevation.svg`, `/api/export/wiring.svg`, `/api/export/bom.md`, `/api/export/scene.glb`, `/api/export/rack.yaml`, and `/api/export/printable/<carrier>.stl`/`.scad`) generated deterministically in memory.
+  - **Bandwidth, Rate-Limit & Container Hardening (`Dockerfile`, `sidecar-server.ts`):** Added sliding-window per-IP rate limiting (`240 req/min` behind trusted reverse proxies), startup pre-computed `gzip` static bundle compression with `Cache-Control: public, max-age=31536000, immutable` on `/assets/*` (omitting `.map` sourcemaps from production RAM/traffic), and hardened the multi-stage `node:22-alpine` `Dockerfile` (`apk upgrade --no-cache`, `emSign` CA purge, non-root `USER node`, and native `/health` `HEALTHCHECK`).
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Gehosteter Multi-Session Remote-MCP-Server (`Streamable HTTP` & `SSE`), isolierter Live-3D-Session-Viewer (`/?session=<uuid>`), URL-basierte Exporte & Produktions-Härtung (`@rack-mcp/mcp-server`, `@rack-mcp/web-viewer`, `@rack-mcp/cli`, `Dockerfile`):**
+  - **Multi-Session Remote-MCP ohne lokale Installation (`--remote-mcp` / `POST /mcp` & `GET /sse`):** Beliebige MCP-Clients (Claude, Cursor, VS Code, Windsurf, Antigravity) können sich ab sofort direkt per HTTPS-URL (`https://rack-mcp.167.233.80.33.sslip.io/mcp`) verbinden — ganz ohne lokales Node.js oder Docker.
+  - **Strikte Mandanten-Trennung & eigener Live-3D-Viewer-Link (`/?session=<uuid>`):** Jede MCP-Verbindung erhält eine komplett isolierte In-Memory-Session (`maxSessions = 200`, automatische `2h`-TTL-Bereinigung) inklusive eigenem Live-3D-Link `https://<domain>/?session=<uuid>` (Echtzeit-Synchronisation über `wss://`), während Besucher der Hauptseite `/` ohne Session-Parameter sicher im lokalen Browser-Demo-Modus arbeiten.
+  - **Sichere Download-URLs statt Server-Dateizugriff (`export_deliverables`):** Im Remote-Modus schreibt `export_deliverables` keine Dateien auf die Server-Festplatte, sondern liefert direkte HTTPS-Download-Links für `elevation.svg`, `wiring-schematic.svg`, `BOM.md`, `rack-scene.glb`, `rack.yaml` sowie alle wasserdichten `.stl`- und `.scad`-3D-Druckteile.
+  - **Traffic-, Rate-Limit- & Container-Härtung:** Integriertes Sliding-Window-IP-Rate-Limiting (`240 Req/Min`), vorab komprimierte `gzip`-Assets mit `1 Jahr` Browser-Caching (`immutable`), Ausschluss der `.map`-Sourcemaps sowie gehärtetes Non-Root-Alpine-Image (`USER node`, `apk upgrade`, `emSign`-CA-Bereinigung & `HEALTHCHECK`).
+
 ## [0.5.0] - 2026-10-29
 
 ### Added & Improved (🇬🇧 English)
