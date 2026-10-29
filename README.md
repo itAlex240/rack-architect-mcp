@@ -13,16 +13,16 @@
 [![Agent Skill: SKILL.md](https://img.shields.io/badge/Agent_Skill-SKILL.md_(Free)-EC4899.svg)](./skills/rack-architect/SKILL.md)
 [![EIA-310 Standards](https://img.shields.io/badge/EIA--310-19%22_%7C_10%22_%7C_6%22-06B6D4.svg)](./ARCHITECTURE.md)
 [![3D Print Ready](https://img.shields.io/badge/3D--Print-OpenSCAD_.SCAD_%2B_.STL-F59E0B.svg)](./packages/exporters/src/openscad-carrier.ts)
-[![Remote MCP](https://img.shields.io/badge/Remote_MCP-Streamable_HTTP-8B5CF6.svg)](https://rack-mcp.167.233.80.33.sslip.io/mcp)
-[![Tests](https://img.shields.io/badge/Vitest-52%2F52_Passing-10B981.svg)](./vitest.config.ts)
+[![Remote MCP](https://img.shields.io/badge/Remote_MCP-Streamable_HTTP-8B5CF6.svg)](https://mcp.rackarchitect.dev/mcp)
+[![Tests](https://img.shields.io/badge/Vitest-53%2F53_Passing-10B981.svg)](./vitest.config.ts)
 
-[**⚡ Zero-Install Remote MCP (`.../mcp`)**](#-connect-claude-desktop-claude-code-cursor-vs-code-windsurf-or-antigravity) · [**🖥️ Hosted Live 3D Studio**](https://rack-mcp.167.233.80.33.sslip.io/) · [**🌐 Static 3D Demo**](https://italex240.github.io/rack-architect-mcp/) · [**Quickstart**](#-30-second-quickstart) · [**Agent Skill**](#-official-open-source-agent-skill-skillsrack-architectskillmd) · [**3D-Print (.SCAD / .STL)**](#-parametric-3d-print-generator-scad--stl) · [**Add Blueprint**](./CONTRIBUTING.md) · [**Handbook (DE)**](./docs/COMPLETE_SYSTEM_HANDBOOK.md)
+[**⚡ Zero-Install Remote MCP (`.../mcp`)**](#-connect-claude-desktop-claude-code-cursor-vs-code-windsurf-or-antigravity) · [**🖥️ Hosted Live 3D Studio**](https://mcp.rackarchitect.dev/) · [**🌐 Static 3D Demo**](https://italex240.github.io/rack-architect-mcp/) · [**Quickstart**](#-30-second-quickstart) · [**Agent Skill**](#-official-open-source-agent-skill-skillsrack-architectskillmd) · [**3D-Print (.SCAD / .STL)**](#-parametric-3d-print-generator-scad--stl) · [**Add Blueprint**](./CONTRIBUTING.md) · [**Handbook (DE)**](./docs/COMPLETE_SYSTEM_HANDBOOK.md)
 
 > **⚡ Instant Zero-Install Remote MCP Endpoint (Live & Free — No Node.js or Docker Required):**  
-> Connect Claude, Claude Code, Cursor, VS Code Copilot, Windsurf, Google Antigravity, or MCP Inspector directly via **`https://rack-mcp.167.233.80.33.sslip.io/mcp`** (`Streamable HTTP`) or **`https://rack-mcp.167.233.80.33.sslip.io/sse`** (`SSE`) — every session automatically gets its own isolated real-time **Live 3D Digital Twin URL** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>`)!
+> Connect Claude, Claude Code, Cursor, VS Code Copilot, Windsurf, Google Antigravity, or MCP Inspector directly via **`https://mcp.rackarchitect.dev/mcp`** (`Streamable HTTP`) or **`https://mcp.rackarchitect.dev/sse`** (`SSE`) — every session automatically gets its own isolated real-time **Live 3D Digital Twin URL** (`https://mcp.rackarchitect.dev/?session=<uuid>`)!
 
 <p align="center">
-  <a href="https://rack-mcp.167.233.80.33.sslip.io/">
+  <a href="https://mcp.rackarchitect.dev/">
     <img src="./docs/assets/rack-architect-hero-demo.gif" alt="RackArchitect MCP — Live 3D Digital Twin, X-Ray Z-Depth Plug Clearance, 5-Stage Validation, Autonomous MCP Self-Correction, 2D CAD Blueprints & Watertight .STL 3D-Print Hub" width="100%" />
   </a>
 </p>
@@ -70,7 +70,7 @@ Use the live, multi-tenant Hosted Remote MCP server right away without installin
 {
   "mcpServers": {
     "rack_architect_mcp": {
-      "url": "https://rack-mcp.167.233.80.33.sslip.io/mcp"
+      "url": "https://mcp.rackarchitect.dev/mcp"
     }
   }
 }
@@ -78,10 +78,10 @@ Use the live, multi-tenant Hosted Remote MCP server right away without installin
 
 ```bash
 # Or add in 1 second via Claude Code CLI:
-claude mcp add --transport http rack_architect_mcp https://rack-mcp.167.233.80.33.sslip.io/mcp
+claude mcp add --transport http rack_architect_mcp https://mcp.rackarchitect.dev/mcp
 
 # Or explore the Hosted Live 3D/2D Studio directly in your browser:
-# https://rack-mcp.167.233.80.33.sslip.io/
+# https://mcp.rackarchitect.dev/
 ```
 
 ### Option B: Local Node.js (`>= 20`) & `pnpm`
@@ -131,10 +131,10 @@ Connect any MCP client directly over HTTPS — zero local dependencies, strict m
 
 | Live Hosted Endpoint | URL | Purpose |
 | :--- | :--- | :--- |
-| **Streamable HTTP MCP (Recommended)** | `https://rack-mcp.167.233.80.33.sslip.io/mcp` | Modern MCP transport (`POST / GET / DELETE /mcp`) for Claude, Cursor, VS Code, Windsurf, Antigravity & MCP Inspector |
-| **Legacy HTTP+SSE MCP** | `https://rack-mcp.167.233.80.33.sslip.io/sse` | Backwards-compatible `GET /sse` + `POST /messages` transport |
-| **Live Hosted 3D Studio & Session Twin** | `https://rack-mcp.167.233.80.33.sslip.io/` | Interactive 3D/2D CAD Studio & live `/?session=<uuid>` WebSocket (`wss://`) viewer returned by every MCP tool call |
-| **MCP Discovery & Health Probe** | `https://rack-mcp.167.233.80.33.sslip.io/.well-known/mcp.json` | Machine-readable MCP discovery manifest & `/health` status endpoint |
+| **Streamable HTTP MCP (Recommended)** | `https://mcp.rackarchitect.dev/mcp` | Modern MCP transport (`POST / GET / DELETE /mcp`) for Claude, Cursor, VS Code, Windsurf, Antigravity & MCP Inspector |
+| **Legacy HTTP+SSE MCP** | `https://mcp.rackarchitect.dev/sse` | Backwards-compatible `GET /sse` + `POST /messages` transport |
+| **Live Hosted 3D Studio & Session Twin** | `https://mcp.rackarchitect.dev/` | Interactive 3D/2D CAD Studio & live `/?session=<uuid>` WebSocket (`wss://`) viewer returned by every MCP tool call |
+| **MCP Discovery & Health Probe** | `https://mcp.rackarchitect.dev/.well-known/mcp.json` | Machine-readable MCP discovery manifest & `/health` status endpoint |
 
 **Standard `mcp.json` / Client Configuration (`Streamable HTTP`):**
 
@@ -142,7 +142,7 @@ Connect any MCP client directly over HTTPS — zero local dependencies, strict m
 {
   "mcpServers": {
     "rack_architect_mcp": {
-      "url": "https://rack-mcp.167.233.80.33.sslip.io/mcp"
+      "url": "https://mcp.rackarchitect.dev/mcp"
     }
   }
 }
@@ -152,10 +152,10 @@ Connect any MCP client directly over HTTPS — zero local dependencies, strict m
 
 ```bash
 # Claude Code CLI:
-claude mcp add --transport http rack_architect_mcp https://rack-mcp.167.233.80.33.sslip.io/mcp
+claude mcp add --transport http rack_architect_mcp https://mcp.rackarchitect.dev/mcp
 
 # Test immediately in MCP Inspector:
-npx @modelcontextprotocol/inspector https://rack-mcp.167.233.80.33.sslip.io/mcp
+npx @modelcontextprotocol/inspector https://mcp.rackarchitect.dev/mcp
 ```
 
 **Legacy HTTP+SSE Configuration (for older SSE-only MCP clients):**
@@ -165,13 +165,13 @@ npx @modelcontextprotocol/inspector https://rack-mcp.167.233.80.33.sslip.io/mcp
   "mcpServers": {
     "rack_architect_mcp": {
       "type": "sse",
-      "url": "https://rack-mcp.167.233.80.33.sslip.io/sse"
+      "url": "https://mcp.rackarchitect.dev/sse"
     }
   }
 }
 ```
 
-- **Strict Multi-Session Isolation & Zero-Disk Exports:** Every connecting MCP client receives its own isolated in-memory workspace (`Mcp-Session-Id`), a dedicated **Live 3D Digital Twin URL** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>`) streaming every AI tool mutation live over `wss://`, and direct HTTPS download URLs from `export_deliverables` (`.svg`, `.md`, `.glb`, `.scad`, `.stl`, `.yaml`).
+- **Strict Multi-Session Isolation & Zero-Disk Exports:** Every connecting MCP client receives its own isolated in-memory workspace (`Mcp-Session-Id`), a dedicated **Live 3D Digital Twin URL** (`https://mcp.rackarchitect.dev/?session=<uuid>`) streaming every AI tool mutation live over `wss://`, and direct HTTPS download URLs from `export_deliverables` (`.svg`, `.md`, `.glb`, `.scad`, `.stl`, `.yaml`).
 
 ### Option 2: Local `stdio` + Local WebSocket Sidecar (`127.0.0.1:3100`)
 

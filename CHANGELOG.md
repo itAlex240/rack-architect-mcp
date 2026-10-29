@@ -5,6 +5,20 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.3] - 2026-10-29
+
+### Changed & Added — Official `https://mcp.rackarchitect.dev` Dual-Stack HTTPS Domain & Multi-Origin CSWSH Support (🇬🇧 English)
+- **Official Hosted Remote MCP & Live 3D Studio Domain (`https://mcp.rackarchitect.dev`):**
+  - Migrated the canonical Hosted Remote MCP and Live 3D Studio URLs across `README.md`, `server.json` (MCP Registry), `glama.json`, `skills/rack-architect/SKILL.md`, `.agents/skills/rack-architect/SKILL.md`, `packages/mcp-server/README.md`, `packages/cli/README.md`, `docs/COMPLETE_SYSTEM_HANDBOOK.md`, `docs/RELEASE_NOTES.md`, and `AGENTS.md` to **`https://mcp.rackarchitect.dev`** (`Streamable HTTP` at `/mcp`, `SSE` at `/sse`, per-session `wss://` Live 3D Studio at `/?session=<uuid>`, and discovery at `/.well-known/mcp.json`) over Dual-Stack IPv4 + IPv6 with Let's Encrypt ECDSA TLS, HTTP/2, and HSTS.
+- **Multi-Origin CSWSH & Scoped Session CORS Support (`@rack-mcp/mcp-server`):**
+  - Added `additionalAllowedOrigins` (`RackSidecarServerOptions`) and comma-separated `RACK_MCP_ALLOWED_ORIGINS` environment parsing in `packages/mcp-server/src/sidecar/sidecar-server.ts` so secondary/legacy domains (`https://rack-mcp.167.233.80.33.sslip.io`) pass strict WebSocket Cross-Site WebSocket Hijacking (`CSWSH`) `Origin` verification and `/api/state` + `/api/export/*` scoped CORS alongside the primary `RACK_MCP_PUBLIC_URL` (`https://mcp.rackarchitect.dev`), while continuing to reject all untrusted cross-site origins with `403`.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Offizielle Dual-Stack-HTTPS-Domain `https://mcp.rackarchitect.dev`:**
+  - Alle gehosteten Remote-MCP- und Live-3D-Studio-Endpunkte in `README.md`, `server.json`, `glama.json`, `SKILL.md`, den Paket-READMEs, `docs/COMPLETE_SYSTEM_HANDBOOK.md`, `docs/RELEASE_NOTES.md` und `AGENTS.md` auf die offizielle Domain **`https://mcp.rackarchitect.dev`** (`Streamable HTTP` unter `/mcp`, `SSE` unter `/sse`, Live-3D-Session-Viewer unter `/?session=<uuid>` via `wss://` sowie `/.well-known/mcp.json`) mit Dual-Stack IPv4 + IPv6, Let's Encrypt ECDSA-TLS, HTTP/2 und HSTS umgestellt.
+- **Multi-Origin CSWSH- & CORS-Unterstützung für nahtlosen Parallelbetrieb (`@rack-mcp/mcp-server`):**
+  - `additionalAllowedOrigins` und `RACK_MCP_ALLOWED_ORIGINS` in `packages/mcp-server/src/sidecar/sidecar-server.ts` ergänzt, sodass bestehende Links über den bisherigen `sslip.io`-Endpunkt parallel zu `https://mcp.rackarchitect.dev` ohne Unterbrechung weiterlaufen, während fremde Dritt-Domains weiterhin strikt per `403` blockiert werden.
+
 ## [0.7.2] - 2026-10-29
 
 ### Fixed — 3D Cavity Cable Routing, Rear-PDU Port Zone Resolution & 2D CAD / Wiring Plan Overhaul (🇬🇧 English)

@@ -464,7 +464,8 @@ describe('@rack-mcp/mcp-server Hosted Multi-Session Remote MCP (Streamable HTTP 
       port: 0,
       host: '127.0.0.1',
       remoteMcp: true,
-      publicBaseUrl: 'https://rack-mcp.example.test'
+      publicBaseUrl: 'https://rack-mcp.example.test',
+      additionalAllowedOrigins: ['https://legacy-rack-mcp.sslip.test']
     });
     activeServers.push(server);
 
@@ -499,6 +500,26 @@ describe('@rack-mcp/mcp-server Hosted Multi-Session Remote MCP (Streamable HTTP 
     expect(sameSiteStateRes.headers.get('access-control-allow-origin')).toBe(
       'https://rack-mcp.example.test'
     );
+
+    const legacyOriginStateRes = await fetch(
+      `${server.url}/api/state?session=${encodeURIComponent(sid)}`,
+      { headers: { Origin: 'https://legacy-rack-mcp.sslip.test' } }
+    );
+    expect(legacyOriginStateRes.headers.get('access-control-allow-origin')).toBe(
+      'https://legacy-rack-mcp.sslip.test'
+    );
+
+    const legacyWs = new WebSocket(
+      `${server.wsUrl}?session=${encodeURIComponent(sid)}`,
+      { origin: 'https://legacy-rack-mcp.sslip.test' }
+    );
+    await new Promise<void>((resolve, reject) => {
+      legacyWs.once('open', () => {
+        legacyWs.close();
+        resolve();
+      });
+      legacyWs.once('error', reject);
+    });
 
     const rootHtmlRes = await fetch(`${server.url}/`);
     if (rootHtmlRes.status === 200) {

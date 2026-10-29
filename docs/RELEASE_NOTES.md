@@ -1,26 +1,27 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.7.2` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v0.7.3` — 3D/2D Rack Planner, Hosted Remote MCP (`mcp.rackarchitect.dev`), CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v0.7.2`!**  
-Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint (`https://rack-mcp.167.233.80.33.sslip.io/mcp`)** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
+**Welcome to RackArchitect MCP `v0.7.3`!**  
+Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint (`https://mcp.rackarchitect.dev/mcp`)** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
 <p align="center">
-  <a href="https://rack-mcp.167.233.80.33.sslip.io/">
+  <a href="https://mcp.rackarchitect.dev/">
     <img src="https://raw.githubusercontent.com/itAlex240/rack-architect-mcp/main/docs/assets/rack-architect-hero-demo.gif" alt="RackArchitect MCP — Live 3D Digital Twin, X-Ray Z-Depth Plug Clearance, Autonomous MCP Self-Correction & 2D CAD Blueprints" width="100%" />
   </a>
 </p>
 
-> **✨ What's New in the Last 3 Releases (`v0.7.0` – `v0.7.2`):**
+> **✨ What's New in the Last 3 Releases (`v0.7.1` – `v0.7.3`):**
+> - **Official `https://mcp.rackarchitect.dev` Dual-Stack HTTPS Domain & Multi-Origin CSWSH Compatibility (`v0.7.3`):** Launched the official Dual-Stack IPv4 + IPv6 (`A` + `AAAA`) production domain **`https://mcp.rackarchitect.dev`** with Let's Encrypt ECDSA TLS, HTTP/2, HSTS, Streamable HTTP (`/mcp`), SSE (`/sse`), and real-time `wss://` Live 3D Session Viewer URLs (`https://mcp.rackarchitect.dev/?session=<uuid>`), updated `server.json`, `glama.json`, `SKILL.md`, and docs across the repository, and added `RACK_MCP_ALLOWED_ORIGINS` multi-origin CSWSH/CORS verification so existing legacy `sslip.io` links continue working seamlessly in parallel.
 > - **Collision-Free Rear-Cavity 3D Cable Routing & Overhauled 2D CAD / Multi-Track Wiring Plan (`v0.7.2`):** Fixed physical port-zone classification (`resolveEffectivePortZone`) for inward-facing ports on rear-mounted PDUs so UPS-to-PDU and PDU-to-Mini-PC power cords route cleanly inside the internal rear rack cavity (`0` chassis penetrations, `0` front-panel stabs), added detour-aware open-U pass-through portal scoring (`scorePortalCandidate`), projected true 3D `(z, y)` waypoints in the 2D Side-Profile Cutaway, lifted ultra-dark `#18181B` power cords to high-contrast metallic graphite, and upgraded the browser Wiring Plan to a full 2-Section **3-Tier Power/PoE DAG + Grouped Device Cards & Multi-Track Orthogonal Router**.
 > - **Animated 6-Scene 3D/2D Hero Showcase (`v0.7.1`):** Added a crisp, GitHub-autoplay-ready (`< 8 MB`) 6-scene animated Hero Demo GIF (`docs/assets/rack-architect-hero-demo.gif`) showcasing the live 3D Digital Twin, `X-Ray` + `140 mm` Z-Explode plug clearances, 5-stage `PLUG_CLEARANCE_COLLISION` diagnostics, autonomous MCP self-correction, synchronized 2D SVG CAD blueprints, `.STL`/`.SCAD` BOM hub, and instant `19"` / `10"` / `6"` EIA-310 rack presets.
-> - **Privacy-First Remote MCP Usage, AI Client & Wire-Traffic Telemetry (`v0.7.0`):** Added GDPR-compliant Prometheus (`GET /metrics`) and JSON (`GET /api/telemetry`) observability to `@rack-mcp/mcp-server` (protected by Bearer token / loopback auth), tracking active vs. connected MCP users (`Today` / `7d` / `30d` via salted HMAC-SHA256 hashes without storing raw IPs), per-tool call latencies across all 12 MCP tools, AI client families (`Claude`, `Claude Code`, `Cursor`, `Antigravity`, `VS Code`, `Windsurf`), CAD/STL deliverable downloads, and HTTP/WebSocket bandwidth consumption.
 
 <details>
-<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.6.7) in the Release Archive</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.7.0) in the Release Archive</b></summary>
 
 <br />
 
+- **`v0.7.0`** — Privacy-first GDPR-compliant Remote MCP usage, active AI client & wire-traffic telemetry (`GET /metrics` Prometheus & `GET /api/telemetry` JSON with salted HMAC-SHA256 `Today`/`7d`/`30d` visitor deduplication).
 - **`v0.6.7`** — GitHub Actions `.mcpb` release bundling fix, dual `mcpb` + Hosted Remote MCP `server.json` manifest & CodeQL `javascript-typescript` security/quality hardening.
 - **`v0.6.6`** — Instant Zero-Install Remote MCP quickstart & endpoint table across GitHub `README.md`, `glama.json`, `server.json`, package READMEs, `SKILL.md`, and Release Notes.
 - **`v0.6.5`** — Multi-agent operational handover (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md` Section 10), Zero-Egress DMZ invariants & automated Zero-Downtime GitHub `main` pull-deployments with Trivy CVE gating.
@@ -96,13 +97,13 @@ At the very bottom of this release page under **"Assets"**, you will find **9 re
 
 ### 🤖 Option 3: Connect Any AI Agent Instantly via Hosted Remote MCP (Zero Install!)
 
-Connect Claude, Claude Code, Cursor, VS Code Copilot, Windsurf, or Google Antigravity directly via URL — **no Node.js or Docker installation required**, and every AI session automatically gives you a real-time **Live 3D Digital Twin URL** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>`):
+Connect Claude, Claude Code, Cursor, VS Code Copilot, Windsurf, or Google Antigravity directly via URL — **no Node.js or Docker installation required**, and every AI session automatically gives you a real-time **Live 3D Digital Twin URL** (`https://mcp.rackarchitect.dev/?session=<uuid>`):
 
 ```json
 {
   "mcpServers": {
     "rack_architect_mcp": {
-      "url": "https://rack-mcp.167.233.80.33.sslip.io/mcp"
+      "url": "https://mcp.rackarchitect.dev/mcp"
     }
   }
 }
@@ -110,7 +111,7 @@ Connect Claude, Claude Code, Cursor, VS Code Copilot, Windsurf, or Google Antigr
 
 ```bash
 # Or add in 1 second via Claude Code CLI (legacy SSE also available at /sse):
-claude mcp add --transport http rack_architect_mcp https://rack-mcp.167.233.80.33.sslip.io/mcp
+claude mcp add --transport http rack_architect_mcp https://mcp.rackarchitect.dev/mcp
 
 # Or self-host locally with Docker:
 docker build -t rack-architect-mcp https://github.com/itAlex240/rack-architect-mcp.git
@@ -121,19 +122,20 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v0.7.2` von RackArchitect MCP!**  
-Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL (`https://rack-mcp.167.233.80.33.sslip.io/mcp`)** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
+**Willkommen beim Release `v0.7.3` von RackArchitect MCP!**  
+Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL (`https://mcp.rackarchitect.dev/mcp`)** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.7.0` – `v0.7.2`):**
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.7.1` – `v0.7.3`):**
+> - **Offizielle Dual-Stack-HTTPS-Domain `https://mcp.rackarchitect.dev` & nahtloser Parallelbetrieb (`v0.7.3`):** Der gehostete Remote-MCP-Server und das Live-3D-Studio sind ab sofort über die offizielle Domain **`https://mcp.rackarchitect.dev`** (Dual-Stack IPv4 + IPv6, Let's Encrypt ECDSA-TLS, HTTP/2, HSTS, `Streamable HTTP` unter `/mcp`, `SSE` unter `/sse` und Live-3D-Session-Viewer unter `https://mcp.rackarchitect.dev/?session=<uuid>`) erreichbar; dank Multi-Origin-CSWSH-Unterstützung (`RACK_MCP_ALLOWED_ORIGINS`) funktionieren bestehende `sslip.io`-Links nahtlos parallel weiter.
 > - **Kollisionsfreie 3D-Innenraum-Kabelführung & komplett erneuerter 2D-Bau- und Kabelplan (`v0.7.2`):** Nach innen gerichtete Strombuchsen an rückseitig montierten Steckdosenleisten (`resolveEffectivePortZone`) werden jetzt physikalisch exakt im hinteren Rack-Innenraum verdrahtet (USV- & PDU-Stromkabel laufen direkt hinten im freien Zwischenraum statt durch vordere Cover-Panels zu stechen; `0` Gehäuse-Durchdringungen), Front-zu-Heck-Kabel wählen automatisch den nächsten freien `U`-Durchlass ohne Umwege, dunkle `#18181B`-Stromkabel werden kontraststark als Metallic-Graphit dargestellt, der 2D-Seitenschnitt projiziert die echten 3D-Kabelwege und der Live-`Wiring Plan` zeigt jetzt einen **3-stufigen USV/PDU/PoE-Strombaum + gruppierte Geräte-Karten mit Multi-Track-Bus-Router**.
 > - **Animiertes 6-Szenen 3D/2D Hero-Demo-GIF (`v0.7.1`):** Ein gestochen scharfes, für GitHub-Inline-Autoplay optimiertes (`< 8 MB`) Hero-Demo-GIF (`docs/assets/rack-architect-hero-demo.gif`) ergänzt — zeigt in 6 Live-Szenen den 3D Digital Twin, `X-Ray` & `140 mm` Z-Explode Stecker-Freiräume, die Live-Kollisionserkennung (`PLUG_CLEARANCE_COLLISION`), die autonome MCP-Selbstkorrektur, maßstabsgetreue 2D-CAD-Pläne (`.svg`), den `.STL`/`.SCAD`-3D-Druck-Hub sowie den 1-Klick-Wechsel zwischen `19"`-, `10"`- und `6"`-Racks.
-> - **DSGVO-konformer MCP-Nutzungs-, KI-Client- & Traffic-Tracker (`v0.7.0`):** Geschützte Prometheus- (`GET /metrics`) und JSON-Telemetrie-Endpunkte (`GET /api/telemetry`, abgesichert per Bearer-Token / Loopback) in `@rack-mcp/mcp-server` ergänzt — erfasst aktive MCP-Tool-Nutzer vs. reine Verbindungen (`Heute` / `7T` / `30T` per gesalzenem HMAC-SHA256 ohne Speicherung echter IPs), Tool-Aufrufe über alle 12 MCP-Tools, verwendete KI-Clients (`Claude`, `Claude Code`, `Cursor`, `Antigravity`, `VS Code`, `Windsurf`), CAD-/STL-Downloads sowie den ausgehenden HTTP-/WebSocket-Traffic.
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.6.7) auf Deutsch anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.7.0) auf Deutsch anzeigen</b></summary>
 
 <br />
 
+- **`v0.7.0`** — DSGVO-konformer MCP-Nutzungs-, KI-Client- & Traffic-Tracker (`GET /metrics` Prometheus & `GET /api/telemetry` JSON mit gesalzenem HMAC-SHA256 ohne Speicherung echter IPs).
 - **`v0.6.7`** — Fix der GitHub-Actions-`.mcpb`-Release-Pipeline, kombiniertes `mcpb`- + Remote-MCP-`server.json`-Manifest & Behebung aller CodeQL-Code-Scanning-Befunde.
 - **`v0.6.6`** — Direkter Zero-Install Remote-MCP-Schnellstart & Endpunkt-Übersicht oben in der `README.md`, `glama.json`, `server.json`, den Paket-READMEs, `SKILL.md` und den Release Notes.
 - **`v0.6.5`** — Multi-Agenten-Übergaberegeln (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md` Abschnitt 10), Zero-Egress-DMZ-Invarianten & automatischer Zero-Downtime Auto-Updater vom GitHub-`main`-Branch inkl. Trivy-CVE-Gate.
@@ -187,13 +189,13 @@ Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Net
 
 ### 🤖 Möglichkeit 3: KI-Assistenten sofort per Remote-MCP verbinden (Ohne lokale Installation!)
 
-Verbinde Claude, Claude Code, Cursor, VS Code, Windsurf oder Google Antigravity direkt über unsere gehostete HTTPS-URL — jede Session ist komplett isoliert und liefert dir automatisch einen eigenen **Live-3D-Viewer-Link** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>`):
+Verbinde Claude, Claude Code, Cursor, VS Code, Windsurf oder Google Antigravity direkt über unsere gehostete HTTPS-URL — jede Session ist komplett isoliert und liefert dir automatisch einen eigenen **Live-3D-Viewer-Link** (`https://mcp.rackarchitect.dev/?session=<uuid>`):
 
 ```json
 {
   "mcpServers": {
     "rack_architect_mcp": {
-      "url": "https://rack-mcp.167.233.80.33.sslip.io/mcp"
+      "url": "https://mcp.rackarchitect.dev/mcp"
     }
   }
 }
@@ -201,7 +203,7 @@ Verbinde Claude, Claude Code, Cursor, VS Code, Windsurf oder Google Antigravity 
 
 ```bash
 # Oder per 1-Zeilen-Befehl in Claude Code (Legacy-SSE ebenfalls unter /sse verfügbar):
-claude mcp add --transport http rack_architect_mcp https://rack-mcp.167.233.80.33.sslip.io/mcp
+claude mcp add --transport http rack_architect_mcp https://mcp.rackarchitect.dev/mcp
 ```
 
 Alle technischen Details zur 5-Stufen-Validierung, den 12 MCP-Tools und den 26 Diagnose-Codes findest du im [**Kompletten System-Handbuch (`docs/COMPLETE_SYSTEM_HANDBOOK.md`)**](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/COMPLETE_SYSTEM_HANDBOOK.md).

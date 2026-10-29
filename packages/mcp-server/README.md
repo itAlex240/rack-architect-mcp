@@ -4,16 +4,16 @@ Multi-tenant Hosted Remote MCP (`Streamable HTTP` `/mcp` & `HTTP+SSE` `/sse`) an
 
 ## Live Zero-Install Hosted Remote MCP Endpoints
 
-- **Streamable HTTP MCP (`POST / GET / DELETE`):** `https://rack-mcp.167.233.80.33.sslip.io/mcp`
-- **Legacy HTTP+SSE MCP (`GET /sse` + `POST /messages`):** `https://rack-mcp.167.233.80.33.sslip.io/sse`
-- **Live 3D Studio & Per-Session Viewer (`wss://`):** `https://rack-mcp.167.233.80.33.sslip.io/` (`/?session=<uuid>`)
-- **MCP Discovery & Health Check:** `https://rack-mcp.167.233.80.33.sslip.io/.well-known/mcp.json` · `/health`
+- **Streamable HTTP MCP (`POST / GET / DELETE`):** `https://mcp.rackarchitect.dev/mcp`
+- **Legacy HTTP+SSE MCP (`GET /sse` + `POST /messages`):** `https://mcp.rackarchitect.dev/sse`
+- **Live 3D Studio & Per-Session Viewer (`wss://`):** `https://mcp.rackarchitect.dev/` (`/?session=<uuid>`)
+- **MCP Discovery & Health Check:** `https://mcp.rackarchitect.dev/.well-known/mcp.json` · `/health`
 
 ```json
 {
   "mcpServers": {
     "rack_architect_mcp": {
-      "url": "https://rack-mcp.167.233.80.33.sslip.io/mcp"
+      "url": "https://mcp.rackarchitect.dev/mcp"
     }
   }
 }

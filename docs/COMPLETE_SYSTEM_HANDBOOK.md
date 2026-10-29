@@ -59,8 +59,8 @@ Wenn jemand dieses Projekt untersucht und sich fragt: *„Wie logge ich mich ein
 ### 2.2 Netzwerk-Ports, Bind-Adressen & Gehosteter Remote-MCP-Endpunkt
 | Komponente | Standard-Host / URL | Standard-Port | Protokoll | Quelldatei |
 | :--- | :--- | :--- | :--- | :--- |
-| **Gehosteter Remote-MCP-Server (Zero-Install)** | `https://rack-mcp.167.233.80.33.sslip.io/mcp` (sowie `/sse`) | `443` (HTTPS TLS) | MCP `Streamable HTTP` & `HTTP+SSE` | [`packages/mcp-server/src/remote/remote-session-registry.ts`](../packages/mcp-server/src/remote/remote-session-registry.ts) |
-| **Gehosteter Live-3D-Session-Viewer** | `https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>` | `443` (`wss://`) | HTTPS + WebSocket (`wss://.../ws?session=<uuid>`) | [`packages/mcp-server/src/sidecar/sidecar-server.ts`](../packages/mcp-server/src/sidecar/sidecar-server.ts) |
+| **Gehosteter Remote-MCP-Server (Zero-Install)** | `https://mcp.rackarchitect.dev/mcp` (sowie `/sse`) | `443` (HTTPS TLS) | MCP `Streamable HTTP` & `HTTP+SSE` | [`packages/mcp-server/src/remote/remote-session-registry.ts`](../packages/mcp-server/src/remote/remote-session-registry.ts) |
+| **Gehosteter Live-3D-Session-Viewer** | `https://mcp.rackarchitect.dev/?session=<uuid>` | `443` (`wss://`) | HTTPS + WebSocket (`wss://.../ws?session=<uuid>`) | [`packages/mcp-server/src/sidecar/sidecar-server.ts`](../packages/mcp-server/src/sidecar/sidecar-server.ts) |
 | **Lokaler MCP-Server (KI-Host-Kommunikation)** | Prozess-Standard-I/O | — (`stdin` / `stdout`) | JSON-RPC 2.0 (MCP `stdio`) | [`packages/mcp-server/src/mcp/server.ts`](../packages/mcp-server/src/mcp/server.ts) |
 | **Lokaler Sidecar HTTP-Server (REST API + Web-UI)** | `127.0.0.1` (Loopback) | `3100` (konfigurierbar per `--port`) | HTTP (`GET`, `POST`, `DELETE`, `OPTIONS`) | [`packages/mcp-server/src/sidecar/sidecar-server.ts`](../packages/mcp-server/src/sidecar/sidecar-server.ts) |
 | **Lokaler Sidecar WebSocket-Server (Echtzeit-Sync)** | `127.0.0.1` (Loopback) | `3100` (Pfad `/ws`) | WebSocket (`ws://127.0.0.1:3100/ws`) | [`packages/mcp-server/src/sidecar/sidecar-server.ts`](../packages/mcp-server/src/sidecar/sidecar-server.ts) |
@@ -648,7 +648,7 @@ Implementiert in [`packages/cli/src/index.ts`](../packages/cli/src/index.ts) und
    - `--project <pfad>`: Pfad zur `rack.yaml` (Standard: `./rack.yaml`; existiert die Datei noch nicht, wird automatisch ein leeres 8U-10-Zoll-Projekt angelegt).
    - `--port <nummer>`: HTTP/WebSocket-Port des Sidecar-Servers (Standard: `3100`).
    - `--stdio` / `--no-stdio`: Steuert, ob der MCP-Server auf `stdin`/`stdout` gebunden wird (Standard: `--stdio`). Wenn man den Server nur für das Web-Dashboard oder als Remote-MCP-Server startet, übergibt man `--no-stdio`.
-   - `--remote-mcp` & `--public-url <url>`: Aktiviert den mandantenfähigen, 100 % speicherbasierten **Remote-MCP-Modus** (`Streamable HTTP` auf `/mcp`, `HTTP+SSE` auf `/sse`, Discovery auf `/.well-known/mcp.json`, isolierte Live-3D-Viewer-Links `/?session=<uuid>` und direkte HTTPS-Download-URLs unter `/api/export/*?session=<uuid>`), wie er öffentlich unter **`https://rack-mcp.167.233.80.33.sslip.io/mcp`** bereitsteht.
+   - `--remote-mcp` & `--public-url <url>`: Aktiviert den mandantenfähigen, 100 % speicherbasierten **Remote-MCP-Modus** (`Streamable HTTP` auf `/mcp`, `HTTP+SSE` auf `/sse`, Discovery auf `/.well-known/mcp.json`, isolierte Live-3D-Viewer-Links `/?session=<uuid>` und direkte HTTPS-Download-URLs unter `/api/export/*?session=<uuid>`), wie er öffentlich unter **`https://mcp.rackarchitect.dev/mcp`** bereitsteht.
 
 2. **`validate`:**
    Lädt die angegebene `rack.yaml`, führt die 5-Stufen-Validierung aus, gibt den kompletten **ASCII-Elevationsplan + Diagnosebericht** aus und beendet sich mit **Exit-Code `0`** (wenn `VALID`, d. h. `0` Errors) oder **Exit-Code `1`** (wenn `INVALID` oder Datei nicht gefunden).

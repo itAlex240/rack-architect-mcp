@@ -163,11 +163,12 @@ Whenever publishing a release or pushing a completed feature/fix batch, **automa
 
 ## 10. Hosted Remote MCP Production Deployment, Zero-Egress DMZ & Auto-Update Protocol
 
-A live, multi-tenant Hosted Remote MCP + 3D Studio instance is deployed in production (`RACK_MCP_REMOTE=1`) at:
-* **Streamable HTTP MCP Endpoint:** `https://rack-mcp.167.233.80.33.sslip.io/mcp`
-* **Legacy HTTP+SSE MCP Endpoint:** `https://rack-mcp.167.233.80.33.sslip.io/sse`
-* **Live 3D Studio & Session Viewer:** `https://rack-mcp.167.233.80.33.sslip.io/` (and `/?session=<uuid>` via `wss://`)
-* **Health & Discovery Endpoints:** `https://rack-mcp.167.233.80.33.sslip.io/health` and `/.well-known/mcp.json`
+A live, multi-tenant Hosted Remote MCP + 3D Studio instance is deployed in production (`RACK_MCP_REMOTE=1`, Dual-Stack IPv4 + IPv6 TLS) at:
+* **Streamable HTTP MCP Endpoint:** `https://mcp.rackarchitect.dev/mcp`
+* **Legacy HTTP+SSE MCP Endpoint:** `https://mcp.rackarchitect.dev/sse`
+* **Live 3D Studio & Session Viewer:** `https://mcp.rackarchitect.dev/` (and `/?session=<uuid>` via `wss://`)
+* **Health & Discovery Endpoints:** `https://mcp.rackarchitect.dev/health` and `/.well-known/mcp.json`
+* **Legacy Backwards-Compatible Endpoint (Active in Parallel via `RACK_MCP_ALLOWED_ORIGINS`):** `https://rack-mcp.167.233.80.33.sslip.io`
 * **Static GitHub Pages Demo:** `https://italex240.github.io/rack-architect-mcp/` (auto-deployed via `.github/workflows/deploy-demo.yml` on push to `main`)
 
 ### Mandatory Production & Security Invariants for All Future Agents
@@ -184,6 +185,6 @@ A live, multi-tenant Hosted Remote MCP + 3D Studio instance is deployed in produ
 4. **Automated GitHub `main` Pull-Deployment, Trivy Gate & Monitoring:**
    * Pushing to `origin/main` automatically triggers **both** GitHub Pages (`deploy-demo.yml`) and the production server's pull-based Zero-Downtime Auto-Updater (`rack-mcp-autoupdate.timer` -> `/usr/local/sbin/update-rack-architect-mcp.sh` every 15 minutes):
      1. Polls `git ls-remote` on `refs/heads/main` against `/opt/rack-architect-mcp/.deployed_commit` and verifies/heals the `br-rackmcp` Zero-Egress `iptables` rules on every tick.
-     2. Builds a candidate image (`rack-architect-mcp:candidate`), blocks deployment if Trivy finds any fixable `CRITICAL` CVE, swaps atomically with `rack-architect-mcp:rollback` fallback, and verifies `/health` over both `127.0.0.1:3100` and public HTTPS (`https://rack-mcp.167.233.80.33.sslip.io/health`).
+     2. Builds a candidate image (`rack-architect-mcp:candidate`), blocks deployment if Trivy finds any fixable `CRITICAL` CVE, swaps atomically with `rack-architect-mcp:rollback` fallback, and verifies `/health` over both `127.0.0.1:3100` and public HTTPS (`https://mcp.rackarchitect.dev/health`).
    * Daily automated server monitoring (`08:00 CET` `server_security_briefing.sh`) verifies HTTPS `/health`, GitHub commit sync, `br-rackmcp` Zero-Egress firewall state, `rack-mcp-autoupdate.timer`, and Trivy container CVEs.
    * For server-admin tasks with SSH access, read `/root/SERVER_DOKUMENTATION.md` and `/opt/gemini-workflows/AGENTS.md` on the host first (and the user's Obsidian Ideaverse `Hetzner Server (PapierkramKiller)` project notes if available locally).

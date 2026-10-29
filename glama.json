@@ -2,5 +2,5 @@
   "$schema": "https://glama.ai/mcp/schemas/server.json",
   "maintainers": ["itAlex240"],
   "name": "rack_architect_mcp",
-  "description": "Zero-install Hosted Remote MCP (https://rack-mcp.167.233.80.33.sslip.io/mcp) & local stdio Rack-as-Code 3D/2D planner, 5-stage physical/PoE/thermal validator, CAD SVG/BOM/GLB exporter, and watertight OpenSCAD/STL 3D-print generator for 19-inch, 10-inch, and 6-inch racks."
+  "description": "Zero-install Hosted Remote MCP (https://mcp.rackarchitect.dev/mcp) & local stdio Rack-as-Code 3D/2D planner, 5-stage physical/PoE/thermal validator, CAD SVG/BOM/GLB exporter, and watertight OpenSCAD/STL 3D-print generator for 19-inch, 10-inch, and 6-inch racks."
 }

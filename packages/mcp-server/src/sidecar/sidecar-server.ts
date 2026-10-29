@@ -75,6 +75,7 @@ export interface RackSidecarServerOptions {
   readonly host?: string | undefined;
   readonly remoteMcp?: boolean | undefined;
   readonly publicBaseUrl?: string | undefined;
+  readonly additionalAllowedOrigins?: readonly string[] | undefined;
   readonly maxSessions?: number | undefined;
   readonly maxSessionsPerIp?: number | undefined;
   readonly maxNewSessionsPerMinutePerIp?: number | undefined;
@@ -169,6 +170,7 @@ function resolveAllowedViewerOrigin(
   options: {
     readonly remoteMcp: boolean;
     readonly configuredPublicOrigin: string | undefined;
+    readonly additionalPublicOrigins?: ReadonlySet<string> | undefined;
     readonly dynamicPublicOrigin: string | undefined;
     readonly boundHost: string;
     readonly boundPort: number;
@@ -200,6 +202,10 @@ function resolveAllowedViewerOrigin(
       return localHostOrigin;
     }
     return undefined;
+  }
+
+  if (options.additionalPublicOrigins?.has(normalizedOrigin) === true) {
+    return normalizedOrigin;
   }
 
   if (options.configuredPublicOrigin !== undefined) {
@@ -246,6 +252,7 @@ function setSecurityAndCorsHeaders(
   originPolicy: {
     readonly remoteMcp: boolean;
     readonly configuredPublicOrigin: string | undefined;
+    readonly additionalPublicOrigins?: ReadonlySet<string> | undefined;
     readonly dynamicPublicOrigin: string | undefined;
     readonly boundHost: string;
     readonly boundPort: number;
@@ -570,6 +577,24 @@ export async function startRackSidecarServer(
   const localHandlers = new RackMcpToolHandlers(stateManager);
   const staticAssets = loadStaticWebViewerAssets();
   const configuredPublicOrigin = tryExtractOrigin(options.publicBaseUrl);
+  const additionalPublicOrigins = new Set<string>();
+  const rawEnvAllowedOrigins = process.env['RACK_MCP_ALLOWED_ORIGINS'];
+  if (rawEnvAllowedOrigins !== undefined && rawEnvAllowedOrigins.length > 0) {
+    for (const part of rawEnvAllowedOrigins.split(',')) {
+      const parsed = tryExtractOrigin(part);
+      if (parsed !== undefined) {
+        additionalPublicOrigins.add(parsed);
+      }
+    }
+  }
+  if (options.additionalAllowedOrigins !== undefined) {
+    for (const entry of options.additionalAllowedOrigins) {
+      const parsed = tryExtractOrigin(entry);
+      if (parsed !== undefined) {
+        additionalPublicOrigins.add(parsed);
+      }
+    }
+  }
   const metricsAuthToken =
     options.metricsAuthToken ?? process.env['RACK_MCP_METRICS_TOKEN'];
 
@@ -682,6 +707,7 @@ export async function startRackSidecarServer(
     setSecurityAndCorsHeaders(req, res, pathname, {
       remoteMcp,
       configuredPublicOrigin,
+      additionalPublicOrigins,
       dynamicPublicOrigin: tryExtractOrigin(remoteRegistry?.getPublicBaseUrl()),
       boundHost: host,
       boundPort: activeBoundPort
@@ -1153,6 +1179,7 @@ export async function startRackSidecarServer(
       resolveAllowedViewerOrigin(originHeader, {
         remoteMcp,
         configuredPublicOrigin,
+        additionalPublicOrigins,
         dynamicPublicOrigin: tryExtractOrigin(remoteRegistry?.getPublicBaseUrl()),
         boundHost: host,
         boundPort
