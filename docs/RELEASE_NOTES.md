@@ -1,20 +1,22 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.6.3` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v0.6.4` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v0.6.3`!**  
+**Welcome to RackArchitect MCP `v0.6.4`!**  
 Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
-> **✨ What's New in the Last 3 Releases (`v0.6.0` – `v0.6.3`):**
-> - **Workspace-Aware Zero-CVE Docker Production Build (`v0.6.3` / `v0.6.2`):** Uses `ENV CI=true` + `pnpm install --prod --frozen-lockfile --ignore-scripts` with an automated build-time CLI validation smoke test (`rack-mcp validate`) and sourcemap cleanup — preserving all monorepo `@rack-mcp/*` symlinks while achieving **0 Critical and 0 High CVEs** under Trivy container scanning.
-> - **Zero-CVE Production Docker Runtime Hardening (`v0.6.1`):** Pruned build-only devDependencies (`esbuild`, `vite`, `vitest`, `typescript`) and stripped unused global `npm`/`yarn` CLIs from the non-root `node:22-alpine` runtime stage (~350 MB smaller runtime footprint).
-> - **Zero-Install Hosted Multi-Session Remote MCP Server (`Streamable HTTP` & `SSE`) + Isolated Live 3D Session Viewer (`v0.6.0`):** Connect Claude, Cursor, VS Code, Windsurf, or Antigravity directly to **`https://rack-mcp.167.233.80.33.sslip.io/mcp`** (`--remote-mcp`) with zero local installation! Every AI session receives an isolated in-memory workspace (`Mcp-Session-Id`) and its own real-time **Live 3D Digital Twin URL** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>` over `wss://`), plus direct HTTPS download URLs for `.SVG`, `BOM.md`, `.GLB`, `rack.yaml`, and watertight `.STL`/`.SCAD` 3D-print files, sliding-window IP rate limiting, and pre-compressed `gzip` asset caching.
+> **✨ What's New in the Last 3 Releases (`v0.6.2` – `v0.6.4`):**
+> - **Multi-Tenant Remote MCP, WebSocket, CSP & Container Security Hardening (`v0.6.4`):** Added fair-share per-IP session isolation (`maxSessionsPerIp = 12` so single-IP floods never evict other users), WebSocket `256 KB` frame limits + Cross-Site WebSocket Hijacking (`CSWSH`) `Origin` verification, strict `Content-Security-Policy` + `Referrer-Policy: no-referrer` + scoped CORS on session routes, algorithmic DoS schema bounds, and `root:root`-owned immutable application binaries inside the `USER node` runtime image.
+> - **Workspace-Aware Zero-CVE Docker Production Build (`v0.6.3`):** Replaced root-only pruning with workspace-wide `pnpm install --prod --frozen-lockfile --ignore-scripts` and a build-time `rack-mcp validate` smoke check, preserving all monorepo `@rack-mcp/*` symlinks with **0 Critical and 0 High Trivy CVEs**.
+> - **Headless CI Docker Pruning & Sourcemap Cleanup (`v0.6.2`):** Enforced `ENV CI=true` and stripped residual `*esbuild*` binaries and `.map` sourcemaps prior to copying into the minimal `node:22-alpine` runtime stage.
 
 <details>
-<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.5.0) in the Release Archive</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.6.1) in the Release Archive</b></summary>
 
 <br />
 
+- **`v0.6.1`** — Zero-CVE production Docker runtime hardening (~350 MB smaller image, `0` High/Critical Trivy CVEs).
+- **`v0.6.0`** — Zero-install Hosted Multi-Session Remote MCP Server (`Streamable HTTP` `/mcp` & `SSE` `/sse`), isolated Live 3D Session Viewer (`/?session=<uuid>`), zero-disk HTTPS deliverable downloads & per-IP rate limiting.
 - **`v0.5.0`** — Live Rack Preset Switcher (`10"` · `19"` · `6"` · `Empty`), shareable zero-backend rack links (`#rack=v1...`), custom 3D-print cover-panel configurator (`0.5U`–`3U` + engraved front text) & direct 2-click 3D port patching.
 - **`v0.4.12`** — 7 3D-printable Designer Slot Cover Panels (`1U` & `2U` • `Lines` / `Hex` / `Tech-Ribs`), closed `U2 Front` slot above UPS & watertight `.SCAD`/`.STL` generators.
 - **`v0.4.11`** — Top-rear external ISP fiber WAN & PoE+ building cable drops (`ext-isp-wan`, Wi-Fi 7 AP, 4K PoE+ camera, 2.5G office LAN) in the GitHub Pages Demo, 3D roof conduit collar & 2D/GLB exporters.
@@ -93,19 +95,21 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v0.6.3` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.6.4` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.6.0` – `v0.6.3`):**
-> - **Workspace-fähiger Zero-CVE Docker-Produktions-Build (`v0.6.3` / `v0.6.2`):** Nutzt `ENV CI=true` + `pnpm install --prod --frozen-lockfile --ignore-scripts` inklusive automatischem CLI-Selbsttest (`rack-mcp validate`) beim Image-Build und Sourcemap-Bereinigung — erhält alle Monorepo-Links bei **0 Critical und 0 High CVEs** im Trivy-Scan.
-> - **Zero-CVE Docker-Runtime-Härtung (`v0.6.1`):** Reine Build-Abhängigkeiten (`esbuild`, `vite`, `vitest`, `typescript`) sowie ungenutzte globale Paketmanager (`npm`, `npx`, `yarn`) werden aus dem Non-Root-Produktions-Image entfernt (~350 MB schlanker).
-> - **Gehosteter Multi-Session Remote-MCP-Server (`Streamable HTTP` & `SSE`) + eigener Live-3D-Session-Viewer (`v0.6.0`):** Verbinde Claude, Cursor, VS Code, Windsurf oder Antigravity sofort per 1-Zeilen-URL **`https://rack-mcp.167.233.80.33.sslip.io/mcp`** ganz ohne lokale Installation! Jede KI-Session erhält einen komplett isolierten Arbeitsbereich (`Mcp-Session-Id`) mit eigenem **Live-3D-Viewer-Link** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>` über `wss://`) sowie direkten HTTPS-Download-Links für `.SVG`, `BOM.md`, `.GLB`, `rack.yaml` und alle wasserdichten `.STL`/`.SCAD`-3D-Druckdateien.
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.6.2` – `v0.6.4`):**
+> - **Multi-Tenant Remote-MCP-, WebSocket-, CSP- & Container-Security-Hardening (`v0.6.4`):** Fair-Share-Mandantenschutz pro IP (`maxSessionsPerIp = 12` verhindert Verdrängung fremder Sessions), `256 KB` WebSocket-Frame-Limit + CSWSH-`Origin`-Prüfung, strikte `Content-Security-Policy` + `Referrer-Policy: no-referrer` + Scoped CORS auf Session-Routen, algorithmische DoS-Grenzen in allen Schemas sowie unveränderliche `root:root`-Programmdateien im `USER node`-Container.
+> - **Workspace-fähiger Zero-CVE Docker-Produktions-Build (`v0.6.3`):** Workspace-weites `pnpm install --prod --frozen-lockfile --ignore-scripts` inklusive automatischem CLI-Selbsttest (`rack-mcp validate`) beim Image-Build — erhält alle Monorepo-Links bei **0 Critical und 0 High CVEs** im Trivy-Scan.
+> - **Headless Docker-Build-Fix & Sourcemap-Bereinigung (`v0.6.2`):** `ENV CI=true` sowie Bereinigung von `*esbuild*`-Resten und `.map`-Sourcemaps vor dem Kopieren in das schlanke `node:22-alpine`-Produktions-Image.
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.5.0) auf Deutsch anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.6.1) auf Deutsch anzeigen</b></summary>
 
 <br />
 
+- **`v0.6.1`** — Zero-CVE Docker-Runtime-Härtung (~350 MB schlankeres Produktions-Image, `0` High/Critical Trivy-CVEs).
+- **`v0.6.0`** — Gehosteter Multi-Session Remote-MCP-Server (`Streamable HTTP` `/mcp` & `SSE` `/sse`), eigener Live-3D-Session-Viewer (`/?session=<uuid>`), sichere HTTPS-Download-URLs ohne Server-Dateizugriff & IP-Rate-Limiting.
 - **`v0.5.0`** — Live-Preset-Switcher (`10"` · `19"` · `6"` · `Leer`), teilbare Rack-Links (`#rack=v1...`), interaktiver 3D-Druck-Cover-Panel-Konfigurator (`0.5U`–`3U` + Gravur-Text) & direktes 2-Klick-3D-Port-Patching.
 - **`v0.4.12`** — 7 neue 3D-druckbare Designer-Cover-Panels (`1U` & `2U` • `Linien` / `Waben` / `Tech-Rippen`), geschlossener `U2 Front`-Slot über der USV & 2-Manifold `.SCAD`/`.STL`-Dateien.
 - **`v0.4.11`** — Externe Zuführungskabel von oben (ISP-Glasfaser-WAN, PoE+ Überwachungskamera, PoE+ Wi-Fi 7 AP & 2.5G Büro-LAN) in der GitHub-Pages-Demo, 3D-Dachkabeleinlass & 2D/GLB-Exporter.

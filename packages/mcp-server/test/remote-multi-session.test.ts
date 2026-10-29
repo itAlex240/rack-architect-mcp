@@ -278,4 +278,290 @@ describe('@rack-mcp/mcp-server Hosted Multi-Session Remote MCP (Streamable HTTP 
     });
     expect(healthRes.status).toBe(200);
   });
+
+  it('protects legitimate tenant sessions against single-IP session floods and X-Forwarded-For left-prepending spoofing', async () => {
+    const baseState = new ProjectStateManager({ watchFile: false });
+    const server = await startRackSidecarServer(baseState, {
+      port: 0,
+      host: '127.0.0.1',
+      remoteMcp: true,
+      maxSessions: 5,
+      maxSessionsPerIp: 2,
+      maxNewSessionsPerMinutePerIp: 4,
+      rateLimitPerMinute: 200
+    });
+    activeServers.push(server);
+
+    const initRpcPayload = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-03-26',
+        capabilities: {},
+        clientInfo: { name: 'security-audit-client', version: '1.0.0' }
+      }
+    });
+
+    // 1. Legitimate user at 198.51.100.10 creates an active session
+    const victimInitRes = await fetch(`${server.url}/mcp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json, text/event-stream',
+        'X-Real-IP': '198.51.100.10'
+      },
+      body: initRpcPayload
+    });
+    expect(victimInitRes.status).toBe(200);
+    const victimSessionId = victimInitRes.headers.get('mcp-session-id');
+    expect(typeof victimSessionId).toBe('string');
+
+    // 2. Flooder at 203.0.113.99 tries spoofing leftmost X-Forwarded-For hops while opening many sessions
+    for (let i = 0; i < 4; i++) {
+      const floodRes = await fetch(`${server.url}/mcp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json, text/event-stream',
+          'X-Forwarded-For': `192.0.2.${i + 1}, 203.0.113.99`
+        },
+        body: initRpcPayload
+      });
+      expect(floodRes.status).toBe(200);
+    }
+
+    // 5th session creation within 60s from 203.0.113.99 is blocked by per-IP session creation limiter (429)
+    const blockedFloodRes = await fetch(`${server.url}/mcp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json, text/event-stream',
+        'X-Forwarded-For': '198.18.0.99, 203.0.113.99'
+      },
+      body: initRpcPayload
+    });
+    expect(blockedFloodRes.status).toBe(429);
+
+    // 3. Victim session (198.51.100.10) is completely intact (1 victim + max 2 flooder = 3 active sessions)
+    const victimStateRes = await fetch(
+      `${server.url}/api/state?session=${encodeURIComponent(victimSessionId!)}`,
+      { headers: { 'X-Real-IP': '198.51.100.10' } }
+    );
+    expect(victimStateRes.status).toBe(200);
+
+    const healthJson = (await (await fetch(`${server.url}/health`)).json()) as {
+      readonly activeSessions: number;
+    };
+    expect(healthJson.activeSessions).toBe(3);
+  });
+
+  it('rejects oversized HTTP bodies (413), cross-site WebSocket origins (403 CSWSH), oversized WS frames (1009), and cleans up closed SSE streams', async () => {
+    const baseState = new ProjectStateManager({ watchFile: false });
+    const server = await startRackSidecarServer(baseState, {
+      port: 0,
+      host: '127.0.0.1',
+      remoteMcp: true,
+      publicBaseUrl: 'https://rack-mcp.example.test',
+      maxRequestBodyBytes: 8 * 1024
+    });
+    activeServers.push(server);
+
+    // 1. Oversized POST /mcp (> 8 KB) rejected with 413 without allocating any session
+    const hugeBody = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      padding: 'A'.repeat(16 * 1024)
+    });
+    const oversizedMcpRes = await fetch(`${server.url}/mcp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json, text/event-stream'
+      },
+      body: hugeBody
+    });
+    expect(oversizedMcpRes.status).toBe(413);
+
+    // 2. Legacy /sse stream cleanup + /messages 413 body limit
+    const sseAbort = new AbortController();
+    const sseRes = await fetch(`${server.url}/sse`, {
+      signal: sseAbort.signal
+    });
+    expect(sseRes.status).toBe(200);
+    const reader = sseRes.body!.getReader();
+    const firstChunk = new TextDecoder().decode((await reader.read()).value);
+    const match = /sessionId=([a-f0-9-]+)/i.exec(firstChunk);
+    expect(match).not.toBeNull();
+    const sseSid = match![1]!;
+
+    const oversizedSsePost = await fetch(
+      `${server.url}/messages?sessionId=${encodeURIComponent(sseSid)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: hugeBody
+      }
+    );
+    expect(oversizedSsePost.status).toBe(413);
+
+    // Abort SSE connection and verify session is immediately evicted (no 2h zombie leak)
+    sseAbort.abort();
+    await new Promise((r) => setTimeout(r, 80));
+    const healthAfterSseClose = (await (
+      await fetch(`${server.url}/health`)
+    ).json()) as { readonly activeSessions: number };
+    expect(healthAfterSseClose.activeSessions).toBe(0);
+
+    // 3. Create valid Streamable HTTP session to test CSWSH Origin check & WS 256 KB maxPayload
+    const transport = new StreamableHTTPClientTransport(
+      new URL(`${server.url}/mcp`)
+    );
+    const client = new Client({ name: 'ws-sec-client', version: '1.0.0' });
+    await client.connect(transport);
+    const sid = transport.sessionId!;
+
+    // Cross-site Origin must be rejected with 403 before WS handshake succeeds
+    const evilWs = new WebSocket(
+      `${server.wsUrl}?session=${encodeURIComponent(sid)}`,
+      { origin: 'https://evil.attacker.invalid' }
+    );
+    const evilWsError = await new Promise<string>((resolve) => {
+      evilWs.once('unexpected-response', (_req, res) => {
+        resolve(`HTTP_${res.statusCode}`);
+      });
+      evilWs.once('error', (err) => {
+        resolve(err.message);
+      });
+    });
+    expect(evilWsError).toBe('HTTP_403');
+
+    // Authorized publicBaseUrl Origin succeeds, then >256 KB WS frame is terminated with 1009
+    const validWs = new WebSocket(
+      `${server.wsUrl}?session=${encodeURIComponent(sid)}`,
+      { origin: 'https://rack-mcp.example.test' }
+    );
+    await new Promise<void>((resolve, reject) => {
+      validWs.once('open', () => resolve());
+      validWs.once('error', reject);
+    });
+
+    const closeCodePromise = new Promise<number>((resolve) => {
+      validWs.once('close', (code) => resolve(code));
+    });
+    validWs.send('X'.repeat(300 * 1024));
+    const closeCode = await closeCodePromise;
+    expect(closeCode).toBe(1009);
+
+    await transport.terminateSession();
+    await client.close();
+  });
+
+  it('enforces defensive HTTP headers, scoped CORS on session routes, and algorithmic/URI schema bounds', async () => {
+    const baseState = new ProjectStateManager({ watchFile: false });
+    const server = await startRackSidecarServer(baseState, {
+      port: 0,
+      host: '127.0.0.1',
+      remoteMcp: true,
+      publicBaseUrl: 'https://rack-mcp.example.test'
+    });
+    activeServers.push(server);
+
+    const transport = new StreamableHTTPClientTransport(
+      new URL(`${server.url}/mcp`)
+    );
+    const client = new Client({ name: 'bounds-audit-client', version: '1.0.0' });
+    await client.connect(transport);
+    const sid = transport.sessionId!;
+
+    // 1. Public MCP discovery route permits wildcard CORS; session-private /api/state blocks foreign Origin
+    const mcpInfoRes = await fetch(`${server.url}/api/mcp-info`, {
+      headers: { Origin: 'https://inspector.modelcontextprotocol.io' }
+    });
+    expect(mcpInfoRes.headers.get('access-control-allow-origin')).toBe('*');
+    expect(mcpInfoRes.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(mcpInfoRes.headers.get('x-frame-options')).toBe('DENY');
+    expect(mcpInfoRes.headers.get('referrer-policy')).toBe('no-referrer');
+    expect(mcpInfoRes.headers.get('cross-origin-opener-policy')).toBe('same-origin');
+
+    const crossSiteStateRes = await fetch(
+      `${server.url}/api/state?session=${encodeURIComponent(sid)}`,
+      { headers: { Origin: 'https://evil.attacker.invalid' } }
+    );
+    expect(crossSiteStateRes.status).toBe(200);
+    expect(crossSiteStateRes.headers.get('access-control-allow-origin')).toBeNull();
+
+    const sameSiteStateRes = await fetch(
+      `${server.url}/api/state?session=${encodeURIComponent(sid)}`,
+      { headers: { Origin: 'https://rack-mcp.example.test' } }
+    );
+    expect(sameSiteStateRes.headers.get('access-control-allow-origin')).toBe(
+      'https://rack-mcp.example.test'
+    );
+
+    const rootHtmlRes = await fetch(`${server.url}/`);
+    if (rootHtmlRes.status === 200) {
+      expect(rootHtmlRes.headers.get('content-security-policy')).toContain(
+        "default-src 'self'"
+      );
+      expect(rootHtmlRes.headers.get('content-security-policy')).toContain(
+        "frame-ancestors 'none'"
+      );
+    }
+
+    // 2. Algorithmic DoS & javascript: URI payloads are deterministically rejected
+    const hugeRackRes = await client.callTool({
+      name: 'init_rack',
+      arguments: {
+        project_name: 'DoS Attempt Rack',
+        standard: '19inch',
+        u_height: 100_000,
+        rail_depth_mm: 600,
+        enclosure_type: 'open-frame'
+      }
+    });
+    expect(hugeRackRes.isError).toBe(true);
+
+    const xssBlueprintRes = await client.callTool({
+      name: 'define_custom_blueprint',
+      arguments: {
+        blueprint: {
+          slug: 'custom-evil-panel',
+          manufacturer: 'Test',
+          model: 'Test Panel',
+          category: 'blanking-panel',
+          mount_type: 'rackmount-10',
+          geometry: {
+            u_height: 1,
+            width_mm: 254,
+            height_mm: 44,
+            depth_mm: 15,
+            ear_mount_style: 'front-ears',
+            front_protrusion_mm: 2,
+            rear_protrusion_mm: 0,
+            weight_grams: 80
+          },
+          power_and_thermal: {
+            electrical_role: 'passive',
+            idle_watts: 0,
+            max_system_watts: 0,
+            airflow: 'passive-convection'
+          },
+          ports: [],
+          port_groups: [],
+          slots: [],
+          printable_metadata: {
+            is_3d_printable: true,
+            recommended_material: 'PETG',
+            printables_url: 'javascript:alert(1)'
+          }
+        }
+      }
+    });
+    expect(xssBlueprintRes.isError).toBe(true);
+
+    await transport.terminateSession();
+    await client.close();
+  });
 });

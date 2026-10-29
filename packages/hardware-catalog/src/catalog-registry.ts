@@ -55,8 +55,15 @@ function normalizeMountFilter(filterValue: FormFactorFilter): MountType {
 export class CatalogRegistry {
   private readonly blueprints = new Map<string, HardwareBlueprint>();
 
-  public constructor(initialBlueprints?: readonly HardwareBlueprint[]) {
-    if (initialBlueprints !== undefined) {
+  public constructor(
+    initialBlueprints?: readonly HardwareBlueprint[],
+    prevalidatedMap?: ReadonlyMap<string, HardwareBlueprint>
+  ) {
+    if (prevalidatedMap !== undefined) {
+      for (const [slug, bp] of prevalidatedMap.entries()) {
+        this.blueprints.set(slug, bp);
+      }
+    } else if (initialBlueprints !== undefined) {
       for (const bp of initialBlueprints) {
         this.registerCustomBlueprint(bp);
       }
@@ -70,6 +77,14 @@ export class CatalogRegistry {
         this.blueprints.set(res.blueprint.slug, res.blueprint);
       }
     }
+  }
+
+  /**
+   * Creates an O(N) isolated shallow clone of this pre-validated catalog registry
+   * without re-parsing embedded YAML files on session initialization.
+   */
+  public clone(): CatalogRegistry {
+    return new CatalogRegistry(undefined, this.blueprints);
   }
 
   /**

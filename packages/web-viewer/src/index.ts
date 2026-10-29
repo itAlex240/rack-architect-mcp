@@ -1,4 +1,4 @@
-export const WEB_VIEWER_VERSION = '0.6.3';
+export const WEB_VIEWER_VERSION = '0.6.4';
 export * from './state/standalone-homelab.js';
 export * from './state/standalone-presets.js';
 export * from './state/rack-url-codec.js';

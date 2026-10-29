@@ -19,6 +19,7 @@ import { ProjectStateManager } from '../state-manager.js';
 
 export interface RemoteMcpSession {
   readonly sessionId: string;
+  readonly ownerIp: string;
   readonly createdAt: number;
   lastAccessedAt: number;
   readonly stateManager: ProjectStateManager;
@@ -34,6 +35,9 @@ export interface RemoteSessionRegistryOptions {
   readonly publicBaseUrl?: string | undefined;
   readonly initialProjectTemplate?: RackProject | undefined;
   readonly maxSessions?: number | undefined;
+  readonly maxSessionsPerIp?: number | undefined;
+  readonly maxNewSessionsPerMinutePerIp?: number | undefined;
+  readonly maxCustomBlueprintsPerSession?: number | undefined;
   readonly sessionTtlMs?: number | undefined;
   readonly maxRequestBodyBytes?: number | undefined;
 }
@@ -52,23 +56,32 @@ function isTrustedProxyAddress(remoteAddress: string | undefined): boolean {
   );
 }
 
+function normalizeIpToken(raw: string): string {
+  return raw.trim().replace(/^::ffff:/, '').slice(0, 64);
+}
+
 export function extractClientIp(req: http.IncomingMessage): string {
   const peer = req.socket.remoteAddress;
   if (isTrustedProxyAddress(peer)) {
     const xRealIp = req.headers['x-real-ip'];
     if (typeof xRealIp === 'string' && xRealIp.trim().length > 0) {
-      return xRealIp.trim();
+      return normalizeIpToken(xRealIp);
     }
     const xff = req.headers['x-forwarded-for'];
-    const rawXff = Array.isArray(xff) ? xff[0] : xff;
+    const rawXff = Array.isArray(xff) ? xff[xff.length - 1] : xff;
     if (typeof rawXff === 'string' && rawXff.length > 0) {
-      const firstHop = rawXff.split(',')[0]?.trim();
-      if (firstHop !== undefined && firstHop.length > 0) {
-        return firstHop;
+      // Use the rightmost hop appended by the trusted reverse proxy to prevent XFF left-prepending spoofing
+      const hops = rawXff
+        .split(',')
+        .map((part) => part.trim())
+        .filter((part) => part.length > 0);
+      const rightmostHop = hops[hops.length - 1];
+      if (rightmostHop !== undefined) {
+        return normalizeIpToken(rightmostHop);
       }
     }
   }
-  return (peer ?? 'unknown').replace(/^::ffff:/, '');
+  return normalizeIpToken(peer ?? 'unknown');
 }
 
 /**
@@ -77,12 +90,18 @@ export function extractClientIp(req: http.IncomingMessage): string {
 export class SlidingWindowRateLimiter {
   private readonly maxRequests: number;
   private readonly windowMs: number;
+  private readonly maxTrackedIps: number;
   private readonly buckets = new Map<string, number[]>();
   private readonly cleanupTimer: ReturnType<typeof setInterval>;
 
-  public constructor(maxRequests = 240, windowMs = 60_000) {
+  public constructor(
+    maxRequests = 240,
+    windowMs = 60_000,
+    maxTrackedIps = 10_000
+  ) {
     this.maxRequests = maxRequests;
     this.windowMs = windowMs;
+    this.maxTrackedIps = maxTrackedIps;
     this.cleanupTimer = setInterval(() => {
       this.prune(Date.now());
     }, Math.max(15_000, windowMs));
@@ -96,6 +115,16 @@ export class SlidingWindowRateLimiter {
   } {
     const cutoff = now - this.windowMs;
     const existing = this.buckets.get(ip);
+    if (existing === undefined && this.buckets.size >= this.maxTrackedIps) {
+      this.prune(now);
+      if (this.buckets.size >= this.maxTrackedIps) {
+        const oldestKey = this.buckets.keys().next().value;
+        if (oldestKey !== undefined) {
+          this.buckets.delete(oldestKey);
+        }
+      }
+    }
+
     const active =
       existing !== undefined ? existing.filter((ts) => ts > cutoff) : [];
 
@@ -137,19 +166,114 @@ export class SlidingWindowRateLimiter {
   }
 }
 
+type BoundedBodyResult =
+  | { readonly ok: true; readonly parsed: unknown }
+  | { readonly ok: false; readonly statusCode: 400 | 413 | 415; readonly message: string };
+
+async function readBoundedJsonBody(
+  req: http.IncomingMessage,
+  maxBytes: number
+): Promise<BoundedBodyResult> {
+  const rawContentType = req.headers['content-type'] ?? '';
+  if (!rawContentType.toLowerCase().includes('application/json')) {
+    return {
+      ok: false,
+      statusCode: 415,
+      message: 'Unsupported Content-Type: application/json is required.'
+    };
+  }
+
+  const contentLengthHeader = req.headers['content-length'];
+  if (typeof contentLengthHeader === 'string' && contentLengthHeader.length > 0) {
+    const declaredLength = Number(contentLengthHeader);
+    if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
+      return {
+        ok: false,
+        statusCode: 413,
+        message: `Payload Too Large: request body exceeds ${maxBytes} bytes.`
+      };
+    }
+  }
+
+  const chunks: Buffer[] = [];
+  let totalBytes = 0;
+
+  return await new Promise<BoundedBodyResult>((resolve) => {
+    let settled = false;
+    const finish = (result: BoundedBodyResult): void => {
+      if (!settled) {
+        settled = true;
+        resolve(result);
+      }
+    };
+
+    req.on('data', (chunk: Buffer | string) => {
+      if (settled) {
+        return;
+      }
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, 'utf8');
+      totalBytes += buf.byteLength;
+      if (totalBytes > maxBytes) {
+        req.resume();
+        finish({
+          ok: false,
+          statusCode: 413,
+          message: `Payload Too Large: request body exceeds ${maxBytes} bytes.`
+        });
+        return;
+      }
+      chunks.push(buf);
+    });
+
+    req.on('error', () => {
+      finish({
+        ok: false,
+        statusCode: 400,
+        message: 'Failed to read HTTP request stream.'
+      });
+    });
+
+    req.on('end', () => {
+      if (settled) {
+        return;
+      }
+      try {
+        const rawText = Buffer.concat(chunks).toString('utf8');
+        const parsed: unknown = JSON.parse(rawText);
+        finish({ ok: true, parsed });
+      } catch {
+        finish({
+          ok: false,
+          statusCode: 400,
+          message: 'Parse error: Invalid JSON payload.'
+        });
+      }
+    });
+  });
+}
+
+function isLoopbackHostHeader(host: string): boolean {
+  const hostname = host.split(':')[0]?.toLowerCase() ?? '';
+  return hostname === '127.0.0.1' || hostname === 'localhost';
+}
+
 /**
  * Multi-tenant in-memory session registry for Hosted Remote MCP (`Streamable HTTP` + legacy `SSE`).
- * Guarantees strict per-session isolation (zero host filesystem writes, zero cross-user state leakage)
- * and real-time WebSocket synchronization to `/?session=<uuid>` 3D Web-Viewer tabs.
+ * Guarantees strict per-session isolation (zero host filesystem writes, zero cross-user state leakage),
+ * per-IP fair-share tenant eviction protection, and real-time WebSocket synchronization to `/?session=<uuid>`.
  */
 export class RemoteSessionRegistry {
   private readonly sessions = new Map<string, RemoteMcpSession>();
   private readonly configuredBaseUrl: string | undefined;
   private inferredBaseUrl = 'http://127.0.0.1:3100';
+  private inferredBaseUrlLocked = false;
   private readonly initialProjectTemplate: RackProject | undefined;
   private readonly maxSessions: number;
+  private readonly maxSessionsPerIp: number;
+  private readonly maxCustomBlueprintsPerSession: number;
   private readonly sessionTtlMs: number;
   private readonly maxRequestBodyBytes: number;
+  private readonly sessionCreationLimiter: SlidingWindowRateLimiter;
   private readonly sweepTimer: ReturnType<typeof setInterval>;
 
   public constructor(options: RemoteSessionRegistryOptions = {}) {
@@ -162,8 +286,19 @@ export class RemoteSessionRegistry {
         ? structuredClone(options.initialProjectTemplate)
         : undefined;
     this.maxSessions = options.maxSessions ?? 200;
+    this.maxSessionsPerIp =
+      options.maxSessionsPerIp ??
+      (this.maxSessions >= 4
+        ? Math.min(12, Math.max(2, Math.floor(this.maxSessions / 2)))
+        : this.maxSessions);
+    this.maxCustomBlueprintsPerSession =
+      options.maxCustomBlueprintsPerSession ?? 32;
     this.sessionTtlMs = options.sessionTtlMs ?? 2 * 60 * 60 * 1000;
     this.maxRequestBodyBytes = options.maxRequestBodyBytes ?? 512 * 1024;
+    this.sessionCreationLimiter = new SlidingWindowRateLimiter(
+      options.maxNewSessionsPerMinutePerIp ?? 20,
+      60_000
+    );
 
     this.sweepTimer = setInterval(() => {
       void this.sweepExpiredSessions();
@@ -176,7 +311,7 @@ export class RemoteSessionRegistry {
   }
 
   public updateDynamicBaseUrl(req: http.IncomingMessage): void {
-    if (this.configuredBaseUrl !== undefined) {
+    if (this.configuredBaseUrl !== undefined || this.inferredBaseUrlLocked) {
       return;
     }
     const peer = req.socket.remoteAddress;
@@ -190,8 +325,15 @@ export class RemoteSessionRegistry {
       (trusted ? req.headers['x-forwarded-host'] : undefined) ??
       req.headers.host;
     const rawHost = Array.isArray(hostHeader) ? hostHeader[0] : hostHeader;
-    if (typeof rawHost === 'string' && /^[a-zA-Z0-9._:-]+$/.test(rawHost)) {
+    if (
+      typeof rawHost === 'string' &&
+      rawHost.length <= 253 &&
+      /^[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*(?::\d{1,5})?$/.test(rawHost)
+    ) {
       this.inferredBaseUrl = `${proto}://${rawHost}`;
+      if (!isLoopbackHostHeader(rawHost)) {
+        this.inferredBaseUrlLocked = true;
+      }
     }
   }
 
@@ -212,6 +354,7 @@ export class RemoteSessionRegistry {
 
   private createSessionRecord(
     sessionId: string,
+    ownerIp: string,
     transports: {
       readonly streamableTransport?: StreamableHTTPServerTransport | undefined;
       readonly sseTransport?: SSEServerTransport | undefined;
@@ -222,6 +365,7 @@ export class RemoteSessionRegistry {
         ? { initialProject: structuredClone(this.initialProjectTemplate) }
         : {}),
       maxHistory: 30,
+      maxCustomBlueprints: this.maxCustomBlueprintsPerSession,
       watchFile: false
     });
 
@@ -258,6 +402,7 @@ export class RemoteSessionRegistry {
     const now = Date.now();
     return {
       sessionId,
+      ownerIp,
       createdAt: now,
       lastAccessedAt: now,
       stateManager,
@@ -270,27 +415,82 @@ export class RemoteSessionRegistry {
     };
   }
 
-  private async evictIfAtCapacity(): Promise<void> {
-    if (this.sessions.size < this.maxSessions) {
-      return;
-    }
-    await this.sweepExpiredSessions();
-    if (this.sessions.size < this.maxSessions) {
-      return;
-    }
-    // Evict least-recently-accessed session (preferring sessions without active browser WebSocket tabs)
+  private pickOldestSessionId(
+    candidates: Iterable<RemoteMcpSession>
+  ): string | undefined {
     let candidateId: string | undefined;
     let oldestTs = Number.POSITIVE_INFINITY;
-    for (const [id, session] of this.sessions.entries()) {
+    for (const session of candidates) {
       const effectiveTs =
         session.wsClients.size > 0
           ? session.lastAccessedAt + 15 * 60 * 1000
           : session.lastAccessedAt;
       if (effectiveTs < oldestTs) {
         oldestTs = effectiveTs;
-        candidateId = id;
+        candidateId = session.sessionId;
       }
     }
+    return candidateId;
+  }
+
+  /**
+   * Fair-share multi-tenant session capacity enforcement:
+   * 1. Enforces per-IP concurrent session cap (`maxSessionsPerIp`) by evicting ONLY the caller IP's oldest session.
+   * 2. If global `maxSessions` is still full across many distinct IPs, sweeps expired sessions first,
+   *    then evicts from whichever IP currently holds the largest number of sessions (preventing single-tenant starvation).
+   */
+  private async enforceTenantAndGlobalCapacity(ownerIp: string): Promise<void> {
+    const ownedByCaller: RemoteMcpSession[] = [];
+    for (const session of this.sessions.values()) {
+      if (session.ownerIp === ownerIp) {
+        ownedByCaller.push(session);
+      }
+    }
+
+    while (ownedByCaller.length >= this.maxSessionsPerIp) {
+      const victimId = this.pickOldestSessionId(ownedByCaller);
+      if (victimId === undefined) {
+        break;
+      }
+      await this.deleteSession(victimId);
+      const idx = ownedByCaller.findIndex((s) => s.sessionId === victimId);
+      if (idx >= 0) {
+        ownedByCaller.splice(idx, 1);
+      } else {
+        break;
+      }
+    }
+
+    if (this.sessions.size < this.maxSessions) {
+      return;
+    }
+
+    await this.sweepExpiredSessions();
+    if (this.sessions.size < this.maxSessions) {
+      return;
+    }
+
+    const byIp = new Map<string, RemoteMcpSession[]>();
+    let maxPerIpCount = 0;
+    for (const session of this.sessions.values()) {
+      const list = byIp.get(session.ownerIp) ?? [];
+      list.push(session);
+      byIp.set(session.ownerIp, list);
+      if (list.length > maxPerIpCount) {
+        maxPerIpCount = list.length;
+      }
+    }
+
+    const evictionPool: RemoteMcpSession[] = [];
+    for (const list of byIp.values()) {
+      if (list.length === maxPerIpCount) {
+        evictionPool.push(...list);
+      }
+    }
+
+    const candidateId = this.pickOldestSessionId(
+      evictionPool.length > 0 ? evictionPool : this.sessions.values()
+    );
     if (candidateId !== undefined) {
       await this.deleteSession(candidateId);
     }
@@ -337,6 +537,15 @@ export class RemoteSessionRegistry {
     }
   }
 
+  private hasOversizedContentLength(req: http.IncomingMessage): boolean {
+    const rawLen = req.headers['content-length'];
+    if (typeof rawLen !== 'string' || rawLen.length === 0) {
+      return false;
+    }
+    const parsed = Number(rawLen);
+    return Number.isFinite(parsed) && parsed > this.maxRequestBodyBytes;
+  }
+
   /**
    * Handles MCP Streamable HTTP requests (`POST /mcp`, `GET /mcp`, `DELETE /mcp`).
    */
@@ -345,6 +554,22 @@ export class RemoteSessionRegistry {
     res: http.ServerResponse
   ): Promise<void> {
     this.updateDynamicBaseUrl(req);
+
+    if (req.method === 'POST' && this.hasOversizedContentLength(req)) {
+      req.resume();
+      res.writeHead(413, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(
+        JSON.stringify({
+          jsonrpc: '2.0',
+          error: {
+            code: -32000,
+            message: `Payload Too Large: request body exceeds ${this.maxRequestBodyBytes} bytes.`
+          },
+          id: null
+        })
+      );
+      return;
+    }
 
     const rawHeader = req.headers['mcp-session-id'];
     const sessionIdHeader = Array.isArray(rawHeader) ? rawHeader[0] : rawHeader;
@@ -431,8 +656,30 @@ export class RemoteSessionRegistry {
       return;
     }
 
+    // Enforce per-IP session creation rate limit before allocating session resources
+    const clientIp = extractClientIp(req);
+    const creationCheck = this.sessionCreationLimiter.check(clientIp);
+    if (!creationCheck.allowed) {
+      req.resume();
+      res.writeHead(429, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Retry-After': String(creationCheck.retryAfterSeconds)
+      });
+      res.end(
+        JSON.stringify({
+          jsonrpc: '2.0',
+          error: {
+            code: -32000,
+            message: 'Too Many New MCP Sessions from this IP. Reuse your Mcp-Session-Id or retry shortly.'
+          },
+          id: null
+        })
+      );
+      return;
+    }
+
     // New Streamable HTTP session initialization via POST /mcp
-    await this.evictIfAtCapacity();
+    await this.enforceTenantAndGlobalCapacity(clientIp);
     const newSessionId = crypto.randomUUID();
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: () => newSessionId,
@@ -442,7 +689,7 @@ export class RemoteSessionRegistry {
       }
     });
 
-    const session = this.createSessionRecord(newSessionId, {
+    const session = this.createSessionRecord(newSessionId, clientIp, {
       streamableTransport: transport
     });
     this.sessions.set(newSessionId, session);
@@ -467,12 +714,34 @@ export class RemoteSessionRegistry {
     res: http.ServerResponse
   ): Promise<void> {
     this.updateDynamicBaseUrl(req);
-    await this.evictIfAtCapacity();
+
+    const clientIp = extractClientIp(req);
+    const creationCheck = this.sessionCreationLimiter.check(clientIp);
+    if (!creationCheck.allowed) {
+      res.writeHead(429, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Retry-After': String(creationCheck.retryAfterSeconds)
+      });
+      res.end(
+        JSON.stringify({
+          error: 'Too Many New SSE Sessions',
+          retry_after_seconds: creationCheck.retryAfterSeconds
+        })
+      );
+      return;
+    }
+
+    await this.enforceTenantAndGlobalCapacity(clientIp);
 
     const sseTransport = new SSEServerTransport('/messages', res);
     const sid = sseTransport.sessionId;
-    const session = this.createSessionRecord(sid, { sseTransport });
+    const session = this.createSessionRecord(sid, clientIp, { sseTransport });
     this.sessions.set(sid, session);
+
+    const cleanupOnDisconnect = (): void => {
+      void this.deleteSession(sid);
+    };
+    res.once('close', cleanupOnDisconnect);
 
     await session.mcpServer.mcpServer.connect(sseTransport);
   }
@@ -487,6 +756,7 @@ export class RemoteSessionRegistry {
   ): Promise<void> {
     this.updateDynamicBaseUrl(req);
     if (sessionId === null || sessionId.length === 0) {
+      req.resume();
       res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({ error: 'Missing sessionId query parameter' }));
       return;
@@ -494,17 +764,35 @@ export class RemoteSessionRegistry {
 
     const session = this.sessions.get(sessionId);
     if (session === undefined || session.sseTransport === undefined) {
+      req.resume();
       res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({ error: 'SSE session not found or expired' }));
       return;
     }
 
+    const bodyResult = await readBoundedJsonBody(req, this.maxRequestBodyBytes);
+    if (!bodyResult.ok) {
+      res.writeHead(bodyResult.statusCode, {
+        'Content-Type': 'application/json; charset=utf-8'
+      });
+      res.end(JSON.stringify({ error: bodyResult.message }));
+      return;
+    }
+
     session.lastAccessedAt = Date.now();
-    await session.sseTransport.handlePostMessage(req, res);
+    try {
+      await session.sseTransport.handlePostMessage(req, res, bodyResult.parsed);
+    } catch {
+      if (!res.headersSent) {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Failed to process SSE JSON-RPC message.' }));
+      }
+    }
   }
 
   public async closeAll(): Promise<void> {
     clearInterval(this.sweepTimer);
+    this.sessionCreationLimiter.close();
     const ids = Array.from(this.sessions.keys());
     for (const id of ids) {
       await this.deleteSession(id);

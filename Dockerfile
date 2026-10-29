@@ -41,9 +41,11 @@ RUN apk update && apk upgrade --no-cache && \
 WORKDIR /app
 ENV NODE_ENV=production
 
-COPY --chown=node:node --from=builder /app/package.json /app/pnpm-workspace.yaml ./
-COPY --chown=node:node --from=builder /app/node_modules ./node_modules
-COPY --chown=node:node --from=builder /app/packages ./packages
+# Keep application binaries & node_modules owned by root:root (immutable to USER node);
+# only /app/examples is owned by node:node for local non-remote `docker run` sandbox mutations.
+COPY --from=builder /app/package.json /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
 COPY --chown=node:node --from=builder /app/examples ./examples
 
 USER node

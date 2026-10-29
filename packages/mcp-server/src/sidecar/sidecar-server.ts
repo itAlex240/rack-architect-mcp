@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as http from 'node:http';
 import * as path from 'node:path';
+import type { Duplex } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import * as zlib from 'node:zlib';
 import { WebSocket, WebSocketServer } from 'ws';
@@ -68,6 +69,9 @@ export interface RackSidecarServerOptions {
   readonly remoteMcp?: boolean | undefined;
   readonly publicBaseUrl?: string | undefined;
   readonly maxSessions?: number | undefined;
+  readonly maxSessionsPerIp?: number | undefined;
+  readonly maxNewSessionsPerMinutePerIp?: number | undefined;
+  readonly maxRequestBodyBytes?: number | undefined;
   readonly sessionTtlMs?: number | undefined;
   readonly rateLimitPerMinute?: number | undefined;
 }
@@ -100,12 +104,127 @@ const COMPRESSIBLE_EXTENSIONS = new Set([
   '.map'
 ]);
 
-function setCorsHeaders(
+const HTML_CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  "connect-src 'self' ws: wss:",
+  "worker-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "frame-ancestors 'none'",
+  "form-action 'self'"
+].join('; ');
+
+const MAX_WS_PAYLOAD_BYTES = 256 * 1024;
+const MAX_WS_CONNECTIONS_PER_IP = 16;
+const MAX_WS_CLIENTS_PER_SESSION = 8;
+
+function tryExtractOrigin(rawUrl: string | undefined): string | undefined {
+  if (rawUrl === undefined || rawUrl.trim().length === 0) {
+    return undefined;
+  }
+  try {
+    return new URL(rawUrl.trim()).origin;
+  } catch {
+    return undefined;
+  }
+}
+
+function isPublicCrossOriginMcpRoute(pathname: string): boolean {
+  return (
+    pathname === '/mcp' ||
+    pathname === '/sse' ||
+    pathname === '/messages' ||
+    pathname === '/.well-known/mcp.json' ||
+    pathname === '/api/mcp-info' ||
+    pathname === '/api/catalog' ||
+    pathname === '/health'
+  );
+}
+
+function isAllowedViewerOrigin(
+  originHeader: string | undefined,
+  options: {
+    readonly remoteMcp: boolean;
+    readonly configuredPublicOrigin: string | undefined;
+    readonly dynamicPublicOrigin: string | undefined;
+    readonly boundHost: string;
+    readonly boundPort: number;
+  }
+): boolean {
+  if (originHeader === undefined || originHeader.length === 0) {
+    return false;
+  }
+  const normalizedOrigin = tryExtractOrigin(originHeader);
+  if (normalizedOrigin === undefined) {
+    return false;
+  }
+
+  const localLoopbackAllowed =
+    options.boundHost === '127.0.0.1' || options.boundHost === 'localhost';
+
+  if (!options.remoteMcp) {
+    return (
+      ALLOWED_LOCAL_ORIGINS.has(normalizedOrigin) ||
+      normalizedOrigin === `http://127.0.0.1:${options.boundPort}` ||
+      normalizedOrigin === `http://localhost:${options.boundPort}`
+    );
+  }
+
+  if (options.configuredPublicOrigin !== undefined) {
+    if (normalizedOrigin === options.configuredPublicOrigin) {
+      return true;
+    }
+    if (localLoopbackAllowed) {
+      return (
+        normalizedOrigin === `http://127.0.0.1:${options.boundPort}` ||
+        normalizedOrigin === `http://localhost:${options.boundPort}`
+      );
+    }
+    return false;
+  }
+
+  if (
+    options.dynamicPublicOrigin !== undefined &&
+    normalizedOrigin === options.dynamicPublicOrigin
+  ) {
+    return true;
+  }
+
+  return (
+    normalizedOrigin === `http://${options.boundHost}:${options.boundPort}` ||
+    (localLoopbackAllowed &&
+      (normalizedOrigin === `http://127.0.0.1:${options.boundPort}` ||
+        normalizedOrigin === `http://localhost:${options.boundPort}`))
+  );
+}
+
+function setSecurityAndCorsHeaders(
   req: http.IncomingMessage,
   res: http.ServerResponse,
-  remoteMcp: boolean
+  pathname: string,
+  originPolicy: {
+    readonly remoteMcp: boolean;
+    readonly configuredPublicOrigin: string | undefined;
+    readonly dynamicPublicOrigin: string | undefined;
+    readonly boundHost: string;
+    readonly boundPort: number;
+  }
 ): void {
-  if (remoteMcp) {
+  // Baseline defensive HTTP headers on every response
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=()'
+  );
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+
+  if (originPolicy.remoteMcp && isPublicCrossOriginMcpRoute(pathname)) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
     res.setHeader(
@@ -113,17 +232,20 @@ function setCorsHeaders(
       'Content-Type, Accept, Mcp-Session-Id, Last-Event-ID, MCP-Protocol-Version, Authorization'
     );
     res.setHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id');
-  } else {
-    const origin = req.headers.origin;
-    if (origin !== undefined && ALLOWED_LOCAL_ORIGINS.has(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-    } else {
-      res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:3100');
-    }
+    return;
+  }
+
+  const origin = req.headers.origin;
+  if (isAllowedViewerOrigin(origin, originPolicy) && origin !== undefined) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  } else if (!originPolicy.remoteMcp) {
+    res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:3100');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   }
-  res.setHeader('X-Content-Type-Options', 'nosniff');
 }
 
 interface StaticAssetEntry {
@@ -230,6 +352,26 @@ function sendBufferWithOptionalGzip(
   res.end(rawBuffer);
 }
 
+function rejectUpgradeSocket(
+  socket: Duplex,
+  statusLine: string,
+  bodyText = ''
+): void {
+  try {
+    const payload =
+      `HTTP/1.1 ${statusLine}\r\n` +
+      'Content-Type: text/plain; charset=utf-8\r\n' +
+      `Content-Length: ${Buffer.byteLength(bodyText, 'utf8')}\r\n` +
+      'Connection: close\r\n\r\n' +
+      bodyText;
+    socket.write(payload);
+  } catch {
+    // Ignore socket write errors on teardown
+  } finally {
+    socket.destroy();
+  }
+}
+
 function executeWsToolCommand(
   ws: WebSocket,
   rawData: unknown,
@@ -322,6 +464,7 @@ export async function startRackSidecarServer(
   const host = options.host ?? (remoteMcp ? '0.0.0.0' : '127.0.0.1');
   const localHandlers = new RackMcpToolHandlers(stateManager);
   const staticAssets = loadStaticWebViewerAssets();
+  const configuredPublicOrigin = tryExtractOrigin(options.publicBaseUrl);
 
   const remoteRegistry = remoteMcp
     ? new RemoteSessionRegistry({
@@ -330,6 +473,15 @@ export async function startRackSidecarServer(
           : {}),
         ...(options.maxSessions !== undefined
           ? { maxSessions: options.maxSessions }
+          : {}),
+        ...(options.maxSessionsPerIp !== undefined
+          ? { maxSessionsPerIp: options.maxSessionsPerIp }
+          : {}),
+        ...(options.maxNewSessionsPerMinutePerIp !== undefined
+          ? { maxNewSessionsPerMinutePerIp: options.maxNewSessionsPerMinutePerIp }
+          : {}),
+        ...(options.maxRequestBodyBytes !== undefined
+          ? { maxRequestBodyBytes: options.maxRequestBodyBytes }
           : {}),
         ...(options.sessionTtlMs !== undefined
           ? { sessionTtlMs: options.sessionTtlMs }
@@ -340,6 +492,8 @@ export async function startRackSidecarServer(
   const rateLimiter = remoteMcp
     ? new SlidingWindowRateLimiter(options.rateLimitPerMinute ?? 240, 60_000)
     : undefined;
+
+  let activeBoundPort = requestedPort;
 
   const resolveStateManagerForRequest = (
     requestUrl: URL
@@ -368,16 +522,22 @@ export async function startRackSidecarServer(
     req: http.IncomingMessage,
     res: http.ServerResponse
   ): Promise<void> => {
-    setCorsHeaders(req, res, remoteMcp);
+    const requestUrl = new URL(req.url ?? '/', 'http://127.0.0.1');
+    const pathname = requestUrl.pathname;
+
+    setSecurityAndCorsHeaders(req, res, pathname, {
+      remoteMcp,
+      configuredPublicOrigin,
+      dynamicPublicOrigin: tryExtractOrigin(remoteRegistry?.getPublicBaseUrl()),
+      boundHost: host,
+      boundPort: activeBoundPort
+    });
 
     if (req.method === 'OPTIONS') {
       res.writeHead(204);
       res.end();
       return;
     }
-
-    const requestUrl = new URL(req.url ?? '/', 'http://127.0.0.1');
-    const pathname = requestUrl.pathname;
 
     // Apply per-IP rate limiting on dynamic MCP and API endpoints in remote mode
     if (
@@ -389,6 +549,7 @@ export async function startRackSidecarServer(
     ) {
       const check = rateLimiter.check(extractClientIp(req));
       if (!check.allowed) {
+        req.resume();
         res.writeHead(429, {
           'Content-Type': 'application/json; charset=utf-8',
           'Retry-After': String(check.retryAfterSeconds)
@@ -424,7 +585,7 @@ export async function startRackSidecarServer(
     ) {
       remoteRegistry?.updateDynamicBaseUrl(req);
       const baseUrl =
-        remoteRegistry?.getPublicBaseUrl() ?? `http://${host}:${requestedPort}`;
+        remoteRegistry?.getPublicBaseUrl() ?? `http://${host}:${activeBoundPort}`;
       const infoPayload = Buffer.from(
         JSON.stringify(
           {
@@ -639,10 +800,19 @@ export async function startRackSidecarServer(
       }
 
       if (pathname.startsWith('/api/export/printable/')) {
-        const requestedFile = decodeURIComponent(
-          pathname.slice('/api/export/printable/'.length)
-        );
-        const safeFile = path.basename(requestedFile);
+        let requestedFile: string;
+        try {
+          requestedFile = decodeURIComponent(
+            pathname.slice('/api/export/printable/'.length)
+          );
+        } catch {
+          res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ error: 'Malformed printable filename URI' }));
+          return;
+        }
+        const safeFile = path
+          .basename(requestedFile)
+          .replace(/[^a-zA-Z0-9._-]/g, '_');
         const carriers = generateProjectPrintableCarriers(
           targetStateManager.getScene()
         );
@@ -689,14 +859,18 @@ export async function startRackSidecarServer(
       const routeKey = pathname === '/' ? '/index.html' : pathname;
       const asset = staticAssets.get(routeKey);
       if (asset !== undefined) {
+        const assetHeaders: Record<string, string> = {
+          'Content-Type': asset.contentType,
+          'Cache-Control': asset.cacheControl,
+          ...(asset.contentType.startsWith('text/html')
+            ? { 'Content-Security-Policy': HTML_CONTENT_SECURITY_POLICY }
+            : {})
+        };
         sendBufferWithOptionalGzip(
           req,
           res,
           200,
-          {
-            'Content-Type': asset.contentType,
-            'Cache-Control': asset.cacheControl
-          },
+          assetHeaders,
           asset.body,
           { precomputedGzip: asset.gzipBody }
         );
@@ -719,6 +893,12 @@ export async function startRackSidecarServer(
     });
   });
 
+  // Slowloris, Slow-POST, and header-flood HTTP hardening
+  httpServer.headersTimeout = 15_000;
+  httpServer.requestTimeout = 60_000;
+  httpServer.keepAliveTimeout = 15_000;
+  httpServer.maxHeadersCount = 64;
+
   await new Promise<void>((resolve, reject) => {
     const onError = (err: NodeJS.ErrnoException) => {
       if (err.code === 'EADDRINUSE' && requestedPort > 0 && !remoteMcp) {
@@ -739,7 +919,107 @@ export async function startRackSidecarServer(
     });
   });
 
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const addressInfo = httpServer.address();
+  const boundPort =
+    typeof addressInfo === 'object' && addressInfo !== null
+      ? addressInfo.port
+      : requestedPort;
+  activeBoundPort = boundPort;
+
+  const wss = new WebSocketServer({
+    noServer: true,
+    maxPayload: MAX_WS_PAYLOAD_BYTES,
+    perMessageDeflate: false
+  });
+
+  const wsConnectionsByIp = new Map<string, number>();
+
+  httpServer.on('upgrade', (req: http.IncomingMessage, socket: Duplex, head: Buffer) => {
+    socket.on('error', () => {
+      socket.destroy();
+    });
+
+    const upgradeUrl = new URL(req.url ?? '/', 'http://127.0.0.1');
+    if (upgradeUrl.pathname !== '/ws') {
+      rejectUpgradeSocket(socket, '404 Not Found', 'WebSocket endpoint not found');
+      return;
+    }
+
+    // Cross-Site WebSocket Hijacking (CSWSH) Origin verification whenever browser sends Origin
+    const originHeader = req.headers.origin;
+    if (
+      originHeader !== undefined &&
+      !isAllowedViewerOrigin(originHeader, {
+        remoteMcp,
+        configuredPublicOrigin,
+        dynamicPublicOrigin: tryExtractOrigin(remoteRegistry?.getPublicBaseUrl()),
+        boundHost: host,
+        boundPort
+      })
+    ) {
+      rejectUpgradeSocket(socket, '403 Forbidden', 'Forbidden WebSocket Origin');
+      return;
+    }
+
+    const clientIp = extractClientIp(req);
+    if (remoteMcp) {
+      if (rateLimiter !== undefined) {
+        const check = rateLimiter.check(clientIp);
+        if (!check.allowed) {
+          rejectUpgradeSocket(socket, '429 Too Many Requests', 'Rate limit exceeded');
+          return;
+        }
+      }
+
+      const activeForIp = wsConnectionsByIp.get(clientIp) ?? 0;
+      if (activeForIp >= MAX_WS_CONNECTIONS_PER_IP) {
+        rejectUpgradeSocket(
+          socket,
+          '429 Too Many Requests',
+          'Too many concurrent WebSocket connections from this IP'
+        );
+        return;
+      }
+
+      const sid = upgradeUrl.searchParams.get('session');
+      const targetSession = remoteRegistry?.getSession(sid);
+      if (
+        targetSession !== undefined &&
+        targetSession.wsClients.size >= MAX_WS_CLIENTS_PER_SESSION
+      ) {
+        rejectUpgradeSocket(
+          socket,
+          '429 Too Many Requests',
+          'Too many concurrent viewer tabs for this session'
+        );
+        return;
+      }
+    }
+
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      const prevCount = wsConnectionsByIp.get(clientIp) ?? 0;
+      wsConnectionsByIp.set(clientIp, prevCount + 1);
+
+      ws.once('close', () => {
+        const current = wsConnectionsByIp.get(clientIp) ?? 1;
+        if (current <= 1) {
+          wsConnectionsByIp.delete(clientIp);
+        } else {
+          wsConnectionsByIp.set(clientIp, current - 1);
+        }
+      });
+
+      ws.on('error', () => {
+        try {
+          ws.terminate();
+        } catch {
+          // Ignore close errors after maxPayload / protocol violation
+        }
+      });
+
+      wss.emit('connection', ws, req);
+    });
+  });
 
   wss.on('connection', (ws: WebSocket, req: http.IncomingMessage) => {
     if (remoteRegistry !== undefined) {
@@ -820,12 +1100,6 @@ export async function startRackSidecarServer(
       })
     : undefined;
 
-  const addressInfo = httpServer.address();
-  const boundPort =
-    typeof addressInfo === 'object' && addressInfo !== null
-      ? addressInfo.port
-      : requestedPort;
-
   const baseUrl =
     options.publicBaseUrl !== undefined && options.publicBaseUrl.trim().length > 0
       ? options.publicBaseUrl.trim().replace(/\/+$/, '')
@@ -853,6 +1127,7 @@ export async function startRackSidecarServer(
       for (const client of wss.clients) {
         client.terminate();
       }
+      wsConnectionsByIp.clear();
       await new Promise<void>((resolve) => {
         wss.close(() => {
           httpServer.close(() => {

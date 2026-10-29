@@ -1,10 +1,17 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.5.0`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.6.1`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.5.0`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.6.1`)
+
+### 🌐 `v0.6.x` Series — Zero-Install Hosted Multi-Session Remote MCP & Zero-CVE Container Hardening
+
+- **[`v0.6.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.1) (2026-10-29) — Zero-CVE Production Docker Runtime Hardening:**
+  - Pruned build-only devDependencies (`esbuild`, `vite`, `vitest`, `typescript`) and stripped unused global `npm`/`yarn` CLIs from the non-root `node:22-alpine` runtime stage (~350 MB smaller footprint, `0` Critical / `0` High Trivy CVEs).
+- **[`v0.6.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.0) (2026-10-29) — Hosted Multi-Session Remote MCP Server (`Streamable HTTP` & `SSE`), Isolated Live 3D Session Viewer (`/?session=<uuid>`) & Zero-Disk URL Exports:**
+  - Added `--remote-mcp` (`POST / GET / DELETE /mcp` and `GET /sse` + `POST /messages`), isolated in-memory per-session `ProjectStateManager` workspaces with real-time `wss://` Live 3D Digital Twin URLs, zero-disk HTTPS deliverable download endpoints, sliding-window IP rate limiting, and pre-compressed `gzip` asset caching.
 
 ### 🚀 `v0.5.x` Series — Live Preset Switcher, Shareable Rack URLs, Cover-Panel Configurator & 2-Click 3D Port Patching
 
@@ -63,7 +70,14 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.5.0`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.6.1`)
+
+### 🌐 Serie `v0.6.x` — Gehosteter Multi-Session Remote-MCP-Server & Zero-CVE Container-Härtung
+
+- **[`v0.6.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.1) (2026-10-29) — Zero-CVE Docker-Runtime-Härtung:**
+  - Reine Build-Abhängigkeiten (`esbuild`, `vite`, `vitest`, `typescript`) sowie ungenutzte globale Paketmanager (`npm`, `npx`, `yarn`) aus dem Non-Root-`node:22-alpine`-Produktions-Image entfernt (~350 MB schlanker, `0` Critical / `0` High Trivy-CVEs).
+- **[`v0.6.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.0) (2026-10-29) — Gehosteter Multi-Session Remote-MCP-Server (`Streamable HTTP` & `SSE`), isolierter Live-3D-Session-Viewer (`/?session=<uuid>`) & URL-basierte Exporte:**
+  - Direkte HTTPS-Anbindung (`/mcp` & `/sse`) ohne lokale Installation, isolierte In-Memory-Sessions mit eigenem Live-3D-Link (`wss://`), direkte HTTPS-Download-URLs ohne Server-Dateizugriff sowie Sliding-Window-IP-Rate-Limiting und `gzip`-Asset-Caching.
 
 ### 🚀 Serie `v0.5.x` — Live-Preset-Switcher, Teilbare Rack-URLs, Cover-Panel-Konfigurator & 2-Klick-3D-Port-Patching
 

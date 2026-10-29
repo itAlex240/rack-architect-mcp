@@ -102,6 +102,7 @@ export const InitRackInputSchema = z.object({
   project_name: z
     .string()
     .min(1)
+    .max(160)
     .default('Rack Project')
     .describe('Human-readable project name stored in rack.yaml.'),
   standard: RackStandardSchema.describe(
@@ -111,17 +112,20 @@ export const InitRackInputSchema = z.object({
     .number()
     .int()
     .positive()
-    .describe('Total usable vertical rack height in Rack Units (1U = 44.45mm).'),
+    .max(60)
+    .describe('Total usable vertical rack height in Rack Units (1U = 44.45mm, 1..60U).'),
   rail_depth_mm: z
     .number()
     .positive()
-    .describe('Front-to-rear mounting rail depth in millimeters along the Z-axis.'),
+    .max(2000)
+    .describe('Front-to-rear mounting rail depth in millimeters along the Z-axis (max 2000mm).'),
   enclosure_type: EnclosureTypeSchema.default('open-frame').describe(
     'Enclosure door style ("open-frame", "closed-glass-front", or "closed-vented-front").'
   ),
   front_door_clearance_mm: z
     .number()
     .nonnegative()
+    .max(1000)
     .default(45)
     .describe(
       'Available clearance in millimeters between front mounting rails (Z=0) and a closed front door.'
@@ -129,6 +133,7 @@ export const InitRackInputSchema = z.object({
   rear_clearance_mm: z
     .number()
     .nonnegative()
+    .max(1000)
     .default(40)
     .describe(
       'Available clearance in millimeters behind the rear mounting rails (Z=rail_depth_mm) for power plugs and bending radii.'
@@ -238,8 +243,9 @@ export const ConnectCablesInputSchema = z.object({
   cables: z
     .array(CableConnectionSchema)
     .min(1)
+    .max(128)
     .describe(
-      'Batch of one or more cable connections to upsert by cable_id, route in 3D, and validate.'
+      'Batch of one or more cable connections to upsert by cable_id, route in 3D, and validate (max 128 per call).'
     )
 });
 
@@ -295,14 +301,17 @@ export const ExternalEndpointGroupInputSchema = z.object({
   id_prefix: z
     .string()
     .min(1)
+    .max(64)
     .optional()
     .describe('Optional ID prefix for generated endpoints (e.g., "cam", "ap", "room").'),
   label_prefix: z
     .string()
     .min(1)
+    .max(160)
     .describe('Human-readable label prefix (e.g., "Kamera", "WLAN Access Point", "Raum LAN").'),
   custom_labels: z
-    .array(z.string().min(1))
+    .array(z.string().min(1).max(200))
+    .max(96)
     .optional()
     .describe(
       'Optional per-item custom labels overriding numbered prefix (e.g., ["Büro – PC", "Heimkino – Beamer", "Studio – Workstation"]).'
@@ -310,14 +319,16 @@ export const ExternalEndpointGroupInputSchema = z.object({
   category: ExternalEndpointCategorySchema.default('other-lan'),
   room_or_zone: z
     .string()
+    .max(160)
     .optional()
     .describe('Building zone or room name (e.g., "Außenbereich", "EG Wohnzimmer", "Wohnräume").'),
   count: z
     .number()
     .int()
     .positive()
+    .max(96)
     .default(1)
-    .describe('Number of external cable drops in this group.'),
+    .describe('Number of external cable drops in this group (1..96).'),
   poe_draw_watts: z
     .number()
     .nonnegative()
@@ -384,12 +395,14 @@ export const PlanExternalEndpointsInputSchema = z.object({
   entry_position: ExternalEntryPositionSchema.optional().default('top-rear'),
   groups: z
     .array(ExternalEndpointGroupInputSchema)
+    .max(24)
     .optional()
     .describe(
       'Batch groups of external drops (e.g., 10x PoE cameras, 5x Wi-Fi APs, 5x room LAN outlets).'
     ),
   endpoints: z
     .array(ExternalEndpointItemInputSchema)
+    .max(128)
     .optional()
     .describe('Individual external building/room drops to terminate on the rear of the patch panel.'),
   auto_connect_switch_instance_id: z

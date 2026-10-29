@@ -18,20 +18,24 @@ export const RackConfigSchema = z
       .number()
       .int()
       .positive()
-      .describe('Total vertical rack capacity in Rack Units (U / HE).'),
+      .max(60)
+      .describe('Total vertical rack capacity in Rack Units (U / HE, 1..60).'),
     rail_depth_mm: z
       .number()
       .positive()
-      .describe('Distance from front mounting rail face (Z=0) to rear mounting rail face in mm.'),
+      .max(2000)
+      .describe('Distance from front mounting rail face (Z=0) to rear mounting rail face in mm (max 2000mm).'),
     enclosure_type: EnclosureTypeSchema.default('open-frame'),
     front_door_clearance_mm: z
       .number()
       .nonnegative()
+      .max(1000)
       .default(45)
       .describe('Available clearance in front of Z=0 before hitting the front door in mm.'),
     rear_clearance_mm: z
       .number()
       .nonnegative()
+      .max(1000)
       .default(40)
       .describe('Available clearance behind Z=rail_depth_mm in mm.')
   })
@@ -43,16 +47,19 @@ export const MountedChildDeviceSchema = z
     instance_id: z
       .string()
       .min(1)
+      .max(100)
       .describe('Unique project-wide instance identifier for the child device.'),
     blueprint_slug: z
       .string()
       .min(1)
+      .max(100)
       .describe('Hardware catalog blueprint slug for the child sub-module.'),
     slot_id: z
       .string()
       .min(1)
+      .max(100)
       .describe('Target slot_id inside the parent modular carrier.'),
-    hostname: z.string().optional().describe('Optional logical hostname or label.')
+    hostname: z.string().max(160).optional().describe('Optional logical hostname or label.')
   })
   .describe('Sub-module device mounted inside a specific slot of a parent carrier.');
 export type MountedChildDevice = z.infer<typeof MountedChildDeviceSchema>;
@@ -62,20 +69,24 @@ export const MountedDeviceSchema = z
     instance_id: z
       .string()
       .min(1)
+      .max(100)
       .describe('Unique project-wide instance identifier for the mounted equipment.'),
     blueprint_slug: z
       .string()
       .min(1)
+      .max(100)
       .describe('Hardware catalog blueprint slug.'),
     u_position: z
       .number()
       .int()
       .positive()
+      .max(60)
       .describe('Lowest 1-indexed Rack Unit (U) occupied by this device.'),
     face: RackFaceSchema.default('front'),
-    hostname: z.string().optional().describe('Optional logical hostname or label.'),
+    hostname: z.string().max(160).optional().describe('Optional logical hostname or label.'),
     children: z
       .array(MountedChildDeviceSchema)
+      .max(32)
       .default([])
       .describe('Child sub-modules mounted inside this carrier.')
   })
@@ -87,8 +98,9 @@ export const CableEndpointSchema = z
     instance_id: z
       .string()
       .min(1)
+      .max(100)
       .describe('Target device instance_id (top-level or child sub-module).'),
-    port_id: z.string().min(1).describe('Target port_id on the device.'),
+    port_id: z.string().min(1).max(128).describe('Target port_id on the device.'),
     face: RackFaceSchema.optional().describe(
       'Explicit rack face selector (used to distinguish front vs rear connections on passthrough couplers).'
     )
@@ -132,7 +144,7 @@ export type CableRoutingMode = z.infer<typeof CableRoutingModeSchema>;
 
 export const CableConnectionSchema = z
   .object({
-    cable_id: z.string().min(1).describe('Unique identifier for the cable connection.'),
+    cable_id: z.string().min(1).max(128).describe('Unique identifier for the cable connection.'),
     from: CableEndpointSchema,
     to: CableEndpointSchema,
     cable_type: CableTypeSchema,
@@ -141,7 +153,7 @@ export const CableConnectionSchema = z
       .regex(/^#[0-9A-Fa-f]{6}$/)
       .default('#3B82F6')
       .describe('Hex color code for 2D/3D cable visualization.'),
-    label: z.string().optional().describe('Optional cable label or circuit tag.'),
+    label: z.string().max(240).optional().describe('Optional cable label or circuit tag.'),
     vlan_id: z
       .number()
       .int()
@@ -151,12 +163,14 @@ export const CableConnectionSchema = z
       .describe('Optional IEEE 802.1Q primary VLAN ID carried on this link (1..4094).'),
     ip_cidr: z
       .string()
+      .max(64)
       .optional()
       .describe('Optional IPv4/IPv6 subnet or interface CIDR annotation (e.g. "10.10.20.0/24").'),
     preferred_portal_u: z
       .number()
       .int()
       .positive()
+      .max(60)
       .optional()
       .describe('Optional 1-indexed U hint for front-to-rear cable portal routing.'),
     routing_mode: CableRoutingModeSchema.optional().describe(
@@ -201,18 +215,21 @@ export const ExternalEndpointSchema = z
     endpoint_id: z
       .string()
       .min(1)
+      .max(100)
       .describe(
         'Unique project-wide identifier for the external building/room drop (e.g., "cam-01", "ap-eg-01", "room-office-pc").'
       ),
     label: z
       .string()
       .min(1)
+      .max(200)
       .describe(
         'Human-readable label shown on cable badges and patching instructions (e.g., "Kamera 1 – Einfahrt", "Büro – Workstation").'
       ),
     category: ExternalEndpointCategorySchema.default('other-lan'),
     room_or_zone: z
       .string()
+      .max(160)
       .optional()
       .describe(
         'Optional building zone or room name (e.g., "Außenbereich", "EG Wohnzimmer", "OG Büro", "Heimkino").'
@@ -220,6 +237,7 @@ export const ExternalEndpointSchema = z
     poe_draw_watts: z
       .number()
       .nonnegative()
+      .max(200)
       .default(0)
       .describe(
         'Required PoE power draw in watts (0 for non-PoE LAN drops; e.g., 9W for PoE camera, 18W for Wi-Fi 7 AP).'
@@ -229,12 +247,14 @@ export const ExternalEndpointSchema = z
     patch_panel_instance_id: z
       .string()
       .min(1)
+      .max(100)
       .describe(
         'Target patch panel instance_id where the incoming building cable is punched down on the rear face.'
       ),
     patch_panel_port_id: z
       .string()
       .min(1)
+      .max(128)
       .describe(
         'Target port_id on the patch panel rear face (e.g., "p1" .. "p24").'
       ),
@@ -256,6 +276,7 @@ export const ExternalEndpointSchema = z
       ),
     notes: z
       .string()
+      .max(1000)
       .optional()
       .describe('Optional user-facing installation note.')
   })
@@ -267,12 +288,13 @@ export type ExternalEndpoint = z.infer<typeof ExternalEndpointSchema>;
 export const RackProjectSchema = z
   .object({
     schema_version: z.literal('1.0').default('1.0'),
-    project_name: z.string().min(1).describe('Human-readable name of the rack layout project.'),
+    project_name: z.string().min(1).max(160).describe('Human-readable name of the rack layout project.'),
     rack: RackConfigSchema,
-    mounted_devices: z.array(MountedDeviceSchema).default([]),
-    cables: z.array(CableConnectionSchema).default([]),
+    mounted_devices: z.array(MountedDeviceSchema).max(120).default([]),
+    cables: z.array(CableConnectionSchema).max(512).default([]),
     external_endpoints: z
       .array(ExternalEndpointSchema)
+      .max(256)
       .default([])
       .describe(
         'External building/room cable drops (PoE cameras, Wi-Fi APs, room wall outlets) entering from the rear conduit onto a patch panel.'

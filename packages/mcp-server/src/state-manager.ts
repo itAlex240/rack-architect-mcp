@@ -11,6 +11,7 @@ import {
 } from '@rack-mcp/core-domain';
 import {
   CatalogRegistry,
+  defaultCatalogRegistry,
   parseAndValidateBlueprintYaml
 } from '@rack-mcp/hardware-catalog';
 
@@ -47,6 +48,7 @@ export interface ProjectStateManagerOptions {
   readonly initialProject?: RackProject | RackProjectInput | undefined;
   readonly catalog?: CatalogRegistry | undefined;
   readonly maxHistory?: number | undefined;
+  readonly maxCustomBlueprints?: number | undefined;
   readonly watchFile?: boolean | undefined;
 }
 
@@ -83,10 +85,12 @@ export class ProjectStateManager {
   private readonly customCatalogDir: string | undefined;
   private readonly toolLogPath: string | undefined;
   private readonly maxHistory: number;
+  private readonly maxCustomBlueprints: number;
 
   private readonly undoStack: RackProject[] = [];
   private readonly redoStack: RackProject[] = [];
   private readonly toolCallLog: McpToolCallEntry[] = [];
+  private readonly customBlueprintSlugs = new Set<string>();
   private readonly listeners = new Set<StateChangeListener>();
 
   private watcher: fs.FSWatcher | undefined;
@@ -108,7 +112,9 @@ export class ProjectStateManager {
         ? path.join(path.dirname(this.projectPath), '.rack-mcp-tool-log.json')
         : undefined;
     this.maxHistory = options.maxHistory ?? 50;
-    this.catalog = options.catalog ?? new CatalogRegistry();
+    this.maxCustomBlueprints =
+      options.maxCustomBlueprints ?? (this.projectPath === undefined ? 32 : 256);
+    this.catalog = options.catalog ?? defaultCatalogRegistry.clone();
 
     this.loadExistingCustomCatalogFromDisk();
     this.loadExistingToolLogFromDisk();
@@ -360,11 +366,20 @@ export class ProjectStateManager {
     readonly savedPath?: string | undefined;
     readonly blueprint: HardwareBlueprint;
   } {
+    if (
+      !this.customBlueprintSlugs.has(blueprint.slug) &&
+      this.customBlueprintSlugs.size >= this.maxCustomBlueprints
+    ) {
+      throw new Error(
+        `Maximum custom blueprint limit (${this.maxCustomBlueprints}) reached for this session.`
+      );
+    }
     this.catalog.registerCustomBlueprint(blueprint);
     const normalized = this.catalog.getBlueprintBySlug(blueprint.slug);
     if (normalized === undefined) {
       throw new Error(`Failed to retrieve registered custom blueprint '${blueprint.slug}'.`);
     }
+    this.customBlueprintSlugs.add(normalized.slug);
 
     let savedPath: string | undefined;
     if (this.customCatalogDir !== undefined) {
