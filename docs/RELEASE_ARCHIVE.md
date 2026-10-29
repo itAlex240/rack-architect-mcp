@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.1`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.2`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.1`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.2`)
 
 ### 📊 `v0.7.x` Series — Privacy-First Remote MCP Observability & Visual Showcase
 
+- **[`v0.7.2`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.2) (2026-10-29) — Collision-Free Rear-Cavity 3D Cable Routing & Overhauled 2D CAD / Multi-Track Wiring Plan:**
+  - Fixed physical port-zone classification (`resolveEffectivePortZone`) for inward-facing ports on rear-mounted PDUs so UPS-to-PDU and PDU-to-Mini-PC power cords route cleanly inside the internal rear rack cavity (`0` chassis penetrations, `0` front-panel stabs), added detour-aware open-`U` pass-through portal scoring (`scorePortalCandidate`), projected true 3D `(z, y)` waypoints in the 2D Side-Profile Cutaway, lifted ultra-dark `#18181B` power cords to high-contrast metallic graphite, and upgraded the browser Wiring Plan to a full 2-Section **3-Tier Power/PoE DAG + Grouped Device Cards & Multi-Track Orthogonal Router**.
 - **[`v0.7.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.1) (2026-10-29) — Animated 6-Scene 3D/2D Hero Showcase:**
   - Added a crisp, GitHub-autoplay-ready (`< 8 MB`, `1040x590`) 6-scene animated Hero Demo GIF (`docs/assets/rack-architect-hero-demo.gif`) showcasing the live 3D Digital Twin, `X-Ray` + `140 mm` Z-Explode plug clearances, 5-stage `PLUG_CLEARANCE_COLLISION` diagnostics, autonomous MCP self-correction, synchronized 2D SVG CAD blueprints, `.STL`/`.SCAD` BOM hub, and instant `19"` / `10"` / `6"` EIA-310 rack presets.
 - **[`v0.7.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.0) (2026-10-29) — Privacy-First Remote MCP Usage, AI Client & Wire-Traffic Telemetry:**
@@ -89,10 +91,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.1`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.2`)
 
 ### 📊 Serie `v0.7.x` — DSGVO-konforme Remote-MCP-Telemetrie & Hero-Showcase
 
+- **[`v0.7.2`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.2) (2026-10-29) — Kollisionsfreie 3D-Innenraum-Kabelführung & komplett erneuerter 2D-Bau- und Kabelplan:**
+  - Nach innen gerichtete Strombuchsen an rückseitig montierten Steckdosenleisten (`resolveEffectivePortZone`) werden physikalisch exakt im hinteren Rack-Innenraum verdrahtet (`0` Gehäuse-Durchdringungen), Front-zu-Heck-Kabel wählen automatisch den nächsten freien `U`-Durchlass ohne Umwege, dunkle `#18181B`-Stromkabel werden kontraststark als Metallic-Graphit dargestellt, der 2D-Seitenschnitt projiziert die echten 3D-Kabelwege und der Live-`Wiring Plan` zeigt einen **3-stufigen USV/PDU/PoE-Strombaum + gruppierte Geräte-Karten mit Multi-Track-Bus-Router**.
 - **[`v0.7.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.1) (2026-10-29) — Animiertes 6-Szenen 3D/2D Hero-Demo-GIF:**
   - Gestochen scharfes, für GitHub-Inline-Autoplay optimiertes (`< 8 MB`) Hero-Demo-GIF (`docs/assets/rack-architect-hero-demo.gif`) ergänzt — zeigt in 6 Live-Szenen den 3D Digital Twin, `X-Ray` & `140 mm` Z-Explode Stecker-Freiräume, die Live-Kollisionserkennung (`PLUG_CLEARANCE_COLLISION`), die autonome MCP-Selbstkorrektur, maßstabsgetreue 2D-CAD-Pläne (`.svg`), den `.STL`/`.SCAD`-3D-Druck-Hub sowie den 1-Klick-Wechsel zwischen `19"`-, `10"`- und `6"`-Racks.
 - **[`v0.7.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.0) (2026-10-29) — DSGVO-konformer MCP-Nutzungs-, KI-Client- & Traffic-Tracker:**

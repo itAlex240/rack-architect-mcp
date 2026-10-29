@@ -5,6 +5,19 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.5] - 2026-10-29
+
+### Improved — Precision 5/5 TDQS MCP Tool Descriptions Across All 12 Tools (`@rack-mcp/core-domain`) (🇬🇧 English)
+- **Per-Tool TDQS Optimization (`Behavior`, `Conciseness`, and `Parameters` in `packages/core-domain/src/schemas/mcp-tools.ts`):**
+  - Restructured all 12 `MCP_TOOL_DEFINITIONS` descriptions into crisp, parenthetical-free 4-sentence contracts eliminating multi-clause run-on sentences and redundant schema restatements (`1U = 44.45mm` in `init_rack`, `output_dir` mode-dependence in `export_deliverables`).
+  - Added explicit behavioral guarantees beyond boolean MCP annotations: deterministic catalog registration ordering and bounded unpaginated responses (`search_catalog`, `get_device_blueprint`), fixed output filenames and in-place overwrite vs. zero-disk remote URL streaming (`export_deliverables`), in-place `cable_id` upsert isolation (`connect_cables`), and non-throwing `status: 'INVALID'` diagnostic payloads (`disconnect_cables`, `define_custom_blueprint`).
+  - Documented non-obvious cross-field parameter constraints across all parameterized tools: top-level `blueprint` wrapper and port-coordinate bounds (`define_custom_blueprint`), `rail_depth_mm + rear_clearance_mm` `+Z` wall bounds and `project_name` deliverable titles (`init_rack`), cross-hierarchy `instance_id` uniqueness/resolution (`mount_equipment`, `modify_equipment`), sequential `groups[] -> endpoints[]` port allocation and `custom_labels[]` index overrides (`plan_external_endpoints`), and undo/redo ring-buffer exclusions (`undo_redo`).
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **TDQS-5/5-Feinschliff aller 12 MCP-Tool-Beschreibungen (`@rack-mcp/core-domain`):**
+  - Alle 12 Tool-Beschreibungen in `packages/core-domain/src/schemas/mcp-tools.ts` für maximale LLM-Lesbarkeit und Glama-TDQS-Bewertung (`Behavior`, `Conciseness`, `Parameters`) in prägnante 4-Satz-Definitionen ohne verschachtelte Klammern oder Schema-Doppelungen umstrukturiert.
+  - Fehlende Verhaltens- und Parameter-Details ergänzt: deterministische Katalog-Sortierung und unpaginierte Antwortgrenzen (`search_catalog`, `get_device_blueprint`), exakte Export-Dateinamen (`elevation.svg`, `wiring-schematic.svg`, `BOM.md`, `rack-scene.glb`, `<slug>.scad/.stl`) inkl. Überschreib-Verhalten (`export_deliverables`), Top-Level-`blueprint`-Wrapper (`define_custom_blueprint`), `rail_depth_mm + rear_clearance_mm`-Tiefengrenzen (`init_rack`) sowie Undo-/Redo-Stack-Regeln (`undo_redo`).
+
 ## [0.7.4] - 2026-10-29
 
 ### Improved & Fixed — Agent Skill (`SKILL.md`), 5 EIA-310 Archetypes & MCP Prompt/Schema Parity (🇬🇧 English)
