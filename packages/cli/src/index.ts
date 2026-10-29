@@ -296,7 +296,20 @@ export async function runCli(
     port: parsed.port,
     ...(parsed.host !== undefined ? { host: parsed.host } : {})
   });
-  const mcpServer = createRackMcpServer(stateManager);
+  let stdioFirstToolRecorded = false;
+  const mcpServer = createRackMcpServer(stateManager, {
+    onToolCall: (event) => {
+      if (!stdioFirstToolRecorded) {
+        stdioFirstToolRecorded = true;
+        sidecarServer.telemetry.recordMcpSessionCreated('stdio', '127.0.0.1');
+        sidecarServer.telemetry.recordSessionFirstToolUse();
+      }
+      sidecarServer.telemetry.recordMcpToolCall({
+        toolName: event.toolName,
+        isValid: event.status === 'VALID'
+      });
+    }
+  });
 
   const shouldConnectStdio = options.connectStdio ?? parsed.stdio;
   if (shouldConnectStdio) {

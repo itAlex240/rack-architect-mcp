@@ -50,10 +50,16 @@ export interface RackMcpServerInstance {
   close(): Promise<void>;
 }
 
-export const RACK_MCP_SERVER_VERSION = '0.6.7';
+export const RACK_MCP_SERVER_VERSION = '0.7.0';
+
+export interface McpToolExecutionEvent {
+  readonly toolName: string;
+  readonly status: ToolExecutionEnvelope['status'];
+}
 
 export interface CreateRackMcpServerOptions {
   readonly remoteSession?: RemoteToolSessionContext | undefined;
+  readonly onToolCall?: ((event: McpToolExecutionEvent) => void) | undefined;
 }
 
 /**
@@ -65,6 +71,16 @@ export function createRackMcpServer(
   options: CreateRackMcpServerOptions = {}
 ): RackMcpServerInstance {
   const handlers = new RackMcpToolHandlers(stateManager, options.remoteSession);
+  const wrapToolResult = (
+    toolName: string,
+    envelope: ToolExecutionEnvelope
+  ): CallToolResult => {
+    options.onToolCall?.({
+      toolName,
+      status: envelope.status
+    });
+    return toCallToolResult(envelope);
+  };
 
   const mcpServer = new McpServer(
     {
@@ -98,7 +114,8 @@ export function createRackMcpServer(
         tools.search_catalog.annotations
       )
     },
-    async (args) => toCallToolResult(handlers.searchCatalog(args))
+    async (args) =>
+      wrapToolResult(tools.search_catalog.name, handlers.searchCatalog(args))
   );
 
   mcpServer.registerTool(
@@ -113,7 +130,11 @@ export function createRackMcpServer(
         tools.get_device_blueprint.annotations
       )
     },
-    async (args) => toCallToolResult(handlers.getDeviceBlueprint(args))
+    async (args) =>
+      wrapToolResult(
+        tools.get_device_blueprint.name,
+        handlers.getDeviceBlueprint(args)
+      )
   );
 
   mcpServer.registerTool(
@@ -128,7 +149,11 @@ export function createRackMcpServer(
         tools.define_custom_blueprint.annotations
       )
     },
-    async (args) => toCallToolResult(handlers.defineCustomBlueprint(args))
+    async (args) =>
+      wrapToolResult(
+        tools.define_custom_blueprint.name,
+        handlers.defineCustomBlueprint(args)
+      )
   );
 
   mcpServer.registerTool(
@@ -143,7 +168,8 @@ export function createRackMcpServer(
         tools.init_rack.annotations
       )
     },
-    async (args) => toCallToolResult(handlers.initRack(args))
+    async (args) =>
+      wrapToolResult(tools.init_rack.name, handlers.initRack(args))
   );
 
   mcpServer.registerTool(
@@ -158,7 +184,8 @@ export function createRackMcpServer(
         tools.mount_equipment.annotations
       )
     },
-    async (args) => toCallToolResult(handlers.mountEquipment(args))
+    async (args) =>
+      wrapToolResult(tools.mount_equipment.name, handlers.mountEquipment(args))
   );
 
   mcpServer.registerTool(
@@ -173,7 +200,11 @@ export function createRackMcpServer(
         tools.modify_equipment.annotations
       )
     },
-    async (args) => toCallToolResult(handlers.modifyEquipment(args))
+    async (args) =>
+      wrapToolResult(
+        tools.modify_equipment.name,
+        handlers.modifyEquipment(args)
+      )
   );
 
   mcpServer.registerTool(
@@ -188,7 +219,8 @@ export function createRackMcpServer(
         tools.connect_cables.annotations
       )
     },
-    async (args) => toCallToolResult(handlers.connectCables(args))
+    async (args) =>
+      wrapToolResult(tools.connect_cables.name, handlers.connectCables(args))
   );
 
   mcpServer.registerTool(
@@ -203,7 +235,11 @@ export function createRackMcpServer(
         tools.disconnect_cables.annotations
       )
     },
-    async (args) => toCallToolResult(handlers.disconnectCables(args))
+    async (args) =>
+      wrapToolResult(
+        tools.disconnect_cables.name,
+        handlers.disconnectCables(args)
+      )
   );
 
   mcpServer.registerTool(
@@ -218,7 +254,11 @@ export function createRackMcpServer(
         tools.plan_external_endpoints.annotations
       )
     },
-    async (args) => toCallToolResult(handlers.planExternalEndpoints(args))
+    async (args) =>
+      wrapToolResult(
+        tools.plan_external_endpoints.name,
+        handlers.planExternalEndpoints(args)
+      )
   );
 
   mcpServer.registerTool(
@@ -233,7 +273,8 @@ export function createRackMcpServer(
         tools.validate_rack.annotations
       )
     },
-    async (args) => toCallToolResult(handlers.validateRack(args))
+    async (args) =>
+      wrapToolResult(tools.validate_rack.name, handlers.validateRack(args))
   );
 
   mcpServer.registerTool(
@@ -248,7 +289,11 @@ export function createRackMcpServer(
         tools.export_deliverables.annotations
       )
     },
-    async (args) => toCallToolResult(handlers.exportDeliverables(args))
+    async (args) =>
+      wrapToolResult(
+        tools.export_deliverables.name,
+        handlers.exportDeliverables(args)
+      )
   );
 
   mcpServer.registerTool(
@@ -263,7 +308,8 @@ export function createRackMcpServer(
         tools.undo_redo.annotations
       )
     },
-    async (args) => toCallToolResult(handlers.undoRedo(args))
+    async (args) =>
+      wrapToolResult(tools.undo_redo.name, handlers.undoRedo(args))
   );
 
   // ---------------------------------------------------------------------------

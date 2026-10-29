@@ -1,5 +1,6 @@
 import * as fs from 'node:fs';
 import * as http from 'node:http';
+import { Socket } from 'node:net';
 import * as path from 'node:path';
 import type { Duplex } from 'node:stream';
 import { fileURLToPath } from 'node:url';
@@ -29,6 +30,12 @@ import type {
   ProjectStateManager,
   StateChangeEvent
 } from '../state-manager.js';
+import {
+  isLikelyScannerRequest,
+  RackTelemetryTracker,
+  verifyMetricsBearerToken,
+  type TrafficChannel
+} from '../telemetry/telemetry-tracker.js';
 
 export interface SidecarWsMessage {
   readonly type: 'INITIAL_STATE' | 'STATE_UPDATED' | 'COMMAND_RESULT' | 'ERROR';
@@ -74,6 +81,9 @@ export interface RackSidecarServerOptions {
   readonly maxRequestBodyBytes?: number | undefined;
   readonly sessionTtlMs?: number | undefined;
   readonly rateLimitPerMinute?: number | undefined;
+  readonly telemetryTracker?: RackTelemetryTracker | undefined;
+  readonly telemetryFilePath?: string | undefined;
+  readonly metricsAuthToken?: string | undefined;
 }
 
 export interface RackSidecarServer {
@@ -82,6 +92,7 @@ export interface RackSidecarServer {
   readonly url: string;
   readonly wsUrl: string;
   readonly remoteMcp: boolean;
+  readonly telemetry: RackTelemetryTracker;
   readonly mcpUrl?: string | undefined;
   readonly sseUrl?: string | undefined;
   readonly remoteRegistry?: RemoteSessionRegistry | undefined;
@@ -486,6 +497,65 @@ function executeWsToolCommand(
   }
 }
 
+function isDirectUnproxiedLoopback(req: http.IncomingMessage): boolean {
+  if (
+    req.headers['x-forwarded-for'] !== undefined ||
+    req.headers['x-real-ip'] !== undefined ||
+    req.headers['x-forwarded-host'] !== undefined
+  ) {
+    return false;
+  }
+  const peer = (req.socket.remoteAddress ?? '').replace(/^::ffff:/, '');
+  return peer === '127.0.0.1' || peer === '::1';
+}
+
+function isAuthorizedMetricsRequest(
+  req: http.IncomingMessage,
+  metricsAuthToken: string | undefined
+): boolean {
+  if (metricsAuthToken !== undefined && metricsAuthToken.trim().length > 0) {
+    const rawAuth = req.headers.authorization;
+    const authHeader = Array.isArray(rawAuth) ? rawAuth[0] : rawAuth;
+    return verifyMetricsBearerToken(authHeader, metricsAuthToken);
+  }
+  return isDirectUnproxiedLoopback(req);
+}
+
+function classifyHttpTrafficChannel(
+  pathname: string,
+  userAgent: string | undefined,
+  statusCode: number
+): TrafficChannel {
+  if (pathname === '/health') {
+    return 'health';
+  }
+  if (isLikelyScannerRequest(pathname, userAgent, statusCode)) {
+    return 'bot_scanner';
+  }
+  if (
+    pathname === '/mcp' ||
+    pathname === '/sse' ||
+    pathname === '/messages' ||
+    pathname === '/.well-known/mcp.json' ||
+    pathname === '/api/mcp-info'
+  ) {
+    return 'mcp';
+  }
+  if (pathname.startsWith('/api/export/')) {
+    return 'exports';
+  }
+  if (
+    pathname === '/' ||
+    pathname === '/index.html' ||
+    pathname.startsWith('/assets/') ||
+    pathname === '/api/state' ||
+    pathname === '/api/catalog'
+  ) {
+    return 'web_viewer';
+  }
+  return 'other';
+}
+
 /**
  * Starts the embedded HTTP + WebSocket Sidecar Server (`ws://localhost:3100/ws`)
  * and optional Multi-Session Hosted Remote MCP Server (`/mcp`, `/sse`, `/messages`).
@@ -500,9 +570,22 @@ export async function startRackSidecarServer(
   const localHandlers = new RackMcpToolHandlers(stateManager);
   const staticAssets = loadStaticWebViewerAssets();
   const configuredPublicOrigin = tryExtractOrigin(options.publicBaseUrl);
+  const metricsAuthToken =
+    options.metricsAuthToken ?? process.env['RACK_MCP_METRICS_TOKEN'];
+
+  const ownsTelemetryTracker = options.telemetryTracker === undefined;
+  const telemetry =
+    options.telemetryTracker ??
+    new RackTelemetryTracker({
+      mode: remoteMcp ? 'remote-mcp' : 'local-sidecar',
+      telemetryFilePath:
+        options.telemetryFilePath ?? process.env['RACK_MCP_TELEMETRY_FILE'],
+      saltHex: process.env['RACK_MCP_TELEMETRY_SALT']
+    });
 
   const remoteRegistry = remoteMcp
     ? new RemoteSessionRegistry({
+        telemetryTracker: telemetry,
         ...(options.publicBaseUrl !== undefined
           ? { publicBaseUrl: options.publicBaseUrl }
           : {}),
@@ -529,6 +612,12 @@ export async function startRackSidecarServer(
     : undefined;
 
   let activeBoundPort = requestedPort;
+  let wssRef: WebSocketServer | undefined;
+
+  const getLiveTelemetryGauges = () => ({
+    activeMcpSessions: remoteRegistry?.getActiveSessionCount() ?? (remoteMcp ? 0 : 1),
+    activeWebSocketClients: wssRef?.clients.size ?? 0
+  });
 
   const resolveStateManagerForRequest = (
     requestUrl: URL
@@ -559,6 +648,36 @@ export async function startRackSidecarServer(
   ): Promise<void> => {
     const requestUrl = new URL(req.url ?? '/', 'http://127.0.0.1');
     const pathname = requestUrl.pathname;
+    const clientIp = extractClientIp(req);
+    const rawUa = req.headers['user-agent'];
+    const userAgent = Array.isArray(rawUa) ? rawUa[0] : rawUa;
+    const startBytesRead = req.socket.bytesRead;
+    const startBytesWritten = req.socket.bytesWritten;
+    let trafficRecorded = false;
+    const recordHttpCompletion = (): void => {
+      if (trafficRecorded) {
+        return;
+      }
+      trafficRecorded = true;
+      if (pathname === '/metrics' || pathname === '/api/telemetry') {
+        return;
+      }
+      const bytesIn = Math.max(0, req.socket.bytesRead - startBytesRead);
+      const bytesOut = Math.max(0, req.socket.bytesWritten - startBytesWritten);
+      const channel = classifyHttpTrafficChannel(
+        pathname,
+        userAgent,
+        res.statusCode
+      );
+      telemetry.recordTraffic({
+        channel,
+        bytesIn,
+        bytesOut,
+        clientIp
+      });
+    };
+    res.once('finish', recordHttpCompletion);
+    res.once('close', recordHttpCompletion);
 
     setSecurityAndCorsHeaders(req, res, pathname, {
       remoteMcp,
@@ -574,6 +693,44 @@ export async function startRackSidecarServer(
       return;
     }
 
+    // Internal / Bearer-token-protected Prometheus & JSON Telemetry endpoints
+    if (
+      req.method === 'GET' &&
+      (pathname === '/metrics' || pathname === '/api/telemetry')
+    ) {
+      if (!isAuthorizedMetricsRequest(req, metricsAuthToken)) {
+        res.writeHead(403, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-store'
+        });
+        res.end(
+          JSON.stringify({
+            error: 'Forbidden: valid Authorization Bearer token required for telemetry endpoints.'
+          })
+        );
+        return;
+      }
+
+      const gauges = getLiveTelemetryGauges();
+      if (pathname === '/metrics') {
+        const promText = telemetry.renderPrometheusMetrics(gauges);
+        res.writeHead(200, {
+          'Content-Type': 'text/plain; version=0.0.4; charset=utf-8',
+          'Cache-Control': 'no-store'
+        });
+        res.end(promText);
+        return;
+      }
+
+      const summary = telemetry.getSummary(gauges);
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store'
+      });
+      res.end(JSON.stringify(summary, null, 2));
+      return;
+    }
+
     // Apply per-IP rate limiting on dynamic MCP and API endpoints in remote mode
     if (
       rateLimiter !== undefined &&
@@ -582,8 +739,9 @@ export async function startRackSidecarServer(
         pathname === '/messages' ||
         pathname.startsWith('/api/'))
     ) {
-      const check = rateLimiter.check(extractClientIp(req));
+      const check = rateLimiter.check(clientIp);
       if (!check.allowed) {
+        telemetry.recordRateLimited();
         req.resume();
         res.writeHead(429, {
           'Content-Type': 'application/json; charset=utf-8',
@@ -737,6 +895,7 @@ export async function startRackSidecarServer(
       }
 
       if (pathname === '/api/export/elevation.svg') {
+        telemetry.recordExportDownload('elevation-svg');
         const svgBuffer = Buffer.from(
           generateElevationSvg(targetStateManager.getScene()),
           'utf8'
@@ -757,6 +916,7 @@ export async function startRackSidecarServer(
       }
 
       if (pathname === '/api/export/wiring.svg') {
+        telemetry.recordExportDownload('wiring-svg');
         const svgBuffer = Buffer.from(
           generateWiringSchematicSvg(targetStateManager.getScene()),
           'utf8'
@@ -777,6 +937,7 @@ export async function startRackSidecarServer(
       }
 
       if (pathname === '/api/export/scene.glb') {
+        telemetry.recordExportDownload('scene-glb');
         const glb = generateGlbBinary(targetStateManager.getScene());
         const glbBuffer = Buffer.from(glb.buffer, glb.byteOffset, glb.byteLength);
         sendBufferWithOptionalGzip(
@@ -794,6 +955,7 @@ export async function startRackSidecarServer(
       }
 
       if (pathname === '/api/export/bom.md') {
+        telemetry.recordExportDownload('bom-md');
         const mdBuffer = Buffer.from(
           generateBomMarkdown(
             targetStateManager.getScene(),
@@ -816,6 +978,7 @@ export async function startRackSidecarServer(
       }
 
       if (pathname === '/api/export/rack.yaml') {
+        telemetry.recordExportDownload('rack-yaml');
         const yamlBuffer = Buffer.from(
           targetStateManager.getProjectYaml(),
           'utf8'
@@ -853,6 +1016,7 @@ export async function startRackSidecarServer(
         );
         for (const item of carriers) {
           if (path.basename(item.filename_stl) === safeFile) {
+            telemetry.recordExportDownload('carrier-stl');
             const stlBuffer = Buffer.from(item.stl_ascii, 'utf8');
             sendBufferWithOptionalGzip(
               req,
@@ -868,6 +1032,7 @@ export async function startRackSidecarServer(
             return;
           }
           if (path.basename(item.filename_scad) === safeFile) {
+            telemetry.recordExportDownload('carrier-scad');
             const scadBuffer = Buffer.from(item.openscad_code, 'utf8');
             sendBufferWithOptionalGzip(
               req,
@@ -966,6 +1131,7 @@ export async function startRackSidecarServer(
     maxPayload: MAX_WS_PAYLOAD_BYTES,
     perMessageDeflate: false
   });
+  wssRef = wss;
 
   const wsConnectionsByIp = new Map<string, number>();
 
@@ -1032,10 +1198,26 @@ export async function startRackSidecarServer(
     }
 
     wss.handleUpgrade(req, socket, head, (ws) => {
+      const wsStartRead = socket instanceof Socket ? socket.bytesRead : 0;
+      const wsStartWritten = socket instanceof Socket ? socket.bytesWritten : 0;
+      telemetry.recordTraffic({
+        channel: 'websocket',
+        bytesIn: 0,
+        bytesOut: 0,
+        clientIp
+      });
       const prevCount = wsConnectionsByIp.get(clientIp) ?? 0;
       wsConnectionsByIp.set(clientIp, prevCount + 1);
 
       ws.once('close', () => {
+        const wsEndRead = socket instanceof Socket ? socket.bytesRead : wsStartRead;
+        const wsEndWritten = socket instanceof Socket ? socket.bytesWritten : wsStartWritten;
+        telemetry.recordTraffic({
+          channel: 'websocket',
+          bytesIn: Math.max(0, wsEndRead - wsStartRead),
+          bytesOut: Math.max(0, wsEndWritten - wsStartWritten),
+          countRequest: false
+        });
         const current = wsConnectionsByIp.get(clientIp) ?? 1;
         if (current <= 1) {
           wsConnectionsByIp.delete(clientIp);
@@ -1146,6 +1328,7 @@ export async function startRackSidecarServer(
     url: `http://${host}:${boundPort}`,
     wsUrl: `ws://${host}:${boundPort}/ws`,
     remoteMcp,
+    telemetry,
     ...(remoteMcp
       ? {
           mcpUrl: `${baseUrl}/mcp`,
@@ -1166,6 +1349,11 @@ export async function startRackSidecarServer(
       await new Promise<void>((resolve) => {
         wss.close(() => {
           httpServer.close(() => {
+            if (ownsTelemetryTracker) {
+              telemetry.close();
+            } else {
+              telemetry.flushSync();
+            }
             resolve();
           });
         });

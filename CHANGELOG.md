@@ -5,6 +5,20 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-10-29
+
+### Added — GDPR-Safe MCP Usage, AI Client & Traffic Telemetry (`@rack-mcp/mcp-server`, `@rack-mcp/cli`) (🇬🇧 English)
+- **Privacy-First Usage, Active MCP Tool & Wire-Traffic Telemetry Engine (`packages/mcp-server/src/telemetry/telemetry-tracker.ts`):**
+  - Added `RackTelemetryTracker` tracking active and cumulative Remote MCP sessions (`streamable-http` vs `sse`), per-tool invocation counters (`calls`, `errors`, `durationMsSum` across all 12 MCP tools), AI client family classification (`claude-desktop`, `claude-code`, `cursor`, `windsurf`, `antigravity`, `vscode-copilot`, `zed`, `mcp-inspector`, `registry-probe`, `other-mcp`) from MCP `initialize` `clientInfo.name` and HTTP `User-Agent`, deliverable export format downloads (`svg`, `wiring`, `bom`, `glb`, `stl`, `scad`, `yaml`), and HTTP/WebSocket wire-byte traffic accounting (`mcp_http`, `viewer_assets`, `export_downloads`, `websocket`, `bot_scanner`).
+  - Implemented GDPR-compliant rolling daily (`Today` / `7d` / `30d`) unique visitor deduplication via salted HMAC-SHA256 hashes (`RACK_MCP_TELEMETRY_SALT`, zero raw IP addresses ever stored in memory or on disk, bounded 31-day window) distinguishing **active MCP tool users (`mcp_active`)**, **connected MCP sessions (`mcp_connected`)**, **3D Web-Viewer users (`web_viewer`)**, and **internet scanners (`bot_scanner`)**.
+  - Added Bearer-token / direct-loopback-gated `GET /metrics` (Prometheus OpenMetrics exposition) and `GET /api/telemetry` (structured JSON + Homepage `customapi` summary fields) secured via constant-time `crypto.timingSafeEqual` (`RACK_MCP_METRICS_TOKEN`), plus optional debounced atomic state persistence (`RACK_MCP_TELEMETRY_FILE`) for dedicated container data volumes while preserving `read_only: true` root filesystems.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **DSGVO-konformer MCP-Nutzungs-, KI-Client- & Traffic-Tracker (`@rack-mcp/mcp-server`, `@rack-mcp/cli`):**
+  - `RackTelemetryTracker` ergänzt: erfasst aktive und gesamte Remote-MCP-Sessions (`streamable-http` & `sse`), Aufrufe/Fehler/Laufzeiten pro MCP-Tool (alle 12 Tools), verwendete KI-Clients (`claude-desktop`, `claude-code`, `cursor`, `windsurf`, `antigravity`, `vscode-copilot`, `zed`, `mcp-inspector`, `registry-probe`, `other-mcp`), CAD-/3D-Druck-Downloads nach Format (`svg`, `wiring`, `bom`, `glb`, `stl`, `scad`, `yaml`) sowie den ein- und ausgehenden Netzwerk-Traffic nach Kategorie (`mcp_http`, `viewer_assets`, `export_downloads`, `websocket`, `bot_scanner`).
+  - DSGVO-konforme eindeutige Nutzerzählung (`Heute` / `7 Tage` / `30 Tage`) über gesalzene HMAC-SHA256-Hashes (`RACK_MCP_TELEMETRY_SALT`, **keine** Speicherung echter IP-Adressen, automatische 31-Tage-Rotation) mit klarer Trennung zwischen **aktiven MCP-Tool-Nutzern (`mcp_active`)**, **reinen MCP-Verbindungen (`mcp_connected`)**, **3D-Web-Viewer-Besuchern (`web_viewer`)** und **Bots/Scannern (`bot_scanner`)**.
+  - Abgesicherte Endpunkte `GET /metrics` (Prometheus/Grafana) und `GET /api/telemetry` (JSON + Homepage-Dashboard-Widget) mit konstantzeitgeprüftem Bearer-Token (`RACK_MCP_METRICS_TOKEN`, öffentlich `403 Forbidden`) sowie optionaler atomarer Persistenz (`RACK_MCP_TELEMETRY_FILE`) für dedizierte Docker-Volumes bei weiterhin strikt schreibgeschütztem Container-Root (`read_only: true`).
+
 ## [0.6.7] - 2026-10-29
 
 ### Fixed — Release Pipeline & CodeQL Code Scanning Remediation (🇬🇧 English)

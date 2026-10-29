@@ -1,20 +1,21 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.6.7` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v0.7.0` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v0.6.7`!**  
+**Welcome to RackArchitect MCP `v0.7.0`!**  
 Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint (`https://rack-mcp.167.233.80.33.sslip.io/mcp`)** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
-> **✨ What's New in the Last 3 Releases (`v0.6.5` – `v0.6.7`):**
+> **✨ What's New in the Last 3 Releases (`v0.6.6` – `v0.7.0`):**
+> - **Privacy-First Remote MCP Usage, AI Client & Wire-Traffic Telemetry (`v0.7.0`):** Added GDPR-compliant Prometheus (`GET /metrics`) and JSON (`GET /api/telemetry`) observability to `@rack-mcp/mcp-server` (protected by Bearer token / loopback auth), tracking active vs. connected MCP users (`Today` / `7d` / `30d` via salted HMAC-SHA256 hashes without storing raw IPs), per-tool call latencies across all 12 MCP tools, AI client families (`Claude`, `Claude Code`, `Cursor`, `Antigravity`, `VS Code`, `Windsurf`), CAD/STL deliverable downloads, and HTTP/WebSocket bandwidth consumption.
 > - **Release Pipeline Fix, Dual `mcpb` + Remote MCP Registry Manifest & CodeQL Security/Quality Hardening (`v0.6.7`):** Fixed the GitHub Actions `.mcpb` release bundling step so `server.json` publishes both the downloadable `mcpb` bundle and live Hosted Remote MCP endpoints (`streamable-http` + `sse`) within the official MCP Registry schema constraints, and resolved CodeQL `javascript-typescript` code-scanning alerts (`js/overly-large-range` in 3D cover-panel glyph sanitizers, sandboxed `<img />` SVG preview rendering, and linear $O(n)$ URL/slug sanitizers).
 > - **Instant Remote MCP Quickstart Across GitHub, Glama & MCP Registries (`v0.6.6`):** Highlighted the live Zero-Install Hosted Remote MCP endpoint (`https://rack-mcp.167.233.80.33.sslip.io/mcp` & `/sse` + Live 3D Session Studio `/?session=<uuid>`) right at the top of `README.md`, `glama.json`, `server.json`, package READMEs, `SKILL.md`, and Release Notes with 1-line `claude mcp add` and `mcpServers` configs.
-> - **Multi-Agent Handover Rules, Zero-Egress DMZ Invariants & Zero-Downtime Auto-Update Protocol (`v0.6.5`):** Added `CLAUDE.md`, `GEMINI.md`, and Section 10 of `AGENTS.md` codifying Hosted Remote MCP production invariants (`read_only: true` in-memory execution, Zero-Egress DMZ asset self-containment, fair-share/CSWSH guards, `server.json` lockstep sync) alongside automated Zero-Downtime GitHub `main` pull-deployments gated by Trivy CVE checks and HTTPS health probes.
 
 <details>
-<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.6.4) in the Release Archive</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.6.5) in the Release Archive</b></summary>
 
 <br />
 
+- **`v0.6.5`** — Multi-agent operational handover (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md` Section 10), Zero-Egress DMZ invariants & automated Zero-Downtime GitHub `main` pull-deployments with Trivy CVE gating.
 - **`v0.6.4`** — Multi-tenant fair-share per-IP session isolation, WebSocket `256 KB` frame & CSWSH `Origin` guards, strict `Content-Security-Policy` + scoped CORS, algorithmic DoS schema bounds & `root:root`-owned Docker runtime binaries.
 - **`v0.6.3`** — Workspace-aware Zero-CVE Docker production build (`pnpm install --prod`) & build-time CLI validation smoke check (`0` High/Critical Trivy CVEs).
 - **`v0.6.2`** — Headless CI Docker pruning (`ENV CI=true`) & sourcemap/esbuild cleanup in the minimal `node:22-alpine` runtime stage.
@@ -112,19 +113,20 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v0.6.7` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.7.0` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL (`https://rack-mcp.167.233.80.33.sslip.io/mcp`)** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.6.5` – `v0.6.7`):**
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.6.6` – `v0.7.0`):**
+> - **DSGVO-konformer MCP-Nutzungs-, KI-Client- & Traffic-Tracker (`v0.7.0`):** Geschützte Prometheus- (`GET /metrics`) und JSON-Telemetrie-Endpunkte (`GET /api/telemetry`, abgesichert per Bearer-Token / Loopback) in `@rack-mcp/mcp-server` ergänzt — erfasst aktive MCP-Tool-Nutzer vs. reine Verbindungen (`Heute` / `7T` / `30T` per gesalzenem HMAC-SHA256 ohne Speicherung echter IPs), Tool-Aufrufe über alle 12 MCP-Tools, verwendete KI-Clients (`Claude`, `Claude Code`, `Cursor`, `Antigravity`, `VS Code`, `Windsurf`), CAD-/STL-Downloads sowie den ausgehenden HTTP-/WebSocket-Traffic.
 > - **Release-Pipeline-Fix, Duales `mcpb`- + Remote-MCP-Registry-Manifest & CodeQL Security/Quality-Härtung (`v0.6.7`):** GitHub-Actions-Release-Step für das `.mcpb`-Bundle und `server.json` (kombiniert `mcpb`-Download + Live-Remote-MCP-Endpunkte innerhalb der offiziellen MCP-Registry-Vorgaben) repariert sowie alle CodeQL-Code-Scanning-Befunde (`js/overly-large-range` in den Cover-Panel-Textfiltern, gekapselte `<img />`-SVG-Vorschau und lineare $O(n)$-URL-/Slug-Helfer) behoben.
 > - **Direkter Remote-MCP-Schnellstart auf GitHub, Glama & in allen MCP-Verzeichnissen (`v0.6.6`):** Der live gehostete Zero-Install Remote-MCP-Endpunkt (`https://rack-mcp.167.233.80.33.sslip.io/mcp` & `/sse` + Live-3D-Session-Studio `/?session=<uuid>`) steht jetzt prominent ganz oben in der `README.md`, in `glama.json`, `server.json`, den Paket-READMEs, `SKILL.md` und den Release Notes bereit.
-> - **Multi-Agenten-Regeln, Zero-Egress-DMZ-Invarianten & Zero-Downtime Auto-Update-Protokoll (`v0.6.5`):** `CLAUDE.md`, `GEMINI.md` und Abschnitt 10 in `AGENTS.md` dokumentieren verbindlich alle Produktions- und Sicherheitsregeln für den gehosteten Remote-MCP-Server (`read_only: true`, Zero-Egress-DMZ ohne externe Laufzeit-Abhängigkeiten, Fair-Share-/CSWSH-Schutz, `server.json`-Synchronisation) sowie das automatische Zero-Downtime Pull-Deployment vom GitHub-`main`-Branch inkl. Trivy-CVE-Gate und HTTPS-Healthcheck.
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.6.4) auf Deutsch anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.6.5) auf Deutsch anzeigen</b></summary>
 
 <br />
 
+- **`v0.6.5`** — Multi-Agenten-Übergaberegeln (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md` Abschnitt 10), Zero-Egress-DMZ-Invarianten & automatischer Zero-Downtime Auto-Updater vom GitHub-`main`-Branch inkl. Trivy-CVE-Gate.
 - **`v0.6.4`** — Fair-Share-Mandantenschutz pro IP (`maxSessionsPerIp = 12`), `256 KB` WebSocket-Frame-Limit + CSWSH-`Origin`-Prüfung, strikte `Content-Security-Policy` + Scoped CORS, DoS-Schema-Obergrenzen & `root:root`-Code-Schutz im Docker-Container.
 - **`v0.6.3`** — Workspace-fähiger Zero-CVE Docker-Produktions-Build (`pnpm install --prod`) inkl. automatischem CLI-Selbsttest (`0` High/Critical Trivy-CVEs).
 - **`v0.6.2`** — Headless Docker-Build-Fix (`ENV CI=true`) & Bereinigung von Sourcemaps/`esbuild`-Resten im schlanken `node:22-alpine`-Produktions-Image.

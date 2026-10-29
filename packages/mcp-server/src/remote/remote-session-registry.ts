@@ -16,12 +16,20 @@ import {
 import type { RackMcpToolHandlers } from '../mcp/tool-handlers.js';
 import type { SidecarWsMessage } from '../sidecar/sidecar-server.js';
 import { ProjectStateManager } from '../state-manager.js';
+import {
+  classifyMcpClientFamily,
+  type McpClientFamily,
+  type RackTelemetryTracker
+} from '../telemetry/telemetry-tracker.js';
 
 export interface RemoteMcpSession {
   readonly sessionId: string;
   readonly ownerIp: string;
   readonly createdAt: number;
   lastAccessedAt: number;
+  clientFamily: McpClientFamily;
+  clientIdentified: boolean;
+  hasExecutedTool: boolean;
   readonly stateManager: ProjectStateManager;
   readonly mcpServer: RackMcpServerInstance;
   readonly handlers: RackMcpToolHandlers;
@@ -40,6 +48,7 @@ export interface RemoteSessionRegistryOptions {
   readonly maxCustomBlueprintsPerSession?: number | undefined;
   readonly sessionTtlMs?: number | undefined;
   readonly maxRequestBodyBytes?: number | undefined;
+  readonly telemetryTracker?: RackTelemetryTracker | undefined;
 }
 
 function isTrustedProxyAddress(remoteAddress: string | undefined): boolean {
@@ -327,8 +336,10 @@ export class RemoteSessionRegistry {
   private readonly maxRequestBodyBytes: number;
   private readonly sessionCreationLimiter: SlidingWindowRateLimiter;
   private readonly sweepTimer: ReturnType<typeof setInterval>;
+  private readonly telemetryTracker: RackTelemetryTracker | undefined;
 
   public constructor(options: RemoteSessionRegistryOptions = {}) {
+    this.telemetryTracker = options.telemetryTracker;
     this.configuredBaseUrl =
       options.publicBaseUrl !== undefined && options.publicBaseUrl.trim().length > 0
         ? trimTrailingSlashes(options.publicBaseUrl.trim())
@@ -417,10 +428,23 @@ export class RemoteSessionRegistry {
       watchFile: false
     });
 
+    let sessionRef: RemoteMcpSession | undefined;
     const mcpServer = createRackMcpServer(stateManager, {
       remoteSession: {
         sessionId,
         getPublicBaseUrl: () => this.getPublicBaseUrl()
+      },
+      onToolCall: (event) => {
+        if (sessionRef !== undefined && !sessionRef.hasExecutedTool) {
+          sessionRef.hasExecutedTool = true;
+          this.telemetryTracker?.recordSessionFirstToolUse();
+        }
+        this.telemetryTracker?.recordMcpToolCall({
+          toolName: event.toolName,
+          isValid: event.status === 'VALID',
+          clientIp: ownerIp,
+          clientFamily: sessionRef?.clientFamily ?? 'other-mcp'
+        });
       }
     });
 
@@ -448,11 +472,14 @@ export class RemoteSessionRegistry {
     });
 
     const now = Date.now();
-    return {
+    sessionRef = {
       sessionId,
       ownerIp,
       createdAt: now,
       lastAccessedAt: now,
+      clientFamily: 'other-mcp',
+      clientIdentified: false,
+      hasExecutedTool: false,
       stateManager,
       mcpServer,
       handlers: mcpServer.handlers,
@@ -461,6 +488,7 @@ export class RemoteSessionRegistry {
       wsClients,
       unsubscribeStateChange
     };
+    return sessionRef;
   }
 
   private pickOldestSessionId(
@@ -750,6 +778,23 @@ export class RemoteSessionRegistry {
       // Dispose immediately so malformed POSTs never occupy session slots.
       if (transport.sessionId === undefined) {
         await this.deleteSession(newSessionId);
+      } else {
+        const clientVersion =
+          session.mcpServer.mcpServer.server.getClientVersion();
+        const userAgentHeader = req.headers['user-agent'];
+        const userAgent = Array.isArray(userAgentHeader)
+          ? userAgentHeader[0]
+          : userAgentHeader;
+        session.clientFamily = classifyMcpClientFamily(
+          clientVersion?.name,
+          userAgent
+        );
+        session.clientIdentified = true;
+        this.telemetryTracker?.recordMcpSessionCreated(
+          'streamable-http',
+          clientIp,
+          session.clientFamily
+        );
       }
     }
   }
@@ -766,6 +811,7 @@ export class RemoteSessionRegistry {
     const clientIp = extractClientIp(req);
     const creationCheck = this.sessionCreationLimiter.check(clientIp);
     if (!creationCheck.allowed) {
+      this.telemetryTracker?.recordRateLimited();
       res.writeHead(429, {
         'Content-Type': 'application/json; charset=utf-8',
         'Retry-After': String(creationCheck.retryAfterSeconds)
@@ -785,6 +831,7 @@ export class RemoteSessionRegistry {
     const sid = sseTransport.sessionId;
     const session = this.createSessionRecord(sid, clientIp, { sseTransport });
     this.sessions.set(sid, session);
+    this.telemetryTracker?.recordMcpSessionCreated('sse', clientIp);
 
     const cleanupOnDisconnect = (): void => {
       void this.deleteSession(sid);
@@ -830,6 +877,22 @@ export class RemoteSessionRegistry {
     session.lastAccessedAt = Date.now();
     try {
       await session.sseTransport.handlePostMessage(req, res, bodyResult.parsed);
+      if (!session.clientIdentified) {
+        const clientVersion =
+          session.mcpServer.mcpServer.server.getClientVersion();
+        if (clientVersion !== undefined) {
+          const userAgentHeader = req.headers['user-agent'];
+          const userAgent = Array.isArray(userAgentHeader)
+            ? userAgentHeader[0]
+            : userAgentHeader;
+          session.clientFamily = classifyMcpClientFamily(
+            clientVersion.name,
+            userAgent
+          );
+          session.clientIdentified = true;
+          this.telemetryTracker?.recordMcpClientIdentified(session.clientFamily);
+        }
+      }
     } catch {
       if (!res.headersSent) {
         res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });

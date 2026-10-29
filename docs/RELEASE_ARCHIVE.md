@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.6.4`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.6.5`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.6.4`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.6.5`)
 
 ### 🌐 `v0.6.x` Series — Zero-Install Hosted Multi-Session Remote MCP & Zero-CVE Container Hardening
 
+- **[`v0.6.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.5) (2026-10-29) — Multi-Agent Handover Rules, Zero-Egress DMZ Invariants & Zero-Downtime Auto-Update Protocol:**
+  - Added `CLAUDE.md`, `GEMINI.md`, and Section 10 of `AGENTS.md` codifying Hosted Remote MCP production invariants (`read_only: true` in-memory execution, Zero-Egress DMZ asset self-containment, fair-share/CSWSH guards, `server.json` lockstep sync) alongside automated Zero-Downtime GitHub `main` pull-deployments gated by Trivy CVE checks and HTTPS health probes.
 - **[`v0.6.4`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.4) (2026-10-29) — Multi-Tenant Remote MCP, WebSocket, CSP & Container Security Hardening:**
   - Added fair-share per-IP session isolation (`maxSessionsPerIp = 12`, `maxNewSessionsPerMinutePerIp = 20`, rightmost `X-Forwarded-For` proxy extraction), WebSocket `256 KB` frame limits + Cross-Site WebSocket Hijacking (`CSWSH`) `Origin` verification, strict `Content-Security-Policy` + `Referrer-Policy: no-referrer` + scoped CORS, algorithmic DoS schema bounds, and `root:root`-owned immutable application binaries inside the `USER node` runtime image.
 - **[`v0.6.3`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.3) (2026-10-29) — Workspace-Aware Zero-CVE Docker Production Build:**
@@ -76,10 +78,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.6.4`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.6.5`)
 
 ### 🌐 Serie `v0.6.x` — Gehosteter Multi-Session Remote-MCP-Server & Zero-CVE Container-Härtung
 
+- **[`v0.6.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.5) (2026-10-29) — Multi-Agenten-Übergabedokumentation, Zero-Egress-DMZ-Invarianten & Zero-Downtime Auto-Update-Protokoll:**
+  - `CLAUDE.md`, `GEMINI.md` und Abschnitt 10 in `AGENTS.md` dokumentieren verbindlich alle Produktions- und Sicherheitsregeln für den gehosteten Remote-MCP-Server (`read_only: true`, Zero-Egress-DMZ ohne externe Laufzeit-Abhängigkeiten, Fair-Share-/CSWSH-Schutz, `server.json`-Synchronisation) sowie das automatische Zero-Downtime Pull-Deployment vom GitHub-`main`-Branch inkl. Trivy-CVE-Gate und HTTPS-Healthcheck.
 - **[`v0.6.4`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.4) (2026-10-29) — Multi-Tenant Remote-MCP-, WebSocket-, CSP- & Container-Security-Hardening:**
   - Fair-Share-Mandantenschutz pro IP (`maxSessionsPerIp = 12`, `20` neue Sessions/Min., rechte `X-Forwarded-For`-Auswertung), `256 KB` WebSocket-Frame-Limit + CSWSH-`Origin`-Prüfung, strikte `Content-Security-Policy` + `Referrer-Policy: no-referrer` + Scoped CORS, algorithmische DoS-Schema-Obergrenzen sowie unveränderliche `root:root`-Programmdateien im `USER node`-Container.
 - **[`v0.6.3`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.3) (2026-10-29) — Workspace-fähiger Zero-CVE Docker-Produktions-Build:**
