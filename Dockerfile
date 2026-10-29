@@ -14,9 +14,11 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json vitest.c
 COPY packages ./packages
 COPY examples ./examples
 
+ENV CI=true
 RUN pnpm install --frozen-lockfile
 RUN pnpm build
-RUN pnpm prune --prod --ignore-scripts
+RUN pnpm prune --prod --ignore-scripts && \
+    rm -rf node_modules/.pnpm/*esbuild* packages/web-viewer/dist/assets/*.map
 
 FROM node:22-alpine AS runner
 

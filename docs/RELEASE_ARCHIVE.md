@@ -1,10 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.4.12`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.5.0`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.4.12`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.5.0`)
+
+### 🚀 `v0.5.x` Series — Live Preset Switcher, Shareable Rack URLs, Cover-Panel Configurator & 2-Click 3D Port Patching
+
+- **[`v0.5.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.5.0) (2026-10-29) — Live Rack Preset Switcher (`10"` · `19"` · `6"` · `Empty`), Shareable Zero-Backend Rack URLs (`#rack=v1...`), Custom 3D-Print Cover-Panel Configurator & 2-Click 3D Port Patching:**
+  - Added 1-click live switching across 5 EIA-310 rack presets (`10"`, `19"`, `6"`, and empty templates), deterministic `#rack=v1.<base64url>` shareable URLs (`Share` button), an interactive `0.5U`–`3U` 3D-print slot cover-panel configurator (`lines`/`hex`/`ribs`/`vented-slots`/`solid` + X-mirrored engraved front text) with live 2D CAD SVG preview and 100% watertight `.STL`/`.SCAD` export, and direct 2-click 3D port-to-port cable patching.
 
 ### 📦 `v0.4.x` Series — 3D Port & Brush-Panel Realism, External Building Drops & Collision-Free Routing
 
@@ -58,7 +63,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.4.12`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.5.0`)
+
+### 🚀 Serie `v0.5.x` — Live-Preset-Switcher, Teilbare Rack-URLs, Cover-Panel-Konfigurator & 2-Klick-3D-Port-Patching
+
+- **[`v0.5.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.5.0) (2026-10-29) — Live-Preset-Switcher (`10"` · `19"` · `6"` · `Leer`), teilbare Rack-URLs (`#rack=v1...`), interaktiver 3D-Druck-Cover-Panel-Konfigurator & direktes 2-Klick-3D-Port-Patching:**
+  - 1-Klick-Wechsel zwischen 5 EIA-310-Racks (`10"`, `19"`, `6"` & leere Vorlagen), teilbare `#rack=v1.<base64url>`-URLs (`Share`-Button), interaktiver `0.5U`–`3U` Cover-Panel-Konfigurator inkl. X-gespiegeltem Gravur-Text und 100 % wasserdichtem `.STL`/`.SCAD`-Export sowie direktes 2-Klick-3D-Port-Patching.
 
 ### 📦 Serie `v0.4.x` — 3D-Ports, Bürstenpanels, Externe Haus-Verkabelung & Kollisionsfreie Kabelführung
 

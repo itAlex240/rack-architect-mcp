@@ -5,6 +5,17 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2026-10-29
+
+### Fixed & Hardening (🇬🇧 English)
+- **Non-Interactive Docker Build Pruning & Sourcemap Cleanup (`Dockerfile`):**
+  - Set `ENV CI=true` in the `builder` stage so `pnpm prune --prod --ignore-scripts` runs cleanly in headless non-TTY Docker builds without triggering `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`.
+  - Explicitly stripped any residual `*esbuild*` virtual-store directories and `packages/web-viewer/dist/assets/*.map` sourcemaps prior to copying into `runner`.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Headless Docker-Build-Fix & Sourcemap-Bereinigung (`Dockerfile`):**
+  - `ENV CI=true` im `builder`-Stage gesetzt, damit `pnpm prune --prod --ignore-scripts` auch in nicht-interaktiven Docker-Builds ohne TTY (`ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`) sauber durchläuft, und `.map`-Sourcemaps sowie etwaige `*esbuild*`-Reste vor dem Kopieren in `runner` entfernt.
+
 ## [0.6.1] - 2026-10-29
 
 ### Security & Hardening (🇬🇧 English)
