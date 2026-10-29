@@ -3,8 +3,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import {
   AppDashboard,
+  STANDALONE_PRESET_OPTIONS,
   computeDeviceExplodeOffsetZMm,
+  createStandalonePresetProjectInput,
+  decodeRackProjectFromHash,
+  encodeRackProjectToHash,
   evaluateStandaloneScene,
+  generateClientCustomCoverPanelStl,
   InspectorSidebar,
   renderClientSideElevationSvg,
   TopNavBar,
@@ -12,6 +17,7 @@ import {
 
 afterEach(() => {
   cleanup();
+  window.history.replaceState(null, '', window.location.pathname);
 });
 
 describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', () => {
@@ -292,5 +298,104 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     expect(screen.getByTestId('new-rack-popover')).toBeDefined();
     fireEvent.click(screen.getByTestId('btn-confirm-init-new-rack'));
     expect(initNewRackSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('evaluates all 5 standalone presets with 0 validation errors, switches presets live, and encodes/decodes shareable #rack=v1. URLs', () => {
+    for (const opt of STANDALONE_PRESET_OPTIONS) {
+      const presetInput = createStandalonePresetProjectInput(opt.id);
+      const evaluated = evaluateStandaloneScene(presetInput);
+      expect(evaluated.validation.is_valid).toBe(true);
+      expect(evaluated.validation.error_count).toBe(0);
+
+      const encodedHash = encodeRackProjectToHash(presetInput);
+      expect(encodedHash.startsWith('#rack=v1.')).toBe(true);
+      const decoded = decodeRackProjectFromHash(encodedHash);
+      expect(decoded).not.toBeNull();
+      expect(decoded!.project_name).toBe(presetInput.project_name);
+    }
+
+    expect(decodeRackProjectFromHash('#rack=v1.not-valid-json!')).toBeNull();
+
+    render(<AppDashboard />);
+
+    const presetSelect = screen.getByTestId(
+      'preset-switcher-select',
+    ) as HTMLSelectElement;
+    expect(presetSelect.value).toBe('10inch-homelab');
+
+    // Switch live to 19-Inch Enterprise HA Rack (34 cable tubes)
+    fireEvent.change(presetSelect, { target: { value: '19inch-enterprise' } });
+    expect(screen.getByTestId('validation-status-pill').textContent).toContain(
+      'VALID (0 ERRORS)',
+    );
+    expect(screen.getByTestId('rack-3d-scene-summary').textContent).toContain(
+      '34 Visible Cable Tubes',
+    );
+
+    // Switch live to 6-Inch Micro-Lab (10 cable tubes)
+    fireEvent.change(presetSelect, { target: { value: '6inch-microlab' } });
+    expect(screen.getByTestId('validation-status-pill').textContent).toContain(
+      'VALID (0 ERRORS)',
+    );
+    expect(screen.getByTestId('rack-3d-scene-summary').textContent).toContain(
+      '10 Visible Cable Tubes',
+    );
+
+    // Click Share button -> updates window.location.hash and flashes Copied!
+    const shareBtn = screen.getByTestId('btn-share-rack-link');
+    fireEvent.click(shareBtn);
+    expect(shareBtn.textContent).toContain('Copied!');
+    expect(window.location.hash.startsWith('#rack=v1.')).toBe(true);
+  });
+
+  it('supports direct 2-click 3D port-to-port cable patching and custom 3D-print cover-panel configuration', () => {
+    render(<AppDashboard />);
+
+    expect(screen.getByTestId('rack-3d-scene-summary').textContent).toContain(
+      '22 Visible Cable Tubes',
+    );
+
+    // 1st click: select patch-u7 and click free port p10 (front)
+    fireEvent.click(screen.getByTestId('scene-device-patch-u7'));
+    fireEvent.click(screen.getByTestId('scene-port-patch-u7-p10-front'));
+    expect(screen.getByTestId('pending-port-patch-banner').textContent).toContain(
+      'patch-u7:p10',
+    );
+
+    // 2nd click: select ucg-max and click free port lan4 (rear) -> creates cable #23!
+    fireEvent.click(screen.getByTestId('scene-device-ucg-max'));
+    fireEvent.click(screen.getByTestId('scene-port-ucg-max-lan4-rear'));
+    expect(screen.queryByTestId('pending-port-patch-banner')).toBeNull();
+    expect(screen.getByTestId('rack-3d-scene-summary').textContent).toContain(
+      '23 Visible Cable Tubes',
+    );
+
+    // Navigate to BOM & 3D-Print tab and exercise the Custom Cover-Panel Configurator
+    fireEvent.click(screen.getByTestId('nav-tab-bom'));
+    expect(screen.getByTestId('cover-panel-customizer-form')).toBeDefined();
+
+    fireEvent.change(screen.getByTestId('custom-cover-u-height'), {
+      target: { value: '0.5' },
+    });
+    fireEvent.change(screen.getByTestId('custom-cover-pattern'), {
+      target: { value: 'vented-slots' },
+    });
+    fireEvent.change(screen.getByTestId('custom-cover-label'), {
+      target: { value: 'HOMELAB-01' },
+    });
+
+    const preview = screen.getByTestId('custom-cover-svg-preview');
+    expect(preview.innerHTML).toContain('<svg');
+
+    // Verify browser-side custom cover STL generator produces a watertight mesh
+    const stl = generateClientCustomCoverPanelStl({
+      standard: '10inch',
+      u_height: 0.5,
+      pattern: 'vented-slots',
+      label_text: 'HOMELAB-01',
+    });
+    expect(stl.startsWith('solid custom_cover_10inch_0p5u_vented-slots')).toBe(
+      true,
+    );
   });
 });

@@ -3,6 +3,7 @@ import {
   MCP_TOOL_DEFINITIONS,
   RackProjectSchema,
   type CableType,
+  type ConnectorType,
   type HardwareBlueprint,
   type RackFace,
   type RackProjectInput,
@@ -16,6 +17,15 @@ import {
   renderClientSideElevationSvg,
   renderClientSideWiringSvg,
 } from './standalone-homelab.js';
+import {
+  STANDALONE_PRESET_OPTIONS,
+  createStandalonePresetProjectInput,
+  type StandalonePresetId,
+} from './standalone-presets.js';
+import {
+  decodeRackProjectFromHash,
+  encodeRackProjectToHash,
+} from './rack-url-codec.js';
 
 export type WorkspaceTab = '3d' | 'elevation' | 'wiring' | 'bom';
 export type CableFilterMode = 'all' | 'network' | 'power' | 'poe' | 'none';
@@ -131,9 +141,40 @@ export interface InitNewRackParams {
     | 'closed-vented-front';
 }
 
+export interface PendingPortSelection {
+  readonly instanceId: string;
+  readonly portId: string;
+  readonly label: string;
+  readonly connectorType: ConnectorType;
+  readonly worldFace: RackFace;
+}
+
+export function inferCableTypeForConnectors(
+  a: ConnectorType,
+  b: ConnectorType,
+): CableType {
+  if (a === 'usb-c' || b === 'usb-c') return 'power-usb-c';
+  if (a === 'dc-5525' || b === 'dc-5525') return 'power-dc-5525';
+  if (a === 'schuko-cee7' || b === 'schuko-cee7') return 'power-schuko-c13';
+  if (
+    a === 'iec-c13' ||
+    a === 'iec-c14' ||
+    b === 'iec-c13' ||
+    b === 'iec-c14'
+  ) {
+    return 'power-c13-c14';
+  }
+  if (a === 'sfp-plus' && b === 'sfp-plus') return 'sfp-plus-dac';
+  if (a === 'rj45-serial-console' || b === 'rj45-serial-console') {
+    return 'rj45-serial-rollover';
+  }
+  return 'cat6a';
+}
+
 export interface RackViewerState {
   readonly connectionMode: 'sidecar-live' | 'standalone-demo';
   readonly projectPath: string | null;
+  readonly activePresetId: StandalonePresetId;
   readonly scene: SerializedRackScene;
   readonly catalog: readonly HardwareBlueprint[];
   readonly mcpToolLog: readonly McpToolCallItem[];
@@ -153,6 +194,7 @@ export interface RackViewerState {
   readonly selectedDeviceId: string | null;
   readonly selectedCableId: string | null;
   readonly hoveredPort: HoveredPortInfo | null;
+  readonly pendingPort: PendingPortSelection | null;
   setActiveTab(tab: WorkspaceTab): void;
   setXrayMode(enabled: boolean): void;
   setExplodeZMm(mm: number): void;
@@ -161,9 +203,16 @@ export interface RackViewerState {
   setShowClearanceBoxes(show: boolean): void;
   setDoorOpen(open: boolean): void;
   setCatalogDrawerOpen(open: boolean): void;
+  selectPreset(presetId: StandalonePresetId): void;
+  buildShareableRackUrl(): string;
   selectDevice(instanceId: string | null): void;
   selectCable(cableId: string | null): void;
   setHoveredPort(info: HoveredPortInfo | null): void;
+  setPendingPort(port: PendingPortSelection | null): void;
+  handlePortClick3D(
+    port: PendingPortSelection,
+    existingCableId?: string,
+  ): void;
   moveDeviceU(instanceId: string, newUPosition: number): void;
   mountEquipmentFromCatalog(
     blueprintSlug: string,
@@ -180,6 +229,8 @@ export interface RackViewerState {
     cableType: CableType,
     vlanId?: number,
     ipCidr?: string,
+    fromFace?: RackFace,
+    toFace?: RackFace,
   ): void;
   disconnectCable(cableId: string): void;
   importProjectJson(rawJsonText: string): boolean;
@@ -210,12 +261,16 @@ interface SidecarWsIncoming {
 /**
  * Dual-Source State Hook & WebMCP Progressive Enhancement Bridge for `@rack-mcp/web-viewer`.
  * - Connects to the local Sidecar Server (`/api/state`, `/api/catalog`, `ws://.../ws`) when available.
- * - Falls back seamlessly to the in-browser 8U `10inch-homelab` reference evaluation via `@rack-mcp/core-domain`.
+ * - Falls back seamlessly to the in-browser reference evaluation via `@rack-mcp/core-domain` (or `#rack=v1.` URL hash).
  * - Registers client-side WebMCP tools on `document.modelContext` when supported by the browser.
  */
 export function useRackState(): RackViewerState {
+  const sharedHashBootProject =
+    typeof window !== 'undefined'
+      ? decodeRackProjectFromHash(window.location.hash)
+      : null;
   const initialInputRef = useRef<RackProjectInput>(
-    createStandaloneHomelabProjectInput(),
+    sharedHashBootProject ?? createStandaloneHomelabProjectInput(),
   );
   const undoStackRef = useRef<RackProjectInput[]>([]);
   const redoStackRef = useRef<RackProjectInput[]>([]);
@@ -224,6 +279,8 @@ export function useRackState(): RackViewerState {
     'sidecar-live' | 'standalone-demo'
   >('standalone-demo');
   const [projectPath, setProjectPath] = useState<string | null>(null);
+  const [activePresetId, setActivePresetId] =
+    useState<StandalonePresetId>('10inch-homelab');
   const [scene, setScene] = useState<SerializedRackScene>(() =>
     evaluateStandaloneScene(initialInputRef.current),
   );
@@ -257,12 +314,18 @@ export function useRackState(): RackViewerState {
   const [doorOpen, setDoorOpen] = useState<boolean>(false);
   const [catalogDrawerOpen, setCatalogDrawerOpen] = useState<boolean>(false);
 
-  // Selection & Hover state
+  // Selection, Hover & Direct 2-Click 3D Port Patching state
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
-    'sw-u8',
+    () =>
+      sharedHashBootProject
+        ? (sharedHashBootProject.mounted_devices?.[0]?.instance_id ?? null)
+        : 'sw-u8',
   );
   const [selectedCableId, setSelectedCableId] = useState<string | null>(null);
   const [hoveredPort, setHoveredPort] = useState<HoveredPortInfo | null>(null);
+  const [pendingPort, setPendingPort] = useState<PendingPortSelection | null>(
+    null,
+  );
 
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -399,20 +462,68 @@ export function useRackState(): RackViewerState {
     setBomMarkdown(renderClientSideBomMarkdown(nextScene));
   }, [connectionMode]);
 
-  const resetDemoScene = useCallback(() => {
+  const selectPreset = useCallback((presetId: StandalonePresetId) => {
     undoStackRef.current = [];
     redoStackRef.current = [];
-    const fresh = createStandaloneHomelabProjectInput();
-    initialInputRef.current = fresh;
-    const nextScene = evaluateStandaloneScene(fresh);
+    const presetInput = createStandalonePresetProjectInput(presetId);
+    initialInputRef.current = presetInput;
+    const nextScene = evaluateStandaloneScene(presetInput);
+    const meta = STANDALONE_PRESET_OPTIONS.find((opt) => opt.id === presetId);
+    setActivePresetId(presetId);
     setScene(nextScene);
-    setMcpToolLog(DEFAULT_STANDALONE_TOOL_LOG);
+    setPendingPort(null);
+    setSelectedCableId(null);
+    setSelectedDeviceId(meta?.defaultSelectedDeviceId ?? null);
     setUndoAvailable(0);
     setRedoAvailable(0);
     setElevationSvg(renderClientSideElevationSvg(nextScene));
     setWiringSvg(renderClientSideWiringSvg(nextScene));
     setBomMarkdown(renderClientSideBomMarkdown(nextScene));
+    setMcpToolLog([
+      {
+        id: `preset-${presetId}-${Date.now()}`,
+        timestamp: 'PRESET',
+        tool: 'validate_rack',
+        summary: `Loaded preset '${nextScene.project.project_name}' (${nextScene.project.rack.standard.toUpperCase()} · ${nextScene.project.rack.u_height}U · ${nextScene.validation.error_count} Errors).`,
+        status: nextScene.validation.is_valid ? 'VALID' : 'INVALID',
+        errorCount: nextScene.validation.error_count,
+        warningCount: nextScene.validation.warning_count,
+      },
+    ]);
+    if (
+      typeof window !== 'undefined' &&
+      window.location.hash.includes('rack=v1.')
+    ) {
+      window.history.replaceState(
+        null,
+        '',
+        `${window.location.pathname}${window.location.search}`,
+      );
+    }
   }, []);
+
+  const resetDemoScene = useCallback(() => {
+    undoStackRef.current = [];
+    redoStackRef.current = [];
+    const fresh = createStandalonePresetProjectInput(activePresetId);
+    initialInputRef.current = fresh;
+    const nextScene = evaluateStandaloneScene(fresh);
+    const meta = STANDALONE_PRESET_OPTIONS.find(
+      (opt) => opt.id === activePresetId,
+    );
+    setScene(nextScene);
+    setPendingPort(null);
+    setSelectedCableId(null);
+    setSelectedDeviceId(meta?.defaultSelectedDeviceId ?? null);
+    if (activePresetId === '10inch-homelab') {
+      setMcpToolLog(DEFAULT_STANDALONE_TOOL_LOG);
+    }
+    setUndoAvailable(0);
+    setRedoAvailable(0);
+    setElevationSvg(renderClientSideElevationSvg(nextScene));
+    setWiringSvg(renderClientSideWiringSvg(nextScene));
+    setBomMarkdown(renderClientSideBomMarkdown(nextScene));
+  }, [activePresetId]);
 
   const simulateAgentStep = useCallback((stage: 'collision' | 'resolved') => {
     if (stage === 'collision') {
@@ -585,6 +696,8 @@ export function useRackState(): RackViewerState {
       cableType: CableType,
       vlanId?: number,
       ipCidr?: string,
+      fromFace?: RackFace,
+      toFace?: RackFace,
     ) => {
       const cableId = `cab-${fromInstanceId}-${fromPortId}-to-${toInstanceId}-${toPortId}`
         .toLowerCase()
@@ -600,8 +713,16 @@ export function useRackState(): RackViewerState {
         cable_type: cableType,
         color_hex: colorHex,
         label: `${fromInstanceId}:${fromPortId} -> ${toInstanceId}:${toPortId}`,
-        from: { instance_id: fromInstanceId, port_id: fromPortId },
-        to: { instance_id: toInstanceId, port_id: toPortId },
+        from: {
+          instance_id: fromInstanceId,
+          port_id: fromPortId,
+          ...(fromFace ? { face: fromFace } : {}),
+        },
+        to: {
+          instance_id: toInstanceId,
+          port_id: toPortId,
+          ...(toFace ? { face: toFace } : {}),
+        },
         ...(vlanId !== undefined ? { vlan_id: vlanId } : {}),
         ...(ipCidr !== undefined && ipCidr.trim().length > 0
           ? { ip_cidr: ipCidr.trim() }
@@ -634,6 +755,65 @@ export function useRackState(): RackViewerState {
     },
     [applyStandaloneMutation, connectionMode],
   );
+
+  const handlePortClick3D = useCallback(
+    (target: PendingPortSelection, existingCableId?: string) => {
+      if (pendingPort === null) {
+        if (existingCableId) {
+          setSelectedCableId(existingCableId);
+          setSelectedDeviceId(null);
+          return;
+        }
+        setPendingPort(target);
+        return;
+      }
+
+      if (
+        pendingPort.instanceId === target.instanceId &&
+        pendingPort.portId === target.portId &&
+        pendingPort.worldFace === target.worldFace
+      ) {
+        setPendingPort(null);
+        return;
+      }
+
+      if (existingCableId) {
+        // Destination port is already occupied — select its cable and clear patch mode
+        setPendingPort(null);
+        setSelectedCableId(existingCableId);
+        setSelectedDeviceId(null);
+        return;
+      }
+
+      const inferredType = inferCableTypeForConnectors(
+        pendingPort.connectorType,
+        target.connectorType,
+      );
+      connectInteractiveCable(
+        pendingPort.instanceId,
+        pendingPort.portId,
+        target.instanceId,
+        target.portId,
+        inferredType,
+        undefined,
+        undefined,
+        pendingPort.worldFace,
+        target.worldFace,
+      );
+      setPendingPort(null);
+    },
+    [connectInteractiveCable, pendingPort],
+  );
+
+  const buildShareableRackUrl = useCallback((): string => {
+    const hash = encodeRackProjectToHash(scene.project);
+    if (typeof window === 'undefined') {
+      return hash;
+    }
+    const base = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${hash}`);
+    return `${base}${hash}`;
+  }, [scene.project]);
 
   const disconnectCable = useCallback(
     (cableId: string) => {
@@ -781,9 +961,30 @@ export function useRackState(): RackViewerState {
     }
   }, []);
 
+  // Hydrate shared `#rack=v1.<base64url>` URL hash changes in standalone mode
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onHashChange = () => {
+      if (connectionMode === 'sidecar-live') return;
+      const decoded = decodeRackProjectFromHash(window.location.hash);
+      if (!decoded) return;
+      applyStandaloneMutation(() => decoded);
+      setPendingPort(null);
+      setSelectedCableId(null);
+      setSelectedDeviceId(decoded.mounted_devices?.[0]?.instance_id ?? null);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => {
+      window.removeEventListener('hashchange', onHashChange);
+    };
+  }, [applyStandaloneMutation, connectionMode]);
+
   // Connect to Sidecar via HTTP + WebSocket when running in browser
   useEffect(() => {
     if (typeof window === 'undefined' || typeof WebSocket === 'undefined') {
+      return;
+    }
+    if (window.location.hash.includes('rack=v1.')) {
       return;
     }
     // Skip automatic network connection inside JSDOM / HappyDOM unit tests
@@ -1023,6 +1224,7 @@ export function useRackState(): RackViewerState {
   return {
     connectionMode,
     projectPath,
+    activePresetId,
     scene,
     catalog,
     mcpToolLog,
@@ -1042,6 +1244,7 @@ export function useRackState(): RackViewerState {
     selectedDeviceId,
     selectedCableId,
     hoveredPort,
+    pendingPort,
     setActiveTab,
     setXrayMode,
     setExplodeZMm,
@@ -1050,9 +1253,13 @@ export function useRackState(): RackViewerState {
     setShowClearanceBoxes,
     setDoorOpen,
     setCatalogDrawerOpen,
+    selectPreset,
+    buildShareableRackUrl,
     selectDevice,
     selectCable,
     setHoveredPort,
+    setPendingPort,
+    handlePortClick3D,
     moveDeviceU,
     mountEquipmentFromCatalog,
     removeEquipment,

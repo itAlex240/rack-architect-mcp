@@ -16,6 +16,7 @@ import type {
   CableFilterMode,
   CameraPresetMode,
   HoveredPortInfo,
+  PendingPortSelection,
 } from '../../state/useRackState.js';
 import { RackFrame3D } from './RackFrame3D.js';
 import { MountedDevice3D } from './MountedDevice3D.js';
@@ -32,9 +33,14 @@ export interface RackSceneCanvasProps {
   readonly selectedDeviceId: string | null;
   readonly selectedCableId: string | null;
   readonly hoveredPort: HoveredPortInfo | null;
+  readonly pendingPort?: PendingPortSelection | null | undefined;
   readonly onSelectDevice: (instanceId: string | null) => void;
   readonly onSelectCable: (cableId: string | null) => void;
   readonly onHoverPort: (info: HoveredPortInfo | null) => void;
+  readonly onClickPort?:
+    | ((port: PendingPortSelection, existingCableId?: string) => void)
+    | undefined;
+  readonly onCancelPendingPort?: (() => void) | undefined;
 }
 
 function isWebGlSupported(): boolean {
@@ -315,15 +321,33 @@ export function RackSceneCanvas({
   selectedDeviceId,
   selectedCableId,
   hoveredPort,
+  pendingPort = null,
   onSelectDevice,
   onSelectCable,
   onHoverPort,
+  onClickPort,
+  onCancelPendingPort,
 }: RackSceneCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [pixelSize, setPixelSize] = useState<{
     readonly width: number;
     readonly height: number;
   }>({ width: 1280, height: 800 });
+
+  useEffect(() => {
+    if (!pendingPort || !onCancelPendingPort || typeof window === 'undefined') {
+      return;
+    }
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCancelPendingPort();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [onCancelPendingPort, pendingPort]);
 
   // Single ResizeObserver outside the render loop using devicePixelContentBoxSize (AGENTS.md Section 8.4)
   useEffect(() => {
@@ -483,8 +507,10 @@ export function RackSceneCanvas({
               explodeZMm={explodeZMm}
               showClearanceBoxes={showClearanceBoxes}
               isSelected={selectedDeviceId === dev.instance_id}
+              pendingPort={pendingPort}
               onSelectDevice={(id) => onSelectDevice(id)}
               onHoverPort={onHoverPort}
+              onClickPort={onClickPort}
             />
           ))}
 
@@ -603,6 +629,138 @@ export function RackSceneCanvas({
               </button>
             ))}
           </div>
+          {onClickPort &&
+            selectedDeviceId !== null &&
+            (() => {
+              const selDev = devicesById.get(selectedDeviceId);
+              if (!selDev || selDev.ports.length === 0) return null;
+              return (
+                <div
+                  data-testid={`scene-device-ports-${selDev.instance_id}`}
+                  style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}
+                >
+                  {selDev.ports.map((p) => {
+                    const existingCab = scene.project.cables.find(
+                      (c) =>
+                        (c.from.instance_id === p.instance_id &&
+                          c.from.port_id === p.port_id &&
+                          (c.from.face ?? p.world_face) === p.world_face) ||
+                        (c.to.instance_id === p.instance_id &&
+                          c.to.port_id === p.port_id &&
+                          (c.to.face ?? p.world_face) === p.world_face),
+                    );
+                    const isPending =
+                      pendingPort !== null &&
+                      pendingPort.instanceId === p.instance_id &&
+                      pendingPort.portId === p.port_id &&
+                      pendingPort.worldFace === p.world_face;
+                    return (
+                      <button
+                        key={`${p.instance_id}-${p.port_id}-${p.world_face}`}
+                        type="button"
+                        data-testid={`scene-port-${p.instance_id}-${p.port_id}-${p.world_face}`}
+                        onClick={() =>
+                          onClickPort(
+                            {
+                              instanceId: p.instance_id,
+                              portId: p.port_id,
+                              label: p.label,
+                              connectorType: p.connector_type,
+                              worldFace: p.world_face,
+                            },
+                            existingCab?.cable_id,
+                          )
+                        }
+                        style={{
+                          padding: '3px 7px',
+                          borderRadius: '4px',
+                          border: isPending
+                            ? '1px solid rgba(16, 185, 129, 0.5)'
+                            : '1px solid rgba(255, 255, 255, 0.09)',
+                          background: isPending
+                            ? 'rgba(16, 185, 129, 0.14)'
+                            : '#16161B',
+                          color: isPending
+                            ? '#6EE7B7'
+                            : existingCab
+                              ? '#A1A1AA'
+                              : '#F4F4F5',
+                          cursor: 'pointer',
+                          fontSize: '10.5px',
+                        }}
+                      >
+                        {p.port_id} ({p.world_face})
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+        </div>
+      )}
+
+      {/* Active 2-Click 3D Port-to-Port Patching Banner */}
+      {pendingPort && (
+        <div
+          data-testid="pending-port-patch-banner"
+          style={{
+            position: 'absolute',
+            top: '16px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '8px 12px',
+            background: 'rgba(18, 18, 22, 0.94)',
+            backdropFilter: 'blur(14px)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.09)',
+            borderRight: '1px solid rgba(255, 255, 255, 0.09)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.09)',
+            borderLeft: '2.5px solid #10B981',
+            borderRadius: '8px',
+            boxShadow: '0 10px 28px rgba(0, 0, 0, 0.65)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            zIndex: 25,
+          }}
+        >
+          <span
+            style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: '#10B981',
+              flexShrink: 0,
+            }}
+          />
+          <span style={{ fontSize: '11.5px', color: '#E4E4E7' }}>
+            Patching from{' '}
+            <strong className="mono" style={{ color: '#6EE7B7' }}>
+              {pendingPort.instanceId}:{pendingPort.portId}
+            </strong>{' '}
+            <span className="mono" style={{ color: '#A1A1AA' }}>
+              [{pendingPort.connectorType.toUpperCase()} ·{' '}
+              {pendingPort.worldFace.toUpperCase()}]
+            </span>{' '}
+            — click a destination port to connect
+          </span>
+          {onCancelPendingPort && (
+            <button
+              type="button"
+              data-testid="btn-cancel-port-patch"
+              onClick={onCancelPendingPort}
+              style={{
+                padding: '3px 8px',
+                borderRadius: '5px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: '#18181D',
+                color: '#A1A1AA',
+                fontSize: '11px',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          )}
         </div>
       )}
 
@@ -640,7 +798,9 @@ export function RackSceneCanvas({
                 padding: '12px 14px',
                 background: 'rgba(18, 18, 22, 0.92)',
                 backdropFilter: 'blur(14px)',
-                border: '1px solid rgba(255, 255, 255, 0.09)',
+                borderTop: '1px solid rgba(255, 255, 255, 0.09)',
+                borderRight: '1px solid rgba(255, 255, 255, 0.09)',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.09)',
                 borderLeft: '3px solid #3B82F6',
                 borderRadius: '8px',
                 boxShadow: '0 10px 28px rgba(0,0,0,0.65)',
@@ -737,7 +897,9 @@ export function RackSceneCanvas({
                 padding: '12px 14px',
                 background: 'rgba(18, 18, 22, 0.92)',
                 backdropFilter: 'blur(14px)',
-                border: '1px solid rgba(255, 255, 255, 0.09)',
+                borderTop: '1px solid rgba(255, 255, 255, 0.09)',
+                borderRight: '1px solid rgba(255, 255, 255, 0.09)',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.09)',
                 borderLeft: `3px solid ${selCable.color_hex}`,
                 borderRadius: '8px',
                 boxShadow: '0 10px 28px rgba(0,0,0,0.65)',
@@ -845,8 +1007,14 @@ export function RackSceneCanvas({
             bottom: '22px',
             left: '22px',
             padding: '10px 14px',
-            background: 'rgba(9, 13, 22, 0.94)',
-            border: '1px solid #38BDF8',
+            background: 'rgba(18, 18, 22, 0.94)',
+            backdropFilter: 'blur(14px)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.09)',
+            borderRight: '1px solid rgba(255, 255, 255, 0.09)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.09)',
+            borderLeft: hoveredPort.peerDescription
+              ? '2.5px solid #3B82F6'
+              : '2.5px solid #10B981',
             borderRadius: '8px',
             boxShadow: '0 8px 24px rgba(0,0,0,0.65)',
             pointerEvents: 'none',
@@ -855,25 +1023,27 @@ export function RackSceneCanvas({
         >
           <div
             className="mono"
-            style={{ fontSize: '12px', fontWeight: 700, color: '#F8FAFC' }}
+            style={{ fontSize: '12px', fontWeight: 700, color: '#F4F4F5' }}
           >
             {hoveredPort.instanceId} • {hoveredPort.portId}{' '}
-            <span style={{ color: '#38BDF8' }}>
+            <span style={{ color: '#93C5FD' }}>
               [{hoveredPort.connectorType.toUpperCase()} /{' '}
               {hoveredPort.worldFace.toUpperCase()}]
             </span>
           </div>
           <div
             className="mono"
-            style={{ fontSize: '11px', color: '#94A3B8', marginTop: '4px' }}
+            style={{ fontSize: '11px', color: '#A1A1AA', marginTop: '4px' }}
           >
             {hoveredPort.peerDescription
               ? `Connected -> ${hoveredPort.peerDescription} (${hoveredPort.connectedCableId})`
-              : 'Unconnected Port — Available'}
+              : pendingPort
+                ? 'Unconnected Port — Click to complete cable patch'
+                : 'Unconnected Port — Click to start 2-click cable patch'}
           </div>
           <div
             className="mono"
-            style={{ fontSize: '10px', color: '#64748B', marginTop: '2px' }}
+            style={{ fontSize: '10px', color: '#71717A', marginTop: '2px' }}
           >
             3D World Pos: ({hoveredPort.worldPosMm.x}mm,{' '}
             {hoveredPort.worldPosMm.y}mm, {hoveredPort.worldPosMm.z}mm)

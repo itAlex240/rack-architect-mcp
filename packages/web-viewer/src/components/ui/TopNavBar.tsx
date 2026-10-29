@@ -1,5 +1,9 @@
 import { useRef, useState, type ReactNode } from 'react';
 import type { SerializedRackScene } from '@rack-mcp/core-domain';
+import {
+  STANDALONE_PRESET_OPTIONS,
+  type StandalonePresetId,
+} from '../../state/standalone-presets.js';
 import type {
   InitNewRackParams,
   WorkspaceTab,
@@ -12,6 +16,7 @@ import {
   PlusIcon,
   RedoIcon,
   RotateResetIcon,
+  ShareLinkIcon,
   SparklesAiIcon,
   UndoIcon,
   UploadJsonIcon,
@@ -22,12 +27,15 @@ export interface TopNavBarProps {
   readonly scene: SerializedRackScene;
   readonly connectionMode: 'sidecar-live' | 'standalone-demo';
   readonly projectPath?: string | null | undefined;
+  readonly activePresetId?: StandalonePresetId | undefined;
   readonly activeTab: WorkspaceTab;
   readonly catalogDrawerOpen: boolean;
   readonly undoAvailable: number;
   readonly redoAvailable: number;
   readonly onSelectTab: (tab: WorkspaceTab) => void;
   readonly onToggleCatalogDrawer: () => void;
+  readonly onSelectPreset?: ((presetId: StandalonePresetId) => void) | undefined;
+  readonly onShareRackUrl?: (() => string) | undefined;
   readonly onImportProjectJson: (rawJson: string) => boolean;
   readonly onInitNewRack?: ((params: InitNewRackParams) => void) | undefined;
   readonly onExportDeliverablesToDisk?: (() => void) | undefined;
@@ -58,12 +66,15 @@ export function TopNavBar({
   scene,
   connectionMode,
   projectPath,
+  activePresetId,
   activeTab,
   catalogDrawerOpen,
   undoAvailable,
   redoAvailable,
   onSelectTab,
   onToggleCatalogDrawer,
+  onSelectPreset,
+  onShareRackUrl,
   onImportProjectJson,
   onInitNewRack,
   onExportDeliverablesToDisk,
@@ -82,6 +93,7 @@ export function TopNavBar({
   const [newRackU, setNewRackU] = useState(12);
   const [newRackDepth, setNewRackDepth] = useState(400);
   const [exportSavedFlash, setExportSavedFlash] = useState(false);
+  const [shareCopiedFlash, setShareCopiedFlash] = useState(false);
 
   const shortFileName = projectPath
     ? projectPath.split(/[\\/]/).slice(-2).join('/')
@@ -106,7 +118,7 @@ export function TopNavBar({
         whiteSpace: 'nowrap',
       }}
     >
-      {/* Left: Studio Brand, Project Title & Hardware Drawer Trigger */}
+      {/* Left: Studio Brand, Project Title, Preset Switcher & Hardware Drawer Trigger */}
       <div
         style={{
           display: 'flex',
@@ -154,21 +166,52 @@ export function TopNavBar({
             flexShrink: 1,
           }}
         >
-          <span
-            title={scene.project.project_name}
-            style={{
-              fontSize: '12.5px',
-              fontWeight: 600,
-              color: '#F4F4F5',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              maxWidth: '175px',
-              minWidth: '40px',
-              flexShrink: 1,
-            }}
-          >
-            {scene.project.project_name}
-          </span>
+          {connectionMode === 'standalone-demo' && onSelectPreset ? (
+            <select
+              aria-label="Select Rack Preset"
+              data-testid="preset-switcher-select"
+              value={activePresetId ?? '10inch-homelab'}
+              onChange={(e) =>
+                onSelectPreset(e.target.value as StandalonePresetId)
+              }
+              title={`Preset: ${scene.project.project_name}`}
+              style={{
+                padding: '4px 8px',
+                borderRadius: '6px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: '#141418',
+                color: '#F4F4F5',
+                fontSize: '11.5px',
+                fontWeight: 600,
+                maxWidth: '215px',
+                minWidth: '90px',
+                cursor: 'pointer',
+                flexShrink: 1,
+              }}
+            >
+              {STANDALONE_PRESET_OPTIONS.map((opt) => (
+                <option key={opt.id} value={opt.id}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span
+              title={scene.project.project_name}
+              style={{
+                fontSize: '12.5px',
+                fontWeight: 600,
+                color: '#F4F4F5',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '175px',
+                minWidth: '40px',
+                flexShrink: 1,
+              }}
+            >
+              {scene.project.project_name}
+            </span>
+          )}
           <span
             className="mono"
             style={{
@@ -718,6 +761,46 @@ export function TopNavBar({
             <UploadJsonIcon size={12} />
             <span>Import</span>
           </button>
+
+          {onShareRackUrl && (
+            <button
+              type="button"
+              data-testid="btn-share-rack-link"
+              title="Copy Shareable Rack URL (#rack=v1...)"
+              onClick={() => {
+                const url = onShareRackUrl();
+                if (
+                  typeof navigator !== 'undefined' &&
+                  navigator.clipboard &&
+                  typeof navigator.clipboard.writeText === 'function'
+                ) {
+                  void navigator.clipboard.writeText(url).catch(() => {});
+                }
+                setShareCopiedFlash(true);
+                setTimeout(() => setShareCopiedFlash(false), 1800);
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '5px 8px',
+                borderRadius: '6px',
+                border: shareCopiedFlash
+                  ? '1px solid rgba(16, 185, 129, 0.35)'
+                  : '1px solid rgba(255, 255, 255, 0.08)',
+                background: shareCopiedFlash
+                  ? 'rgba(16, 185, 129, 0.12)'
+                  : '#16161B',
+                color: shareCopiedFlash ? '#6EE7B7' : '#D4D4D8',
+                fontSize: '11px',
+                fontWeight: shareCopiedFlash ? 600 : 500,
+                cursor: 'pointer',
+              }}
+            >
+              <ShareLinkIcon size={12} />
+              <span>{shareCopiedFlash ? 'Copied!' : 'Share'}</span>
+            </button>
+          )}
 
           {connectionMode === 'standalone-demo' && (
             <button

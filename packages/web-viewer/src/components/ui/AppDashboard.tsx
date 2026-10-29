@@ -31,6 +31,7 @@ export function AppDashboard() {
         scene={state.scene}
         connectionMode={state.connectionMode}
         projectPath={state.projectPath}
+        activePresetId={state.activePresetId}
         activeTab={state.activeTab}
         catalogDrawerOpen={state.catalogDrawerOpen}
         undoAvailable={state.undoAvailable}
@@ -39,6 +40,8 @@ export function AppDashboard() {
         onToggleCatalogDrawer={() =>
           state.setCatalogDrawerOpen(!state.catalogDrawerOpen)
         }
+        onSelectPreset={state.selectPreset}
+        onShareRackUrl={state.buildShareableRackUrl}
         onImportProjectJson={state.importProjectJson}
         onInitNewRack={state.initNewRack}
         onExportDeliverablesToDisk={state.exportDeliverablesToDisk}
@@ -103,9 +106,12 @@ export function AppDashboard() {
                 selectedDeviceId={state.selectedDeviceId}
                 selectedCableId={state.selectedCableId}
                 hoveredPort={state.hoveredPort}
+                pendingPort={state.pendingPort}
                 onSelectDevice={state.selectDevice}
                 onSelectCable={state.selectCable}
                 onHoverPort={state.setHoveredPort}
+                onClickPort={state.handlePortClick3D}
+                onCancelPendingPort={() => state.setPendingPort(null)}
               />
             </>
           )}

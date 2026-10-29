@@ -2016,3 +2016,1031 @@ export function generateClientSideCarrierStl(
   lines.push(`endsolid ${solidName}`);
   return lines.join('\n');
 }
+
+export type CoverPanelPatternType =
+  | 'lines'
+  | 'hex'
+  | 'ribs'
+  | 'vented-slots'
+  | 'solid';
+
+export type CoverPanelUHeight = 0.5 | 1 | 2 | 3;
+
+export interface CustomCoverPanelOptions {
+  readonly standard: RackStandard;
+  readonly u_height: CoverPanelUHeight;
+  readonly pattern: CoverPanelPatternType;
+  readonly label_text?: string | undefined;
+}
+
+const CLIENT_FONT_5X7_GLYPHS: Readonly<Record<string, readonly string[]>> = {
+  A: ['.###.', '#...#', '#...#', '#####', '#...#', '#...#', '#...#'],
+  B: ['####.', '#...#', '#...#', '####.', '#...#', '#...#', '####.'],
+  C: ['.####', '#....', '#....', '#....', '#....', '#....', '.####'],
+  D: ['####.', '#...#', '#...#', '#...#', '#...#', '#...#', '####.'],
+  E: ['#####', '#....', '#....', '####.', '#....', '#....', '#####'],
+  F: ['#####', '#....', '#....', '####.', '#....', '#....', '#....'],
+  G: ['.####', '#....', '#....', '#..##', '#...#', '#...#', '.####'],
+  H: ['#...#', '#...#', '#...#', '#####', '#...#', '#...#', '#...#'],
+  I: ['.###.', '..#..', '..#..', '..#..', '..#..', '..#..', '.###.'],
+  J: ['..###', '...#.', '...#.', '...#.', '#..#.', '#..#.', '.##..'],
+  K: ['#...#', '#..#.', '#.#..', '##...', '#.#..', '#..#.', '#...#'],
+  L: ['#....', '#....', '#....', '#....', '#....', '#....', '#####'],
+  M: ['#...#', '##.##', '#.#.#', '#...#', '#...#', '#...#', '#...#'],
+  N: ['#...#', '##..#', '#.#.#', '#..##', '#...#', '#...#', '#...#'],
+  O: ['.###.', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'],
+  P: ['####.', '#...#', '#...#', '####.', '#....', '#....', '#....'],
+  Q: ['.###.', '#...#', '#...#', '#...#', '#.#.#', '#..#.', '.##.#'],
+  R: ['####.', '#...#', '#...#', '####.', '#.#..', '#..#.', '#...#'],
+  S: ['.####', '#....', '#....', '.###.', '....#', '....#', '####.'],
+  T: ['#####', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..'],
+  U: ['#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'],
+  V: ['#...#', '#...#', '#...#', '#...#', '#...#', '.#.#.', '..#..'],
+  W: ['#...#', '#...#', '#...#', '#...#', '#.#.#', '##.##', '#...#'],
+  X: ['#...#', '#...#', '.#.#.', '..#..', '.#.#.', '#...#', '#...#'],
+  Y: ['#...#', '#...#', '.#.#.', '..#..', '..#..', '..#..', '..#..'],
+  Z: ['#####', '....#', '...#.', '..#..', '.#...', '#....', '#####'],
+  '0': ['.###.', '#...#', '#..##', '#.#.#', '##..#', '#...#', '.###.'],
+  '1': ['..#..', '.##..', '..#..', '..#..', '..#..', '..#..', '.###.'],
+  '2': ['.###.', '#...#', '....#', '..##.', '.#...', '#....', '#####'],
+  '3': ['####.', '....#', '....#', '.###.', '....#', '....#', '####.'],
+  '4': ['#...#', '#...#', '#...#', '#####', '....#', '....#', '....#'],
+  '5': ['#####', '#....', '####.', '....#', '....#', '#...#', '.###.'],
+  '6': ['.###.', '#....', '####.', '#...#', '#...#', '#...#', '.###.'],
+  '7': ['#####', '....#', '...#.', '..#..', '.#...', '.#...', '.#...'],
+  '8': ['.###.', '#...#', '#...#', '.###.', '#...#', '#...#', '.###.'],
+  '9': ['.###.', '#...#', '#...#', '.####', '....#', '....#', '.###.'],
+  '-': ['.....', '.....', '.....', '#####', '.....', '.....', '.....'],
+  '.': ['.....', '.....', '.....', '.....', '.....', '.##..', '.##..'],
+  _: ['.....', '.....', '.....', '.....', '.....', '.....', '#####'],
+  '/': ['....#', '...#.', '...#.', '..#..', '.#...', '.#...', '#....'],
+  ' ': ['.....', '.....', '.....', '.....', '.....', '.....', '.....'],
+};
+
+export function sanitizeClientCoverPanelLabel(raw?: string): string {
+  if (!raw) return '';
+  return raw
+    .toUpperCase()
+    .replace(/[^A-Z0-9 -._/]/g, '')
+    .trim()
+    .slice(0, 14);
+}
+
+interface ClientCoverPanelTextLayout {
+  readonly label: string;
+  readonly plateX0: number;
+  readonly plateX1: number;
+  readonly plateY0: number;
+  readonly plateY1: number;
+  readonly dotBoxes: readonly ClientBox3DMm[];
+}
+
+function buildClientCoverPanelTextLayout(
+  rawLabel: string | undefined,
+  panelWidthMm: number,
+  panelHeightMm: number,
+  patW: number,
+  grooveDepthMm: number,
+): ClientCoverPanelTextLayout | null {
+  const label = sanitizeClientCoverPanelLabel(rawLabel);
+  if (label.length === 0) return null;
+
+  const totalCols = label.length * 6 - 1;
+  const maxUsableW = Math.max(24, patW - 10);
+  const dotPitch = roundCentis(
+    Math.max(1.0, Math.min(1.55, maxUsableW / Math.max(1, totalCols))),
+  );
+  const dotSize = roundCentis(Math.max(0.68, dotPitch * 0.7));
+  const textSpanW = (totalCols - 1) * dotPitch + dotSize;
+  const textSpanH = 6 * dotPitch + dotSize;
+
+  const centerX = panelWidthMm / 2;
+  const centerY = panelHeightMm / 2;
+  const viewerLeftStartCenter = centerX + ((totalCols - 1) * dotPitch) / 2;
+  const topRowCenterY = centerY + (6 * dotPitch) / 2;
+
+  const dotBoxes: ClientBox3DMm[] = [];
+  for (let ci = 0; ci < label.length; ci++) {
+    const ch = label[ci] ?? ' ';
+    const glyph = CLIENT_FONT_5X7_GLYPHS[ch] ?? CLIENT_FONT_5X7_GLYPHS[' ']!;
+    for (let r = 0; r < 7; r++) {
+      const rowStr = glyph[r] ?? '.....';
+      const dyCenter = topRowCenterY - r * dotPitch;
+      for (let c = 0; c < 5; c++) {
+        if (rowStr[c] !== '#') continue;
+        const globalCol = ci * 6 + c;
+        const dxCenter = viewerLeftStartCenter - globalCol * dotPitch;
+        dotBoxes.push(
+          normalizeClientBox({
+            x0: dxCenter - dotSize / 2,
+            y0: dyCenter - dotSize / 2,
+            z0: -1,
+            x1: dxCenter + dotSize / 2,
+            y1: dyCenter + dotSize / 2,
+            z1: grooveDepthMm,
+          }),
+        );
+      }
+    }
+  }
+
+  return {
+    label,
+    plateX0: roundCentis(centerX - textSpanW / 2 - 2.6),
+    plateX1: roundCentis(centerX + textSpanW / 2 + 2.6),
+    plateY0: roundCentis(centerY - textSpanH / 2 - 2.2),
+    plateY1: roundCentis(centerY + textSpanH / 2 + 2.2),
+    dotBoxes,
+  };
+}
+
+function clientBoxesOverlap2D(
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  ex0: number,
+  ey0: number,
+  ex1: number,
+  ey1: number,
+): boolean {
+  return x1 > ex0 && x0 < ex1 && y1 > ey0 && y0 < ey1;
+}
+
+export function generateClientCustomCoverPanelOpenScad(
+  options: CustomCoverPanelOptions,
+): string {
+  const spec = EIA_310_SPECS[options.standard];
+  const panelWidthMm = roundCentis(spec.W_panel);
+  const apertureWidthMm = roundCentis(spec.W_aperture);
+  const holePitchXMm = roundCentis(spec.W_holes);
+  const panelHeightMm = roundCentis(options.u_height * MM_PER_U - 0.75);
+  const earWidthMm = roundCentis((panelWidthMm - apertureWidthMm) / 2);
+  const patX0 = roundCentis(earWidthMm + 10.0);
+  const patX1 = roundCentis(panelWidthMm - earWidthMm - 10.0);
+  const patW = roundCentis(patX1 - patX0);
+  const stiffenerDepthMm = options.u_height >= 2 ? 12.0 : 10.0;
+  const grooveDepthMm = 1.4;
+  const faceplateThicknessMm = 4.2;
+
+  const textLayout = buildClientCoverPanelTextLayout(
+    options.label_text,
+    panelWidthMm,
+    panelHeightMm,
+    patW,
+    grooveDepthMm,
+  );
+
+  const lines: string[] = [];
+  lines.push(`// ============================================================================`);
+  lines.push(`// RackArchitect MCP — Custom Parametric 3D-Printable Slot Cover Panel (.scad)`);
+  lines.push(`// Standard:  ${options.standard.toUpperCase()} EIA-310 (${panelWidthMm}mm Width, ${options.u_height}U = ${panelHeightMm}mm Height)`);
+  lines.push(`// Pattern:   ${options.pattern.toUpperCase()}${textLayout ? ` | Engraved Label: "${textLayout.label}"` : ''}`);
+  lines.push(`// Material:  PETG / PLA / ASA (Print Face-Down on Textured PEI Plate, Zero Supports)`);
+  lines.push(`// ============================================================================`);
+  lines.push(``);
+  lines.push(`panel_width_mm = ${panelWidthMm};`);
+  lines.push(`aperture_width_mm = ${apertureWidthMm};`);
+  lines.push(`hole_center_pitch_x_mm = ${holePitchXMm};`);
+  lines.push(`panel_height_mm = ${panelHeightMm};`);
+  lines.push(`faceplate_thickness_mm = ${faceplateThicknessMm};`);
+  lines.push(`stiffener_depth_mm = ${stiffenerDepthMm};`);
+  lines.push(`stiffener_wall_mm = 3.2;`);
+  lines.push(`pattern_groove_depth_mm = ${grooveDepthMm};`);
+  lines.push(`$fn = 36;`);
+  lines.push(``);
+  lines.push(`module oval_mounting_slot(slot_w = 10.0, slot_h = 6.5, thickness = 10.0) {`);
+  lines.push(`  hull() {`);
+  lines.push(`    translate([-(slot_w - slot_h) / 2, 0, -1]) cylinder(d = slot_h, h = thickness);`);
+  lines.push(`    translate([ (slot_w - slot_h) / 2, 0, -1]) cylinder(d = slot_h, h = thickness);`);
+  lines.push(`  }`);
+  lines.push(`}`);
+  lines.push(``);
+  lines.push(`module eia310_ear_holes() {`);
+  lines.push(`  left_hole_x = (panel_width_mm - hole_center_pitch_x_mm) / 2;`);
+  lines.push(`  right_hole_x = panel_width_mm - left_hole_x;`);
+  if (options.u_height < 1) {
+    const cy = roundCentis(panelHeightMm / 2);
+    lines.push(`  translate([left_hole_x, ${cy}, 0]) oval_mounting_slot();`);
+    lines.push(`  translate([right_hole_x, ${cy}, 0]) oval_mounting_slot();`);
+  } else {
+    const fullUs = Math.round(options.u_height);
+    lines.push(`  for (u = [0 : ${fullUs - 1}]) {`);
+    lines.push(`    base_y = u * 44.45;`);
+    lines.push(`    for (offset_y = [6.35, 22.225, 38.10]) {`);
+    lines.push(`      if (base_y + offset_y < panel_height_mm - 3.0) {`);
+    lines.push(`        translate([left_hole_x, base_y + offset_y, 0]) oval_mounting_slot();`);
+    lines.push(`        translate([right_hole_x, base_y + offset_y, 0]) oval_mounting_slot();`);
+    lines.push(`      }`);
+    lines.push(`    }`);
+    lines.push(`  }`);
+  }
+  lines.push(`}`);
+  lines.push(``);
+  lines.push(`module custom_surface_features() {`);
+  if (options.pattern === 'lines') {
+    const lineCount = Math.max(2, Math.round(options.u_height * 3));
+    const marginY = options.u_height < 1 ? 5.2 : 8.0;
+    const stepY = lineCount > 1 ? (panelHeightMm - 2 * marginY) / (lineCount - 1) : 0;
+    for (let i = 0; i < lineCount; i++) {
+      const gy0 = roundCentis(marginY + i * stepY - 1.1);
+      const gy1 = roundCentis(gy0 + 2.2);
+      if (
+        textLayout &&
+        clientBoxesOverlap2D(
+          patX0,
+          gy0,
+          patX1,
+          gy1,
+          textLayout.plateX0,
+          textLayout.plateY0,
+          textLayout.plateX1,
+          textLayout.plateY1,
+        )
+      ) {
+        const leftW = roundCentis(textLayout.plateX0 - patX0);
+        const rightW = roundCentis(patX1 - textLayout.plateX1);
+        if (leftW >= 6.0) {
+          lines.push(`  translate([${patX0}, ${gy0}, -0.5]) cube([${leftW}, 2.2, pattern_groove_depth_mm + 0.5]);`);
+        }
+        if (rightW >= 6.0) {
+          lines.push(`  translate([${textLayout.plateX1}, ${gy0}, -0.5]) cube([${rightW}, 2.2, pattern_groove_depth_mm + 0.5]);`);
+        }
+      } else {
+        lines.push(`  translate([${patX0}, ${gy0}, -0.5]) cube([${patW}, 2.2, pattern_groove_depth_mm + 0.5]);`);
+      }
+    }
+  } else if (options.pattern === 'hex') {
+    const rows = Math.max(1, Math.round(options.u_height * 2));
+    const cols = Math.max(5, Math.min(14, Math.floor(patW / 20)));
+    const pitchX = patW / cols;
+    const marginY = options.u_height < 1 ? 4.5 : 6.0;
+    const pitchY = (panelHeightMm - 2 * marginY) / rows;
+    const diam = roundCentis(Math.min(pitchX, pitchY) * 0.66);
+    for (let r = 0; r < rows; r++) {
+      const cy = roundCentis(marginY + (r + 0.5) * pitchY);
+      const shiftX = r % 2 === 1 ? pitchX * 0.2 : -pitchX * 0.2;
+      for (let c = 0; c < cols; c++) {
+        const cx = roundCentis(patX0 + (c + 0.5) * pitchX + shiftX);
+        if (
+          textLayout &&
+          clientBoxesOverlap2D(
+            cx - diam / 2,
+            cy - diam / 2,
+            cx + diam / 2,
+            cy + diam / 2,
+            textLayout.plateX0,
+            textLayout.plateY0,
+            textLayout.plateX1,
+            textLayout.plateY1,
+          )
+        ) {
+          continue;
+        }
+        lines.push(`  translate([${cx}, ${cy}, -0.5]) cylinder(d = ${diam}, h = pattern_groove_depth_mm + 0.5, $fn = 6);`);
+      }
+    }
+  } else if (options.pattern === 'ribs') {
+    const ribCount = Math.max(8, Math.min(18, Math.floor(patW / 15)));
+    const pitchX = patW / ribCount;
+    const grooveW = roundCentis(Math.max(2.8, pitchX * 0.44));
+    const marginY = options.u_height < 1 ? 4.5 : 6.0;
+    const grooveH = roundCentis(panelHeightMm - 2 * marginY);
+    for (let i = 0; i < ribCount; i++) {
+      const gx0 = roundCentis(patX0 + (i + 0.5) * pitchX - grooveW / 2);
+      const gx1 = roundCentis(gx0 + grooveW);
+      if (
+        textLayout &&
+        clientBoxesOverlap2D(
+          gx0,
+          marginY,
+          gx1,
+          marginY + grooveH,
+          textLayout.plateX0,
+          textLayout.plateY0,
+          textLayout.plateX1,
+          textLayout.plateY1,
+        )
+      ) {
+        continue;
+      }
+      lines.push(`  translate([${gx0}, ${marginY}, -0.5]) cube([${grooveW}, ${grooveH}, pattern_groove_depth_mm + 0.5]);`);
+    }
+  } else if (options.pattern === 'vented-slots') {
+    const colCount = options.standard === '19inch' ? 3 : 2;
+    const bridgeMm = 6.0;
+    const slotW = roundCentis((patW - (colCount - 1) * bridgeMm) / colCount);
+    const slotH = 2.4;
+    const pitchY = 5.6;
+    const marginY = 5.2;
+    for (let y = marginY; y + slotH <= panelHeightMm - marginY; y += pitchY) {
+      const sy0 = roundCentis(y);
+      const sy1 = roundCentis(y + slotH);
+      for (let col = 0; col < colCount; col++) {
+        const sx0 = roundCentis(patX0 + col * (slotW + bridgeMm));
+        const sx1 = roundCentis(sx0 + slotW);
+        if (
+          textLayout &&
+          clientBoxesOverlap2D(
+            sx0,
+            sy0,
+            sx1,
+            sy1,
+            textLayout.plateX0,
+            textLayout.plateY0,
+            textLayout.plateX1,
+            textLayout.plateY1,
+          )
+        ) {
+          continue;
+        }
+        lines.push(`  translate([${sx0}, ${sy0}, -1.0]) cube([${slotW}, ${slotH}, faceplate_thickness_mm + 2.0]);`);
+      }
+    }
+  }
+
+  if (textLayout) {
+    const fontSizeMm = roundCentis(
+      Math.min(
+        options.u_height < 1 ? 7.5 : 10.5,
+        (patW * 0.72) / Math.max(1, textLayout.label.length),
+      ),
+    );
+    lines.push(
+      `  translate([panel_width_mm / 2, panel_height_mm / 2, -0.5]) linear_extrude(height = pattern_groove_depth_mm + 0.5) mirror([1, 0, 0]) text("${textLayout.label}", size = ${fontSizeMm}, font = "Liberation Mono:style=Bold", halign = "center", valign = "center");`,
+    );
+  }
+  lines.push(`}`);
+  lines.push(``);
+  lines.push(`union() {`);
+  lines.push(`  difference() { cube([panel_width_mm, panel_height_mm, faceplate_thickness_mm]); eia310_ear_holes(); custom_surface_features(); }`);
+  lines.push(`  translate([${earWidthMm}, 0, faceplate_thickness_mm]) cube([aperture_width_mm, stiffener_wall_mm, stiffener_depth_mm - faceplate_thickness_mm]);`);
+  lines.push(`  translate([${earWidthMm}, panel_height_mm - stiffener_wall_mm, faceplate_thickness_mm]) cube([aperture_width_mm, stiffener_wall_mm, stiffener_depth_mm - faceplate_thickness_mm]);`);
+  lines.push(`  translate([${earWidthMm}, 0, faceplate_thickness_mm]) cube([3.5, panel_height_mm, stiffener_depth_mm - faceplate_thickness_mm]);`);
+  lines.push(`  translate([${earWidthMm} + aperture_width_mm - 3.5, 0, faceplate_thickness_mm]) cube([3.5, panel_height_mm, stiffener_depth_mm - faceplate_thickness_mm]);`);
+  lines.push(`}`);
+  return lines.join('\n');
+}
+
+export function generateClientCustomCoverPanelStl(
+  options: CustomCoverPanelOptions,
+): string {
+  const spec = EIA_310_SPECS[options.standard];
+  const panelWidthMm = roundCentis(spec.W_panel);
+  const apertureWidthMm = roundCentis(spec.W_aperture);
+  const holePitchXMm = roundCentis(spec.W_holes);
+  const panelHeightMm = roundCentis(options.u_height * MM_PER_U - 0.75);
+  const earWidthMm = roundCentis((panelWidthMm - apertureWidthMm) / 2);
+  const faceplateThicknessMm = 4.2;
+  const stiffenerWallMm = 3.2;
+  const sideGussetMm = 3.5;
+  const totalDepthMm = options.u_height >= 2 ? 12.0 : 10.0;
+  const grooveDepthMm = 1.4;
+
+  const faceplateBox = normalizeClientBox({
+    x0: 0,
+    y0: 0,
+    z0: 0,
+    x1: panelWidthMm,
+    y1: panelHeightMm,
+    z1: faceplateThicknessMm,
+  });
+
+  const bottomStiffenerBox = normalizeClientBox({
+    x0: earWidthMm,
+    y0: 0,
+    z0: faceplateThicknessMm,
+    x1: panelWidthMm - earWidthMm,
+    y1: stiffenerWallMm,
+    z1: totalDepthMm,
+  });
+
+  const topStiffenerBox = normalizeClientBox({
+    x0: earWidthMm,
+    y0: roundCentis(panelHeightMm - stiffenerWallMm),
+    z0: faceplateThicknessMm,
+    x1: panelWidthMm - earWidthMm,
+    y1: panelHeightMm,
+    z1: totalDepthMm,
+  });
+
+  const gussetBoxes: ClientBox3DMm[] = [
+    normalizeClientBox({
+      x0: earWidthMm,
+      y0: 0,
+      z0: faceplateThicknessMm,
+      x1: earWidthMm + sideGussetMm,
+      y1: panelHeightMm,
+      z1: totalDepthMm,
+    }),
+    normalizeClientBox({
+      x0: panelWidthMm - earWidthMm - sideGussetMm,
+      y0: 0,
+      z0: faceplateThicknessMm,
+      x1: panelWidthMm - earWidthMm,
+      y1: panelHeightMm,
+      z1: totalDepthMm,
+    }),
+  ];
+
+  const leftHoleX = roundCentis((panelWidthMm - holePitchXMm) / 2);
+  const rightHoleX = roundCentis(panelWidthMm - leftHoleX);
+  const earHoleBoxes: ClientBox3DMm[] = [];
+  if (options.u_height < 1) {
+    const cy = roundCentis(panelHeightMm / 2);
+    earHoleBoxes.push(
+      normalizeClientBox({
+        x0: Math.max(1.2, leftHoleX - 5.0),
+        y0: cy - 3.25,
+        z0: -1,
+        x1: Math.min(earWidthMm - 1.2, leftHoleX + 5.0),
+        y1: cy + 3.25,
+        z1: faceplateThicknessMm + 1,
+      }),
+      normalizeClientBox({
+        x0: Math.max(panelWidthMm - earWidthMm + 1.2, rightHoleX - 5.0),
+        y0: cy - 3.25,
+        z0: -1,
+        x1: Math.min(panelWidthMm - 1.2, rightHoleX + 5.0),
+        y1: cy + 3.25,
+        z1: faceplateThicknessMm + 1,
+      }),
+    );
+  } else {
+    const fullUs = Math.round(options.u_height);
+    for (let u = 0; u < fullUs; u++) {
+      const baseY = u * MM_PER_U;
+      for (const offsetY of [6.35, 22.225, 38.1]) {
+        const cy = roundCentis(baseY + offsetY);
+        if (cy + 3.25 < panelHeightMm - 1.5 && cy - 3.25 > 1.5) {
+          earHoleBoxes.push(
+            normalizeClientBox({
+              x0: Math.max(1.2, leftHoleX - 5.0),
+              y0: cy - 3.25,
+              z0: -1,
+              x1: Math.min(earWidthMm - 1.2, leftHoleX + 5.0),
+              y1: cy + 3.25,
+              z1: faceplateThicknessMm + 1,
+            }),
+            normalizeClientBox({
+              x0: Math.max(panelWidthMm - earWidthMm + 1.2, rightHoleX - 5.0),
+              y0: cy - 3.25,
+              z0: -1,
+              x1: Math.min(panelWidthMm - 1.2, rightHoleX + 5.0),
+              y1: cy + 3.25,
+              z1: faceplateThicknessMm + 1,
+            }),
+          );
+        }
+      }
+    }
+  }
+
+  const patX0 = roundCentis(earWidthMm + 10.0);
+  const patX1 = roundCentis(panelWidthMm - earWidthMm - 10.0);
+  const patW = roundCentis(patX1 - patX0);
+
+  const textLayout = buildClientCoverPanelTextLayout(
+    options.label_text,
+    panelWidthMm,
+    panelHeightMm,
+    patW,
+    grooveDepthMm,
+  );
+
+  const featureCutoutBoxes: ClientBox3DMm[] = [];
+
+  if (options.pattern === 'lines') {
+    const lineCount = Math.max(2, Math.round(options.u_height * 3));
+    const marginY = options.u_height < 1 ? 5.2 : 8.0;
+    const stepY = lineCount > 1 ? (panelHeightMm - 2 * marginY) / (lineCount - 1) : 0;
+    for (let i = 0; i < lineCount; i++) {
+      const gy0 = roundCentis(marginY + i * stepY - 1.1);
+      const gy1 = roundCentis(gy0 + 2.2);
+      if (
+        textLayout &&
+        clientBoxesOverlap2D(
+          patX0,
+          gy0,
+          patX1,
+          gy1,
+          textLayout.plateX0,
+          textLayout.plateY0,
+          textLayout.plateX1,
+          textLayout.plateY1,
+        )
+      ) {
+        if (textLayout.plateX0 - patX0 >= 6.0) {
+          featureCutoutBoxes.push(
+            normalizeClientBox({
+              x0: patX0,
+              y0: gy0,
+              z0: -1,
+              x1: textLayout.plateX0,
+              y1: gy1,
+              z1: grooveDepthMm,
+            }),
+          );
+        }
+        if (patX1 - textLayout.plateX1 >= 6.0) {
+          featureCutoutBoxes.push(
+            normalizeClientBox({
+              x0: textLayout.plateX1,
+              y0: gy0,
+              z0: -1,
+              x1: patX1,
+              y1: gy1,
+              z1: grooveDepthMm,
+            }),
+          );
+        }
+      } else {
+        featureCutoutBoxes.push(
+          normalizeClientBox({
+            x0: patX0,
+            y0: gy0,
+            z0: -1,
+            x1: patX1,
+            y1: gy1,
+            z1: grooveDepthMm,
+          }),
+        );
+      }
+    }
+  } else if (options.pattern === 'hex') {
+    const rows = Math.max(1, Math.round(options.u_height * 2));
+    const cols = Math.max(5, Math.min(10, Math.floor(patW / 24)));
+    const pitchX = patW / cols;
+    const marginY = options.u_height < 1 ? 4.5 : 6.0;
+    const pitchY = (panelHeightMm - 2 * marginY) / rows;
+    const cellW = roundCentis(pitchX * 0.62);
+    const cellH = roundCentis(pitchY * 0.6);
+    for (let r = 0; r < rows; r++) {
+      const cy = marginY + (r + 0.5) * pitchY;
+      const shiftX = r % 2 === 1 ? pitchX * 0.16 : -pitchX * 0.16;
+      for (let c = 0; c < cols; c++) {
+        const cx = patX0 + (c + 0.5) * pitchX + shiftX;
+        const x0 = roundCentis(Math.max(patX0, cx - cellW / 2));
+        const x1 = roundCentis(Math.min(patX1, cx + cellW / 2));
+        const y0 = roundCentis(cy - cellH / 2);
+        const y1 = roundCentis(cy + cellH / 2);
+        if (x1 - x0 < 3.0 || y1 - y0 < 3.0) continue;
+        if (
+          textLayout &&
+          clientBoxesOverlap2D(
+            x0,
+            y0,
+            x1,
+            y1,
+            textLayout.plateX0,
+            textLayout.plateY0,
+            textLayout.plateX1,
+            textLayout.plateY1,
+          )
+        ) {
+          continue;
+        }
+        featureCutoutBoxes.push(
+          normalizeClientBox({ x0, y0, z0: -1, x1, y1, z1: grooveDepthMm }),
+        );
+      }
+    }
+  } else if (options.pattern === 'ribs') {
+    const ribCount = Math.max(8, Math.min(14, Math.floor(patW / 16)));
+    const pitchX = patW / ribCount;
+    const grooveW = roundCentis(Math.max(2.8, pitchX * 0.44));
+    const marginY = options.u_height < 1 ? 4.5 : 6.0;
+    for (let i = 0; i < ribCount; i++) {
+      const gx0 = roundCentis(patX0 + (i + 0.5) * pitchX - grooveW / 2);
+      const gx1 = roundCentis(gx0 + grooveW);
+      const gy0 = marginY;
+      const gy1 = roundCentis(panelHeightMm - marginY);
+      if (
+        textLayout &&
+        clientBoxesOverlap2D(
+          gx0,
+          gy0,
+          gx1,
+          gy1,
+          textLayout.plateX0,
+          textLayout.plateY0,
+          textLayout.plateX1,
+          textLayout.plateY1,
+        )
+      ) {
+        continue;
+      }
+      featureCutoutBoxes.push(
+        normalizeClientBox({
+          x0: gx0,
+          y0: gy0,
+          z0: -1,
+          x1: gx1,
+          y1: gy1,
+          z1: grooveDepthMm,
+        }),
+      );
+    }
+  } else if (options.pattern === 'vented-slots') {
+    const colCount = options.standard === '19inch' ? 3 : 2;
+    const bridgeMm = 6.0;
+    const slotW = roundCentis((patW - (colCount - 1) * bridgeMm) / colCount);
+    const slotH = 2.4;
+    const pitchY = 5.6;
+    const marginY = 5.2;
+    for (let y = marginY; y + slotH <= panelHeightMm - marginY; y += pitchY) {
+      const sy0 = roundCentis(y);
+      const sy1 = roundCentis(y + slotH);
+      for (let col = 0; col < colCount; col++) {
+        const sx0 = roundCentis(patX0 + col * (slotW + bridgeMm));
+        const sx1 = roundCentis(sx0 + slotW);
+        if (
+          textLayout &&
+          clientBoxesOverlap2D(
+            sx0,
+            sy0,
+            sx1,
+            sy1,
+            textLayout.plateX0,
+            textLayout.plateY0,
+            textLayout.plateX1,
+            textLayout.plateY1,
+          )
+        ) {
+          continue;
+        }
+        featureCutoutBoxes.push(
+          normalizeClientBox({
+            x0: sx0,
+            y0: sy0,
+            z0: -1,
+            x1: sx1,
+            y1: sy1,
+            z1: faceplateThicknessMm + 1,
+          }),
+        );
+      }
+    }
+  }
+
+  if (textLayout) {
+    featureCutoutBoxes.push(...textLayout.dotBoxes);
+  }
+
+  const allBoxes = [
+    faceplateBox,
+    bottomStiffenerBox,
+    topStiffenerBox,
+    ...gussetBoxes,
+    ...earHoleBoxes,
+    ...featureCutoutBoxes,
+  ];
+
+  const xs = collectUniqueClientCoords(
+    allBoxes
+      .flatMap((b) => [b.x0, b.x1])
+      .filter((x) => x >= 0 && x <= panelWidthMm),
+  );
+  const ys = collectUniqueClientCoords(
+    allBoxes
+      .flatMap((b) => [b.y0, b.y1])
+      .filter((y) => y >= 0 && y <= panelHeightMm),
+  );
+  const zs = collectUniqueClientCoords(
+    allBoxes
+      .flatMap((b) => [b.z0, b.z1])
+      .filter((z) => z >= 0 && z <= totalDepthMm),
+  );
+
+  const nx = xs.length - 1;
+  const ny = ys.length - 1;
+  const nz = zs.length - 1;
+
+  const isCellSolid = (ix: number, iy: number, iz: number): boolean => {
+    if (ix < 0 || ix >= nx || iy < 0 || iy >= ny || iz < 0 || iz >= nz) {
+      return false;
+    }
+    const mx = 0.5 * (xs[ix]! + xs[ix + 1]!);
+    const my = 0.5 * (ys[iy]! + ys[iy + 1]!);
+    const mz = 0.5 * (zs[iz]! + zs[iz + 1]!);
+
+    const inFaceplate =
+      isPointInsideClientBox(mx, my, mz, faceplateBox) &&
+      !earHoleBoxes.some((b) => isPointInsideClientBox(mx, my, mz, b)) &&
+      !featureCutoutBoxes.some((b) => isPointInsideClientBox(mx, my, mz, b));
+
+    const inBottomStiffener = isPointInsideClientBox(
+      mx,
+      my,
+      mz,
+      bottomStiffenerBox,
+    );
+    const inTopStiffener = isPointInsideClientBox(mx, my, mz, topStiffenerBox);
+    const inGusset = gussetBoxes.some((b) =>
+      isPointInsideClientBox(mx, my, mz, b),
+    );
+
+    return inFaceplate || inBottomStiffener || inTopStiffener || inGusset;
+  };
+
+  const solidGrid: boolean[][][] = [];
+  for (let ix = 0; ix < nx; ix++) {
+    const ySlice: boolean[][] = [];
+    for (let iy = 0; iy < ny; iy++) {
+      const zRow: boolean[] = [];
+      for (let iz = 0; iz < nz; iz++) {
+        zRow.push(isCellSolid(ix, iy, iz));
+      }
+      ySlice.push(zRow);
+    }
+    solidGrid.push(ySlice);
+  }
+
+  const getSolid = (ix: number, iy: number, iz: number): boolean =>
+    solidGrid[ix]?.[iy]?.[iz] ?? false;
+
+  const solidName = `custom_cover_${options.standard}_${String(options.u_height).replace('.', 'p')}u_${options.pattern}`;
+  const lines: string[] = [`solid ${solidName}`];
+
+  const emitTri = (
+    normX: number,
+    normY: number,
+    normZ: number,
+    v1: readonly [number, number, number],
+    v2: readonly [number, number, number],
+    v3: readonly [number, number, number],
+  ) => {
+    lines.push(`  facet normal ${normX} ${normY} ${normZ}`);
+    lines.push(`    outer loop`);
+    lines.push(`      vertex ${v1[0]} ${v1[1]} ${v1[2]}`);
+    lines.push(`      vertex ${v2[0]} ${v2[1]} ${v2[2]}`);
+    lines.push(`      vertex ${v3[0]} ${v3[1]} ${v3[2]}`);
+    lines.push(`    endloop`);
+    lines.push(`  endfacet`);
+  };
+
+  for (let ix = 0; ix < nx; ix++) {
+    const x0 = xs[ix]!;
+    const x1 = xs[ix + 1]!;
+    for (let iy = 0; iy < ny; iy++) {
+      const y0 = ys[iy]!;
+      const y1 = ys[iy + 1]!;
+      for (let iz = 0; iz < nz; iz++) {
+        if (!getSolid(ix, iy, iz)) continue;
+        const z0 = zs[iz]!;
+        const z1 = zs[iz + 1]!;
+
+        if (!getSolid(ix, iy, iz - 1)) {
+          emitTri(0, 0, -1, [x0, y0, z0], [x0, y1, z0], [x1, y1, z0]);
+          emitTri(0, 0, -1, [x0, y0, z0], [x1, y1, z0], [x1, y0, z0]);
+        }
+        if (!getSolid(ix, iy, iz + 1)) {
+          emitTri(0, 0, 1, [x0, y0, z1], [x1, y0, z1], [x1, y1, z1]);
+          emitTri(0, 0, 1, [x0, y0, z1], [x1, y1, z1], [x0, y1, z1]);
+        }
+        if (!getSolid(ix, iy - 1, iz)) {
+          emitTri(0, -1, 0, [x0, y0, z0], [x1, y0, z0], [x1, y0, z1]);
+          emitTri(0, -1, 0, [x0, y0, z0], [x1, y0, z1], [x0, y0, z1]);
+        }
+        if (!getSolid(ix, iy + 1, iz)) {
+          emitTri(0, 1, 0, [x0, y1, z0], [x0, y1, z1], [x1, y1, z1]);
+          emitTri(0, 1, 0, [x0, y1, z0], [x1, y1, z1], [x1, y1, z0]);
+        }
+        if (!getSolid(ix - 1, iy, iz)) {
+          emitTri(-1, 0, 0, [x0, y0, z0], [x0, y0, z1], [x0, y1, z1]);
+          emitTri(-1, 0, 0, [x0, y0, z0], [x0, y1, z1], [x0, y1, z0]);
+        }
+        if (!getSolid(ix + 1, iy, iz)) {
+          emitTri(1, 0, 0, [x1, y0, z0], [x1, y1, z0], [x1, y1, z1]);
+          emitTri(1, 0, 0, [x1, y0, z0], [x1, y1, z1], [x1, y0, z1]);
+        }
+      }
+    }
+  }
+
+  lines.push(`endsolid ${solidName}`);
+  return lines.join('\n');
+}
+
+/**
+ * Renders a live 2D CAD technical front-elevation SVG preview of the configured custom cover panel.
+ */
+export function renderClientCustomCoverPanelPreviewSvg(
+  options: CustomCoverPanelOptions,
+): string {
+  const spec = EIA_310_SPECS[options.standard];
+  const panelWidthMm = roundCentis(spec.W_panel);
+  const apertureWidthMm = roundCentis(spec.W_aperture);
+  const holePitchXMm = roundCentis(spec.W_holes);
+  const panelHeightMm = roundCentis(options.u_height * MM_PER_U - 0.75);
+  const earWidthMm = roundCentis((panelWidthMm - apertureWidthMm) / 2);
+  const leftHoleX = roundCentis((panelWidthMm - holePitchXMm) / 2);
+  const rightHoleX = roundCentis(panelWidthMm - leftHoleX);
+  const patX0 = roundCentis(earWidthMm + 10.0);
+  const patX1 = roundCentis(panelWidthMm - earWidthMm - 10.0);
+  const patW = roundCentis(patX1 - patX0);
+  const label = sanitizeClientCoverPanelLabel(options.label_text);
+
+  const pad = 12;
+  const vbW = roundCentis(panelWidthMm + pad * 2);
+  const vbH = roundCentis(panelHeightMm + pad * 2);
+  const ox = pad;
+  const oy = pad;
+
+  const parts: string[] = [];
+  parts.push(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vbW} ${vbH}" width="100%" height="100%" style="max-height:132px;display:block">`,
+  );
+  parts.push(
+    `<rect x="0" y="0" width="${vbW}" height="${vbH}" rx="4" fill="#0E0E11" />`,
+  );
+  // Main faceplate body
+  parts.push(
+    `<rect x="${ox}" y="${oy}" width="${panelWidthMm}" height="${panelHeightMm}" rx="1.8" fill="#18181D" stroke="#52525B" stroke-width="0.9" />`,
+  );
+  // Aperture inner bezel boundary
+  parts.push(
+    `<rect x="${roundCentis(ox + earWidthMm + 2)}" y="${roundCentis(oy + 2.5)}" width="${roundCentis(apertureWidthMm - 4)}" height="${roundCentis(panelHeightMm - 5)}" rx="1.2" fill="#121216" stroke="#27272A" stroke-width="0.7" />`,
+  );
+
+  // EIA-310 mounting holes
+  const holeYs: number[] = [];
+  if (options.u_height < 1) {
+    holeYs.push(roundCentis(panelHeightMm / 2));
+  } else {
+    const fullUs = Math.round(options.u_height);
+    for (let u = 0; u < fullUs; u++) {
+      for (const off of [6.35, 22.225, 38.1]) {
+        const yMm = roundCentis(u * MM_PER_U + off);
+        if (yMm + 3.25 < panelHeightMm - 1.5 && yMm - 3.25 > 1.5) {
+          holeYs.push(panelHeightMm - yMm);
+        }
+      }
+    }
+  }
+  for (const hy of holeYs) {
+    for (const hx of [leftHoleX, rightHoleX]) {
+      parts.push(
+        `<rect x="${roundCentis(ox + hx - 4.5)}" y="${roundCentis(oy + hy - 3.0)}" width="9.0" height="6.0" rx="3.0" fill="#09090B" stroke="#71717A" stroke-width="0.7" />`,
+      );
+    }
+  }
+
+  // Nameplate zone if label exists
+  const hasLabel = label.length > 0;
+  const totalCols = hasLabel ? label.length * 6 - 1 : 0;
+  const dotPitch = hasLabel
+    ? roundCentis(Math.max(1.0, Math.min(1.55, Math.max(24, patW - 10) / Math.max(1, totalCols))))
+    : 0;
+  const dotSize = hasLabel ? roundCentis(Math.max(0.68, dotPitch * 0.7)) : 0;
+  const textSpanW = hasLabel ? (totalCols - 1) * dotPitch + dotSize : 0;
+  const textSpanH = hasLabel ? 6 * dotPitch + dotSize : 0;
+  const plateX0 = roundCentis(panelWidthMm / 2 - textSpanW / 2 - 2.6);
+  const plateX1 = roundCentis(panelWidthMm / 2 + textSpanW / 2 + 2.6);
+  const plateY0 = roundCentis(panelHeightMm / 2 - textSpanH / 2 - 2.2);
+  const plateY1 = roundCentis(panelHeightMm / 2 + textSpanH / 2 + 2.2);
+
+  if (options.pattern === 'lines') {
+    const lineCount = Math.max(2, Math.round(options.u_height * 3));
+    const marginY = options.u_height < 1 ? 5.2 : 8.0;
+    const stepY = lineCount > 1 ? (panelHeightMm - 2 * marginY) / (lineCount - 1) : 0;
+    for (let i = 0; i < lineCount; i++) {
+      const gy0 = roundCentis(marginY + i * stepY - 1.1);
+      const gy1 = roundCentis(gy0 + 2.2);
+      if (
+        hasLabel &&
+        clientBoxesOverlap2D(patX0, gy0, patX1, gy1, plateX0, plateY0, plateX1, plateY1)
+      ) {
+        if (plateX0 - patX0 >= 6.0) {
+          parts.push(
+            `<rect x="${roundCentis(ox + patX0)}" y="${roundCentis(oy + gy0)}" width="${roundCentis(plateX0 - patX0)}" height="2.2" rx="0.8" fill="#3F3F46" />`,
+          );
+        }
+        if (patX1 - plateX1 >= 6.0) {
+          parts.push(
+            `<rect x="${roundCentis(ox + plateX1)}" y="${roundCentis(oy + gy0)}" width="${roundCentis(patX1 - plateX1)}" height="2.2" rx="0.8" fill="#3F3F46" />`,
+          );
+        }
+      } else {
+        parts.push(
+          `<rect x="${roundCentis(ox + patX0)}" y="${roundCentis(oy + gy0)}" width="${patW}" height="2.2" rx="0.8" fill="#3F3F46" />`,
+        );
+      }
+    }
+  } else if (options.pattern === 'hex') {
+    const rows = Math.max(1, Math.round(options.u_height * 2));
+    const cols = Math.max(5, Math.min(10, Math.floor(patW / 24)));
+    const pitchX = patW / cols;
+    const marginY = options.u_height < 1 ? 4.5 : 6.0;
+    const pitchY = (panelHeightMm - 2 * marginY) / rows;
+    const rad = roundCentis(Math.min(pitchX, pitchY) * 0.3);
+    for (let r = 0; r < rows; r++) {
+      const cy = roundCentis(marginY + (r + 0.5) * pitchY);
+      const shiftX = r % 2 === 1 ? pitchX * 0.16 : -pitchX * 0.16;
+      for (let c = 0; c < cols; c++) {
+        const cx = roundCentis(patX0 + (c + 0.5) * pitchX + shiftX);
+        if (
+          hasLabel &&
+          clientBoxesOverlap2D(
+            cx - rad,
+            cy - rad,
+            cx + rad,
+            cy + rad,
+            plateX0,
+            plateY0,
+            plateX1,
+            plateY1,
+          )
+        ) {
+          continue;
+        }
+        parts.push(
+          `<circle cx="${roundCentis(ox + cx)}" cy="${roundCentis(oy + cy)}" r="${rad}" fill="#09090B" stroke="#52525B" stroke-width="0.8" />`,
+        );
+      }
+    }
+  } else if (options.pattern === 'ribs') {
+    const ribCount = Math.max(8, Math.min(14, Math.floor(patW / 16)));
+    const pitchX = patW / ribCount;
+    const grooveW = roundCentis(Math.max(2.8, pitchX * 0.44));
+    const marginY = options.u_height < 1 ? 4.5 : 6.0;
+    const grooveH = roundCentis(panelHeightMm - 2 * marginY);
+    for (let i = 0; i < ribCount; i++) {
+      const gx0 = roundCentis(patX0 + (i + 0.5) * pitchX - grooveW / 2);
+      if (
+        hasLabel &&
+        clientBoxesOverlap2D(
+          gx0,
+          marginY,
+          gx0 + grooveW,
+          marginY + grooveH,
+          plateX0,
+          plateY0,
+          plateX1,
+          plateY1,
+        )
+      ) {
+        continue;
+      }
+      parts.push(
+        `<rect x="${roundCentis(ox + gx0)}" y="${roundCentis(oy + marginY)}" width="${grooveW}" height="${grooveH}" rx="0.8" fill="#09090B" stroke="#3F3F46" stroke-width="0.7" />`,
+      );
+    }
+  } else if (options.pattern === 'vented-slots') {
+    const colCount = options.standard === '19inch' ? 3 : 2;
+    const bridgeMm = 6.0;
+    const slotW = roundCentis((patW - (colCount - 1) * bridgeMm) / colCount);
+    const slotH = 2.4;
+    const pitchY = 5.6;
+    const marginY = 5.2;
+    for (let y = marginY; y + slotH <= panelHeightMm - marginY; y += pitchY) {
+      for (let col = 0; col < colCount; col++) {
+        const sx0 = roundCentis(patX0 + col * (slotW + bridgeMm));
+        if (
+          hasLabel &&
+          clientBoxesOverlap2D(
+            sx0,
+            y,
+            sx0 + slotW,
+            y + slotH,
+            plateX0,
+            plateY0,
+            plateX1,
+            plateY1,
+          )
+        ) {
+          continue;
+        }
+        parts.push(
+          `<rect x="${roundCentis(ox + sx0)}" y="${roundCentis(oy + y)}" width="${slotW}" height="${slotH}" rx="1.0" fill="#09090B" stroke="#3B82F6" stroke-opacity="0.45" stroke-width="0.6" />`,
+        );
+      }
+    }
+  }
+
+  if (hasLabel) {
+    parts.push(
+      `<rect x="${roundCentis(ox + plateX0)}" y="${roundCentis(oy + plateY0)}" width="${roundCentis(plateX1 - plateX0)}" height="${roundCentis(plateY1 - plateY0)}" rx="1.4" fill="#141418" stroke="#3F3F46" stroke-width="0.6" />`,
+    );
+    const startX = panelWidthMm / 2 - ((totalCols - 1) * dotPitch) / 2;
+    const startY = panelHeightMm / 2 - (6 * dotPitch) / 2;
+    for (let ci = 0; ci < label.length; ci++) {
+      const ch = label[ci] ?? ' ';
+      const glyph = CLIENT_FONT_5X7_GLYPHS[ch] ?? CLIENT_FONT_5X7_GLYPHS[' ']!;
+      for (let r = 0; r < 7; r++) {
+        const rowStr = glyph[r] ?? '.....';
+        for (let c = 0; c < 5; c++) {
+          if (rowStr[c] !== '#') continue;
+          const dx = roundCentis(ox + startX + (ci * 6 + c) * dotPitch - dotSize / 2);
+          const dy = roundCentis(oy + startY + r * dotPitch - dotSize / 2);
+          parts.push(
+            `<rect x="${dx}" y="${dy}" width="${dotSize}" height="${dotSize}" rx="0.2" fill="#E4E4E7" />`,
+          );
+        }
+      }
+    }
+  }
+
+  parts.push(`</svg>`);
+  return parts.join('');
+}

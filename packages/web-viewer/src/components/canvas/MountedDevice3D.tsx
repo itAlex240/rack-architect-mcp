@@ -7,7 +7,10 @@ import {
   type ExternalEndpoint,
   type RackStandardSlug,
 } from '@rack-mcp/core-domain';
-import type { HoveredPortInfo } from '../../state/useRackState.js';
+import type {
+  HoveredPortInfo,
+  PendingPortSelection,
+} from '../../state/useRackState.js';
 import { computeDeviceExplodeOffsetZMm } from './CableTube3D.js';
 import { PortMesh3D } from './PortMesh3D.js';
 
@@ -21,8 +24,12 @@ export interface MountedDevice3DProps {
   readonly explodeZMm: number;
   readonly showClearanceBoxes: boolean;
   readonly isSelected: boolean;
+  readonly pendingPort?: PendingPortSelection | null | undefined;
   readonly onSelectDevice: (instanceId: string) => void;
   readonly onHoverPort: (info: HoveredPortInfo | null) => void;
+  readonly onClickPort?:
+    | ((port: PendingPortSelection, existingCableId?: string) => void)
+    | undefined;
 }
 
 function getMaterialParams(preset: string): {
@@ -57,8 +64,10 @@ export function MountedDevice3D({
   explodeZMm,
   showClearanceBoxes,
   isSelected,
+  pendingPort = null,
   onSelectDevice,
   onHoverPort,
+  onClickPort,
 }: MountedDevice3DProps) {
   const spec = EIA_310_SPECS[rackStandard];
   const offsetZ = computeDeviceExplodeOffsetZMm(device, explodeZMm);
@@ -900,6 +909,17 @@ export function MountedDevice3D({
         const rearSurfaceZ = box.max.z + 0.8;
         const primarySurfaceZ =
           port.world_face === 'front' ? frontSurfaceZ : rearSurfaceZ;
+        const oppositeFace = port.world_face === 'front' ? 'rear' : 'front';
+        const isPrimaryPending =
+          pendingPort !== null &&
+          pendingPort.instanceId === port.instance_id &&
+          pendingPort.portId === port.port_id &&
+          pendingPort.worldFace === port.world_face;
+        const isOppositePending =
+          pendingPort !== null &&
+          pendingPort.instanceId === port.instance_id &&
+          pendingPort.portId === port.port_id &&
+          pendingPort.worldFace === oppositeFace;
 
         return (
           <group
@@ -912,14 +932,16 @@ export function MountedDevice3D({
               faceSurfaceZMm={primarySurfaceZ}
               explodeOffsetZMm={offsetZ}
               isHighlighted={isSelected}
+              isPendingSource={isPrimaryPending}
               onHoverPort={onHoverPort}
+              onClickPort={onClickPort}
             />
             {/* For passthrough couplers (Patch Panels / Keystones), also render the opposite-face coupler jack */}
             {port.is_passthrough_coupler && (
               <PortMesh3D
                 port={{
                   ...port,
-                  world_face: port.world_face === 'front' ? 'rear' : 'front',
+                  world_face: oppositeFace,
                   world_normal: {
                     x: 0,
                     y: 0,
@@ -933,7 +955,9 @@ export function MountedDevice3D({
                 }
                 explodeOffsetZMm={offsetZ}
                 isHighlighted={isSelected}
+                isPendingSource={isOppositePending}
                 onHoverPort={onHoverPort}
+                onClickPort={onClickPort}
               />
             )}
           </group>

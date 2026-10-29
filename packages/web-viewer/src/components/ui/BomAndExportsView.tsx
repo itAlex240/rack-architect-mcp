@@ -1,12 +1,23 @@
+import { useEffect, useMemo, useState } from 'react';
 import {
+  EIA_310_SPECS,
+  MM_PER_U,
+  roundCentis,
   roundTenths,
   type RackStandard,
   type SerializedRackScene,
 } from '@rack-mcp/core-domain';
 import { defaultCatalogRegistry } from '@rack-mcp/hardware-catalog';
 import {
+  generateClientCustomCoverPanelOpenScad,
+  generateClientCustomCoverPanelStl,
   generateClientSideCarrierOpenScad,
   generateClientSideCarrierStl,
+  renderClientCustomCoverPanelPreviewSvg,
+  sanitizeClientCoverPanelLabel,
+  type CoverPanelPatternType,
+  type CoverPanelUHeight,
+  type CustomCoverPanelOptions,
 } from '../../state/standalone-homelab.js';
 
 export interface BomAndExportsViewProps {
@@ -60,6 +71,51 @@ export function BomAndExportsView({
     );
 
   const routesById = new Map(scene.cable_routes.map((r) => [r.cable_id, r]));
+
+  const [customStandard, setCustomStandard] = useState<RackStandard>(
+    scene.project.rack.standard,
+  );
+  const [customUHeight, setCustomUHeight] = useState<CoverPanelUHeight>(1);
+  const [customPattern, setCustomPattern] =
+    useState<CoverPanelPatternType>('hex');
+  const [customLabel, setCustomLabel] = useState<string>('');
+
+  useEffect(() => {
+    setCustomStandard(scene.project.rack.standard);
+  }, [scene.project.rack.standard]);
+
+  const customCoverOpts = useMemo<CustomCoverPanelOptions>(
+    () => ({
+      standard: customStandard,
+      u_height: customUHeight,
+      pattern: customPattern,
+      label_text: customLabel,
+    }),
+    [customLabel, customPattern, customStandard, customUHeight],
+  );
+
+  const customPreviewSvg = useMemo(
+    () => renderClientCustomCoverPanelPreviewSvg(customCoverOpts),
+    [customCoverOpts],
+  );
+
+  const customSpec = EIA_310_SPECS[customStandard];
+  const customWidthMm = roundCentis(customSpec.W_panel);
+  const customHeightMm = roundCentis(customUHeight * MM_PER_U - 0.75);
+  const customDepthMm = 14.0;
+  const customEstimatedGrams = roundTenths(
+    Math.max(
+      12,
+      (customWidthMm * customHeightMm * 4.2 * 0.00115) *
+        (customPattern === 'vented-slots' ? 0.78 : 0.94),
+    ),
+  );
+  const sanitizedCustomLabel = sanitizeClientCoverPanelLabel(customLabel);
+  const customFileStem = `custom-${customStandard}-cover-${String(customUHeight).replace('.', 'p')}u-${customPattern}${
+    sanitizedCustomLabel
+      ? `-${sanitizedCustomLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`
+      : ''
+  }`;
 
   return (
     <div
@@ -450,7 +506,7 @@ export function BomAndExportsView({
           </tbody>
         </table>
 
-        {/* 2.1 Printable Slot Cover Panels Library (1U & 2U • Lines / Hex / Tech-Ribs) */}
+        {/* 2.1 Interactive Custom 3D-Print Slot Cover-Panel Configurator */}
         <div
           style={{
             marginTop: '18px',
@@ -468,7 +524,283 @@ export function BomAndExportsView({
               color: '#A1A1AA',
             }}
           >
-            2.1 3D-Printable Slot Cover Panels Library (
+            2.1 Custom 3D-Print Slot Cover-Panel Configurator (0.5U – 3U •
+            Engraved Label • Watertight 2-Manifold .STL)
+          </h4>
+
+          <form
+            data-testid="cover-panel-customizer-form"
+            onSubmit={(e) => e.preventDefault()}
+            style={{
+              padding: '14px 16px',
+              borderRadius: '8px',
+              background: '#16161B',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: '16px',
+              alignItems: 'center',
+            }}
+          >
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '10px',
+              }}
+            >
+              <div>
+                <label
+                  htmlFor="custom-cover-standard"
+                  style={{
+                    display: 'block',
+                    fontSize: '10.5px',
+                    color: '#A1A1AA',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Rack Standard
+                </label>
+                <select
+                  id="custom-cover-standard"
+                  data-testid="custom-cover-standard"
+                  value={customStandard}
+                  onChange={(e) =>
+                    setCustomStandard(e.target.value as RackStandard)
+                  }
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#121216',
+                    color: '#F4F4F5',
+                    fontSize: '11.5px',
+                  }}
+                >
+                  <option value="10inch">10-Inch Mini-Rack (254.0 mm)</option>
+                  <option value="19inch">19-Inch Enterprise (482.6 mm)</option>
+                  <option value="6inch">6-Inch Micro-Lab (152.4 mm)</option>
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="custom-cover-u-height"
+                  style={{
+                    display: 'block',
+                    fontSize: '10.5px',
+                    color: '#A1A1AA',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Slot Height (U)
+                </label>
+                <select
+                  id="custom-cover-u-height"
+                  data-testid="custom-cover-u-height"
+                  value={String(customUHeight)}
+                  onChange={(e) =>
+                    setCustomUHeight(
+                      Number(e.target.value) as CoverPanelUHeight,
+                    )
+                  }
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#121216',
+                    color: '#F4F4F5',
+                    fontSize: '11.5px',
+                  }}
+                >
+                  <option value="0.5">0.5U Half-Slot (21.48 mm)</option>
+                  <option value="1">1U Single Slot (43.70 mm)</option>
+                  <option value="2">2U Double Slot (88.15 mm)</option>
+                  <option value="3">3U Triple Slot (132.60 mm)</option>
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="custom-cover-pattern"
+                  style={{
+                    display: 'block',
+                    fontSize: '10.5px',
+                    color: '#A1A1AA',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Surface Pattern
+                </label>
+                <select
+                  id="custom-cover-pattern"
+                  data-testid="custom-cover-pattern"
+                  value={customPattern}
+                  onChange={(e) =>
+                    setCustomPattern(e.target.value as CoverPanelPatternType)
+                  }
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#121216',
+                    color: '#F4F4F5',
+                    fontSize: '11.5px',
+                  }}
+                >
+                  <option value="lines">Horizontal Lines (Blind Relief)</option>
+                  <option value="hex">Hex-Grid Matrix (Blind Relief)</option>
+                  <option value="ribs">Vertical Tech-Ribs (Blind Relief)</option>
+                  <option value="vented-slots">
+                    Vented Airflow Slots (Through-Cut)
+                  </option>
+                  <option value="solid">Solid Minimalist Bezel</option>
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="custom-cover-label"
+                  style={{
+                    display: 'block',
+                    fontSize: '10.5px',
+                    color: '#A1A1AA',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Engraved Front Text (Optional)
+                </label>
+                <input
+                  id="custom-cover-label"
+                  data-testid="custom-cover-label"
+                  type="text"
+                  maxLength={14}
+                  value={customLabel}
+                  placeholder="e.g. HOMELAB-01"
+                  onChange={(e) => setCustomLabel(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#121216',
+                    color: '#F4F4F5',
+                    fontSize: '11.5px',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div
+                style={{
+                  gridColumn: '1 / -1',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '8px',
+                  paddingTop: '4px',
+                }}
+              >
+                <span
+                  className="mono"
+                  style={{ fontSize: '11px', color: '#A1A1AA' }}
+                >
+                  {customWidthMm} × {customHeightMm} × {customDepthMm} mm • ~
+                  {customEstimatedGrams} g PETG • Face-Down No-Support Print
+                </span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    data-testid="download-custom-cover-scad"
+                    onClick={() =>
+                      triggerBlobDownload(
+                        generateClientCustomCoverPanelOpenScad(customCoverOpts),
+                        `${customFileStem}.scad`,
+                        'text/plain;charset=utf-8',
+                      )
+                    }
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(59, 130, 246, 0.35)',
+                      background: 'rgba(59, 130, 246, 0.12)',
+                      color: '#93C5FD',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Download Custom .SCAD
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="download-custom-cover-stl"
+                    onClick={() =>
+                      triggerBlobDownload(
+                        generateClientCustomCoverPanelStl(customCoverOpts),
+                        `${customFileStem}.stl`,
+                        'model/stl;charset=utf-8',
+                      )
+                    }
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(16, 185, 129, 0.35)',
+                      background: 'rgba(16, 185, 129, 0.12)',
+                      color: '#6EE7B7',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Download Custom .STL
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Live 2D CAD Front-Elevation Preview */}
+            <div
+              data-testid="custom-cover-svg-preview"
+              style={{
+                padding: '10px',
+                borderRadius: '8px',
+                background: '#0E0E11',
+                border: '1px solid rgba(255, 255, 255, 0.07)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '116px',
+              }}
+              dangerouslySetInnerHTML={{ __html: customPreviewSvg }}
+            />
+          </form>
+        </div>
+
+        {/* 2.2 Printable Slot Cover Panels Library (1U & 2U • Lines / Hex / Tech-Ribs) */}
+        <div
+          style={{
+            marginTop: '18px',
+            paddingTop: '14px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.07)',
+          }}
+        >
+          <h4
+            style={{
+              margin: '0 0 10px 0',
+              fontSize: '11.5px',
+              fontWeight: 600,
+              letterSpacing: '0.03em',
+              textTransform: 'uppercase',
+              color: '#A1A1AA',
+            }}
+          >
+            2.2 3D-Printable Slot Cover Panels Library (
             {printableCoverPanelBlueprints.length} Variants • 1U &amp; 2U •
             Lines / Hex / Tech-Ribs)
           </h4>

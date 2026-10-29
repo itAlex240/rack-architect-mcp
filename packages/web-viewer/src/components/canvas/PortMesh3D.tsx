@@ -5,7 +5,10 @@ import type {
   ComputedPortGeometry,
   ExternalEndpoint,
 } from '@rack-mcp/core-domain';
-import type { HoveredPortInfo } from '../../state/useRackState.js';
+import type {
+  HoveredPortInfo,
+  PendingPortSelection,
+} from '../../state/useRackState.js';
 
 export interface PortMesh3DProps {
   readonly port: ComputedPortGeometry;
@@ -14,7 +17,11 @@ export interface PortMesh3DProps {
   readonly faceSurfaceZMm?: number;
   readonly explodeOffsetZMm: number;
   readonly isHighlighted: boolean;
+  readonly isPendingSource?: boolean | undefined;
   readonly onHoverPort: (info: HoveredPortInfo | null) => void;
+  readonly onClickPort?:
+    | ((port: PendingPortSelection, existingCableId?: string) => void)
+    | undefined;
 }
 
 function getPortBoxSizeMm(connectorType: ComputedPortGeometry['connector_type']): {
@@ -57,7 +64,9 @@ export function PortMesh3D({
   faceSurfaceZMm,
   explodeOffsetZMm,
   isHighlighted,
+  isPendingSource = false,
   onHoverPort,
+  onClickPort,
 }: PortMesh3DProps) {
   const size = useMemo(
     () => getPortBoxSizeMm(port.connector_type),
@@ -141,9 +150,30 @@ export function PortMesh3D({
     onHoverPort(null);
   };
 
+  const handleClick = (e: ThreeEvent<MouseEvent>) => {
+    if (!onClickPort) return;
+    e.stopPropagation();
+    const rearOccupiedByExternal =
+      port.world_face === 'rear' && connectedExternalEndpoint !== undefined;
+    if (rearOccupiedByExternal && !connectedCable) {
+      return;
+    }
+    onClickPort(
+      {
+        instanceId: port.instance_id,
+        portId: port.port_id,
+        label: port.label,
+        connectorType: port.connector_type,
+        worldFace: port.world_face,
+      },
+      connectedCable?.cable_id,
+    );
+  };
+
   return (
     <group
       position={[cx, cy, cz]}
+      onClick={handleClick}
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}
     >
@@ -151,7 +181,13 @@ export function PortMesh3D({
       <mesh>
         <boxGeometry args={[size.w + 1.0, size.h + 1.0, size.d * 0.7]} />
         <meshStandardMaterial
-          color={isHighlighted ? '#38BDF8' : '#52525B'}
+          color={
+            isPendingSource
+              ? '#10B981'
+              : isHighlighted
+                ? '#38BDF8'
+                : '#52525B'
+          }
           metalness={0.78}
           roughness={0.28}
         />
@@ -161,17 +197,25 @@ export function PortMesh3D({
       <mesh position={[0, 0, normalZ * 0.35]}>
         <boxGeometry args={[size.w, size.h, size.d]} />
         <meshStandardMaterial
-          color={isHighlighted ? '#38BDF8' : size.color}
+          color={
+            isPendingSource
+              ? '#10B981'
+              : isHighlighted
+                ? '#38BDF8'
+                : size.color
+          }
           metalness={0.55}
           roughness={0.35}
           emissive={
-            isHighlighted
-              ? '#0284C7'
-              : isOccupied
-                ? '#0F172A'
-                : '#000000'
+            isPendingSource
+              ? '#059669'
+              : isHighlighted
+                ? '#0284C7'
+                : isOccupied
+                  ? '#0F172A'
+                  : '#000000'
           }
-          emissiveIntensity={isHighlighted ? 0.5 : 0.15}
+          emissiveIntensity={isPendingSource ? 0.85 : isHighlighted ? 0.5 : 0.15}
         />
       </mesh>
 
