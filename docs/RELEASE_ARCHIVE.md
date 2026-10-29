@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.0`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.1`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.0`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.1`)
 
-### 📊 `v0.7.x` Series — Privacy-First Remote MCP Observability
+### 📊 `v0.7.x` Series — Privacy-First Remote MCP Observability & Visual Showcase
 
+- **[`v0.7.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.1) (2026-10-29) — Animated 6-Scene 3D/2D Hero Showcase:**
+  - Added a crisp, GitHub-autoplay-ready (`< 8 MB`, `1040x590`) 6-scene animated Hero Demo GIF (`docs/assets/rack-architect-hero-demo.gif`) showcasing the live 3D Digital Twin, `X-Ray` + `140 mm` Z-Explode plug clearances, 5-stage `PLUG_CLEARANCE_COLLISION` diagnostics, autonomous MCP self-correction, synchronized 2D SVG CAD blueprints, `.STL`/`.SCAD` BOM hub, and instant `19"` / `10"` / `6"` EIA-310 rack presets.
 - **[`v0.7.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.0) (2026-10-29) — Privacy-First Remote MCP Usage, AI Client & Wire-Traffic Telemetry:**
   - Added GDPR-compliant Prometheus (`GET /metrics`) and JSON (`GET /api/telemetry`) observability to `@rack-mcp/mcp-server` (protected by constant-time Bearer token / loopback auth), tracking active vs. connected MCP users (`Today` / `7d` / `30d` via salted HMAC-SHA256 hashes without storing raw IPs), per-tool call latencies across all 12 MCP tools, AI client families (`Claude`, `Claude Code`, `Cursor`, `Antigravity`, `VS Code`, `Windsurf`), CAD/STL deliverable downloads, and HTTP/WebSocket bandwidth consumption.
 
@@ -87,10 +89,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.0`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.1`)
 
-### 📊 Serie `v0.7.x` — DSGVO-konforme Remote-MCP-Telemetrie
+### 📊 Serie `v0.7.x` — DSGVO-konforme Remote-MCP-Telemetrie & Hero-Showcase
 
+- **[`v0.7.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.1) (2026-10-29) — Animiertes 6-Szenen 3D/2D Hero-Demo-GIF:**
+  - Gestochen scharfes, für GitHub-Inline-Autoplay optimiertes (`< 8 MB`) Hero-Demo-GIF (`docs/assets/rack-architect-hero-demo.gif`) ergänzt — zeigt in 6 Live-Szenen den 3D Digital Twin, `X-Ray` & `140 mm` Z-Explode Stecker-Freiräume, die Live-Kollisionserkennung (`PLUG_CLEARANCE_COLLISION`), die autonome MCP-Selbstkorrektur, maßstabsgetreue 2D-CAD-Pläne (`.svg`), den `.STL`/`.SCAD`-3D-Druck-Hub sowie den 1-Klick-Wechsel zwischen `19"`-, `10"`- und `6"`-Racks.
 - **[`v0.7.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.0) (2026-10-29) — DSGVO-konformer MCP-Nutzungs-, KI-Client- & Traffic-Tracker:**
   - Geschützte Prometheus- (`GET /metrics`) und JSON-Telemetrie-Endpunkte (`GET /api/telemetry`, abgesichert per Bearer-Token / Loopback) in `@rack-mcp/mcp-server` ergänzt — erfasst aktive MCP-Tool-Nutzer vs. reine Verbindungen (`Heute` / `7T` / `30T` per gesalzenem HMAC-SHA256 ohne Speicherung echter IPs), Tool-Aufrufe über alle 12 MCP-Tools, verwendete KI-Clients (`Claude`, `Claude Code`, `Cursor`, `Antigravity`, `VS Code`, `Windsurf`), CAD-/STL-Downloads sowie den ausgehenden HTTP-/WebSocket-Traffic.
 

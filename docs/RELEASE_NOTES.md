@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.7.3` — 3D/2D Rack Planner, Hosted Remote MCP (`mcp.rackarchitect.dev`), CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v0.7.4` — 3D/2D Rack Planner, Hosted Remote MCP (`mcp.rackarchitect.dev`), CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v0.7.3`!**  
+**Welcome to RackArchitect MCP `v0.7.4`!**  
 Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint (`https://mcp.rackarchitect.dev/mcp`)** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
 <p align="center">
@@ -11,16 +11,17 @@ Whether you are a **complete beginner with zero coding experience** who just wan
   </a>
 </p>
 
-> **✨ What's New in the Last 3 Releases (`v0.7.1` – `v0.7.3`):**
+> **✨ What's New in the Last 3 Releases (`v0.7.2` – `v0.7.4`):**
+> - **Synchronized Agent Skill (`SKILL.md`), 5 EIA-310 Archetypes (`10"`/`19"`/`6"`) & Exact Schema/Prompt Alignment (`v0.7.4`):** Upgraded `skills/rack-architect/SKILL.md` (and `.agents/skills/rack-architect/SKILL.md`), `RACK_MCP_SERVER_INSTRUCTIONS`, and all 5 guided MCP prompts with 100% exact schema parity across all `21` `DiagnosticCodeSchema` codes (`Stages 1–5`), all `20` `CableTypeSchema` assemblies, all `67` catalog blueprints, Hosted Remote MCP `data.live_viewer_url` / zero-disk HTTPS `download_url` workflows, rear-PDU cavity routing + front 3D-print designer cover-panel pairing, `19"` dual vs. triple Mini-PC carrier slot-width guidance, and a new **Archetype 5 (`6-Inch Portable Micro-Homelab`)**.
 > - **Official `https://mcp.rackarchitect.dev` Dual-Stack HTTPS Domain & Multi-Origin CSWSH Compatibility (`v0.7.3`):** Launched the official Dual-Stack IPv4 + IPv6 (`A` + `AAAA`) production domain **`https://mcp.rackarchitect.dev`** with Let's Encrypt ECDSA TLS, HTTP/2, HSTS, Streamable HTTP (`/mcp`), SSE (`/sse`), and real-time `wss://` Live 3D Session Viewer URLs (`https://mcp.rackarchitect.dev/?session=<uuid>`), updated `server.json`, `glama.json`, `SKILL.md`, and docs across the repository, and added `RACK_MCP_ALLOWED_ORIGINS` multi-origin CSWSH/CORS verification so existing legacy `sslip.io` links continue working seamlessly in parallel.
 > - **Collision-Free Rear-Cavity 3D Cable Routing & Overhauled 2D CAD / Multi-Track Wiring Plan (`v0.7.2`):** Fixed physical port-zone classification (`resolveEffectivePortZone`) for inward-facing ports on rear-mounted PDUs so UPS-to-PDU and PDU-to-Mini-PC power cords route cleanly inside the internal rear rack cavity (`0` chassis penetrations, `0` front-panel stabs), added detour-aware open-U pass-through portal scoring (`scorePortalCandidate`), projected true 3D `(z, y)` waypoints in the 2D Side-Profile Cutaway, lifted ultra-dark `#18181B` power cords to high-contrast metallic graphite, and upgraded the browser Wiring Plan to a full 2-Section **3-Tier Power/PoE DAG + Grouped Device Cards & Multi-Track Orthogonal Router**.
-> - **Animated 6-Scene 3D/2D Hero Showcase (`v0.7.1`):** Added a crisp, GitHub-autoplay-ready (`< 8 MB`) 6-scene animated Hero Demo GIF (`docs/assets/rack-architect-hero-demo.gif`) showcasing the live 3D Digital Twin, `X-Ray` + `140 mm` Z-Explode plug clearances, 5-stage `PLUG_CLEARANCE_COLLISION` diagnostics, autonomous MCP self-correction, synchronized 2D SVG CAD blueprints, `.STL`/`.SCAD` BOM hub, and instant `19"` / `10"` / `6"` EIA-310 rack presets.
 
 <details>
-<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.7.0) in the Release Archive</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.7.1) in the Release Archive</b></summary>
 
 <br />
 
+- **`v0.7.1`** — Crisp 6-scene animated 3D/2D Hero showcase GIF (`docs/assets/rack-architect-hero-demo.gif`) embedded in `README.md` and Release Notes.
 - **`v0.7.0`** — Privacy-first GDPR-compliant Remote MCP usage, active AI client & wire-traffic telemetry (`GET /metrics` Prometheus & `GET /api/telemetry` JSON with salted HMAC-SHA256 `Today`/`7d`/`30d` visitor deduplication).
 - **`v0.6.7`** — GitHub Actions `.mcpb` release bundling fix, dual `mcpb` + Hosted Remote MCP `server.json` manifest & CodeQL `javascript-typescript` security/quality hardening.
 - **`v0.6.6`** — Instant Zero-Install Remote MCP quickstart & endpoint table across GitHub `README.md`, `glama.json`, `server.json`, package READMEs, `SKILL.md`, and Release Notes.
@@ -122,19 +123,20 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v0.7.3` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.7.4` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL (`https://mcp.rackarchitect.dev/mcp`)** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.7.1` – `v0.7.3`):**
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.7.2` – `v0.7.4`):**
+> - **Aktualisierter AI-Agent-Skill (`SKILL.md`), 5 Rack-Archetypen (`10"`/`19"`/`6"`) & 100 % Schema-/Prompt-Abgleich (`v0.7.4`):** `skills/rack-architect/SKILL.md` (und `.agents/skills/rack-architect/SKILL.md`), `RACK_MCP_SERVER_INSTRUCTIONS` und alle 5 geführten MCP-Prompts vollständig auf den aktuellen Engine-Stand gebracht — exakte Übereinstimmung mit allen `21` `DiagnosticCodeSchema`-Codes (`Stufen 1–5`), allen `20` `CableTypeSchema`-Typen und allen `67` Katalog-Blueprints, Best-Practices für Remote-MCP (`data.live_viewer_url`, direkte HTTPS-`download_url`-Exporte & `#rack=v1.`-Share-Links), rückseitige PDU-Innenraumführung + vordere 3D-Druck-Cover-Panels, `19"` Dual- vs. Triple-Mini-PC-Trägerbreiten sowie neuer **Archetyp 5 (`6-Zoll Micro-Homelab`)**.
 > - **Offizielle Dual-Stack-HTTPS-Domain `https://mcp.rackarchitect.dev` & nahtloser Parallelbetrieb (`v0.7.3`):** Der gehostete Remote-MCP-Server und das Live-3D-Studio sind ab sofort über die offizielle Domain **`https://mcp.rackarchitect.dev`** (Dual-Stack IPv4 + IPv6, Let's Encrypt ECDSA-TLS, HTTP/2, HSTS, `Streamable HTTP` unter `/mcp`, `SSE` unter `/sse` und Live-3D-Session-Viewer unter `https://mcp.rackarchitect.dev/?session=<uuid>`) erreichbar; dank Multi-Origin-CSWSH-Unterstützung (`RACK_MCP_ALLOWED_ORIGINS`) funktionieren bestehende `sslip.io`-Links nahtlos parallel weiter.
 > - **Kollisionsfreie 3D-Innenraum-Kabelführung & komplett erneuerter 2D-Bau- und Kabelplan (`v0.7.2`):** Nach innen gerichtete Strombuchsen an rückseitig montierten Steckdosenleisten (`resolveEffectivePortZone`) werden jetzt physikalisch exakt im hinteren Rack-Innenraum verdrahtet (USV- & PDU-Stromkabel laufen direkt hinten im freien Zwischenraum statt durch vordere Cover-Panels zu stechen; `0` Gehäuse-Durchdringungen), Front-zu-Heck-Kabel wählen automatisch den nächsten freien `U`-Durchlass ohne Umwege, dunkle `#18181B`-Stromkabel werden kontraststark als Metallic-Graphit dargestellt, der 2D-Seitenschnitt projiziert die echten 3D-Kabelwege und der Live-`Wiring Plan` zeigt jetzt einen **3-stufigen USV/PDU/PoE-Strombaum + gruppierte Geräte-Karten mit Multi-Track-Bus-Router**.
-> - **Animiertes 6-Szenen 3D/2D Hero-Demo-GIF (`v0.7.1`):** Ein gestochen scharfes, für GitHub-Inline-Autoplay optimiertes (`< 8 MB`) Hero-Demo-GIF (`docs/assets/rack-architect-hero-demo.gif`) ergänzt — zeigt in 6 Live-Szenen den 3D Digital Twin, `X-Ray` & `140 mm` Z-Explode Stecker-Freiräume, die Live-Kollisionserkennung (`PLUG_CLEARANCE_COLLISION`), die autonome MCP-Selbstkorrektur, maßstabsgetreue 2D-CAD-Pläne (`.svg`), den `.STL`/`.SCAD`-3D-Druck-Hub sowie den 1-Klick-Wechsel zwischen `19"`-, `10"`- und `6"`-Racks.
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.7.0) auf Deutsch anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.7.1) auf Deutsch anzeigen</b></summary>
 
 <br />
 
+- **`v0.7.1`** — Gestochen scharfes, animiertes 6-Szenen 3D/2D Hero-Demo-GIF (`docs/assets/rack-architect-hero-demo.gif`) in `README.md` und den Release Notes.
 - **`v0.7.0`** — DSGVO-konformer MCP-Nutzungs-, KI-Client- & Traffic-Tracker (`GET /metrics` Prometheus & `GET /api/telemetry` JSON mit gesalzenem HMAC-SHA256 ohne Speicherung echter IPs).
 - **`v0.6.7`** — Fix der GitHub-Actions-`.mcpb`-Release-Pipeline, kombiniertes `mcpb`- + Remote-MCP-`server.json`-Manifest & Behebung aller CodeQL-Code-Scanning-Befunde.
 - **`v0.6.6`** — Direkter Zero-Install Remote-MCP-Schnellstart & Endpunkt-Übersicht oben in der `README.md`, `glama.json`, `server.json`, den Paket-READMEs, `SKILL.md` und den Release Notes.

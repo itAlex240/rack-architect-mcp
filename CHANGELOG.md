@@ -5,6 +5,22 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.4] - 2026-10-29
+
+### Improved & Fixed — Agent Skill (`SKILL.md`), 5 EIA-310 Archetypes & MCP Prompt/Schema Parity (🇬🇧 English)
+- **Comprehensive `SKILL.md` Overhaul (`skills/rack-architect/SKILL.md`, `.agents/skills/rack-architect/SKILL.md`):**
+  - Updated Hosted Remote MCP (`https://mcp.rackarchitect.dev/mcp`) guidance to reference the exact `data.live_viewer_url` field (`https://mcp.rackarchitect.dev/?session=<uuid>`), zero-disk HTTPS `data.exported_files[].download_url` + `data.rack_yaml_url` deliverable streaming (`2h` idle session TTL), permanent `#rack=v1.<base64url>` share links, and all `4` built-in MCP resources (`rack://current/*`) + `5` guided MCP prompts.
+  - Documented `v0.7.2` rear-mounted PDU cavity routing (`resolveEffectivePortZone`), front `3dprint-*-cover-panel-*` pairing on shallow rear-PDU `U`-slots, detour-aware cross-face open-`U` / brush-panel portal selection (`scorePortalCandidate`, `preferred_portal_u`), all 3 categories of 3D-printable parts (modular carriers, desktop switch PETG cradles, designer cover panels), and the 2-Section `wiring-schematic.svg` (3-Tier Power/PoE DAG + Multi-Track Orthogonal Router).
+  - Added **Archetype 5 (`6-Inch Portable Micro-Homelab, Edge & Travel Rack`)**, clarified `3dprint-19inch-dual-minipc-poe-carrier-1u` (`<= 182 mm` 1-Liter Mini-PCs + Pi 5 Quorum) vs. `3dprint-19inch-triple-mini-pc-carrier` (`<= 145 mm` compact nodes) in Archetype 4 & Phase 1 to prevent `SLOT_DIMENSION_OVERFLOW`, and aligned Phase 4 & Phase 5 1:1 with all `20` `CableTypeSchema` values and all `21` `DiagnosticCodeSchema` codes (`Stages 1–5`).
+- **MCP Server Instructions & Guided Prompts Alignment (`@rack-mcp/core-domain`, `@rack-mcp/mcp-server`):**
+  - Updated `RACK_MCP_SERVER_INSTRUCTIONS` and `export_deliverables.description` in `mcp-tools.ts`, and fixed `search_catalog({ category: "modular-carrier" })`, real catalog carrier slugs, canonical `power-usb-c` / `power-dc-5525` cable enums, and `THERMAL_HOTSPOT_STACKING` / `ACOUSTIC_NOISE_HIGH` diagnostic codes in the built-in MCP prompts in `packages/mcp-server/src/mcp/server.ts`.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Umfassendes Update des AI-Agent-Skills (`skills/rack-architect/SKILL.md` & `.agents/skills/rack-architect/SKILL.md`):**
+  - Exakte Beschreibung des Hosted-Remote-MCP-Workflows (`https://mcp.rackarchitect.dev/mcp` mit `data.live_viewer_url`, direkten HTTPS-`download_url`-Exporten, `data.rack_yaml_url`, `2h` Session-TTL und `#rack=v1.`-Share-Links) sowie aller `4` MCP-Resources und `5` geführten MCP-Prompts.
+  - Neue Engine-Funktionen aus `v0.5.0`–`v0.7.3` integriert: rückseitige PDU-Innenraumführung (`resolveEffectivePortZone`) kombiniert mit vorderen 3D-Druck-Designer-Cover-Panels, automatische Open-`U`- / Bürstenpanel-Portalwahl (`scorePortalCandidate`, `preferred_portal_u`), Unterscheidung zwischen `19"` Dual-Mini-PC-Träger (`<= 182 mm` für 1-Liter-Mini-PCs + Pi 5 Quorum) und Triple-Träger (`<= 145 mm`) sowie ein neuer **5. Referenz-Archetyp für `6-Zoll` Micro-Homelabs**.
+  - 100 % Abgleich aller Tabellen und MCP-Prompts (`server.ts`, `mcp-tools.ts`) mit allen `21` echten `DiagnosticCodeSchema`-Codes (`Stufen 1–5`), allen `20` `CableTypeSchema`-Typen und allen `67` Katalog-Blueprints.
+
 ## [0.7.3] - 2026-10-29
 
 ### Changed & Added — Official `https://mcp.rackarchitect.dev` Dual-Stack HTTPS Domain & Multi-Origin CSWSH Support (🇬🇧 English)

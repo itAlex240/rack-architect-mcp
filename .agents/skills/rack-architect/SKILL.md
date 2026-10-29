@@ -20,16 +20,25 @@ This skill equips you with the complete engineering runbook, real-world ANSI/TIA
 ## 1. The Three Non-Negotiable Engineering Laws
 
 1. **Never Calculate Geometry in Your Own Context Window:**
-   Never guess millimeter coordinates, cable lengths, or whether a front switch collides with a rear PDU plug. Always execute mutations via the MCP tools (`mount_equipment`, `connect_cables`, `modify_equipment`, `plan_external_endpoints`) and let `@rack-mcp/core-domain` compute exact 3D Axis-Aligned Bounding Boxes (`1 U = 44.45 mm`), dynamic plug clearance ($\Delta Z_{\text{plug}}$), and clamped 3D Catmull-Rom cable splines.
-2. **Single Source of Truth (`rack.yaml`):**
-   Every rack project is persisted atomically in `rack.yaml` with a 50-step Undo/Redo stack (`undo_redo`) and live WebSocket / file-watcher synchronization to the local Web Viewer (`http://127.0.0.1:3100`).
+   Never guess millimeter coordinates, cable lengths, or whether a front switch collides with a rear PDU plug. Always execute mutations via the MCP tools (`mount_equipment`, `connect_cables`, `modify_equipment`, `plan_external_endpoints`) and let `@rack-mcp/core-domain` compute exact 3D Axis-Aligned Bounding Boxes (`1 U = 44.45 mm`), dynamic plug clearance ($\Delta Z_{\text{plug}}$), internal rear-cavity PDU routing (`resolveEffectivePortZone`), and clamped 3D Catmull-Rom / De Casteljau cable splines.
+2. **Single Source of Truth (`rack.yaml`) & 50-Step Undo/Redo:**
+   Every rack project lives in a strict Zod-validated `RackProject` state (`rack.yaml`) backed by a 50-step Undo/Redo history stack (`undo_redo`) and real-time WebSocket synchronization to the 3D/2D Web Studio.
 3. **Closed-Loop Self-Correction (`error_count === 0`):**
    Never finish a rack design task while `validation.error_count > 0`. Read the structured `issues[].remediation_suggestions` returned by every tool call and apply fixes autonomously until the rack achieves **`VALID (0 Errors)`**.
 
-### Connecting to Hosted Remote MCP (`https://mcp.rackarchitect.dev/mcp`) or Local Workbench (`http://127.0.0.1:3100`)
-- **Zero-Install Hosted Remote MCP (Recommended when no local server is running):** Any MCP client (Claude, Claude Code, Cursor, VS Code, Windsurf, Google Antigravity) can connect directly over HTTPS to **`https://mcp.rackarchitect.dev/mcp`** (`Streamable HTTP`) or **`https://mcp.rackarchitect.dev/sse`** (`SSE`). Every session gets an isolated workspace and returns a live `session.live_viewer_url` (`https://mcp.rackarchitect.dev/?session=<uuid>`) — always share this clickable Live 3D Digital Twin URL with the user so they can watch and inspect the 3D rack in real time!
-- **Native MCP Tools:** If `rack_architect_mcp` tools (`init_rack`, `search_catalog`, `get_device_blueprint`, `define_custom_blueprint`, `mount_equipment`, `modify_equipment`, `connect_cables`, `disconnect_cables`, `plan_external_endpoints`, `validate_rack`, `export_deliverables`, `undo_redo`) are registered natively in your MCP tool list, call them directly.
-- **Local Sidecar Fallback:** If running locally without native MCP registration, you can execute all 12 MCP tools directly against the local Sidecar WebSocket at `ws://127.0.0.1:3100/ws` (sending `{ "type": "COMMAND", "tool": "<tool_name>", "args": { ... } }` and reading `{ "type": "COMMAND_RESULT", "tool": "<tool_name>", "result": { ... } }`) or via `node ./packages/cli/dist/bin.js serve`.
+### Connecting via Hosted Remote MCP (`https://mcp.rackarchitect.dev/mcp`) vs. Local Workbench (`http://127.0.0.1:3100`)
+
+- **Option A — Zero-Install Hosted Remote MCP (`https://mcp.rackarchitect.dev/mcp`, Recommended when no local server is running):**
+  - Any MCP client (Claude, Claude Code, Cursor, VS Code Copilot, Windsurf, Google Antigravity) connects directly via **`https://mcp.rackarchitect.dev/mcp`** (`Streamable HTTP`) or **`https://mcp.rackarchitect.dev/sse`** (`SSE`).
+  - **Mandatory Live 3D Viewer Link Sharing (`data.live_viewer_url`):** In Remote MCP mode, every tool response includes **`data.live_viewer_url`** (`https://mcp.rackarchitect.dev/?session=<uuid>`). **Share this clickable URL with the user right after `init_rack` (and again in your final summary)** so they can watch and inspect the 3D Digital Twin, `X-Ray` / `Explode Z` clearances, 2D Elevation, and 2-Section Wiring Plan live in their browser as you build!
+  - **Zero-Disk HTTPS Exports & Session Persistence (`2h` Idle TTL):** Remote sessions run 100% in-memory (`2h` idle TTL). Calling `export_deliverables` in Remote MCP mode returns direct clickable HTTPS download links in **`data.exported_files[].download_url`** (for `elevation.svg`, `wiring-schematic.svg`, `BOM.md`, `rack-scene.glb`, and all `.scad` / `.stl` 3D-print files) plus **`data.rack_yaml_url`** (`https://mcp.rackarchitect.dev/api/export/rack.yaml?session=<uuid>`). Always include these download links in your final answer and remind the user they can also click **`Share`** in the top bar of the 3D Studio to generate a permanent, zero-backend `#rack=v1.<base64url>` link.
+- **Option B — Native Local MCP (`stdio`) + Local 3D Workbench (`http://127.0.0.1:3100`):**
+  - When running locally (`npx @rack-mcp/cli serve`), mutations write `rack.yaml` atomically to disk, sync live to `http://127.0.0.1:3100`, and `export_deliverables` writes files directly to `output_dir` (defaulting to the `rack.yaml` directory).
+- **Option C — Local Sidecar WebSocket Fallback (`ws://127.0.0.1:3100/ws`):**
+  - If running locally without native MCP registration, you can execute all 12 tools over `ws://127.0.0.1:3100/ws` (sending `{ "type": "COMMAND", "tool": "<tool_name>", "args": { ... } }` and reading `{ "type": "COMMAND_RESULT", "tool": "<tool_name>", "result": { ... } }`).
+- **Built-In MCP Resources & Guided Prompts:**
+  - **4 Live MCP Resources:** `rack://current/summary` (ASCII Front/Rear elevation + Power/PoE KPIs), `rack://current/bom` (live Markdown BOM), `rack://current/diagnostics` (structured JSON `ValidationResult`), and `rack://current/yaml` (raw `rack.yaml`).
+  - **5 Guided MCP Prompts:** `plan-homelab-from-scratch`, `optimize-and-fix-rack`, `design-19inch-enterprise-rack`, `design-3d-printed-carrier-bay`, and `audit-poe-and-thermals`.
 
 ---
 
@@ -48,7 +57,7 @@ Before placing a single device, determine which of the two collaboration modes a
 - **Trigger:** The user has only a rough idea, room list, or use case (e.g., *"Ich brauche ein leises Homelab fürs Wohnzimmer"*, *"Plane mir ein 19-Zoll-Rack für 10 Kameras, 5 Access Points und 5 Räume"*, *"Ich möchte Proxmox und ein NAS aufbauen, weiß aber nicht welche Komponenten zusammenpassen"*).
 - **Mandatory Behavior:**
   - **Never throw random catalog devices into the rack just to fill U-slots.** Every mounted device must have a clear, real-world purpose and be fully wired (both power and data).
-  - Select the matching **Use-Case Reference Architecture (Archetypes 1–4 in Section 5)** and strictly apply the **Real-World Elevation, Port-Alignment & Wiring Schematics (Section 3 & Section 4)**.
+  - Select the matching **Use-Case Reference Architecture (Archetypes 1–5 in Section 5)** and strictly apply the **Real-World Elevation, Port-Alignment & Wiring Schematics (Section 3 & Section 4)**.
   - Explain *what* each device does in plain, accessible language (especially for non-obvious model numbers like `USW-Flex-2.5G-8-PoE`, `UCG-Max`, or `CRS310`) and explicitly state which compact desktop devices require a **3D-printed 1U PETG carrier/adapter cradle** or **1U shelf**.
 
 ---
@@ -89,27 +98,30 @@ Always build racks from **bottom (`U1`) to top (`U_max`)** using these 5 functio
 [ BOTTOM OF RACK — Floor / Desk Base ]
 ```
 
-### 3.2 Six Golden Cabling & Mechanical Rules from Real-World Schematics
+### 3.2 Seven Golden Cabling, Rear-Cavity & 3D-Print Mechanical Rules
 
 1. **The 1:1 Vertical Port Alignment Law (Zero Crossed Front Patch Cords):**
    - Always place the **Patch Panel (`U_max`) directly adjacent to the PoE/Access Switch (`U_max - 1`)** with zero U-slots between them.
    - Connect **Patch Panel Port `pN` (`face: "front"`) straight down to Switch Port `ethN` (`face: "front"`)** (`p1 -> eth1`, `p2 -> eth2`, ..., `p20 -> eth20`).
-   - Why: Both our 12-port/24-port patch panels and single-row switches (`ubiquiti-usw-pro-max-24-poe`, `ubiquiti-usw-flex-2-5g-8-poe`) have horizontally aligned port pitches ($\Delta X \le 35\text{ mm}$). 1:1 alignment produces ultra-clean `0.15 m` vertical C-arches (`direct-vertical-patch`) and completely eliminates diagonal cable spaghetti across the switch face.
-2. **Rear-to-Rear Internal Server Patching (Keep Rear NIC Cables in the Rear):**
-   - Mini-PCs (`lenovo-thinkcentre-m920q`, `dell-optiplex-7010-micro`) and compact gateways (`ubiquiti-ucg-max`) have their RJ45 ports on the **rear** (`face: "rear"`).
-   - **Best Practice:** Route their Ethernet cables **entirely in the rear** (`face: "rear"` $\rightarrow$ `face: "rear"`) up the Rear-Right (`RR`) data duct to free rear ports on the top Patch Panel (`p1..p6`, `face: "rear"`), and then connect short `0.15 m` front patch cords from `p1..p6` (`face: "front"`) straight down to `eth1..eth6` (`face: "front"`) on the Switch!
-   - Alternative: If the 3D-printed carrier has built-in Keystone slots (`keystone-1..3`), mount `keystone-rj45-cat6a-coupler` modules into those slots, wire the Mini-PC rear port to the Keystone's `rear` face, and patch from the Keystone's `front` face.
-3. **Brush Panels — "Less is More" (One Strategic Portal, Never Spammed):**
-   - Never mount brush panels between every single device or at the very top above a patch panel.
-   - Mount **one** `1U` Brush Panel (`generic-10inch-brush-panel-1u` or `generic-19inch-brush-panel-1u`) in the middle of the rack (`U5` or `U6`) between the lower Compute/Storage zone and the upper Network zone.
-   - Use this single brush portal specifically for cables that *must* cross between front and rear and cannot pass through an RJ45 patch panel (e.g., a `10G SFP+ DAC` cable from a front `USW-Aggregation` port `sfp6` to a rear `UNAS-Pro-2U` port `sfp_plus1`).
-4. **Shortest-Direct Monotonic Routing by Default vs. Optional Side-Duct Overrides (`routing_mode`):**
+   - Why: Both our 6/12/24-port patch panels and single-row switches (`ubiquiti-usw-pro-max-24-poe`, `ubiquiti-usw-flex-2-5g-8-poe`, `ubiquiti-usw-flex-mini-6inch`) have horizontally aligned port pitches ($\Delta X \le 35\text{ mm}$). 1:1 alignment produces ultra-clean `0.15 m` vertical C-arches (`direct-vertical-patch`) and completely eliminates diagonal cable spaghetti across the switch face.
+2. **Rear-Mounted PDUs, Internal Cavity Power Routing & Front Designer Cover Panels:**
+   - Mount PDUs (`digitus-10inch-pdu-4way-schuko`, `brennenstuhl-10inch-pdu-6way-iec-c13`, `brennenstuhl-19inch-pdu-8way-schuko-1u`) on the **rear rails (`face: "rear"`)** on a lower `U` slot (e.g., `U2` or `U3`). Their inward-facing (`-Z`) sockets (`ac_in`, `mains_in`, `outlet1..8`, `iec_out1..6`) are automatically classified into the **rear internal rack cavity** (`resolveEffectivePortZone`), so UPS-to-PDU and PDU-to-device power cords route cleanly inside the rear cavity with zero front-panel crossings!
+   - **Pro Tip (Clean Front Facade):** Because rear PDUs are ultra-shallow (`48–55 mm` deep), the **front face (`face: "front"`) of that same `U` slot remains free** and can optionally be closed with a shallow `8–9 mm` **3D-printable Designer Slot Cover Panel** (`3dprint-10inch-cover-panel-lines-1u`, `3dprint-19inch-cover-panel-lines-1u`, `hex`, or `ribs`) to hide rear power cabling from the front view with `0` depth collisions.
+3. **Rear-to-Rear Internal Server Patching vs. Front-to-Rear Cross-Face Portals:**
+   - Mini-PCs (`lenovo-thinkcentre-m920q`, `hp-elitedesk-800-g6-mini`, `dell-optiplex-7010-micro`) and compact gateways (`ubiquiti-ucg-max`) have their RJ45 ports on the **rear** (`face: "rear"`).
+   - **Pattern A (Pure Rear-to-Rear via Patch Panel):** Route their Ethernet cables **entirely in the rear** (`face: "rear"` $\rightarrow$ `face: "rear"`) up to free rear ports on the top Patch Panel, then connect `0.15 m` front patch cords straight down to the Switch (or wire through `keystone-rj45-cat6a-coupler` slots built into 10-inch 3D-printed carriers).
+   - **Pattern B (Direct Front-Switch to Rear-NIC via Open-U or Brush Portal):** When wiring a front switch port directly to a rear Mini-PC NIC or rear `UNAS-Pro-2U:sfp_plus1`, `@rack-mcp/core-domain` (`scorePortalCandidate`) automatically threads the cable through the **nearest open `U` slot or 1U Brush Panel** (`has_cable_pass_through: true`) with zero chassis intersections. You can also pin a specific portal U via `preferred_portal_u` in `connect_cables`.
+   - **Important Portal Rule:** Never seal *every* front `U` slot solid with closed `blank-panel` covers if you have front-to-rear cables — leave at least one central `1U` open or mount **one** strategic `1U` Brush Panel (`generic-10inch-brush-panel-1u`, `generic-19inch-brush-panel-1u`, or `generic-6inch-brush-panel-1u`) so `NO_FRONT_TO_REAR_PORTAL` never occurs.
+4. **Brush Panels — "Less is More" (One Strategic Portal, Never Spammed):**
+   - Never mount brush panels between every single device or above the top patch panel. One central `1U` Brush Panel (`U5`–`U9` depending on rack height) between the Compute/Storage zone and the Network zone is clean, realistic, and sufficient.
+5. **Shortest-Direct Monotonic Routing by Default vs. Optional Side-Duct Overrides (`routing_mode`):**
    - By default (`routing_mode: "shortest-direct"`), `@rack-mcp/core-domain` routes every cable along the **shortest collision-free monotonic orthogonal L-bend or 1-step path** between its two ports (`0` zig-zag detours to the far rack side walls and back, saving 25%–50% in cable length and BOM cost).
-   - If the user explicitly requests routing a cable around the left or right vertical cable management channel (e.g., strict side-wall EMI separation or custom cable bundling), set `routing_mode: "left-duct"` (`FL`/`RL`) or `routing_mode: "right-duct"` (`FR`/`RR`) on that cable in `connect_cables`.
-5. **Desktop Hardware vs. Native Rackmount Hardware (3D-Print Carrier Transparency):**
-   - Sub-modules (`mount_type: "sub-module"`, such as `lenovo-thinkcentre-m920q`, `dell-optiplex-7010-micro`, `ubiquiti-ucg-max`, `raspberry-pi-5-poe-hat`, `jetkvm-smart-ip-kvm`) **must** be mounted inside a `modular-carrier` (`3dprint-*`).
-   - Compact polycarbonate desktop switches (`ubiquiti-usw-flex-2-5g-8-poe`, `ubiquiti-usw-lite-8-poe`) have `ear_mount_style: "3d-printed-ears"` (no metal rack ears in the retail box). RackArchitect automatically generates a custom **3D-printable 10-inch 1U PETG Adapter Cradle** (`.scad` & `.stl`) for them — always mention this to the user so they know how the switch is physically held in the rack.
-6. **External Building / Room Drops (`plan_external_endpoints` — Never Waste a Rack U-Slot!):**
+   - If the user explicitly requests routing a cable via the left or right vertical cable duct, set `routing_mode: "left-duct"` (`FL`/`RL`) or `routing_mode: "right-duct"` (`FR`/`RR`) on that cable in `connect_cables`.
+6. **Three Categories of 3D-Printable Parts (Always Explain Physically to the User):**
+   - **Sub-U Modular Carriers (`3dprint-*-carrier*`):** Required for `mount_type: "sub-module"` hardware (`lenovo-thinkcentre-m920q`, `hp-elitedesk-800-g6-mini`, `dell-optiplex-7010-micro`, `intel-nuc-13-pro-slim`, `zimaboard-832-2-5g-router-nas`, `ubiquiti-ucg-max`, `raspberry-pi-5-poe-hat`, `pikvm-v4-mini-ip-kvm`, `jetkvm-smart-ip-kvm`).
+   - **Desktop Switch / Gateway 1U PETG Adapter Cradles (`ear_mount_style: "3d-printed-ears"`):** Compact desktop switches/gateways (`ubiquiti-usw-flex-2-5g-8-poe`, `ubiquiti-usw-lite-8-poe`, `ubiquiti-usw-ultra-60w`, `ubiquiti-ucg-fiber`, `ubiquiti-usw-flex-mini-6inch`, `gl-inet-mt3000-beryl-ax-6inch`) ship without metal rack ears; RackArchitect automatically generates custom 1U PETG adapter cradles (`.scad` & `.stl`) for them!
+   - **Designer Slot Cover Panels (`3dprint-*-cover-panel-*`):** `1U` & `2U` decorative blanking covers (`lines`, `hex`, `ribs`) for `10"`, `19"`, and `6"` racks (users can also customize `0.5U`–`3U` vented or custom-engraved cover panels interactively in the Live 3D Studio).
+7. **External Building / Room Drops (`plan_external_endpoints` — Never Waste a Rack U-Slot!):**
    - Incoming house or office cables (PoE security cameras, Wi-Fi Access Points, wall RJ45 outlets for PCs, home-cinema projectors/Beamers, laptops, docking stations, ISP fiber ONT modems) enter from outside the rack (`top-rear` or `bottom-rear`) onto the **rear** of the Patch Panel.
    - Always call `plan_external_endpoints` to terminate them on the Patch Panel and auto-generate 1:1 aligned front patch cables to the switch.
 
@@ -159,9 +171,9 @@ When designing a complete homelab or enterprise rack, structure the logical netw
 
 ---
 
-## 5. Four Ready-to-Build Use-Case Archetypes (For Consultative Planning)
+## 5. Five Ready-to-Build Use-Case Archetypes (`10"`, `19"` & `6"`)
 
-When a user asks for a recommendation or only describes their goal, match their use case to one of these **4 battle-tested archetypes** and adapt it to their exact port/device counts:
+When a user asks for a recommendation or only describes their goal, match their use case to one of these **5 battle-tested archetypes** across all three EIA-310 standards (`10inch`, `19inch`, `6inch`) and adapt it to their exact port/device counts:
 
 ### Archetype 1: 10-Inch Silent Smart-Home, Media & NAS Starter Rack (`8U`, `10inch`)
 - **Ideal For:** Apartments, living rooms, or home offices needing whisper-quiet operation (`< 45 W` idle), Home Assistant, AdGuard/Pi-hole, Plex/Jellyfin media streaming, and local 2-bay RAID backup.
@@ -200,20 +212,31 @@ When a user asks for a recommendation or only describes their goal, match their 
   - `U8 (front)`: `ubiquiti-usw-pro-max-24-poe` (24-Port PoE++ Switch with 400W PoE budget, linked to `UDM-Pro:sfp_lan11` via `sfp-plus-dac` on `sfp1` and to `UNAS-Pro:sfp_plus1` via `sfp2` through the `U5` brush portal).
   - `U9 (front)`: `generic-19inch-patch-panel-24port-cat6a` — Call `plan_external_endpoints` with `auto_connect_switch_instance_id` set to the `USW-Pro-Max-24-PoE` so all cameras, APs, and room outlets terminate on the rear (`p1..p24`) and patch 1:1 straight down (`p1..p24 -> eth1..eth24`) on the front!
 
-### Archetype 4: 19-Inch Redundant Enterprise Core, Dual-WAN NGFW & Proxmox HA Stack (`12U`, `19inch`)
-- **Ideal For:** Businesses, tech studios, or advanced enterprise homelabs requiring dedicated hardware Next-Gen Firewalling (Dual-WAN), 10G SFP+ Core Aggregation switching, PoE++ access switching, and a 3-node Proxmox HA + Quorum cluster.
-- **Rack Init:** `standard: "19inch", u_height: 12, rail_depth_mm: 400` (with short-depth UPS) or `500`, `enclosure_type: "closed-vented-front"`.
+### Archetype 4: 19-Inch Redundant Enterprise Core, Dual-WAN NGFW & Proxmox / K8s HA Stack (`10U`–`12U`, `19inch`)
+- **Ideal For:** Businesses, tech studios, or advanced enterprise homelabs requiring dedicated hardware Next-Gen Firewalling (Dual-WAN), 10G SFP+ Core Aggregation switching, PoE++ access switching, and a multi-node Proxmox / Kubernetes HA + Quorum cluster.
+- **Rack Init:** `standard: "19inch", u_height: 12, rail_depth_mm: 400` (with short-depth `apc-smart-ups-li-ion-short-depth-2u`) or `550` (with full-depth `apc-smart-ups-1500-2u`), `enclosure_type: "closed-vented-front"`.
 - **Bottom-to-Top Elevation (`examples/19inch-enterprise/rack.yaml`):**
-  - `U1–U2 (front)`: 2U Smart-UPS (`apc-smart-ups-1500-2u` or short-depth Li-Ion 2U UPS).
-  - `U3–U4 (front)`: `ubiquiti-unas-pro-2u` (7-Bay 10G SFP+ NAS).
-  - `U5 (front)`: `3dprint-19inch-triple-mini-pc-carrier` (or dual Mini-PC + Pi 5 PoE carrier) with Proxmox HA nodes (`lenovo-thinkcentre-m920q`).
-  - `U6 (front)`: `generic-19inch-brush-panel-1u` (Single central front-to-rear cable portal).
+  - `U1–U2 (front)`: 2U Smart-UPS (`apc-smart-ups-li-ion-short-depth-2u` at `325 mm` depth for `400–450 mm` racks, or `apc-smart-ups-1500-2u` at `477 mm` depth for `>= 550 mm` racks).
+  - `U3 (rear)` + `U3 (front)`: Optional `brennenstuhl-19inch-pdu-8way-schuko-1u` on `face: "rear"` for Mini-PC Schuko bricks, paired with `3dprint-19inch-cover-panel-lines-1u` on `face: "front"`, OR `U3–U4 (front)` `ubiquiti-unas-pro-2u` (7-Bay 10G SFP+ NAS).
+  - `U5 (front)`: **`3dprint-19inch-dual-minipc-poe-carrier-1u`** with 2× full 1-Liter Mini-PCs (`lenovo-thinkcentre-m920q`, `hp-elitedesk-800-g6-mini`, or `dell-optiplex-7010-micro`) in `mini-pc-bay-1..2` + 1× `raspberry-pi-5-poe-hat` Quorum Witness in `pi-poe-bay-1` *(Note: use `3dprint-19inch-triple-mini-pc-carrier` only for narrower $\le 145\text{ mm}$ nodes such as `zimaboard-832-2-5g-router-nas` or `intel-nuc-13-pro-slim`)*.
+  - `U6 (front)`: `generic-19inch-brush-panel-1u` (or leave `U6` open as a clean 1U thermal & front-to-rear cable pass-through portal).
   - `U7`: *Free 1U TIA-942 Thermal & Expansion Headroom*.
   - `U8 (front)`: `ubiquiti-udm-pro` (Dedicated Protect Camera NVR & UniFi Controller, `10G SFP+ DAC` to Aggregation).
-  - `U9 (front)`: Enterprise NGFW / Router (e.g., `FortiGate 200F` or primary `UDM-Pro`, Dual-WAN from Patch Panel `p2`/`p3`, `2× 10G SFP+ LACP DAC` to Aggregation).
-  - `U10 (front)`: `ubiquiti-usw-aggregation` (8-Port 10G SFP+ Core Switch interconnecting Firewall, PoE++ Switch via 2× 10G LACP DAC, UDM-Pro NVR, and rear UNAS Pro via `U6` brush portal).
+  - `U9 (front)`: `fortinet-fortigate-200f-ngfw-1u` (or primary `ubiquiti-udm-se`, Dual-WAN from Patch Panel, `2× 10G SFP+ LACP DAC` to Aggregation).
+  - `U10 (front)`: `ubiquiti-usw-aggregation` (8-Port 10G SFP+ Core Switch interconnecting Firewall, PoE++ Switch via 2× 10G LACP DAC, UDM-Pro NVR, and rear UNAS Pro via `U6` portal).
   - `U11 (front)`: `ubiquiti-usw-pro-max-24-poe` (400W PoE++ Access Switch).
-  - `U12 (front)`: `generic-19inch-patch-panel-24port-cat6a` (Top-of-Rack Patch Panel with 1:1 vertical port alignment `p8..p21 <-> eth8..eth21` to the PoE++ Switch).
+  - `U12 (front)`: `generic-19inch-patch-panel-24port-cat6a` (Top-of-Rack Patch Panel with 1:1 vertical port alignment `p1..p24 <-> eth1..eth24` to the PoE++ Switch).
+
+### Archetype 5: 6-Inch Portable Micro-Homelab, Edge & Travel Rack (`6U`, `6inch`)
+- **Ideal For:** Ultra-compact desktop micro-racks (`152.4 mm` EIA-310 6-inch standard), portable conference/travel edge labs, WireGuard VPN gateways, DNS sinkholes, and low-power SBC clusters (`< 25 W` total USB-C GaN power).
+- **Rack Init:** `standard: "6inch", u_height: 6, rail_depth_mm: 160, enclosure_type: "open-frame"`.
+- **Bottom-to-Top Elevation (`examples/6inch-microlab/rack.yaml`):**
+  - `U1 (front)` (or `rear`): `generic-6inch-usb-pd-pdu-4port` — 200W 4-Port USB-C GaN PD + `dc-5525` Micro-PDU powering the entire 6-inch stack without bulky AC bricks.
+  - `U2 (front)`: `3dprint-6inch-cover-panel-lines-1u` (or `generic-6inch-brush-panel-1u` when front-to-rear cables need a sealed pass-through).
+  - `U3 (front)`: `3dprint-6inch-rpi5-plus-keystone-carrier-1u` containing `raspberry-pi-5-poe-hat` in `rpi5-bay-1` + up to 2× `keystone-rj45-cat6a-coupler` in `keystone-1..2`.
+  - `U4 (front)`: `gl-inet-mt3000-beryl-ax-6inch` — OpenWrt Wi-Fi 6 / 2.5G WireGuard Travel & Edge Security Gateway in its 3D-printed 6" 1U PETG cradle (powered via `power-usb-c` from `U1`).
+  - `U5 (front)`: `ubiquiti-usw-flex-mini-6inch` — 5-Port Managed GbE Switch in its 3D-printed 6" 1U PETG cradle (powered via `power-usb-c` from `U1`).
+  - `U6 (front)`: `generic-6inch-patch-panel-6port` — Top-of-Rack 6-Port Cat6A Patch Panel patched 1:1 (`p1..p5`) to the switch and gateway below.
 
 ---
 
@@ -230,13 +253,18 @@ Whenever the user asks you to design, modify, or audit a rack, execute these **6
      - `3dprint-10inch-ucg-ultra-plus-3keystone` (accepts 1× `unifi-compact-gateway` in `gateway-bay` + 3× `standard-keystone` in `keystone-1`..`3`)
      - `3dprint-10inch-rpi5-jetkvm-2keystone` (accepts 1× `sbc-rpi5` in `rpi-bay-1` + 1× `jetkvm-bay` in `jetkvm-bay-1` + 2× `standard-keystone` in `keystone-1`..`2`)
      - `3dprint-10inch-dual-rpi5-plus-4keystone` (accepts 2× `sbc-rpi5` in `rpi-bay-1`..`2` + 4× `standard-keystone` in `keystone-1`..`4`)
-     - `3dprint-19inch-triple-mini-pc-carrier` (accepts 3× `mini-pc-1liter` up to `145 mm` width in `mini-pc-bay-1`..`3`)
+     - `3dprint-10inch-intel-nuc-plus-3keystone` (accepts 1× `intel-nuc-4x4` in `intel-nuc-bay` + 3× `standard-keystone` in `keystone-1`..`3`)
+     - `3dprint-10inch-sbc-pikvm-carrier-1u` (accepts 1× `sbc-rpi5` in `rpi5-bay-1` + 1× `pikvm-v4-bay` in `pikvm-bay` + 1× `standard-keystone` in `keystone-1`)
+     - `3dprint-19inch-dual-minipc-poe-carrier-1u` (accepts 2× full 1-Liter `mini-pc-1liter` up to `182 mm` width — e.g. `lenovo-thinkcentre-m920q`, `hp-elitedesk-800-g6-mini`, `dell-optiplex-7010-micro` — in `mini-pc-bay-1`..`2` + 1× `sbc-rpi5` in `pi-poe-bay-1`)
+     - `3dprint-19inch-triple-mini-pc-carrier` (accepts 3× compact `mini-pc-1liter` up to `145 mm` max slot width — e.g. `zimaboard-832-2-5g-router-nas` — in `mini-pc-bay-1`..`3`; do **not** put `177–179 mm` wide TinyMiniMicro PCs here or Stage 1 will flag `SLOT_DIMENSION_OVERFLOW`)
+     - `3dprint-6inch-rpi5-plus-keystone-carrier-1u` (accepts 1× `sbc-rpi5` in `rpi5-bay-1` + 2× `standard-keystone` in `keystone-1`..`2`)
    - Then mount the child `sub-module` into that carrier using `parent_carrier_id` and `slot_id`.
 3. If the user owns hardware that is not among the 67 built-in blueprints, call `define_custom_blueprint` with exact millimeter dimensions (`width_mm`, `height_mm`, `depth_mm`), weight (`weight_grams`), power draw (`max_system_watts`), and `ports` before mounting it.
 
 ### Phase 2: Rack Initialization (`init_rack`)
 1. Call `init_rack` with the target `standard` (`"10inch"`, `"19inch"`, or `"6inch"`), `u_height`, `rail_depth_mm`, and `enclosure_type` (`"open-frame"`, `"closed-glass-front"`, or `"closed-vented-front"`).
-2. Ensure `rail_depth_mm` accommodates the deepest mounted device plus rear plug clearance (e.g., `240–260 mm` for 10-inch racks; `400–550 mm` for 19-inch racks depending on whether a `325 mm` deep short-depth UPS or `477 mm` deep full-size `apc-smart-ups-1500-2u` is used).
+2. Ensure `rail_depth_mm` accommodates the deepest mounted device plus rear plug clearance (`160 mm` for 6-inch micro-racks; `240–260 mm` for 10-inch racks; `400–450 mm` for 19-inch racks using `apc-smart-ups-li-ion-short-depth-2u` at `325 mm` depth, or `>= 550 mm` when using the `477 mm` deep `apc-smart-ups-1500-2u`).
+3. If `data.live_viewer_url` is returned (Hosted Remote MCP at `https://mcp.rackarchitect.dev/?session=<uuid>`), keep it ready to share with the user so they can inspect the live 3D Digital Twin!
 
 ### Phase 3: Mounting Equipment & Sub-Modules (`mount_equipment`)
 1. Mount all rack-level devices first (`u_position`, `face: "front" | "rear"`) following the 5-Zone Elevation Blueprint (Section 3.1) unless the user requested a custom order.
@@ -298,34 +326,43 @@ Whenever the user asks you to design, modify, or audit a rack, execute these **6
      ```
    - `plan_external_endpoints` automatically aligns each Patch Panel port `pN` 1:1 with Switch port `ethN` (`p1 -> eth1`, `p2 -> eth2`, ...), validates total PoE budget through the passive patch panel couplers, and generates a beginner-friendly step-by-step patching guide.
 2. Call `get_device_blueprint` for every internal device you are wiring so you never guess a `port_id`.
-3. **Choose the Right Cable & Plug Geometry (`cable_type`):**
+3. **Choose the Exact Canonical `cable_type` (Strict Closed Zod Enum — Never Invent Custom Strings):**
+   - **Data & Console Cables (`CableTypeSchema`):**
+     `cat6a`, `cat6a-angled`, `cat6`, `cat6-angled`, `cat5e`, `cat5e-angled`, `sfp-plus-dac`, `sfp-plus-dac-angled`, `fiber-lc-duplex`, `fiber-lc-duplex-angled`, `rj45-serial-rollover`, `rj45-serial-rollover-angled`.
+   - **Power Cables (`CableTypeSchema`):**
+     `power-c13-c14`, `power-c13-c14-angled`, `power-schuko-c13`, `power-schuko-c13-angled`, `power-dc-5525`, `power-dc-5525-angled`, `power-usb-c`, `power-usb-c-angled`.
    - **Tight Front Glass Door (`closed-glass-front` with `45–50 mm` clearance) or Tight Rear Depth:**
-     Use **`-angled`** cable variants (`cat6a-angled`, `sfp-plus-dac-angled`, `power-schuko-c13-angled`, `power-c13-c14-angled`, `power-dc-5525-angled`, `power-usb-c-angled`) to cut plug protrusion $\Delta Z_{\text{plug}}$ by ~50% (`55 mm` $\rightarrow$ `28 mm` for Schuko, `35 mm` $\rightarrow$ `18 mm` for RJ45) and prevent `PLUG_CLEARANCE_COLLISION` or `FRONT_DOOR_COLLISION`.
+     Use **`-angled`** cable variants (`cat6a-angled`, `sfp-plus-dac-angled`, `power-schuko-c13-angled`, `power-c13-c14-angled`, `power-dc-5525-angled`, `power-usb-c-angled`) to cut plug protrusion $\Delta Z_{\text{plug}}$ by ~50% (`55 mm` $\rightarrow$ `28 mm` for Schuko, `35 mm` $\rightarrow$ `18 mm` for RJ45) and prevent `PLUG_CLEARANCE_COLLISION`, `FRONT_DOOR_COLLISION`, or `OUT_OF_RACK_BOUNDS`.
    - **Multi-Gigabit Links ($\ge 2.5\text{ GbE}$ / $10\text{ GbE}$):**
      Always use `cat6a` / `cat6a-angled` (or `sfp-plus-dac` / `fiber-lc-duplex` for SFP+). Never use `cat5e` on $2.5\text{ GbE}$ or $10\text{ GbE}$ ports (`SPEED_MISMATCH` prevention).
    - **Power Completeness:**
-     Connect every non-passive device's `power-input` port (or `poe-in` port via a PoE-capable switch port) to a `power-outlet` on a PDU or UPS so zero `MISSING_POWER_INPUT` or `EXTERNAL_PSU_UNPLUGGED` warnings remain.
+     Connect every non-passive device's `power-input` port (or `poe-in` port via a PoE-capable switch port) to a `power-outlet` on a PDU or UPS so zero `UNPOWERED_DEVICE` warnings remain. *(Note: `color_hex` on dark power cords such as `#18181B` is automatically lifted to high-contrast metallic graphite in 3D and 2D SVGs.)*
 
 ### Phase 5: 5-Stage Validation & Autonomous Remediation (`validate_rack`)
-Call `validate_rack` and inspect `validation.issues`. Use this lookup table to resolve any diagnostic issue immediately:
+Call `validate_rack` and inspect `validation.issues`. Every issue carries a deterministic `DiagnosticCode` across **Stages 1–5** and structured `remediation_suggestions`:
 
-| Diagnostic Code | Stage | Immediate Autonomous Fix |
+| Diagnostic Code (`DiagnosticCodeSchema`) | Stage | Immediate Autonomous Fix |
 | :--- | :---: | :--- |
-| `CHASSIS_COLLISION` | 2 | Call `modify_equipment({ action: "move" })` to relocate one of the colliding devices to a free `u_position` or opposite `face`. |
-| `PLUG_CLEARANCE_COLLISION` | 2 | Re-run `connect_cables` with the `-angled` variant of the colliding cable (e.g. `power-schuko-c13-angled` or `cat6a-angled`), or move the rear device to another `U`. |
-| `FRONT_DOOR_COLLISION` | 2 | Switch front patch/DAC cables on that device to `cat6a-angled` / `sfp-plus-dac-angled`, or change rack enclosure to `open-frame`. |
-| `REAR_CLEARANCE_VIOLATION` | 2 | Use `-angled` rear power/data cables or increase `rear_clearance_mm` via `init_rack`. |
-| `SLOT_INCOMPATIBLE` / `SLOT_DIMENSION_OVERFLOW` | 1 | Mount a carrier whose `slots[].accepted_slot_type` matches the sub-module's `slot_compatibility`. |
-| `POE_BUDGET_EXCEEDED` | 3 | Offload PoE PD devices to a higher-budget PoE switch (`ubiquiti-usw-flex-2-5g-8-poe` = `196 W`, or `ubiquiti-usw-pro-max-24-poe` = `400 W`) or power the device via its dedicated DC/AC input. |
-| `MISSING_POWER_INPUT` / `EXTERNAL_PSU_UNPLUGGED` | 3 | Connect a power cable (`power-c13-c14`, `power-schuko-c13`, `power-dc-5525`, or `power-usb-c`) from a PDU/UPS outlet (or PoE switch port) to the device's power input port. |
-| `MISSING_CABLE_PORTAL` | 4 | Mount `generic-10inch-brush-panel-1u` (or `generic-19inch-brush-panel-1u`) on an open central `U` slot so front-to-rear cables have a pass-through portal. |
-| `SPEED_MISMATCH` | 4 | Upgrade the cable from `cat5e` to `cat6a` or `cat6a-angled` via `connect_cables`. |
-| `THERMAL_HOTSPOT_STACKING` | 5 | Separate the two stacked fanless devices by moving a brush panel or active-cooled device between them (`modify_equipment`). |
+| `CHASSIS_COLLISION` | 1 | Call `modify_equipment({ action: "move" })` to relocate one of the colliding devices to a free `u_position` or opposite `face`. |
+| `PLUG_CLEARANCE_COLLISION` | 1 | Re-run `connect_cables` (same `cable_id` upserts in place) with the `-angled` variant (e.g. `power-schuko-c13-angled` or `cat6a-angled`), or relocate the rear device (`modify_equipment`). |
+| `FRONT_DOOR_COLLISION` | 1 | Switch front patch/DAC cables on that device to `cat6a-angled` / `sfp-plus-dac-angled`, increase `front_door_clearance_mm`, or use `enclosure_type: "open-frame"`. |
+| `OUT_OF_RACK_BOUNDS` | 1 | Device + rear plug exceeds `rail_depth_mm + rear_clearance_mm` or `u_height`: switch to `-angled` rear power cables, pick a shorter-depth blueprint (e.g. `apc-smart-ups-li-ion-short-depth-2u`), or re-initialize with deeper `rail_depth_mm` / `rear_clearance_mm`. |
+| `SLOT_INCOMPATIBLE` / `SLOT_DIMENSION_OVERFLOW` | 1 | Mount a carrier whose `slots[].accepted_slot_type` and `max_dimensions_mm` fit the sub-module (e.g. use `3dprint-19inch-dual-minipc-poe-carrier-1u` instead of `triple` for `179 mm` wide 1L Mini-PCs). |
+| `BLUEPRINT_NOT_FOUND` | 1 | Run `search_catalog` to pick a valid kebab-case slug, or register custom hardware first via `define_custom_blueprint`. |
+| `PORT_NOT_FOUND` / `PORT_ALREADY_OCCUPIED` | 2 | Call `get_device_blueprint` to verify exact `port_id` names (specify `face: "front" | "rear"` on patch-panel passthrough ports) or free the occupied port via `disconnect_cables`. |
+| `CONNECTOR_INCOMPATIBLE` / `SIGNAL_PROTOCOL_INCOMPATIBLE` | 2 | Match physical connector & protocol pairs (e.g. `sfp-plus-dac` for SFP+ to SFP+, `power-schuko-c13` for Schuko PDU outlet to IEC-C14 device inlet, `power-dc-5525` for Mini-PC barrel DC, `power-usb-c` for USB-C PD). |
+| `SPEED_MISMATCH` | 2 | Upgrade the cable from `cat5e` to `cat6a` or `cat6a-angled` via `connect_cables`. |
+| `POE_BUDGET_EXCEEDED` / `POE_CLASS_EXCEEDED` | 3 | Move PoE PD devices to a higher-budget PoE++/PoE+ switch (`ubiquiti-usw-flex-2-5g-8-poe` = `196 W`, `ubiquiti-usw-pro-max-24-poe` = `400 W`) or power the device via its dedicated DC/AC/USB-C input. |
+| `UPS_OVERLOAD` | 3 | Offload high-wattage devices from the UPS onto a separate mains PDU or upgrade to a higher-VA UPS (`apc-smart-ups-li-ion-short-depth-2u` = `1250 W`). |
+| `UNPOWERED_DEVICE` | 3 | Connect a power cable (`power-c13-c14`, `power-schuko-c13`, `power-dc-5525`, or `power-usb-c`) from a PDU/UPS outlet — or a PoE Cat6A cable from a PSE switch port — to the device's power/PoE input. |
+| `TOP_HEAVY_RACK` | 4 | Move heavy UPS/battery/NAS units down to `U1`–`U4` and lighter patch panels/switches up to the top `U` slots so Center of Gravity stays `< 50%`. |
+| `NO_FRONT_TO_REAR_PORTAL` | 4 | Leave at least `1U` open between front and rear zones or replace a solid `blank-panel` with `generic-10inch-brush-panel-1u` / `generic-19inch-brush-panel-1u` / `generic-6inch-brush-panel-1u`. |
 | `THERMAL_AIRFLOW_CONFLICT` | 5 | Avoid mixing `front-to-rear` and `rear-to-front` active fans on the same or adjacent `U` slots. |
-| `HIGH_CENTER_OF_GRAVITY` | 5 | Move heavy UPS/battery units down to `U1`/`U2` and lighter patch panels/switches up to the top `U` slots. |
+| `THERMAL_HOTSPOT_STACKING` | 5 | Separate stacked high-heat passive/fanless devices with an open `1U` gap, brush panel, or active-cooled unit (`modify_equipment`). |
+| `ACOUSTIC_NOISE_HIGH` | 5 | For living-room / office racks, swap high-dB(A) enterprise fans for fanless or whisper-quiet equivalents (`mikrotik-crs326-24g-2s-plus-rm`, `ubiquiti-usw-lite-8-poe`, `synology-ds224-plus-10inch-2u`). |
 
 ### Phase 6: CAD, BOM & 3D-Print Deliverable Export (`export_deliverables`)
-Once `validate_rack` reports **`VALID (0 Errors)`**, call `export_deliverables` with:
+Once `validate_rack` reports **`VALID (0 Errors)`**, call `export_deliverables` (omit `output_dir` when connected via Hosted Remote MCP):
 ```json
 {
   "formats": [
@@ -338,12 +375,15 @@ Once `validate_rack` reports **`VALID (0 Errors)`**, call `export_deliverables` 
   ]
 }
 ```
-This deterministically writes:
-- `elevation.svg` — Dual-Row Front, Mirrored Rear & Right-Hand Z-Depth Side Cutaway CAD blueprint
-- `wiring-schematic.svg` — 5-Layer Pin-to-Pin Logical Wiring & Power Schematic with VLAN/CIDR badges
-- `BOM.md` — Commercial Hardware BOM (with device descriptions & mounting notes), 3D-Print Filament Queue (`g`), Cable Length Schedule (`mm`), and Fastener Checklist
-- `rack-scene.glb` — Binary glTF 2.0 3D scene in meter scale (`1.0 = 1000 mm`)
-- `<carrier-slug>.scad` & `<carrier-slug>.stl` — Parametric OpenSCAD scripts and **100% watertight 2-manifold `.stl` files** (with EIA-310 M6 mounting slots, `+0.35 mm` print tolerances, retention rails, and floor ventilation cutouts) ready for Bambu Studio, OrcaSlicer, or PrusaSlicer.
+This deterministically generates:
+- `elevation.svg` — True-to-scale Front View, Mirrored Rear View & **True 3D `(z, y)` Side-Profile Depth Cutaway** CAD blueprint (with open-U / brush-panel grommet portal badges and external overhead drop trajectories)
+- `wiring-schematic.svg` — **2-Section Pin-to-Pin Technical Wiring & Power Schematic** (Section 1: 3-Tier UPS $\rightarrow$ PDU/PoE $\rightarrow$ Device Electrical Power DAG; Section 2: Grouped Device Cards with Multi-Track Orthogonal Channel Routing & VLAN/CIDR badges)
+- `BOM.md` — Commercial Hardware BOM (with device descriptions & mounting notes), 3D-Print Filament Queue (`g`), Commercial Cable Length Schedule (`mm` $\rightarrow$ standard retail bins), and Fastener Checklist (`M6` cage nuts, `M3` inserts)
+- `rack-scene.glb` — Binary glTF 2.0 3D scene in meter scale (`1.0 = 1000 mm`) with solid PTF cable tubes, raised ports, and glass/vented doors
+- `<printable-slug>.scad` & `<printable-slug>.stl` — Parametric OpenSCAD scripts and **100% watertight 2-manifold `.stl` files** generated automatically for every mounted **modular sub-U carrier**, **3D-printed desktop switch/gateway adapter cradle**, and **3D-printable designer cover panel**, ready for Bambu Studio, OrcaSlicer, or PrusaSlicer.
+- **Final User Handover Rule:**
+  - On **Hosted Remote MCP (`https://mcp.rackarchitect.dev/mcp`)**, present the clickable **`data.live_viewer_url`** (`https://mcp.rackarchitect.dev/?session=<uuid>`), **`data.rack_yaml_url`**, and every **`data.exported_files[].download_url`** directly in Markdown so the user can view the 3D Digital Twin and download `.STL` / `.SVG` / `.GLB` / `BOM.md` with 1 click!
+  - On **Local MCP / CLI**, report the local `data.output_dir` file paths and `http://127.0.0.1:3100` Workbench URL.
 
 ---
 

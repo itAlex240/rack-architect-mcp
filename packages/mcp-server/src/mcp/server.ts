@@ -50,7 +50,7 @@ export interface RackMcpServerInstance {
   close(): Promise<void>;
 }
 
-export const RACK_MCP_SERVER_VERSION = '0.7.3';
+export const RACK_MCP_SERVER_VERSION = '0.7.4';
 
 export interface McpToolExecutionEvent {
   readonly toolName: string;
@@ -536,7 +536,7 @@ export function createRackMcpServer(
               text: [
                 `Design a 19-inch Enterprise / Prosumer Rack (${uHeight}U, ${railDepth}mm depth) using RackArchitect MCP:`,
                 '1. Respect any explicit user hardware or U-slot requests 100%. For open/consultative requests, apply the ANSI/TIA-942 5-Zone Elevation Standard.',
-                '2. Call `search_catalog({ form_factor: "19inch" })` to inspect available 19-inch gateways (`ubiquiti-udm-pro`), switches (`ubiquiti-usw-pro-max-24-poe`, `ubiquiti-usw-aggregation`), storage (`ubiquiti-unas-pro-2u`), carriers (`3dprint-19inch-triple-mini-pc-carrier`), and UPS units (`apc-smart-ups-1500-2u`).',
+                '2. Call `search_catalog({ form_factor: "19inch" })` to inspect available 19-inch gateways (`ubiquiti-udm-pro`, `ubiquiti-udm-se`, `fortinet-fortigate-200f-ngfw-1u`), switches (`ubiquiti-usw-pro-max-24-poe`, `ubiquiti-usw-aggregation`), storage (`ubiquiti-unas-pro-2u`, `synology-rs1221-plus-2u`), carriers (`3dprint-19inch-dual-minipc-poe-carrier-1u` for 1L Mini-PCs, `3dprint-19inch-triple-mini-pc-carrier` for <=145mm compact nodes), rear PDUs (`brennenstuhl-19inch-pdu-8way-schuko-1u`), and UPS units (`apc-smart-ups-li-ion-short-depth-2u` for 400-450mm racks or `apc-smart-ups-1500-2u` for >=550mm racks).',
                 `3. Initialize the rack via \`init_rack({ project_name: "Enterprise 19-Inch Core Rack", standard: "19inch", u_height: ${uHeight}, rail_depth_mm: ${railDepth}, enclosure_type: "closed-vented-front" })\`.`,
                 '4. Mount the heavy 2U UPS at U1-U2 (`CoG < 50%`), 2U NAS at U3-U4, compute carriers at U5, a single central 1U brush panel at U6 (leaving U7 free for thermal headroom), Firewall/UDM-Pro/Aggregation at U8-U10, the 24-Port PoE++ Switch at U11, and the 24-Port Patch Panel at the top (`U12`).',
                 '5. If the user specifies external building or room drops (PoE cameras, Wi-Fi APs, office PCs, projectors, laptops, docking stations), call `plan_external_endpoints` to terminate them on the REAR of the patch panel (`U12`) and auto-create 1:1 vertically aligned (`pN -> ethN`) front patch cables to the switch (`U11`) — never waste a rack unit (`U`) on external room devices.',
@@ -572,9 +572,9 @@ export function createRackMcpServer(
               type: 'text',
               text: [
                 `Design and export a 3D-printable modular 1U carrier bay for: ${target}.`,
-                '1. Call `search_catalog({ mount_type: "modular-carrier" })` and `search_catalog({ mount_type: "sub-module" })` to inspect available carriers (`3dprint-10inch-lenovo-tiny-plus-2keystone`, `3dprint-10inch-dual-minipc-carrier`, `3dprint-10inch-dual-rpi5-plus-4keystone`, `3dprint-10inch-jetkvm-plus-3keystone`) and sub-modules.',
+                '1. Call `search_catalog({ category: "modular-carrier" })` and `search_catalog({ mount_type: "sub-module" })` to inspect available carriers (`3dprint-10inch-lenovo-tiny-plus-2keystone`, `3dprint-10inch-ucg-ultra-plus-3keystone`, `3dprint-10inch-rpi5-jetkvm-2keystone`, `3dprint-10inch-dual-rpi5-plus-4keystone`, `3dprint-19inch-dual-minipc-poe-carrier-1u`, `3dprint-6inch-rpi5-plus-keystone-carrier-1u`) and sub-modules.',
                 '2. Mount the chosen modular carrier onto a free rack unit (`mount_equipment`) and populate its `slots` (`parent_carrier_id` + `slot_id`) with compatible sub-modules and RJ45 keystones.',
-                '3. Call `validate_rack` to confirm slot dimensions and depth clearances (`SLOT_INCOMPATIBLE` = 0).',
+                '3. Call `validate_rack` to confirm slot dimensions and depth clearances (`SLOT_INCOMPATIBLE` = 0, `SLOT_DIMENSION_OVERFLOW` = 0).',
                 '4. Call `export_deliverables({ formats: ["carrier-scad", "carrier-stl", "elevation-svg", "bom-md"] })` to generate print-ready `.scad` and binary/ASCII `.stl` files.'
               ].join('\n')
             }
@@ -603,8 +603,8 @@ export function createRackMcpServer(
               text: [
                 `Perform a comprehensive Power, PoE, and Thermal Audit on '${scene.project.project_name}':`,
                 '1. Call `validate_rack` and inspect `validation.power_summary` (total_system_watts, total_poe_watts, pse_budgets, ups_capacities, unpowered_devices) and `validation.issues`.',
-                '2. Verify every consumer device has either an AC/DC power cable (`power-schuko-c13`, `power-schuko-c13-angled`, `power-c13-c14`, `usb-c-pd`) or an active PoE link (`poe-in-af`/`at`/`bt` connected to a PSE port with sufficient budget).',
-                '3. Check for `THERMAL_AIRFLOW_CONFLICT` (opposing front-to-rear and rear-to-front fans on adjacent U slots) or `THERMAL_PASSIVE_ENCLOSED_WARNING`.',
+                '2. Verify every consumer device has either an AC/DC power cable (`power-schuko-c13`, `power-schuko-c13-angled`, `power-c13-c14`, `power-dc-5525`, `power-usb-c`) or an active PoE link (`poe-in` connected to a PSE port with sufficient budget) so zero `UNPOWERED_DEVICE` or `UPS_OVERLOAD` findings remain.',
+                '3. Check for `THERMAL_AIRFLOW_CONFLICT` (opposing front-to-rear and rear-to-front fans on adjacent U slots), `THERMAL_HOTSPOT_STACKING`, or `ACOUSTIC_NOISE_HIGH`.',
                 '4. Remediate any power/PoE/thermal findings and provide a concise engineering summary table.'
               ].join('\n')
             }

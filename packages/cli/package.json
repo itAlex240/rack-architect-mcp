@@ -1,6 +1,6 @@
 {
   "name": "@rack-mcp/cli",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "license": "MIT",
   "description": "Unified CLI entry point (rack-mcp serve | validate | export) launching the RackArchitect MCP stdio server, WebSocket sidecar, and 3D Web-Viewer.",
   "type": "module",
