@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.6.2`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.6.3`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.6.2`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.6.3`)
 
 ### 🌐 `v0.6.x` Series — Zero-Install Hosted Multi-Session Remote MCP & Zero-CVE Container Hardening
 
+- **[`v0.6.3`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.3) (2026-10-29) — Workspace-Aware Zero-CVE Docker Production Build:**
+  - Replaced root-only pruning with workspace-wide `pnpm install --prod --frozen-lockfile --ignore-scripts` and a build-time `rack-mcp validate` smoke check, preserving all monorepo `@rack-mcp/*` symlinks with `0` Critical and `0` High Trivy CVEs.
 - **[`v0.6.2`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.2) (2026-10-29) — Headless CI Docker Pruning & Sourcemap Cleanup:**
   - Enforced `ENV CI=true` in the Docker `builder` stage for non-interactive headless builds and stripped residual `*esbuild*` virtual-store directories and `.map` sourcemaps prior to copying into `runner`.
 - **[`v0.6.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.1) (2026-10-29) — Zero-CVE Production Docker Runtime Hardening:**
@@ -72,10 +74,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.6.2`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.6.3`)
 
 ### 🌐 Serie `v0.6.x` — Gehosteter Multi-Session Remote-MCP-Server & Zero-CVE Container-Härtung
 
+- **[`v0.6.3`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.3) (2026-10-29) — Workspace-fähiger Zero-CVE Docker-Produktions-Build:**
+  - Workspace-weites `pnpm install --prod --frozen-lockfile --ignore-scripts` inklusive automatischem CLI-Selbsttest (`rack-mcp validate`) beim Image-Build — erhält alle Monorepo-Links bei `0` Critical und `0` High CVEs im Trivy-Scan.
 - **[`v0.6.2`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.2) (2026-10-29) — Headless Docker-Build-Fix & Sourcemap-Bereinigung:**
   - `ENV CI=true` im Docker-`builder`-Stage für nicht-interaktive Builds ohne TTY gesetzt sowie `.map`-Sourcemaps und `*esbuild*`-Reste vor dem Kopieren in `runner` entfernt.
 - **[`v0.6.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.1) (2026-10-29) — Zero-CVE Docker-Runtime-Härtung:**

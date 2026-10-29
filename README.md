@@ -16,7 +16,10 @@
 [![Remote MCP](https://img.shields.io/badge/Remote_MCP-Streamable_HTTP-8B5CF6.svg)](https://rack-mcp.167.233.80.33.sslip.io/mcp)
 [![Tests](https://img.shields.io/badge/Vitest-49%2F49_Passing-10B981.svg)](./vitest.config.ts)
 
-[**🌐 Launch Live 3D/2D Browser Demo**](https://italex240.github.io/rack-architect-mcp/) · [**Quickstart**](#-30-second-quickstart) · [**MCP Client & Agent Skill**](#-connect-claude-desktop-cursor-or-antigravity) · [**3D-Print (.SCAD / .STL)**](#-parametric-3d-print-generator-scad--stl) · [**Add Hardware Blueprint**](./CONTRIBUTING.md) · [**Complete Handbook (DE)**](./docs/COMPLETE_SYSTEM_HANDBOOK.md)
+[**⚡ Zero-Install Remote MCP (`.../mcp`)**](#-connect-claude-desktop-claude-code-cursor-vs-code-windsurf-or-antigravity) · [**🖥️ Hosted Live 3D Studio**](https://rack-mcp.167.233.80.33.sslip.io/) · [**🌐 Static 3D Demo**](https://italex240.github.io/rack-architect-mcp/) · [**Quickstart**](#-30-second-quickstart) · [**Agent Skill**](#-official-open-source-agent-skill-skillsrack-architectskillmd) · [**3D-Print (.SCAD / .STL)**](#-parametric-3d-print-generator-scad--stl) · [**Add Blueprint**](./CONTRIBUTING.md) · [**Handbook (DE)**](./docs/COMPLETE_SYSTEM_HANDBOOK.md)
+
+> **⚡ Instant Zero-Install Remote MCP Endpoint (Live & Free — No Node.js or Docker Required):**  
+> Connect Claude, Claude Code, Cursor, VS Code Copilot, Windsurf, Google Antigravity, or MCP Inspector directly via **`https://rack-mcp.167.233.80.33.sslip.io/mcp`** (`Streamable HTTP`) or **`https://rack-mcp.167.233.80.33.sslip.io/sse`** (`SSE`) — every session automatically gets its own isolated real-time **Live 3D Digital Twin URL** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>`)!
 
 </div>
 
@@ -53,53 +56,9 @@ Includes Equipment Schedule, Front Elevation (`X, Y`), Horizontally Mirrored Rea
 
 ## 🚀 30-Second Quickstart
 
-### Option A: Local Node.js (`>= 20`) & `pnpm`
+### Option A: Zero-Install Hosted Remote MCP + Live 3D Studio (Recommended — 0 Setup!)
 
-```bash
-# 1. Clone & install
-git clone https://github.com/itAlex240/rack-architect-mcp.git
-cd rack-architect-mcp
-pnpm install
-
-# 2. Build all 6 packages & run the 34 test suites
-pnpm build
-pnpm test
-
-# 3. Launch the Live 3D/2D Web-Viewer & Sidecar on the 8U 10-Inch Reference Homelab
-pnpm start
-```
-
-Open **`http://127.0.0.1:3100/`** in your browser to inspect the 3D Digital Twin, mount devices from the Catalog Drawer, route 3D spline cables, and download `.SCAD` / `.STL` / `.GLB` / `.SVG` / `BOM.md` deliverables!
-
-### Option B: Docker (Zero Local Dependencies)
-
-```bash
-# Run the pre-built image from GitHub Container Registry:
-docker run --rm -p 3100:3100 ghcr.io/italex240/rack-architect-mcp:latest
-
-# Or build locally:
-docker build -t rack-architect-mcp .
-docker run --rm -p 3100:3100 rack-architect-mcp
-# Open http://127.0.0.1:3100/
-```
-
-### Option C: CLI Validation & Headless CAD Export
-
-```bash
-# Validate any rack.yaml and print the ASCII Elevation Plan + Diagnostics
-pnpm validate:demo
-
-# Export elevation.svg, wiring-schematic.svg, BOM.md, rack-scene.glb, and all .scad + .stl 3D-print carriers
-pnpm export:demo
-```
-
----
-
-## 🤖 Connect Claude Desktop, Cursor, or Antigravity
-
-### Option 1: Zero-Install Hosted Remote MCP (`Streamable HTTP` — Instant 1-URL Setup)
-
-Connect any modern MCP client (Claude, Cursor, VS Code Copilot, Windsurf, Google Antigravity, MCP Inspector) directly over HTTPS without installing Node.js or Docker locally:
+Use the live, multi-tenant Hosted Remote MCP server right away without installing Node.js, `pnpm`, or Docker:
 
 ```json
 {
@@ -111,8 +70,102 @@ Connect any modern MCP client (Claude, Cursor, VS Code Copilot, Windsurf, Google
 }
 ```
 
-- **Strict Multi-Session Isolation:** Every connecting MCP client receives its own isolated in-memory session (`Mcp-Session-Id`) and a dedicated **Live 3D Digital Twin URL** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>`) that streams every AI tool mutation in real time over `wss://`!
-- *(Legacy HTTP+SSE clients can also connect via `https://rack-mcp.167.233.80.33.sslip.io/sse`.)*
+```bash
+# Or add in 1 second via Claude Code CLI:
+claude mcp add --transport http rack_architect_mcp https://rack-mcp.167.233.80.33.sslip.io/mcp
+
+# Or explore the Hosted Live 3D/2D Studio directly in your browser:
+# https://rack-mcp.167.233.80.33.sslip.io/
+```
+
+### Option B: Local Node.js (`>= 20`) & `pnpm`
+
+```bash
+# 1. Clone & install
+git clone https://github.com/itAlex240/rack-architect-mcp.git
+cd rack-architect-mcp
+pnpm install
+
+# 2. Build all 6 packages & run all 49 Vitest suites
+pnpm build
+pnpm test
+
+# 3. Launch the Live 3D/2D Web-Viewer & Sidecar on the 8U 10-Inch Reference Homelab
+pnpm start
+```
+
+Open **`http://127.0.0.1:3100/`** in your browser to inspect the 3D Digital Twin, mount devices from the Catalog Drawer, route 3D spline cables, and download `.SCAD` / `.STL` / `.GLB` / `.SVG` / `BOM.md` deliverables!
+
+### Option C: Self-Hosted Docker (Zero Local Node Dependencies)
+
+```bash
+# Build & run directly from GitHub in one step:
+docker build -t rack-architect-mcp https://github.com/itAlex240/rack-architect-mcp.git
+docker run --rm -p 3100:3100 rack-architect-mcp
+# Open http://127.0.0.1:3100/
+```
+
+### Option D: CLI Validation & Headless CAD Export
+
+```bash
+# Validate any rack.yaml and print the ASCII Elevation Plan + Diagnostics
+pnpm validate:demo
+
+# Export elevation.svg, wiring-schematic.svg, BOM.md, rack-scene.glb, and all .scad + .stl 3D-print carriers
+pnpm export:demo
+```
+
+---
+
+## 🤖 Connect Claude Desktop, Claude Code, Cursor, VS Code, Windsurf, or Antigravity
+
+### Option 1: Zero-Install Hosted Remote MCP (`Streamable HTTP` & `SSE` — Instant 1-URL Setup)
+
+Connect any MCP client directly over HTTPS — zero local dependencies, strict multi-session isolation, and an automatic real-time 3D browser twin for every AI session:
+
+| Live Hosted Endpoint | URL | Purpose |
+| :--- | :--- | :--- |
+| **Streamable HTTP MCP (Recommended)** | `https://rack-mcp.167.233.80.33.sslip.io/mcp` | Modern MCP transport (`POST / GET / DELETE /mcp`) for Claude, Cursor, VS Code, Windsurf, Antigravity & MCP Inspector |
+| **Legacy HTTP+SSE MCP** | `https://rack-mcp.167.233.80.33.sslip.io/sse` | Backwards-compatible `GET /sse` + `POST /messages` transport |
+| **Live Hosted 3D Studio & Session Twin** | `https://rack-mcp.167.233.80.33.sslip.io/` | Interactive 3D/2D CAD Studio & live `/?session=<uuid>` WebSocket (`wss://`) viewer returned by every MCP tool call |
+| **MCP Discovery & Health Probe** | `https://rack-mcp.167.233.80.33.sslip.io/.well-known/mcp.json` | Machine-readable MCP discovery manifest & `/health` status endpoint |
+
+**Standard `mcp.json` / Client Configuration (`Streamable HTTP`):**
+
+```json
+{
+  "mcpServers": {
+    "rack_architect_mcp": {
+      "url": "https://rack-mcp.167.233.80.33.sslip.io/mcp"
+    }
+  }
+}
+```
+
+**1-Line CLI & Inspector Commands:**
+
+```bash
+# Claude Code CLI:
+claude mcp add --transport http rack_architect_mcp https://rack-mcp.167.233.80.33.sslip.io/mcp
+
+# Test immediately in MCP Inspector:
+npx @modelcontextprotocol/inspector https://rack-mcp.167.233.80.33.sslip.io/mcp
+```
+
+**Legacy HTTP+SSE Configuration (for older SSE-only MCP clients):**
+
+```json
+{
+  "mcpServers": {
+    "rack_architect_mcp": {
+      "type": "sse",
+      "url": "https://rack-mcp.167.233.80.33.sslip.io/sse"
+    }
+  }
+}
+```
+
+- **Strict Multi-Session Isolation & Zero-Disk Exports:** Every connecting MCP client receives its own isolated in-memory workspace (`Mcp-Session-Id`), a dedicated **Live 3D Digital Twin URL** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>`) streaming every AI tool mutation live over `wss://`, and direct HTTPS download URLs from `export_deliverables` (`.svg`, `.md`, `.glb`, `.scad`, `.stl`, `.yaml`).
 
 ### Option 2: Local `stdio` + Local WebSocket Sidecar (`127.0.0.1:3100`)
 
@@ -167,7 +220,7 @@ Pre-generated reference files in [`examples/10inch-homelab/`](./examples/10inch-
 
 ---
 
-## 🖥️ Live 3D Digital Twin & 2D CAD Web-Viewer (`127.0.0.1:3100`)
+## 🖥️ Live 3D Digital Twin & 2D CAD Web-Viewer (Hosted & Local `:3100`)
 
 - **Interactive Catalog & Cable Patch Builder (`+ Catalog & Cable Builder`):**
   - Search all 67 hardware blueprints, filter by `10inch` / `19inch` / `6inch` / `sub-module`, select `Target U` + `FRONT/REAR`, and mount with 1 click.
@@ -199,7 +252,7 @@ Pre-generated reference files in [`examples/10inch-homelab/`](./examples/10inch-
 | [`@rack-mcp/core-domain`](./packages/core-domain) | Pure TypeScript/Zod schemas, 3D coordinate transformer, AABB collision solver, 5-stage validator, and clamped Catmull-Rom 3D spline router (zero Node/DOM dependencies). |
 | [`@rack-mcp/hardware-catalog`](./packages/hardware-catalog) | 67 YAML hardware blueprints (`10inch`, `19inch`, `6inch`, `carriers`, `sub-modules`), `port_groups` matrix expander, and catalog search/validator. |
 | [`@rack-mcp/exporters`](./packages/exporters) | `elevation.svg`, `wiring-schematic.svg`, `BOM.md`, headless binary `.glb`, and parametric `.scad` & `.stl` 3D-print generators. |
-| [`@rack-mcp/mcp-server`](./packages/mcp-server) | MCP server (`stdio`), 12 tools, 4 resources, 2 prompts, 50-step Undo/Redo manager, and local HTTP/WebSocket sidecar (`:3100`). |
+| [`@rack-mcp/mcp-server`](./packages/mcp-server) | Multi-tenant Remote MCP server (`Streamable HTTP /mcp` & `SSE /sse`) + local `stdio` MCP server, 12 tools, 4 resources, 2 prompts, 50-step Undo/Redo manager, and HTTP/WebSocket 3D sidecar (`:3100`). |
 | [`@rack-mcp/web-viewer`](./packages/web-viewer) | React 19 + Three.js (`@react-three/fiber`) live 3D/2D CAD studio, Catalog/Cable Builder Drawer, and W3C WebMCP integration. |
 | [`@rack-mcp/cli`](./packages/cli) | Unified `rack-mcp` CLI (`serve`, `validate`, `export`). |
 

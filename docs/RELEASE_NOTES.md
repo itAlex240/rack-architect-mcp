@@ -1,20 +1,21 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.6.5` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v0.6.6` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v0.6.5`!**  
-Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
+**Welcome to RackArchitect MCP `v0.6.6`!**  
+Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint (`https://rack-mcp.167.233.80.33.sslip.io/mcp`)** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
-> **✨ What's New in the Last 3 Releases (`v0.6.3` – `v0.6.5`):**
+> **✨ What's New in the Last 3 Releases (`v0.6.4` – `v0.6.6`):**
+> - **Instant Remote MCP Quickstart Across GitHub, Glama & MCP Registries (`v0.6.6`):** Highlighted the live Zero-Install Hosted Remote MCP endpoint (`https://rack-mcp.167.233.80.33.sslip.io/mcp` & `/sse` + Live 3D Session Studio `/?session=<uuid>`) right at the top of `README.md`, `glama.json`, `server.json`, package READMEs, `SKILL.md`, and Release Notes with 1-line `claude mcp add` and `mcpServers` configs.
 > - **Multi-Agent Handover Rules, Zero-Egress DMZ Invariants & Zero-Downtime Auto-Update Protocol (`v0.6.5`):** Added `CLAUDE.md`, `GEMINI.md`, and Section 10 of `AGENTS.md` codifying Hosted Remote MCP production invariants (`read_only: true` in-memory execution, Zero-Egress DMZ asset self-containment, fair-share/CSWSH guards, `server.json` lockstep sync) alongside automated Zero-Downtime GitHub `main` pull-deployments gated by Trivy CVE checks and HTTPS health probes.
 > - **Multi-Tenant Remote MCP, WebSocket, CSP & Container Security Hardening (`v0.6.4`):** Added fair-share per-IP session isolation (`maxSessionsPerIp = 12` so single-IP floods never evict other users), WebSocket `256 KB` frame limits + Cross-Site WebSocket Hijacking (`CSWSH`) `Origin` verification, strict `Content-Security-Policy` + `Referrer-Policy: no-referrer` + scoped CORS on session routes, algorithmic DoS schema bounds, and `root:root`-owned immutable application binaries inside the `USER node` runtime image.
-> - **Workspace-Aware Zero-CVE Docker Production Build (`v0.6.3`):** Replaced root-only pruning with workspace-wide `pnpm install --prod --frozen-lockfile --ignore-scripts` and a build-time `rack-mcp validate` smoke check, preserving all monorepo `@rack-mcp/*` symlinks with **0 Critical and 0 High Trivy CVEs**.
 
 <details>
-<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.6.2) in the Release Archive</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.6.3) in the Release Archive</b></summary>
 
 <br />
 
+- **`v0.6.3`** — Workspace-aware Zero-CVE Docker production build (`pnpm install --prod`) & build-time CLI validation smoke check (`0` High/Critical Trivy CVEs).
 - **`v0.6.2`** — Headless CI Docker pruning (`ENV CI=true`) & sourcemap/esbuild cleanup in the minimal `node:22-alpine` runtime stage.
 - **`v0.6.1`** — Zero-CVE production Docker runtime hardening (~350 MB smaller image, `0` High/Critical Trivy CVEs).
 - **`v0.6.0`** — Zero-install Hosted Multi-Session Remote MCP Server (`Streamable HTTP` `/mcp` & `SSE` `/sse`), isolated Live 3D Session Viewer (`/?session=<uuid>`), zero-disk HTTPS deliverable downloads & per-IP rate limiting.
@@ -83,32 +84,47 @@ At the very bottom of this release page under **"Assets"**, you will find **9 re
 
 ---
 
-### 💻 For Developers, Docker & AI Agents (Claude Desktop / Cursor / Antigravity)
+### 🤖 Option 3: Connect Any AI Agent Instantly via Hosted Remote MCP (Zero Install!)
+
+Connect Claude, Claude Code, Cursor, VS Code Copilot, Windsurf, or Google Antigravity directly via URL — **no Node.js or Docker installation required**, and every AI session automatically gives you a real-time **Live 3D Digital Twin URL** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>`):
+
+```json
+{
+  "mcpServers": {
+    "rack_architect_mcp": {
+      "url": "https://rack-mcp.167.233.80.33.sslip.io/mcp"
+    }
+  }
+}
+```
 
 ```bash
-# Run locally in 10 seconds with Docker:
+# Or add in 1 second via Claude Code CLI (legacy SSE also available at /sse):
+claude mcp add --transport http rack_architect_mcp https://rack-mcp.167.233.80.33.sslip.io/mcp
+
+# Or self-host locally with Docker:
 docker build -t rack-architect-mcp https://github.com/itAlex240/rack-architect-mcp.git
 docker run --rm -p 3100:3100 rack-architect-mcp
-# Open http://127.0.0.1:3100/
 ```
 
 ---
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v0.6.5` von RackArchitect MCP!**  
-Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
+**Willkommen beim Release `v0.6.6` von RackArchitect MCP!**  
+Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL (`https://rack-mcp.167.233.80.33.sslip.io/mcp`)** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.6.3` – `v0.6.5`):**
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.6.4` – `v0.6.6`):**
+> - **Direkter Remote-MCP-Schnellstart auf GitHub, Glama & in allen MCP-Verzeichnissen (`v0.6.6`):** Der live gehostete Zero-Install Remote-MCP-Endpunkt (`https://rack-mcp.167.233.80.33.sslip.io/mcp` & `/sse` + Live-3D-Session-Studio `/?session=<uuid>`) steht jetzt prominent ganz oben in der `README.md`, in `glama.json`, `server.json`, den Paket-READMEs, `SKILL.md` und den Release Notes bereit.
 > - **Multi-Agenten-Regeln, Zero-Egress-DMZ-Invarianten & Zero-Downtime Auto-Update-Protokoll (`v0.6.5`):** `CLAUDE.md`, `GEMINI.md` und Abschnitt 10 in `AGENTS.md` dokumentieren verbindlich alle Produktions- und Sicherheitsregeln für den gehosteten Remote-MCP-Server (`read_only: true`, Zero-Egress-DMZ ohne externe Laufzeit-Abhängigkeiten, Fair-Share-/CSWSH-Schutz, `server.json`-Synchronisation) sowie das automatische Zero-Downtime Pull-Deployment vom GitHub-`main`-Branch inkl. Trivy-CVE-Gate und HTTPS-Healthcheck.
 > - **Multi-Tenant Remote-MCP-, WebSocket-, CSP- & Container-Security-Hardening (`v0.6.4`):** Fair-Share-Mandantenschutz pro IP (`maxSessionsPerIp = 12` verhindert Verdrängung fremder Sessions), `256 KB` WebSocket-Frame-Limit + CSWSH-`Origin`-Prüfung, strikte `Content-Security-Policy` + `Referrer-Policy: no-referrer` + Scoped CORS auf Session-Routen, algorithmische DoS-Grenzen in allen Schemas sowie unveränderliche `root:root`-Programmdateien im `USER node`-Container.
-> - **Workspace-fähiger Zero-CVE Docker-Produktions-Build (`v0.6.3`):** Workspace-weites `pnpm install --prod --frozen-lockfile --ignore-scripts` inklusive automatischem CLI-Selbsttest (`rack-mcp validate`) beim Image-Build — erhält alle Monorepo-Links bei **0 Critical und 0 High CVEs** im Trivy-Scan.
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.6.2) auf Deutsch anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.6.3) auf Deutsch anzeigen</b></summary>
 
 <br />
 
+- **`v0.6.3`** — Workspace-fähiger Zero-CVE Docker-Produktions-Build (`pnpm install --prod`) inkl. automatischem CLI-Selbsttest (`0` High/Critical Trivy-CVEs).
 - **`v0.6.2`** — Headless Docker-Build-Fix (`ENV CI=true`) & Bereinigung von Sourcemaps/`esbuild`-Resten im schlanken `node:22-alpine`-Produktions-Image.
 - **`v0.6.1`** — Zero-CVE Docker-Runtime-Härtung (~350 MB schlankeres Produktions-Image, `0` High/Critical Trivy-CVEs).
 - **`v0.6.0`** — Gehosteter Multi-Session Remote-MCP-Server (`Streamable HTTP` `/mcp` & `SSE` `/sse`), eigener Live-3D-Session-Viewer (`/?session=<uuid>`), sichere HTTPS-Download-URLs ohne Server-Dateizugriff & IP-Rate-Limiting.
@@ -154,6 +170,25 @@ Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Net
 | 🛒 **`BOM.md`** | **Einkaufs- & Stückliste** | **Komplette Einkaufs- und Materialliste** (Geräte, Schrauben, Filament-Gramm und **exakte Kabellängen**). |
 | 🧊 **`rack-scene.glb`** | **3D-Ansicht auf PC/Mac** | Komplettes **3D-Modell des gefüllten Racks** für 3D-Betrachter oder **Blender**. |
 | 📄 **`rack.yaml`** | **Projekt-Speicherdatei** | Textdatei, in der dieses komplette 8-Etagen-Beispiel-Rack gespeichert ist. |
+
+### 🤖 Möglichkeit 3: KI-Assistenten sofort per Remote-MCP verbinden (Ohne lokale Installation!)
+
+Verbinde Claude, Claude Code, Cursor, VS Code, Windsurf oder Google Antigravity direkt über unsere gehostete HTTPS-URL — jede Session ist komplett isoliert und liefert dir automatisch einen eigenen **Live-3D-Viewer-Link** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>`):
+
+```json
+{
+  "mcpServers": {
+    "rack_architect_mcp": {
+      "url": "https://rack-mcp.167.233.80.33.sslip.io/mcp"
+    }
+  }
+}
+```
+
+```bash
+# Oder per 1-Zeilen-Befehl in Claude Code (Legacy-SSE ebenfalls unter /sse verfügbar):
+claude mcp add --transport http rack_architect_mcp https://rack-mcp.167.233.80.33.sslip.io/mcp
+```
 
 Alle technischen Details zur 5-Stufen-Validierung, den 12 MCP-Tools und den 26 Diagnose-Codes findest du im [**Kompletten System-Handbuch (`docs/COMPLETE_SYSTEM_HANDBOOK.md`)**](https://github.com/itAlex240/rack-architect-mcp/blob/main/docs/COMPLETE_SYSTEM_HANDBOOK.md).
 

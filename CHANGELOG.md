@@ -5,6 +5,19 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.6] - 2026-10-29
+
+### Documentation & Registry Visibility (🇬🇧 English)
+- **Zero-Install Hosted Remote MCP Visibility Across GitHub, Glama, Registry Manifests & Release Notes (`README.md`, `glama.json`, `server.json`, `docs/RELEASE_NOTES.md`, `docs/COMPLETE_SYSTEM_HANDBOOK.md`, `packages/*/README.md`, `skills/rack-architect/SKILL.md`):**
+  - Promoted the live **Zero-Install Hosted Remote MCP endpoint** (`https://rack-mcp.167.233.80.33.sslip.io/mcp` via `Streamable HTTP`, `/sse` via `HTTP+SSE`, and live per-session 3D viewer `/?session=<uuid>`) right into the top Hero callout and **Option A** of the `30-Second Quickstart` in `README.md`, complete with an endpoint reference table, `mcpServers` JSON snippets, 1-line `claude mcp add --transport http` CLI command, and `npx @modelcontextprotocol/inspector` quick-test command.
+  - Added dedicated Zero-Install Hosted Remote MCP connection instructions (English & German) directly into `docs/RELEASE_NOTES.md` so every GitHub Release page highlights instant URL-based MCP access without local installation.
+  - Updated `glama.json`, `server.json`, `packages/mcp-server/README.md`, `packages/cli/README.md`, `docs/COMPLETE_SYSTEM_HANDBOOK.md`, `skills/rack-architect/SKILL.md`, and `.agents/skills/rack-architect/SKILL.md` so MCP directories (`Glama`, `mcpservers.org`, `Awesome MCP Servers`, and official MCP registries) immediately surface the public Remote MCP URLs.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Prominente Darstellung des Zero-Install Hosted Remote-MCP-Endpunkts auf GitHub, Glama & in allen Dokumentationen (`README.md`, `glama.json`, `server.json`, `docs/RELEASE_NOTES.md`, `docs/COMPLETE_SYSTEM_HANDBOOK.md`, `packages/*/README.md`, `skills/rack-architect/SKILL.md`):**
+  - Den live gehosteten **Zero-Install Remote-MCP-Server** (`https://rack-mcp.167.233.80.33.sslip.io/mcp` für `Streamable HTTP`, `/sse` für `SSE` sowie den Live-3D-Session-Viewer `/?session=<uuid>`) direkt oben in den Hero-Bereich und als **Option A** im `30-Second Quickstart` der `README.md` gesetzt — inklusive Endpunkt-Übersichtstabelle, Copy-Paste-`mcpServers`-JSON, 1-Zeilen-Befehl für `claude mcp add --transport http` und `npx @modelcontextprotocol/inspector`.
+  - Eigene Remote-MCP-Schnellstart-Blöcke (Englisch & Deutsch) in `docs/RELEASE_NOTES.md` ergänzt sowie `glama.json`, `server.json`, `packages/mcp-server/README.md`, `packages/cli/README.md`, `docs/COMPLETE_SYSTEM_HANDBOOK.md` und beide `SKILL.md`-Dateien aktualisiert, damit Verzeichnisse wie **Glama**, **mcpservers.org** und **Awesome MCP Servers** sofort zeigen, dass der MCP-Server direkt per URL ohne Installation nutzbar ist.
+
 ## [0.6.5] - 2026-10-29
 
 ### Documentation, Automation & Multi-Agent Handover (🇬🇧 English)

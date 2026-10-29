@@ -56,12 +56,14 @@ Wenn jemand dieses Projekt untersucht und sich fragt: *„Wie logge ich mich ein
 - Das gesamte System arbeitet als **lokales CAD- & Engineering-Werkzeug** direkt auf der lokalen Projektdatei (`rack.yaml`).
 - Jeder, der das Web-Dashboard öffnet, hat sofort vollen Lese- und Schreibzugriff auf die aktuell geladene Szene.
 
-### 2.2 Netzwerk-Ports & Bind-Adressen
-| Komponente | Standard-Host | Standard-Port | Protokoll | Quelldatei |
+### 2.2 Netzwerk-Ports, Bind-Adressen & Gehosteter Remote-MCP-Endpunkt
+| Komponente | Standard-Host / URL | Standard-Port | Protokoll | Quelldatei |
 | :--- | :--- | :--- | :--- | :--- |
-| **MCP-Server (KI-Host-Kommunikation)** | Prozess-Standard-I/O | — (`stdin` / `stdout`) | JSON-RPC 2.0 (MCP `stdio`) | [`packages/mcp-server/src/mcp/server.ts`](../packages/mcp-server/src/mcp/server.ts#L393-L397) |
-| **Sidecar HTTP-Server (REST API + Web-UI Hosting)** | `127.0.0.1` (Loopback) | `3100` (konfigurierbar per `--port`) | HTTP (`GET`, `OPTIONS`) | [`packages/mcp-server/src/sidecar/sidecar-server.ts`](../packages/mcp-server/src/sidecar/sidecar-server.ts#L69-L70) |
-| **Sidecar WebSocket-Server (Echtzeit-Sync)** | `127.0.0.1` (Loopback) | `3100` (Pfad `/ws`) | WebSocket (`ws://127.0.0.1:3100/ws`) | [`packages/mcp-server/src/sidecar/sidecar-server.ts`](../packages/mcp-server/src/sidecar/sidecar-server.ts#L187) |
+| **Gehosteter Remote-MCP-Server (Zero-Install)** | `https://rack-mcp.167.233.80.33.sslip.io/mcp` (sowie `/sse`) | `443` (HTTPS TLS) | MCP `Streamable HTTP` & `HTTP+SSE` | [`packages/mcp-server/src/remote/remote-session-registry.ts`](../packages/mcp-server/src/remote/remote-session-registry.ts) |
+| **Gehosteter Live-3D-Session-Viewer** | `https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>` | `443` (`wss://`) | HTTPS + WebSocket (`wss://.../ws?session=<uuid>`) | [`packages/mcp-server/src/sidecar/sidecar-server.ts`](../packages/mcp-server/src/sidecar/sidecar-server.ts) |
+| **Lokaler MCP-Server (KI-Host-Kommunikation)** | Prozess-Standard-I/O | — (`stdin` / `stdout`) | JSON-RPC 2.0 (MCP `stdio`) | [`packages/mcp-server/src/mcp/server.ts`](../packages/mcp-server/src/mcp/server.ts) |
+| **Lokaler Sidecar HTTP-Server (REST API + Web-UI)** | `127.0.0.1` (Loopback) | `3100` (konfigurierbar per `--port`) | HTTP (`GET`, `POST`, `DELETE`, `OPTIONS`) | [`packages/mcp-server/src/sidecar/sidecar-server.ts`](../packages/mcp-server/src/sidecar/sidecar-server.ts) |
+| **Lokaler Sidecar WebSocket-Server (Echtzeit-Sync)** | `127.0.0.1` (Loopback) | `3100` (Pfad `/ws`) | WebSocket (`ws://127.0.0.1:3100/ws`) | [`packages/mcp-server/src/sidecar/sidecar-server.ts`](../packages/mcp-server/src/sidecar/sidecar-server.ts) |
 | **Vite Dev-Server (nur für Frontend-Entwicklung)** | `localhost` | `5173` | HTTP + HMR | [`packages/web-viewer/vite.config.ts`](../packages/web-viewer/vite.config.ts) |
 
 ### 2.3 Eingebaute Sicherheits- und Schutzmechanismen
@@ -107,7 +109,7 @@ flowchart TD
 | **`@rack-mcp/core-domain`** | [`packages/core-domain`](../packages/core-domain/src/index.ts) | **KEINE** (`"types": []` in `tsconfig.json`) | Reine Mathematik, Konstanten, Zod-Schemas, Port-Matrix-Expander, 3D-Koordinaten-Transformer, 5-Stufen-Validierungs-Engine, 3D-Catmull-Rom-Kabelrouter. Läuft identisch in Node.js und im Browser. |
 | **`@rack-mcp/hardware-catalog`** | [`packages/hardware-catalog`](../packages/hardware-catalog/src/index.ts) | `@rack-mcp/core-domain` | 67 kuratierte YAML-Hardware-Blueprints (`catalog/10inch`, `catalog/19inch`, `catalog/6inch`, `catalog/carriers`, `catalog/sub-modules`), eingebettetes TS-Bundle (`embedded-catalog.ts`), Geometrie-Integritäts-Validator und Such-/Filter-Registry (`CatalogRegistry`). |
 | **`@rack-mcp/exporters`** | [`packages/exporters`](../packages/exporters/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` | Deterministische Generatoren für `elevation.svg` (2D-Ansichten + Z-Y-Tiefenschnitt), `wiring-schematic.svg` (Strom-DAG + orthogonales Pin-zu-Pin-Schaltbild), `BOM.md` (Stückliste + 3D-Druck-Queue + Patch-Checkliste) und `rack-scene.glb` (binäres 3D glTF 2.0 Modell). |
-| **`@rack-mcp/mcp-server`** | [`packages/mcp-server`](../packages/mcp-server/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters` | `ProjectStateManager` (Undo/Redo, File-Watcher, Atomic-Save), `RackMcpToolHandlers` (11 Tools), `createRackMcpServer` (MCP über `stdio`, 4 Resources, 2 Prompts), `generateAsciiElevation` und `startRackSidecarServer` (`HTTP + WebSocket`). |
+| **`@rack-mcp/mcp-server`** | [`packages/mcp-server`](../packages/mcp-server/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters` | `ProjectStateManager` (Undo/Redo, File-Watcher, Atomic-Save), `RemoteSessionRegistry` (Multi-Tenant `Streamable HTTP` `/mcp` & `SSE` `/sse`), `RackMcpToolHandlers` (12 Tools), `createRackMcpServer` (4 Resources, 2 Prompts), `generateAsciiElevation` und `startRackSidecarServer` (`HTTP + WebSocket`). |
 | **`@rack-mcp/web-viewer`** | [`packages/web-viewer`](../packages/web-viewer/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` | Interaktives React 19 + Three.js (`@react-three/fiber`) CAD-Dashboard mit Dual-Mode (`sidecar-live` per WebSocket oder `standalone-demo` direkt im Browser) und Client-Side WebMCP (`document.modelContext`). |
 | **`@rack-mcp/cli`** | [`packages/cli`](../packages/cli/src/index.ts) | `@rack-mcp/mcp-server` (und transitiv alle Pakete) | Kommandozeilen-Einstiegspunkt (`rack-mcp`) mit den Befehlen `serve`, `validate` und `export`. |
 
@@ -645,7 +647,8 @@ Implementiert in [`packages/cli/src/index.ts`](../packages/cli/src/index.ts) und
    ```
    - `--project <pfad>`: Pfad zur `rack.yaml` (Standard: `./rack.yaml`; existiert die Datei noch nicht, wird automatisch ein leeres 8U-10-Zoll-Projekt angelegt).
    - `--port <nummer>`: HTTP/WebSocket-Port des Sidecar-Servers (Standard: `3100`).
-   - `--stdio` / `--no-stdio`: Steuert, ob der MCP-Server auf `stdin`/`stdout` gebunden wird (Standard: `--stdio`). Wenn man den Server nur für das Web-Dashboard im Terminal starten möchte, kann man `--no-stdio` übergeben.
+   - `--stdio` / `--no-stdio`: Steuert, ob der MCP-Server auf `stdin`/`stdout` gebunden wird (Standard: `--stdio`). Wenn man den Server nur für das Web-Dashboard oder als Remote-MCP-Server startet, übergibt man `--no-stdio`.
+   - `--remote-mcp` & `--public-url <url>`: Aktiviert den mandantenfähigen, 100 % speicherbasierten **Remote-MCP-Modus** (`Streamable HTTP` auf `/mcp`, `HTTP+SSE` auf `/sse`, Discovery auf `/.well-known/mcp.json`, isolierte Live-3D-Viewer-Links `/?session=<uuid>` und direkte HTTPS-Download-URLs unter `/api/export/*?session=<uuid>`), wie er öffentlich unter **`https://rack-mcp.167.233.80.33.sslip.io/mcp`** bereitsteht.
 
 2. **`validate`:**
    Lädt die angegebene `rack.yaml`, führt die 5-Stufen-Validierung aus, gibt den kompletten **ASCII-Elevationsplan + Diagnosebericht** aus und beendet sich mit **Exit-Code `0`** (wenn `VALID`, d. h. `0` Errors) oder **Exit-Code `1`** (wenn `INVALID` oder Datei nicht gefunden).
