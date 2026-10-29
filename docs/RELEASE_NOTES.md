@@ -1,20 +1,21 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.6.4` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v0.6.5` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v0.6.4`!**  
+**Welcome to RackArchitect MCP `v0.6.5`!**  
 Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
-> **✨ What's New in the Last 3 Releases (`v0.6.2` – `v0.6.4`):**
+> **✨ What's New in the Last 3 Releases (`v0.6.3` – `v0.6.5`):**
+> - **Multi-Agent Handover Rules, Zero-Egress DMZ Invariants & Zero-Downtime Auto-Update Protocol (`v0.6.5`):** Added `CLAUDE.md`, `GEMINI.md`, and Section 10 of `AGENTS.md` codifying Hosted Remote MCP production invariants (`read_only: true` in-memory execution, Zero-Egress DMZ asset self-containment, fair-share/CSWSH guards, `server.json` lockstep sync) alongside automated Zero-Downtime GitHub `main` pull-deployments gated by Trivy CVE checks and HTTPS health probes.
 > - **Multi-Tenant Remote MCP, WebSocket, CSP & Container Security Hardening (`v0.6.4`):** Added fair-share per-IP session isolation (`maxSessionsPerIp = 12` so single-IP floods never evict other users), WebSocket `256 KB` frame limits + Cross-Site WebSocket Hijacking (`CSWSH`) `Origin` verification, strict `Content-Security-Policy` + `Referrer-Policy: no-referrer` + scoped CORS on session routes, algorithmic DoS schema bounds, and `root:root`-owned immutable application binaries inside the `USER node` runtime image.
 > - **Workspace-Aware Zero-CVE Docker Production Build (`v0.6.3`):** Replaced root-only pruning with workspace-wide `pnpm install --prod --frozen-lockfile --ignore-scripts` and a build-time `rack-mcp validate` smoke check, preserving all monorepo `@rack-mcp/*` symlinks with **0 Critical and 0 High Trivy CVEs**.
-> - **Headless CI Docker Pruning & Sourcemap Cleanup (`v0.6.2`):** Enforced `ENV CI=true` and stripped residual `*esbuild*` binaries and `.map` sourcemaps prior to copying into the minimal `node:22-alpine` runtime stage.
 
 <details>
-<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.6.1) in the Release Archive</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.6.2) in the Release Archive</b></summary>
 
 <br />
 
+- **`v0.6.2`** — Headless CI Docker pruning (`ENV CI=true`) & sourcemap/esbuild cleanup in the minimal `node:22-alpine` runtime stage.
 - **`v0.6.1`** — Zero-CVE production Docker runtime hardening (~350 MB smaller image, `0` High/Critical Trivy CVEs).
 - **`v0.6.0`** — Zero-install Hosted Multi-Session Remote MCP Server (`Streamable HTTP` `/mcp` & `SSE` `/sse`), isolated Live 3D Session Viewer (`/?session=<uuid>`), zero-disk HTTPS deliverable downloads & per-IP rate limiting.
 - **`v0.5.0`** — Live Rack Preset Switcher (`10"` · `19"` · `6"` · `Empty`), shareable zero-backend rack links (`#rack=v1...`), custom 3D-print cover-panel configurator (`0.5U`–`3U` + engraved front text) & direct 2-click 3D port patching.
@@ -95,19 +96,20 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v0.6.4` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.6.5` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.6.2` – `v0.6.4`):**
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.6.3` – `v0.6.5`):**
+> - **Multi-Agenten-Regeln, Zero-Egress-DMZ-Invarianten & Zero-Downtime Auto-Update-Protokoll (`v0.6.5`):** `CLAUDE.md`, `GEMINI.md` und Abschnitt 10 in `AGENTS.md` dokumentieren verbindlich alle Produktions- und Sicherheitsregeln für den gehosteten Remote-MCP-Server (`read_only: true`, Zero-Egress-DMZ ohne externe Laufzeit-Abhängigkeiten, Fair-Share-/CSWSH-Schutz, `server.json`-Synchronisation) sowie das automatische Zero-Downtime Pull-Deployment vom GitHub-`main`-Branch inkl. Trivy-CVE-Gate und HTTPS-Healthcheck.
 > - **Multi-Tenant Remote-MCP-, WebSocket-, CSP- & Container-Security-Hardening (`v0.6.4`):** Fair-Share-Mandantenschutz pro IP (`maxSessionsPerIp = 12` verhindert Verdrängung fremder Sessions), `256 KB` WebSocket-Frame-Limit + CSWSH-`Origin`-Prüfung, strikte `Content-Security-Policy` + `Referrer-Policy: no-referrer` + Scoped CORS auf Session-Routen, algorithmische DoS-Grenzen in allen Schemas sowie unveränderliche `root:root`-Programmdateien im `USER node`-Container.
 > - **Workspace-fähiger Zero-CVE Docker-Produktions-Build (`v0.6.3`):** Workspace-weites `pnpm install --prod --frozen-lockfile --ignore-scripts` inklusive automatischem CLI-Selbsttest (`rack-mcp validate`) beim Image-Build — erhält alle Monorepo-Links bei **0 Critical und 0 High CVEs** im Trivy-Scan.
-> - **Headless Docker-Build-Fix & Sourcemap-Bereinigung (`v0.6.2`):** `ENV CI=true` sowie Bereinigung von `*esbuild*`-Resten und `.map`-Sourcemaps vor dem Kopieren in das schlanke `node:22-alpine`-Produktions-Image.
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.6.1) auf Deutsch anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.6.2) auf Deutsch anzeigen</b></summary>
 
 <br />
 
+- **`v0.6.2`** — Headless Docker-Build-Fix (`ENV CI=true`) & Bereinigung von Sourcemaps/`esbuild`-Resten im schlanken `node:22-alpine`-Produktions-Image.
 - **`v0.6.1`** — Zero-CVE Docker-Runtime-Härtung (~350 MB schlankeres Produktions-Image, `0` High/Critical Trivy-CVEs).
 - **`v0.6.0`** — Gehosteter Multi-Session Remote-MCP-Server (`Streamable HTTP` `/mcp` & `SSE` `/sse`), eigener Live-3D-Session-Viewer (`/?session=<uuid>`), sichere HTTPS-Download-URLs ohne Server-Dateizugriff & IP-Rate-Limiting.
 - **`v0.5.0`** — Live-Preset-Switcher (`10"` · `19"` · `6"` · `Leer`), teilbare Rack-Links (`#rack=v1...`), interaktiver 3D-Druck-Cover-Panel-Konfigurator (`0.5U`–`3U` + Gravur-Text) & direktes 2-Klick-3D-Port-Patching.

@@ -5,6 +5,20 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.5] - 2026-10-29
+
+### Documentation, Automation & Multi-Agent Handover (🇬🇧 English)
+- **Unified Multi-Agent Operational Rules, Zero-Egress DMZ Invariants & Zero-Downtime Auto-Deployment Protocol (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`):**
+  - Added Section 10 to `AGENTS.md` codifying all production invariants for the Hosted Remote MCP instance (`https://rack-mcp.167.233.80.33.sslip.io`): strict compatibility with `read_only: true` (`EROFS`) in-memory execution, 100% self-contained assets under the Zero-Egress network DMZ (`br-rackmcp` + `Content-Security-Policy: default-src 'self'`), preservation of multi-tenant fair-share session limits and CSWSH/frame caps, and `server.json` version synchronization.
+  - Added canonical `CLAUDE.md` and `GEMINI.md` agent entrypoint files linking directly to `AGENTS.md` (Sections 1–10), `ARCHITECTURE.md`, `docs/DESIGN_SYSTEM.md`, `docs/COMPLETE_SYSTEM_HANDBOOK.md`, and `skills/rack-architect/SKILL.md` so any AI coding agent (Antigravity, Claude Code, Gemini CLI, Cursor) immediately inherits all architectural, security, and release rules.
+  - Documented the automated pull-based Zero-Downtime GitHub `main` auto-updater (`rack-mcp-autoupdate.timer` with Trivy `CRITICAL` CVE gate, automatic `:rollback` fallback, DMZ firewall self-healing, and public HTTPS `/health` verification).
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Multi-Agenten-Übergabedokumentation, Zero-Egress-DMZ-Invarianten & Zero-Downtime Auto-Update-Protokoll (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`):**
+  - Abschnitt 10 in `AGENTS.md` ergänzt: dokumentiert verbindlich alle Produktions- und Sicherheits-Invarianten des gehosteten Remote-MCP-Servers (`https://rack-mcp.167.233.80.33.sslip.io`) — strikte `read_only: true`-Kompatibilität (100 % In-Memory im Remote-Modus), vollständige Eigenständigkeit aller Assets ohne externe Laufzeit-Requests in der Zero-Egress-DMZ (`br-rackmcp`), Erhalt aller Fair-Share-/CSWSH-/Schema-Schutzgrenzen sowie `server.json`-Synchronisation.
+  - `CLAUDE.md` und `GEMINI.md` als zentrale Einstiegspunkte für alle KI-Coding-Agenten ergänzt, damit zukünftige Agenten automatisch sämtliche Architektur-, UI-, Sicherheits- und Release-Regeln aus `AGENTS.md` (Abschnitte 1–10) kennen.
+  - Vollautomatischen Zero-Downtime Pull-Auto-Updater vom GitHub-`main`-Branch dokumentiert (`rack-mcp-autoupdate.timer` alle 15 Min. inkl. DMZ-Firewall-Selbstheilung, Trivy-`CRITICAL`-CVE-Gate, automatischem `:rollback`-Schutz und HTTPS-`/health`-Prüfung).
+
 ## [0.6.4] - 2026-10-29
 
 ### Security & Hardening (🇬🇧 English)

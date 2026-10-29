@@ -7,7 +7,7 @@
     "url": "https://github.com/itAlex240/rack-architect-mcp",
     "source": "github"
   },
-  "version": "0.6.4",
+  "version": "0.6.5",
   "remotes": [
     {
       "type": "streamable-http",

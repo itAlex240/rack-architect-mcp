@@ -14,7 +14,7 @@
 [![EIA-310 Standards](https://img.shields.io/badge/EIA--310-19%22_%7C_10%22_%7C_6%22-06B6D4.svg)](./ARCHITECTURE.md)
 [![3D Print Ready](https://img.shields.io/badge/3D--Print-OpenSCAD_.SCAD_%2B_.STL-F59E0B.svg)](./packages/exporters/src/openscad-carrier.ts)
 [![Remote MCP](https://img.shields.io/badge/Remote_MCP-Streamable_HTTP-8B5CF6.svg)](https://rack-mcp.167.233.80.33.sslip.io/mcp)
-[![Tests](https://img.shields.io/badge/Vitest-46%2F46_Passing-10B981.svg)](./vitest.config.ts)
+[![Tests](https://img.shields.io/badge/Vitest-49%2F49_Passing-10B981.svg)](./vitest.config.ts)
 
 [**🌐 Launch Live 3D/2D Browser Demo**](https://italex240.github.io/rack-architect-mcp/) · [**Quickstart**](#-30-second-quickstart) · [**MCP Client & Agent Skill**](#-connect-claude-desktop-cursor-or-antigravity) · [**3D-Print (.SCAD / .STL)**](#-parametric-3d-print-generator-scad--stl) · [**Add Hardware Blueprint**](./CONTRIBUTING.md) · [**Complete Handbook (DE)**](./docs/COMPLETE_SYSTEM_HANDBOOK.md)
 

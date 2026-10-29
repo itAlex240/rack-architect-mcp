@@ -152,9 +152,38 @@ Whenever publishing a release or pushing a completed feature/fix batch, **automa
    * **`MAJOR` (`X.y.z` -> `(X+1).0.0`):** Breaking changes to `rack.yaml` schema, MCP tool contracts, or a major milestone release.
 2. **Mandatory Synchronized Files on Every Version Bump:**
    Every release MUST update all of the following files in lockstep before creating and pushing the git tag `vX.Y.Z`:
-   * Root `package.json` and all 6 workspace `packages/*/package.json` files (`core-domain`, `hardware-catalog`, `exporters`, `mcp-server`, `web-viewer`, `cli`).
+   * Root `package.json`, `server.json`, and all 6 workspace `packages/*/package.json` files (`core-domain`, `hardware-catalog`, `exporters`, `mcp-server`, `web-viewer`, `cli`).
    * `packages/mcp-server/src/mcp/server.ts` (`version: 'X.Y.Z'`).
    * `packages/web-viewer/src/index.ts` (`export const WEB_VIEWER_VERSION = 'X.Y.Z';`).
    * `CHANGELOG.md` (new `## [X.Y.Z] - YYYY-MM-DD` entry).
    * `docs/RELEASE_NOTES.md` and `docs/RELEASE_ARCHIVE.md` (**English-First, German-Second** layout matching `README.md`: update header `# 🏗️ RackArchitect MCP vX.Y.Z`, keep **only the 3 most recent versions** in the `> ✨ What's New in the Last 3 Releases:` and `> ✨ Was ist neu in den letzten 3 Versionen:` highlight boxes, and move any older version bullet into `docs/RELEASE_ARCHIVE.md` so the GitHub Release page never grows unboundedly).
    * Whenever hardware blueprints are added or modified in `packages/hardware-catalog/catalog/`, regenerate `packages/hardware-catalog/src/embedded-catalog.ts`, run `pnpm validate:catalog`, and update blueprint counts/tables in `README.md`, `packages/hardware-catalog/README.md`, `docs/COMPLETE_SYSTEM_HANDBOOK.md`, `skills/rack-architect/SKILL.md`, and `.agents/skills/rack-architect/SKILL.md`.
+
+---
+
+## 10. Hosted Remote MCP Production Deployment, Zero-Egress DMZ & Auto-Update Protocol
+
+A live, multi-tenant Hosted Remote MCP + 3D Studio instance is deployed in production (`RACK_MCP_REMOTE=1`) at:
+* **Streamable HTTP MCP Endpoint:** `https://rack-mcp.167.233.80.33.sslip.io/mcp`
+* **Legacy HTTP+SSE MCP Endpoint:** `https://rack-mcp.167.233.80.33.sslip.io/sse`
+* **Live 3D Studio & Session Viewer:** `https://rack-mcp.167.233.80.33.sslip.io/` (and `/?session=<uuid>` via `wss://`)
+* **Health & Discovery Endpoints:** `https://rack-mcp.167.233.80.33.sslip.io/health` and `/.well-known/mcp.json`
+* **Static GitHub Pages Demo:** `https://italex240.github.io/rack-architect-mcp/` (auto-deployed via `.github/workflows/deploy-demo.yml` on push to `main`)
+
+### Mandatory Production & Security Invariants for All Future Agents
+1. **Read-Only Root Filesystem Compatibility (`read_only: true` / `EROFS`):**
+   * The production Docker container runs as unprivileged `USER node` (`UID 1000`) with `read_only: true`, `cap_drop: [ALL]`, `no-new-privileges:true`, `pids_limit: 128`, `mem_limit: 512m`, and `root:root`-owned `/app/packages` + `/app/node_modules`.
+   * Whenever `RACK_MCP_REMOTE=1` (`--remote-mcp`) is active, the server MUST operate **100% in-memory** and never write project files, tool logs, custom blueprints, or deliverables to `/app` or arbitrary host paths (`export_deliverables` must stream via `/api/export/*?session=<uuid>`).
+2. **Zero-Egress Network DMZ (`br-rackmcp` + Self-Contained Assets):**
+   * In production, `rack-architect-mcp` runs inside an isolated Zero-Egress Docker DMZ bridge (`br-rackmcp`, `172.30.250.2/29`) enforced by `rack-mcp-firewall.service` (`iptables` drops **100% of outbound/lateral/IMDS connections** initiated from inside the container).
+   * Therefore, **NEVER** add runtime outbound `fetch()` calls from `@rack-mcp/mcp-server` or external CDN scripts/fonts/HDR textures in `@rack-mcp/web-viewer` (which would also violate the strict `Content-Security-Policy: default-src 'self'`). Every asset, font, icon, and hardware blueprint must remain 100% self-contained.
+3. **Multi-Tenant Abuse, DoS & CSWSH Guards (Never Weaken):**
+   * Preserve Fair-Share per-IP session isolation (`maxSessionsPerIp = 12`, `maxNewSessionsPerMinutePerIp = 20`, rightmost `X-Forwarded-For` / `X-Real-IP` extraction) in `packages/mcp-server/src/remote/remote-session-registry.ts` so single-IP floods can never evict other users' sessions.
+   * Preserve WebSocket `maxPayload: 256 * 1024`, `perMessageDeflate: false`, CSWSH `Origin` validation (`403`), scoped CORS (no wildcard `*` on `/api/state` or `/api/export/*`), `512 KB` request body caps (`413`), and strict Zod `.max(...)` bounds across `packages/core-domain/src/schemas/`.
+   * Keep the production `Dockerfile` at **0 Critical and 0 High Trivy CVEs** (`pnpm install --prod --frozen-lockfile --ignore-scripts`, strip `*esbuild*`, `.map` sourcemaps, `npm`/`yarn`/`corepack`, and distrusted `*emSign*` CAs).
+4. **Automated GitHub `main` Pull-Deployment, Trivy Gate & Monitoring:**
+   * Pushing to `origin/main` automatically triggers **both** GitHub Pages (`deploy-demo.yml`) and the production server's pull-based Zero-Downtime Auto-Updater (`rack-mcp-autoupdate.timer` -> `/usr/local/sbin/update-rack-architect-mcp.sh` every 15 minutes):
+     1. Polls `git ls-remote` on `refs/heads/main` against `/opt/rack-architect-mcp/.deployed_commit` and verifies/heals the `br-rackmcp` Zero-Egress `iptables` rules on every tick.
+     2. Builds a candidate image (`rack-architect-mcp:candidate`), blocks deployment if Trivy finds any fixable `CRITICAL` CVE, swaps atomically with `rack-architect-mcp:rollback` fallback, and verifies `/health` over both `127.0.0.1:3100` and public HTTPS (`https://rack-mcp.167.233.80.33.sslip.io/health`).
+   * Daily automated server monitoring (`08:00 CET` `server_security_briefing.sh`) verifies HTTPS `/health`, GitHub commit sync, `br-rackmcp` Zero-Egress firewall state, `rack-mcp-autoupdate.timer`, and Trivy container CVEs.
+   * For server-admin tasks with SSH access, read `/root/SERVER_DOKUMENTATION.md` and `/opt/gemini-workflows/AGENTS.md` on the host first (and the user's Obsidian Ideaverse `Hetzner Server (PapierkramKiller)` project notes if available locally).

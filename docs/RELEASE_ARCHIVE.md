@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.6.1`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.6.2`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.6.1`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.6.2`)
 
 ### 🌐 `v0.6.x` Series — Zero-Install Hosted Multi-Session Remote MCP & Zero-CVE Container Hardening
 
+- **[`v0.6.2`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.2) (2026-10-29) — Headless CI Docker Pruning & Sourcemap Cleanup:**
+  - Enforced `ENV CI=true` in the Docker `builder` stage for non-interactive headless builds and stripped residual `*esbuild*` virtual-store directories and `.map` sourcemaps prior to copying into `runner`.
 - **[`v0.6.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.1) (2026-10-29) — Zero-CVE Production Docker Runtime Hardening:**
   - Pruned build-only devDependencies (`esbuild`, `vite`, `vitest`, `typescript`) and stripped unused global `npm`/`yarn` CLIs from the non-root `node:22-alpine` runtime stage (~350 MB smaller footprint, `0` Critical / `0` High Trivy CVEs).
 - **[`v0.6.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.0) (2026-10-29) — Hosted Multi-Session Remote MCP Server (`Streamable HTTP` & `SSE`), Isolated Live 3D Session Viewer (`/?session=<uuid>`) & Zero-Disk URL Exports:**
@@ -70,10 +72,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.6.1`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.6.2`)
 
 ### 🌐 Serie `v0.6.x` — Gehosteter Multi-Session Remote-MCP-Server & Zero-CVE Container-Härtung
 
+- **[`v0.6.2`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.2) (2026-10-29) — Headless Docker-Build-Fix & Sourcemap-Bereinigung:**
+  - `ENV CI=true` im Docker-`builder`-Stage für nicht-interaktive Builds ohne TTY gesetzt sowie `.map`-Sourcemaps und `*esbuild*`-Reste vor dem Kopieren in `runner` entfernt.
 - **[`v0.6.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.1) (2026-10-29) — Zero-CVE Docker-Runtime-Härtung:**
   - Reine Build-Abhängigkeiten (`esbuild`, `vite`, `vitest`, `typescript`) sowie ungenutzte globale Paketmanager (`npm`, `npx`, `yarn`) aus dem Non-Root-`node:22-alpine`-Produktions-Image entfernt (~350 MB schlanker, `0` Critical / `0` High Trivy-CVEs).
 - **[`v0.6.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.0) (2026-10-29) — Gehosteter Multi-Session Remote-MCP-Server (`Streamable HTTP` & `SSE`), isolierter Live-3D-Session-Viewer (`/?session=<uuid>`) & URL-basierte Exporte:**
