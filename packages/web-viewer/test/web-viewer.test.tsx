@@ -385,7 +385,13 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     });
 
     const preview = screen.getByTestId('custom-cover-svg-preview');
-    expect(preview.innerHTML).toContain('<svg');
+    const previewImg = preview.querySelector('img');
+    expect(previewImg).not.toBeNull();
+    const decodedSvg = decodeURIComponent(
+      previewImg?.getAttribute('src') ?? '',
+    );
+    expect(decodedSvg).toContain('<svg');
+    expect(decodedSvg).toContain('fill="#E4E4E7"');
 
     // Verify browser-side custom cover STL generator produces a watertight mesh
     const stl = generateClientCustomCoverPanelStl({

@@ -257,6 +257,58 @@ function isLoopbackHostHeader(host: string): boolean {
   return hostname === '127.0.0.1' || hostname === 'localhost';
 }
 
+function trimTrailingSlashes(raw: string): string {
+  let end = raw.length;
+  while (end > 0 && raw.charCodeAt(end - 1) === 47) {
+    end--;
+  }
+  return raw.slice(0, end);
+}
+
+function isValidHostHeader(rawHost: string): boolean {
+  if (rawHost.length === 0 || rawHost.length > 253) {
+    return false;
+  }
+  const colonParts = rawHost.split(':');
+  if (colonParts.length > 2) {
+    return false;
+  }
+  const hostPart = colonParts[0] ?? '';
+  if (hostPart.length === 0) {
+    return false;
+  }
+  if (colonParts.length === 2) {
+    const portPart = colonParts[1] ?? '';
+    if (portPart.length === 0 || portPart.length > 5) {
+      return false;
+    }
+    for (let i = 0; i < portPart.length; i++) {
+      const c = portPart.charCodeAt(i);
+      if (c < 48 || c > 57) {
+        return false;
+      }
+    }
+  }
+  const labels = hostPart.split('.');
+  for (const label of labels) {
+    if (label.length === 0 || label.length > 63) {
+      return false;
+    }
+    for (let i = 0; i < label.length; i++) {
+      const c = label.charCodeAt(i);
+      const isAlphaNum =
+        (c >= 97 && c <= 122) ||
+        (c >= 65 && c <= 90) ||
+        (c >= 48 && c <= 57) ||
+        c === 45;
+      if (!isAlphaNum) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 /**
  * Multi-tenant in-memory session registry for Hosted Remote MCP (`Streamable HTTP` + legacy `SSE`).
  * Guarantees strict per-session isolation (zero host filesystem writes, zero cross-user state leakage),
@@ -279,7 +331,7 @@ export class RemoteSessionRegistry {
   public constructor(options: RemoteSessionRegistryOptions = {}) {
     this.configuredBaseUrl =
       options.publicBaseUrl !== undefined && options.publicBaseUrl.trim().length > 0
-        ? options.publicBaseUrl.trim().replace(/\/+$/, '')
+        ? trimTrailingSlashes(options.publicBaseUrl.trim())
         : undefined;
     this.initialProjectTemplate =
       options.initialProjectTemplate !== undefined
@@ -325,11 +377,7 @@ export class RemoteSessionRegistry {
       (trusted ? req.headers['x-forwarded-host'] : undefined) ??
       req.headers.host;
     const rawHost = Array.isArray(hostHeader) ? hostHeader[0] : hostHeader;
-    if (
-      typeof rawHost === 'string' &&
-      rawHost.length <= 253 &&
-      /^[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*(?::\d{1,5})?$/.test(rawHost)
-    ) {
+    if (typeof rawHost === 'string' && isValidHostHeader(rawHost)) {
       this.inferredBaseUrl = `${proto}://${rawHost}`;
       if (!isLoopbackHostHeader(rawHost)) {
         this.inferredBaseUrlLocked = true;

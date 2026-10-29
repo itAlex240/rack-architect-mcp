@@ -44,6 +44,33 @@ export interface RemoteToolSessionContext {
   readonly getPublicBaseUrl: () => string;
 }
 
+function trimTrailingSlashes(raw: string): string {
+  let end = raw.length;
+  while (end > 0 && raw.charCodeAt(end - 1) === 47) {
+    end--;
+  }
+  return raw.slice(0, end);
+}
+
+function toAsciiKebabSlug(raw: string): string {
+  let out = '';
+  let prevHyphen = true;
+  const lower = raw.toLowerCase();
+  for (let i = 0; i < lower.length; i++) {
+    const code = lower.charCodeAt(i);
+    const isAlnum =
+      (code >= 97 && code <= 122) || (code >= 48 && code <= 57);
+    if (isAlnum) {
+      out += lower.charAt(i);
+      prevHyphen = false;
+    } else if (!prevHyphen) {
+      out += '-';
+      prevHyphen = true;
+    }
+  }
+  return out.endsWith('-') ? out.slice(0, -1) : out;
+}
+
 export class RackMcpToolHandlers {
   private readonly stateManager: ProjectStateManager;
   private readonly remoteSession: RemoteToolSessionContext | undefined;
@@ -67,7 +94,7 @@ export class RackMcpToolHandlers {
       return env;
     }
 
-    const baseUrl = this.remoteSession.getPublicBaseUrl().replace(/\/+$/, '');
+    const baseUrl = trimTrailingSlashes(this.remoteSession.getPublicBaseUrl());
     const encodedSession = encodeURIComponent(this.remoteSession.sessionId);
     const liveViewerUrl = `${baseUrl}/?session=${encodedSession}`;
 
@@ -852,12 +879,7 @@ export class RackMcpToolHandlers {
     const pendingDrops: PendingDrop[] = [];
 
     for (const grp of input.groups ?? []) {
-      const idPrefix =
-        grp.id_prefix ??
-        grp.category
-          .replace(/[^a-z0-9]+/gi, '-')
-          .replace(/^-|-$/g, '')
-          .toLowerCase();
+      const idPrefix = grp.id_prefix ?? toAsciiKebabSlug(grp.category);
       const colorHex = grp.color_hex ?? defaultCategoryColors[grp.category];
       for (let i = 0; i < grp.count; i++) {
         const customLabel = grp.custom_labels?.[i];
@@ -1122,7 +1144,7 @@ export class RackMcpToolHandlers {
     // Hosted Remote Multi-Session Mode: never write arbitrary files to the server filesystem.
     // Instead, compute deterministic byte sizes in memory and return direct HTTPS download URLs.
     if (this.remoteSession !== undefined) {
-      const baseUrl = this.remoteSession.getPublicBaseUrl().replace(/\/+$/, '');
+      const baseUrl = trimTrailingSlashes(this.remoteSession.getPublicBaseUrl());
       const sid = encodeURIComponent(this.remoteSession.sessionId);
       const liveViewerUrl = `${baseUrl}/?session=${sid}`;
       const rackYamlUrl = `${baseUrl}/api/export/rack.yaml?session=${sid}`;

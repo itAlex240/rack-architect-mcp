@@ -2081,7 +2081,7 @@ export function sanitizeClientCoverPanelLabel(raw?: string): string {
   if (!raw) return '';
   return raw
     .toUpperCase()
-    .replace(/[^A-Z0-9 -._/]/g, '')
+    .replace(/[^A-Z0-9 ._/-]/g, '')
     .trim()
     .slice(0, 14);
 }
@@ -2759,7 +2759,7 @@ export function generateClientCustomCoverPanelStl(
   const getSolid = (ix: number, iy: number, iz: number): boolean =>
     solidGrid[ix]?.[iy]?.[iz] ?? false;
 
-  const solidName = `custom_cover_${options.standard}_${String(options.u_height).replace('.', 'p')}u_${options.pattern}`;
+  const solidName = `custom_cover_${options.standard}_${String(options.u_height).replaceAll('.', 'p')}u_${options.pattern}`;
   const lines: string[] = [`solid ${solidName}`];
 
   const emitTri = (

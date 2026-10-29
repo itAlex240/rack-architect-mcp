@@ -46,7 +46,15 @@ export interface SerializedRackScene {
 export function serializeRackScene(scene: ComputedRackScene): SerializedRackScene {
   const devicesRecord: Record<string, ComputedDeviceGeometry> = {};
   for (const [id, dev] of scene.geometry.devices_by_id.entries()) {
-    devicesRecord[id] = dev;
+    if (id === '__proto__' || id === 'constructor' || id === 'prototype') {
+      continue;
+    }
+    Object.defineProperty(devicesRecord, id, {
+      value: dev,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
   }
 
   return {

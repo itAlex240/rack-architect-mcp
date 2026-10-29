@@ -180,7 +180,15 @@ export class CatalogRegistry {
   public toRecord(): Record<string, HardwareBlueprint> {
     const record: Record<string, HardwareBlueprint> = {};
     for (const [slug, bp] of this.blueprints.entries()) {
-      record[slug] = bp;
+      if (slug === '__proto__' || slug === 'constructor' || slug === 'prototype') {
+        continue;
+      }
+      Object.defineProperty(record, slug, {
+        value: bp,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
     }
     return record;
   }

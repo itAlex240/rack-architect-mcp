@@ -2,12 +2,22 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.itAlex240/rack-architect-mcp",
   "title": "RackArchitect MCP",
-  "description": "Zero-install Hosted Remote MCP & 3D/2D Rack-as-Code homelab planner, 5-stage validator, CAD SVG/BOM & watertight STL generator.",
+  "description": "Hosted Remote MCP & 3D/2D Rack-as-Code planner, 5-stage validator, CAD SVG/BOM & STL generator.",
   "repository": {
     "url": "https://github.com/itAlex240/rack-architect-mcp",
     "source": "github"
   },
-  "version": "0.6.6",
+  "version": "0.6.7",
+  "packages": [
+    {
+      "registryType": "mcpb",
+      "identifier": "https://github.com/itAlex240/rack-architect-mcp/releases/download/v0.6.7/rack-architect-mcp.mcpb",
+      "fileSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ],
   "remotes": [
     {
       "type": "streamable-http",

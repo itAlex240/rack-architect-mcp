@@ -41,6 +41,25 @@ function triggerBlobDownload(
   URL.revokeObjectURL(url);
 }
 
+function toAsciiKebabSlug(raw: string): string {
+  let out = '';
+  let prevHyphen = true;
+  const lower = raw.toLowerCase();
+  for (let i = 0; i < lower.length; i++) {
+    const code = lower.charCodeAt(i);
+    const isAlnum =
+      (code >= 97 && code <= 122) || (code >= 48 && code <= 57);
+    if (isAlnum) {
+      out += lower.charAt(i);
+      prevHyphen = false;
+    } else if (!prevHyphen) {
+      out += '-';
+      prevHyphen = true;
+    }
+  }
+  return out.endsWith('-') ? out.slice(0, -1) : out;
+}
+
 export function BomAndExportsView({
   scene,
   elevationSvg,
@@ -111,11 +130,19 @@ export function BomAndExportsView({
     ),
   );
   const sanitizedCustomLabel = sanitizeClientCoverPanelLabel(customLabel);
-  const customFileStem = `custom-${customStandard}-cover-${String(customUHeight).replace('.', 'p')}u-${customPattern}${
-    sanitizedCustomLabel
-      ? `-${sanitizedCustomLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`
-      : ''
+  const customLabelSlug = sanitizedCustomLabel
+    ? toAsciiKebabSlug(sanitizedCustomLabel)
+    : '';
+  const customFileStem = `custom-${customStandard}-cover-${String(customUHeight).replaceAll('.', 'p')}u-${customPattern}${
+    customLabelSlug ? `-${customLabelSlug}` : ''
   }`;
+  const rawSessionParam =
+    typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('session')?.trim() ?? ''
+      : '';
+  const safeSessionId = /^[a-zA-Z0-9_-]{1,128}$/.test(rawSessionParam)
+    ? rawSessionParam
+    : '';
 
   return (
     <div
@@ -254,11 +281,8 @@ export function BomAndExportsView({
 
           <a
             href={
-              typeof window !== 'undefined' &&
-              new URLSearchParams(window.location.search).get('session')
-                ? `/api/export/scene.glb?session=${encodeURIComponent(
-                    new URLSearchParams(window.location.search).get('session')!,
-                  )}`
+              safeSessionId
+                ? `/api/export/scene.glb?session=${encodeURIComponent(safeSessionId)}`
                 : '/api/export/scene.glb'
             }
             download="rack-scene.glb"
@@ -784,8 +808,19 @@ export function BomAndExportsView({
                 justifyContent: 'center',
                 minHeight: '116px',
               }}
-              dangerouslySetInnerHTML={{ __html: customPreviewSvg }}
-            />
+            >
+              <img
+                src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(customPreviewSvg)}`}
+                alt="Live 2D CAD Front-Elevation Preview"
+                draggable={false}
+                style={{
+                  width: '100%',
+                  maxHeight: '132px',
+                  display: 'block',
+                  userSelect: 'none',
+                }}
+              />
+            </div>
           </form>
         </div>
 

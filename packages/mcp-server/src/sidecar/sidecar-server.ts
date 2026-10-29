@@ -133,6 +133,14 @@ function tryExtractOrigin(rawUrl: string | undefined): string | undefined {
   }
 }
 
+function trimTrailingSlashes(raw: string): string {
+  let end = raw.length;
+  while (end > 0 && raw.charCodeAt(end - 1) === 47) {
+    end--;
+  }
+  return raw.slice(0, end);
+}
+
 function isPublicCrossOriginMcpRoute(pathname: string): boolean {
   return (
     pathname === '/mcp' ||
@@ -145,7 +153,7 @@ function isPublicCrossOriginMcpRoute(pathname: string): boolean {
   );
 }
 
-function isAllowedViewerOrigin(
+function resolveAllowedViewerOrigin(
   originHeader: string | undefined,
   options: {
     readonly remoteMcp: boolean;
@@ -154,52 +162,70 @@ function isAllowedViewerOrigin(
     readonly boundHost: string;
     readonly boundPort: number;
   }
-): boolean {
+): string | undefined {
   if (originHeader === undefined || originHeader.length === 0) {
-    return false;
+    return undefined;
   }
   const normalizedOrigin = tryExtractOrigin(originHeader);
   if (normalizedOrigin === undefined) {
-    return false;
+    return undefined;
   }
 
+  const localIpOrigin = `http://127.0.0.1:${options.boundPort}`;
+  const localHostOrigin = `http://localhost:${options.boundPort}`;
   const localLoopbackAllowed =
     options.boundHost === '127.0.0.1' || options.boundHost === 'localhost';
 
   if (!options.remoteMcp) {
-    return (
-      ALLOWED_LOCAL_ORIGINS.has(normalizedOrigin) ||
-      normalizedOrigin === `http://127.0.0.1:${options.boundPort}` ||
-      normalizedOrigin === `http://localhost:${options.boundPort}`
-    );
+    for (const allowed of ALLOWED_LOCAL_ORIGINS) {
+      if (normalizedOrigin === allowed) {
+        return allowed;
+      }
+    }
+    if (normalizedOrigin === localIpOrigin) {
+      return localIpOrigin;
+    }
+    if (normalizedOrigin === localHostOrigin) {
+      return localHostOrigin;
+    }
+    return undefined;
   }
 
   if (options.configuredPublicOrigin !== undefined) {
     if (normalizedOrigin === options.configuredPublicOrigin) {
-      return true;
+      return options.configuredPublicOrigin;
     }
     if (localLoopbackAllowed) {
-      return (
-        normalizedOrigin === `http://127.0.0.1:${options.boundPort}` ||
-        normalizedOrigin === `http://localhost:${options.boundPort}`
-      );
+      if (normalizedOrigin === localIpOrigin) {
+        return localIpOrigin;
+      }
+      if (normalizedOrigin === localHostOrigin) {
+        return localHostOrigin;
+      }
     }
-    return false;
+    return undefined;
   }
 
   if (
     options.dynamicPublicOrigin !== undefined &&
     normalizedOrigin === options.dynamicPublicOrigin
   ) {
-    return true;
+    return options.dynamicPublicOrigin;
   }
 
-  return (
-    normalizedOrigin === `http://${options.boundHost}:${options.boundPort}` ||
-    (localLoopbackAllowed &&
-      (normalizedOrigin === `http://127.0.0.1:${options.boundPort}` ||
-        normalizedOrigin === `http://localhost:${options.boundPort}`))
-  );
+  const boundOrigin = `http://${options.boundHost}:${options.boundPort}`;
+  if (normalizedOrigin === boundOrigin) {
+    return boundOrigin;
+  }
+  if (localLoopbackAllowed) {
+    if (normalizedOrigin === localIpOrigin) {
+      return localIpOrigin;
+    }
+    if (normalizedOrigin === localHostOrigin) {
+      return localHostOrigin;
+    }
+  }
+  return undefined;
 }
 
 function setSecurityAndCorsHeaders(
@@ -235,9 +261,12 @@ function setSecurityAndCorsHeaders(
     return;
   }
 
-  const origin = req.headers.origin;
-  if (isAllowedViewerOrigin(origin, originPolicy) && origin !== undefined) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
+  const matchedAllowedOrigin = resolveAllowedViewerOrigin(
+    req.headers.origin,
+    originPolicy
+  );
+  if (matchedAllowedOrigin !== undefined) {
+    res.setHeader('Access-Control-Allow-Origin', matchedAllowedOrigin);
     res.setHeader('Vary', 'Origin');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -416,9 +445,15 @@ function executeWsToolCommand(
       case 'validate_rack':
         result = targetHandlers.validateRack(args);
         break;
-      case 'export_deliverables':
-        result = targetHandlers.exportDeliverables(args);
+      case 'export_deliverables': {
+        // Never accept arbitrary host `output_dir` overrides over WebSocket frames
+        const rawExportArgs = parsed.args ?? {};
+        const safeExportArgs = Array.isArray(rawExportArgs['formats'])
+          ? ({ formats: rawExportArgs['formats'] } as never)
+          : ({} as never);
+        result = targetHandlers.exportDeliverables(safeExportArgs);
         break;
+      }
       case 'undo_redo':
         result = targetHandlers.undoRedo(args);
         break;
@@ -949,13 +984,13 @@ export async function startRackSidecarServer(
     const originHeader = req.headers.origin;
     if (
       originHeader !== undefined &&
-      !isAllowedViewerOrigin(originHeader, {
+      resolveAllowedViewerOrigin(originHeader, {
         remoteMcp,
         configuredPublicOrigin,
         dynamicPublicOrigin: tryExtractOrigin(remoteRegistry?.getPublicBaseUrl()),
         boundHost: host,
         boundPort
-      })
+      }) === undefined
     ) {
       rejectUpgradeSocket(socket, '403 Forbidden', 'Forbidden WebSocket Origin');
       return;
@@ -1102,7 +1137,7 @@ export async function startRackSidecarServer(
 
   const baseUrl =
     options.publicBaseUrl !== undefined && options.publicBaseUrl.trim().length > 0
-      ? options.publicBaseUrl.trim().replace(/\/+$/, '')
+      ? trimTrailingSlashes(options.publicBaseUrl.trim())
       : `http://${host}:${boundPort}`;
 
   return {

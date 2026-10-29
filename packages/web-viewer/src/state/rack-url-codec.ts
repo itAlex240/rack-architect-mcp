@@ -10,10 +10,12 @@ function bytesToBase64Url(bytes: Uint8Array): string {
   for (let i = 0; i < bytes.length; i++) {
     binary += String.fromCharCode(bytes[i]!);
   }
-  return btoa(binary)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/g, '');
+  const encoded = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_');
+  let end = encoded.length;
+  while (end > 0 && encoded.charCodeAt(end - 1) === 61) {
+    end--;
+  }
+  return encoded.slice(0, end);
 }
 
 function base64UrlToBytes(b64url: string): Uint8Array {

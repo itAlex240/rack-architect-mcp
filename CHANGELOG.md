@@ -5,6 +5,22 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.7] - 2026-10-29
+
+### Fixed — Release Pipeline & CodeQL Code Scanning Remediation (🇬🇧 English)
+- **GitHub Actions Release Pipeline & Official MCP Registry `server.json` Validation (`.github/workflows/release.yml`, `server.json`):**
+  - Restored the `"packages"` (`mcpb` desktop bundle) manifest entry alongside `"remotes"` (`streamable-http` + `sse`) in `server.json`, added defensive `packages` initialization in `.github/workflows/release.yml` Step 7, and kept `server.json` `description` within the official MCP Registry `<= 100`-character schema constraint (`mcp-publisher validate`).
+- **GitHub CodeQL Security & Quality Remediation (`@rack-mcp/exporters`, `@rack-mcp/web-viewer`, `@rack-mcp/mcp-server`, `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`):**
+  - Fixed overly permissive character-class ranges (`[^A-Z0-9 -._/]` -> `[^A-Z0-9 ._/-]`, CodeQL `js/overly-large-range`) in `sanitizeCoverPanelLabel` (`openscad-carrier.ts`) and `sanitizeClientCoverPanelLabel` (`standalone-homelab.ts`), preventing unintended ASCII `0x20..0x2E` punctuation leakage and covering glyph sanitization with dedicated unit tests.
+  - Replaced `dangerouslySetInnerHTML` SVG preview rendering in `BomAndExportsView.tsx` with a sandboxed `data:image/svg+xml;charset=utf-8` `<img />` preview (`js/xss-through-dom`), replaced polynomial trailing-slash/padding/kebab regexes on HTTP-header-tainted inputs with deterministic $O(n)$ helpers (`js/polynomial-redos`), stripped untrusted `output_dir` parameters from WebSocket `export_deliverables` frames (`js/path-injection`), and hardened dynamic object-map indexing with `Object.defineProperty` guards.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Fix der GitHub-Release-Pipeline & Validierung für die offizielle MCP-Registry (`.github/workflows/release.yml`, `server.json`):**
+  - In `server.json` sowohl das `"packages"`-Bundle (`mcpb`) als auch die gehosteten `"remotes"`-Endpunkte (`streamable-http` & `sse`) kombiniert, Step 7 in `.github/workflows/release.yml` abgesichert und die `description`-Länge auf das strikte `<= 100`-Zeichen-Limit von `mcp-publisher validate` abgestimmt.
+- **Behebung der GitHub CodeQL Code-Scanning-Warnungen (`@rack-mcp/exporters`, `@rack-mcp/web-viewer`, `@rack-mcp/mcp-server`, `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`):**
+  - Unbeabsichtigte ASCII-Zeichenbereiche (`[^A-Z0-9 -._/]` -> `[^A-Z0-9 ._/-]`, CodeQL `js/overly-large-range`) in `sanitizeCoverPanelLabel` (`openscad-carrier.ts`) und `sanitizeClientCoverPanelLabel` (`standalone-homelab.ts`) behoben und durch Unit-Tests abgesichert.
+  - `dangerouslySetInnerHTML` in `BomAndExportsView.tsx` durch ein gekapseltes `data:image/svg+xml` `<img />` ersetzt (`js/xss-through-dom`), lineare $O(n)$-String-Helfer gegen polynomielles Regex-Backtracking (`js/polynomial-redos`) ergänzt, `output_dir` aus WebSocket-Export-Kommandos gefiltert (`js/path-injection`) und dynamische Objekt-Maps über `Object.defineProperty` gehärtet.
+
 ## [0.6.6] - 2026-10-29
 
 ### Documentation & Registry Visibility (🇬🇧 English)

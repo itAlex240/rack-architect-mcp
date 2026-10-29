@@ -704,7 +704,7 @@ export function useRackState(): RackViewerState {
     ) => {
       const cableId = `cab-${fromInstanceId}-${fromPortId}-to-${toInstanceId}-${toPortId}`
         .toLowerCase()
-        .replace(/[^a-z0-9-_]/g, '-');
+        .replace(/[^a-z0-9_-]/g, '-');
       const colorHex = cableType.startsWith('power-')
         ? '#EF4444'
         : cableType.startsWith('sfp-')
@@ -1002,13 +1002,11 @@ export function useRackState(): RackViewerState {
     const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host || '127.0.0.1:3100';
-    const sessionParam = new URLSearchParams(window.location.search).get(
-      'session',
-    );
-    const sessionQuery =
-      sessionParam && sessionParam.trim().length > 0
-        ? `?session=${encodeURIComponent(sessionParam.trim())}`
-        : '';
+    const rawSessionParam =
+      new URLSearchParams(window.location.search).get('session')?.trim() ?? '';
+    const sessionQuery = /^[a-zA-Z0-9_-]{1,128}$/.test(rawSessionParam)
+      ? `?session=${encodeURIComponent(rawSessionParam)}`
+      : '';
     const apiBase = `${protocol}//${host}`;
     const wsUrl = `${wsProtocol}//${host}/ws${sessionQuery}`;
 

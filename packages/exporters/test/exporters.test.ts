@@ -17,6 +17,7 @@ import {
   generateGlbBinary,
   generateProjectPrintableCarriers,
   generateWiringSchematicSvg,
+  sanitizeCoverPanelLabel,
 } from '../src/index.js';
 
 describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgrade)', () => {
@@ -548,5 +549,11 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
 
       expect(signedVolumeMm3).toBeGreaterThan(5_000);
     }
+  });
+
+  it('sanitizes cover panel labels strictly to supported 5x7 dot-matrix glyphs without ASCII range leakage', () => {
+    expect(sanitizeCoverPanelLabel('homelab-01.a_2/b')).toBe('HOMELAB-01.A_2');
+    expect(sanitizeCoverPanelLabel('Lab!"#$%&\'()*+,9')).toBe('LAB9');
+    expect(sanitizeCoverPanelLabel('  NAS / UPS-1  ')).toBe('NAS / UPS-1');
   });
 });

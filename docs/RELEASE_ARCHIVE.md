@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.6.3`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.6.4`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.6.3`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.6.4`)
 
 ### 🌐 `v0.6.x` Series — Zero-Install Hosted Multi-Session Remote MCP & Zero-CVE Container Hardening
 
+- **[`v0.6.4`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.4) (2026-10-29) — Multi-Tenant Remote MCP, WebSocket, CSP & Container Security Hardening:**
+  - Added fair-share per-IP session isolation (`maxSessionsPerIp = 12`, `maxNewSessionsPerMinutePerIp = 20`, rightmost `X-Forwarded-For` proxy extraction), WebSocket `256 KB` frame limits + Cross-Site WebSocket Hijacking (`CSWSH`) `Origin` verification, strict `Content-Security-Policy` + `Referrer-Policy: no-referrer` + scoped CORS, algorithmic DoS schema bounds, and `root:root`-owned immutable application binaries inside the `USER node` runtime image.
 - **[`v0.6.3`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.3) (2026-10-29) — Workspace-Aware Zero-CVE Docker Production Build:**
   - Replaced root-only pruning with workspace-wide `pnpm install --prod --frozen-lockfile --ignore-scripts` and a build-time `rack-mcp validate` smoke check, preserving all monorepo `@rack-mcp/*` symlinks with `0` Critical and `0` High Trivy CVEs.
 - **[`v0.6.2`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.2) (2026-10-29) — Headless CI Docker Pruning & Sourcemap Cleanup:**
@@ -74,10 +76,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.6.3`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.6.4`)
 
 ### 🌐 Serie `v0.6.x` — Gehosteter Multi-Session Remote-MCP-Server & Zero-CVE Container-Härtung
 
+- **[`v0.6.4`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.4) (2026-10-29) — Multi-Tenant Remote-MCP-, WebSocket-, CSP- & Container-Security-Hardening:**
+  - Fair-Share-Mandantenschutz pro IP (`maxSessionsPerIp = 12`, `20` neue Sessions/Min., rechte `X-Forwarded-For`-Auswertung), `256 KB` WebSocket-Frame-Limit + CSWSH-`Origin`-Prüfung, strikte `Content-Security-Policy` + `Referrer-Policy: no-referrer` + Scoped CORS, algorithmische DoS-Schema-Obergrenzen sowie unveränderliche `root:root`-Programmdateien im `USER node`-Container.
 - **[`v0.6.3`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.3) (2026-10-29) — Workspace-fähiger Zero-CVE Docker-Produktions-Build:**
   - Workspace-weites `pnpm install --prod --frozen-lockfile --ignore-scripts` inklusive automatischem CLI-Selbsttest (`rack-mcp validate`) beim Image-Build — erhält alle Monorepo-Links bei `0` Critical und `0` High CVEs im Trivy-Scan.
 - **[`v0.6.2`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.2) (2026-10-29) — Headless Docker-Build-Fix & Sourcemap-Bereinigung:**
