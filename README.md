@@ -6,13 +6,14 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](./LICENSE)
 [![Glama MCP Score](https://glama.ai/mcp/servers/itAlex240/rack-architect-mcp/badges/score.svg)](https://glama.ai/mcp/servers/itAlex240/rack-architect-mcp)
+[![Listed on mcpservers.org](https://mcpservers.org/badge.svg)](https://mcpservers.org/servers/italex240/rack-architect-mcp)
 [![Live 3D Demo](https://img.shields.io/badge/Live_3D_Demo-GitHub_Pages-0EA5E9.svg)](https://italex240.github.io/rack-architect-mcp/)
 [![TypeScript 5.9 Strict](https://img.shields.io/badge/TypeScript-5.9_Strict-3178C6.svg)](./tsconfig.base.json)
-[![MCP Server](https://img.shields.io/badge/MCP-11_Tools_%2B_WebMCP-8B5CF6.svg)](./packages/mcp-server)
+[![MCP Server](https://img.shields.io/badge/MCP-12_Tools_%2B_WebMCP-8B5CF6.svg)](./packages/mcp-server)
 [![Agent Skill: SKILL.md](https://img.shields.io/badge/Agent_Skill-SKILL.md_(Free)-EC4899.svg)](./skills/rack-architect/SKILL.md)
 [![EIA-310 Standards](https://img.shields.io/badge/EIA--310-19%22_%7C_10%22_%7C_6%22-06B6D4.svg)](./ARCHITECTURE.md)
 [![3D Print Ready](https://img.shields.io/badge/3D--Print-OpenSCAD_.SCAD_%2B_.STL-F59E0B.svg)](./packages/exporters/src/openscad-carrier.ts)
-[![Tests](https://img.shields.io/badge/Vitest-35%2F35_Passing-10B981.svg)](./vitest.config.ts)
+[![Tests](https://img.shields.io/badge/Vitest-41%2F41_Passing-10B981.svg)](./vitest.config.ts)
 
 [**🌐 Launch Live 3D/2D Browser Demo**](https://italex240.github.io/rack-architect-mcp/) · [**Quickstart**](#-30-second-quickstart) · [**MCP Client & Agent Skill**](#-connect-claude-desktop-cursor-or-antigravity) · [**3D-Print (.SCAD / .STL)**](#-parametric-3d-print-generator-scad--stl) · [**Add Hardware Blueprint**](./CONTRIBUTING.md) · [**Complete Handbook (DE)**](./docs/COMPLETE_SYSTEM_HANDBOOK.md)
 
@@ -155,7 +156,7 @@ Pre-generated reference files in [`examples/10inch-homelab/`](./examples/10inch-
   - Camera Presets: `Perspective`, `Front Ortho`, `Rear Ortho`, `Left Cutaway`
   - Toggles: `X-Ray Chassis` (inspect internal mini-PCs & PSU bricks), `Clearance Boxes` ($\Delta Z_{\text{plug}}$ wireframes), `Cable Splines`
   - `Explode Z (0..140 mm)` slider to separate front and rear assemblies
-- **W3C WebMCP Ready:** Automatically registers all 11 tools on `document.modelContext` when opened in a WebMCP-capable browser.
+- **W3C WebMCP Ready:** Automatically registers all 12 tools on `document.modelContext` when opened in a WebMCP-capable browser.
 
 ---
 
@@ -178,7 +179,7 @@ Pre-generated reference files in [`examples/10inch-homelab/`](./examples/10inch-
 | [`@rack-mcp/core-domain`](./packages/core-domain) | Pure TypeScript/Zod schemas, 3D coordinate transformer, AABB collision solver, 5-stage validator, and clamped Catmull-Rom 3D spline router (zero Node/DOM dependencies). |
 | [`@rack-mcp/hardware-catalog`](./packages/hardware-catalog) | 67 YAML hardware blueprints (`10inch`, `19inch`, `6inch`, `carriers`, `sub-modules`), `port_groups` matrix expander, and catalog search/validator. |
 | [`@rack-mcp/exporters`](./packages/exporters) | `elevation.svg`, `wiring-schematic.svg`, `BOM.md`, headless binary `.glb`, and parametric `.scad` & `.stl` 3D-print generators. |
-| [`@rack-mcp/mcp-server`](./packages/mcp-server) | MCP server (`stdio`), 11 tools, 4 resources, 2 prompts, 50-step Undo/Redo manager, and local HTTP/WebSocket sidecar (`:3100`). |
+| [`@rack-mcp/mcp-server`](./packages/mcp-server) | MCP server (`stdio`), 12 tools, 4 resources, 2 prompts, 50-step Undo/Redo manager, and local HTTP/WebSocket sidecar (`:3100`). |
 | [`@rack-mcp/web-viewer`](./packages/web-viewer) | React 19 + Three.js (`@react-three/fiber`) live 3D/2D CAD studio, Catalog/Cable Builder Drawer, and W3C WebMCP integration. |
 | [`@rack-mcp/cli`](./packages/cli) | Unified `rack-mcp` CLI (`serve`, `validate`, `export`). |
 
