@@ -17,8 +17,9 @@ COPY examples ./examples
 ENV CI=true
 RUN pnpm install --frozen-lockfile
 RUN pnpm build
-RUN pnpm prune --prod --ignore-scripts && \
-    rm -rf node_modules/.pnpm/*esbuild* packages/web-viewer/dist/assets/*.map
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts && \
+    rm -rf node_modules/.pnpm/*esbuild* packages/web-viewer/dist/assets/*.map && \
+    node packages/cli/dist/bin.js validate --project examples/10inch-homelab/rack.yaml
 
 FROM node:22-alpine AS runner
 

@@ -5,6 +5,16 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.3] - 2026-10-29
+
+### Fixed (🇬🇧 English)
+- **Workspace Production Symlink Preservation in Docker (`Dockerfile`):**
+  - Replaced root-only `pnpm prune --prod` with workspace-aware `pnpm install --prod --frozen-lockfile --ignore-scripts` plus a build-time CLI validation smoke check (`rack-mcp validate`), preserving `packages/*/node_modules/@rack-mcp/*` workspace symlinks while keeping **0 Critical and 0 High Trivy CVEs**.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Workspace-Symlinks im Produktions-Docker-Image (`Dockerfile`):**
+  - `pnpm prune --prod` (das nur das Root-Manifest betrachtet) durch das Workspace-weite `pnpm install --prod --frozen-lockfile --ignore-scripts` inklusive Build-Zeit-Selbsttest (`rack-mcp validate`) ersetzt — alle `@rack-mcp/*`-Workspace-Links bleiben intakt bei weiterhin **0 Critical und 0 High Trivy-CVEs**.
+
 ## [0.6.2] - 2026-10-29
 
 ### Fixed & Hardening (🇬🇧 English)

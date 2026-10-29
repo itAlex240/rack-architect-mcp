@@ -50,7 +50,7 @@ export interface RackMcpServerInstance {
   close(): Promise<void>;
 }
 
-export const RACK_MCP_SERVER_VERSION = '0.6.2';
+export const RACK_MCP_SERVER_VERSION = '0.6.3';
 
 export interface CreateRackMcpServerOptions {
   readonly remoteSession?: RemoteToolSessionContext | undefined;

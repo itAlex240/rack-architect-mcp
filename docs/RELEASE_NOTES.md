@@ -1,13 +1,13 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.6.2` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v0.6.3` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v0.6.2`!**  
+**Welcome to RackArchitect MCP `v0.6.3`!**  
 Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
-> **✨ What's New in the Last 3 Releases (`v0.6.0` – `v0.6.2`):**
-> - **Non-Interactive Docker Build Pruning & Sourcemap Cleanup (`v0.6.2`):** Added `ENV CI=true` in the `Dockerfile` `builder` stage for headless non-TTY `pnpm prune --prod --ignore-scripts` execution and stripped `.map` sourcemaps from the production runtime bundle.
-> - **Zero-CVE Production Docker Runtime Hardening (`v0.6.1`):** Pruned build-only devDependencies (`esbuild`, `vite`, `vitest`, `typescript` via `pnpm prune --prod`) and stripped unused global `npm`/`yarn` CLIs from the non-root `node:22-alpine` runtime stage — shrinking the production container by ~350 MB and achieving **0 Critical and 0 High CVEs** under Trivy security scanning.
+> **✨ What's New in the Last 3 Releases (`v0.6.0` – `v0.6.3`):**
+> - **Workspace-Aware Zero-CVE Docker Production Build (`v0.6.3` / `v0.6.2`):** Uses `ENV CI=true` + `pnpm install --prod --frozen-lockfile --ignore-scripts` with an automated build-time CLI validation smoke test (`rack-mcp validate`) and sourcemap cleanup — preserving all monorepo `@rack-mcp/*` symlinks while achieving **0 Critical and 0 High CVEs** under Trivy container scanning.
+> - **Zero-CVE Production Docker Runtime Hardening (`v0.6.1`):** Pruned build-only devDependencies (`esbuild`, `vite`, `vitest`, `typescript`) and stripped unused global `npm`/`yarn` CLIs from the non-root `node:22-alpine` runtime stage (~350 MB smaller runtime footprint).
 > - **Zero-Install Hosted Multi-Session Remote MCP Server (`Streamable HTTP` & `SSE`) + Isolated Live 3D Session Viewer (`v0.6.0`):** Connect Claude, Cursor, VS Code, Windsurf, or Antigravity directly to **`https://rack-mcp.167.233.80.33.sslip.io/mcp`** (`--remote-mcp`) with zero local installation! Every AI session receives an isolated in-memory workspace (`Mcp-Session-Id`) and its own real-time **Live 3D Digital Twin URL** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>` over `wss://`), plus direct HTTPS download URLs for `.SVG`, `BOM.md`, `.GLB`, `rack.yaml`, and watertight `.STL`/`.SCAD` 3D-print files, sliding-window IP rate limiting, and pre-compressed `gzip` asset caching.
 
 <details>
@@ -93,12 +93,12 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v0.6.2` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.6.3` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.6.0` – `v0.6.2`):**
-> - **Headless Docker-Build-Fix & Sourcemap-Bereinigung (`v0.6.2`):** `ENV CI=true` im `Dockerfile` ergänzt, damit `pnpm prune --prod --ignore-scripts` auch in nicht-interaktiven Docker-Builds ohne TTY sauber durchläuft, und `.map`-Sourcemaps aus dem Runtime-Image entfernt.
-> - **Zero-CVE Docker-Runtime-Härtung (`v0.6.1`):** Reine Build-Abhängigkeiten (`esbuild`, `vite`, `vitest`, `typescript` via `pnpm prune --prod`) sowie ungenutzte globale Paketmanager (`npm`, `npx`, `yarn`) werden aus dem Non-Root-Produktions-Image entfernt (~350 MB schlanker, **0 Critical und 0 High CVEs** im Trivy-Sicherheits-Scan).
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.6.0` – `v0.6.3`):**
+> - **Workspace-fähiger Zero-CVE Docker-Produktions-Build (`v0.6.3` / `v0.6.2`):** Nutzt `ENV CI=true` + `pnpm install --prod --frozen-lockfile --ignore-scripts` inklusive automatischem CLI-Selbsttest (`rack-mcp validate`) beim Image-Build und Sourcemap-Bereinigung — erhält alle Monorepo-Links bei **0 Critical und 0 High CVEs** im Trivy-Scan.
+> - **Zero-CVE Docker-Runtime-Härtung (`v0.6.1`):** Reine Build-Abhängigkeiten (`esbuild`, `vite`, `vitest`, `typescript`) sowie ungenutzte globale Paketmanager (`npm`, `npx`, `yarn`) werden aus dem Non-Root-Produktions-Image entfernt (~350 MB schlanker).
 > - **Gehosteter Multi-Session Remote-MCP-Server (`Streamable HTTP` & `SSE`) + eigener Live-3D-Session-Viewer (`v0.6.0`):** Verbinde Claude, Cursor, VS Code, Windsurf oder Antigravity sofort per 1-Zeilen-URL **`https://rack-mcp.167.233.80.33.sslip.io/mcp`** ganz ohne lokale Installation! Jede KI-Session erhält einen komplett isolierten Arbeitsbereich (`Mcp-Session-Id`) mit eigenem **Live-3D-Viewer-Link** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>` über `wss://`) sowie direkten HTTPS-Download-Links für `.SVG`, `BOM.md`, `.GLB`, `rack.yaml` und alle wasserdichten `.STL`/`.SCAD`-3D-Druckdateien.
 
 <details>
