@@ -14,12 +14,18 @@
 [![EIA-310 Standards](https://img.shields.io/badge/EIA--310-19%22_%7C_10%22_%7C_6%22-06B6D4.svg)](./ARCHITECTURE.md)
 [![3D Print Ready](https://img.shields.io/badge/3D--Print-OpenSCAD_.SCAD_%2B_.STL-F59E0B.svg)](./packages/exporters/src/openscad-carrier.ts)
 [![Remote MCP](https://img.shields.io/badge/Remote_MCP-Streamable_HTTP-8B5CF6.svg)](https://rack-mcp.167.233.80.33.sslip.io/mcp)
-[![Tests](https://img.shields.io/badge/Vitest-49%2F49_Passing-10B981.svg)](./vitest.config.ts)
+[![Tests](https://img.shields.io/badge/Vitest-52%2F52_Passing-10B981.svg)](./vitest.config.ts)
 
 [**⚡ Zero-Install Remote MCP (`.../mcp`)**](#-connect-claude-desktop-claude-code-cursor-vs-code-windsurf-or-antigravity) · [**🖥️ Hosted Live 3D Studio**](https://rack-mcp.167.233.80.33.sslip.io/) · [**🌐 Static 3D Demo**](https://italex240.github.io/rack-architect-mcp/) · [**Quickstart**](#-30-second-quickstart) · [**Agent Skill**](#-official-open-source-agent-skill-skillsrack-architectskillmd) · [**3D-Print (.SCAD / .STL)**](#-parametric-3d-print-generator-scad--stl) · [**Add Blueprint**](./CONTRIBUTING.md) · [**Handbook (DE)**](./docs/COMPLETE_SYSTEM_HANDBOOK.md)
 
 > **⚡ Instant Zero-Install Remote MCP Endpoint (Live & Free — No Node.js or Docker Required):**  
 > Connect Claude, Claude Code, Cursor, VS Code Copilot, Windsurf, Google Antigravity, or MCP Inspector directly via **`https://rack-mcp.167.233.80.33.sslip.io/mcp`** (`Streamable HTTP`) or **`https://rack-mcp.167.233.80.33.sslip.io/sse`** (`SSE`) — every session automatically gets its own isolated real-time **Live 3D Digital Twin URL** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>`)!
+
+<p align="center">
+  <a href="https://rack-mcp.167.233.80.33.sslip.io/">
+    <img src="./docs/assets/rack-architect-hero-demo.gif" alt="RackArchitect MCP — Live 3D Digital Twin, X-Ray Z-Depth Plug Clearance, 5-Stage Validation, Autonomous MCP Self-Correction, 2D CAD Blueprints & Watertight .STL 3D-Print Hub" width="100%" />
+  </a>
+</p>
 
 </div>
 
@@ -86,7 +92,7 @@ git clone https://github.com/itAlex240/rack-architect-mcp.git
 cd rack-architect-mcp
 pnpm install
 
-# 2. Build all 6 packages & run all 49 Vitest suites
+# 2. Build all 6 packages & run all 52 Vitest suites
 pnpm build
 pnpm test
 

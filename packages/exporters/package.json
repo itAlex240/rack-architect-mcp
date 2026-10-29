@@ -1,6 +1,6 @@
 {
   "name": "@rack-mcp/exporters",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "license": "MIT",
   "description": "Deterministic 2D CAD elevation SVG, 5-layer logical wiring schematic SVG (with VLAN/CIDR badges), Markdown/CSV BOM, binary glTF 2.0 (.glb), and parametric OpenSCAD (.scad) & ASCII .stl 3D-print generators.",
   "type": "module",

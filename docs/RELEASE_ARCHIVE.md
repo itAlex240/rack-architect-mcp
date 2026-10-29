@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.6.5`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.6.6`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.6.5`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.6.6`)
 
 ### 🌐 `v0.6.x` Series — Zero-Install Hosted Multi-Session Remote MCP & Zero-CVE Container Hardening
 
+- **[`v0.6.6`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.6) (2026-10-29) — Zero-Install Hosted Remote MCP Visibility Across GitHub, Glama & MCP Registries:**
+  - Promoted the live Zero-Install Hosted Remote MCP endpoints (`https://rack-mcp.167.233.80.33.sslip.io/mcp` via `Streamable HTTP`, `/sse` via `SSE`, and live per-session 3D viewer `/?session=<uuid>`) right into the top Hero callout and Option A of `README.md`, `glama.json`, `server.json`, package READMEs, `SKILL.md`, and Release Notes.
 - **[`v0.6.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.5) (2026-10-29) — Multi-Agent Handover Rules, Zero-Egress DMZ Invariants & Zero-Downtime Auto-Update Protocol:**
   - Added `CLAUDE.md`, `GEMINI.md`, and Section 10 of `AGENTS.md` codifying Hosted Remote MCP production invariants (`read_only: true` in-memory execution, Zero-Egress DMZ asset self-containment, fair-share/CSWSH guards, `server.json` lockstep sync) alongside automated Zero-Downtime GitHub `main` pull-deployments gated by Trivy CVE checks and HTTPS health probes.
 - **[`v0.6.4`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.4) (2026-10-29) — Multi-Tenant Remote MCP, WebSocket, CSP & Container Security Hardening:**
@@ -78,10 +80,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.6.5`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.6.6`)
 
 ### 🌐 Serie `v0.6.x` — Gehosteter Multi-Session Remote-MCP-Server & Zero-CVE Container-Härtung
 
+- **[`v0.6.6`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.6) (2026-10-29) — Prominente Darstellung des Zero-Install Hosted Remote-MCP-Endpunkts auf GitHub, Glama & in allen MCP-Verzeichnissen:**
+  - Den live gehosteten Zero-Install Remote-MCP-Server (`https://rack-mcp.167.233.80.33.sslip.io/mcp`, `/sse` sowie `/?session=<uuid>`) prominent in den Hero-Bereich und als Option A der `README.md`, `glama.json`, `server.json`, Paket-READMEs, `SKILL.md` und Release Notes gesetzt.
 - **[`v0.6.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.5) (2026-10-29) — Multi-Agenten-Übergabedokumentation, Zero-Egress-DMZ-Invarianten & Zero-Downtime Auto-Update-Protokoll:**
   - `CLAUDE.md`, `GEMINI.md` und Abschnitt 10 in `AGENTS.md` dokumentieren verbindlich alle Produktions- und Sicherheitsregeln für den gehosteten Remote-MCP-Server (`read_only: true`, Zero-Egress-DMZ ohne externe Laufzeit-Abhängigkeiten, Fair-Share-/CSWSH-Schutz, `server.json`-Synchronisation) sowie das automatische Zero-Downtime Pull-Deployment vom GitHub-`main`-Branch inkl. Trivy-CVE-Gate und HTTPS-Healthcheck.
 - **[`v0.6.4`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.4) (2026-10-29) — Multi-Tenant Remote-MCP-, WebSocket-, CSP- & Container-Security-Hardening:**

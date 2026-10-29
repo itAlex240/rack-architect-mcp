@@ -5,6 +5,16 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2026-10-29
+
+### Documentation & Visual Showcase (🇬🇧 English)
+- **Animated 6-Scene 3D/2D Hero Demo GIF (`docs/assets/rack-architect-hero-demo.gif`, `README.md`, `docs/RELEASE_NOTES.md`):**
+  - Captured and embedded an optimized, GitHub-autoplay-ready (`< 8 MB`, `1040x590`, zero-dither dark Carbon/Zinc palette) 6-scene animated Hero showcase directly in the top Hero section of `README.md` and `docs/RELEASE_NOTES.md`, demonstrating the real-time 3D Digital Twin (`19` devices + `22` collision-free 3D cables & building drops), `X-Ray` + `Explode Z (140 mm)` sub-U carrier and rear Schuko plug clearance wireframes, live `PLUG_CLEARANCE_COLLISION` detection, autonomous MCP agent self-correction, true-to-scale 2D `elevation.svg` & `wiring-schematic.svg` CAD views, `.STL`/`.SCAD` 3D-print BOM hub, and instant `19"` / `10"` / `6"` EIA-310 rack switching.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Animiertes 6-Szenen 3D/2D Hero-Demo-GIF (`docs/assets/rack-architect-hero-demo.gif`, `README.md`, `docs/RELEASE_NOTES.md`):**
+  - Ein scharfes, für GitHub-Inline-Autoplay optimiertes (`< 8 MB`, `1040x590`, artefaktfreie Carbon/Zinc-Farbpalette) Hero-Demo-GIF direkt oben in der `README.md` und den `docs/RELEASE_NOTES.md` eingebettet — zeigt in 6 Live-Szenen den 3D Digital Twin (`19` Geräte + `22` kollisionsfreie 3D-Kabel), `X-Ray` & `Explode Z (140 mm)` mit Schuko-/IEC-Stecker-Freiräumen, die Live-Kollisionserkennung (`PLUG_CLEARANCE_COLLISION`), die autonome MCP-Selbstkorrektur, die 2D-CAD-Pläne (`elevation.svg` & `wiring-schematic.svg`), den `.STL`/`.SCAD`-3D-Druck- & BOM-Hub sowie den Wechsel auf ein 19-Zoll-Enterprise-Rack.
+
 ## [0.7.0] - 2026-10-29
 
 ### Added — GDPR-Safe MCP Usage, AI Client & Traffic Telemetry (`@rack-mcp/mcp-server`, `@rack-mcp/cli`) (🇬🇧 English)
