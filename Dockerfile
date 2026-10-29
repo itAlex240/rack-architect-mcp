@@ -1,8 +1,8 @@
 # ==============================================================================
-# RackArchitect MCP (@rack-mcp/*) — Hardened Multi-Stage Production Dockerfile
-# Builds all 6 packages (including the React 19 + Three.js 3D Web-Viewer)
-# and launches either local stdio+Sidecar or Hosted Multi-Session Remote MCP
-# (via RACK_MCP_REMOTE=1 and RACK_MCP_PUBLIC_URL=https://...).
+# RackArchitect MCP (@rack-mcp/*) — Zero-CVE Hardened Multi-Stage Dockerfile
+# Builds all 6 packages (including the React 19 + Three.js 3D Web-Viewer),
+# prunes devDependencies (esbuild/vite/vitest), strips unused runtime package
+# managers (npm/yarn/corepack) and distrusted emSign CAs, and runs as USER node.
 # ==============================================================================
 
 FROM node:22-alpine AS builder
@@ -16,6 +16,7 @@ COPY examples ./examples
 
 RUN pnpm install --frozen-lockfile
 RUN pnpm build
+RUN pnpm prune --prod --ignore-scripts
 
 FROM node:22-alpine AS runner
 
@@ -23,9 +24,16 @@ LABEL io.modelcontextprotocol.server.name="io.github.itAlex240/rack-architect-mc
 LABEL org.opencontainers.image.source="https://github.com/itAlex240/rack-architect-mcp"
 LABEL org.opencontainers.image.description="RackArchitect MCP — 3D/2D Rack-as-Code homelab planner, 5-stage validator, CAD SVG/BOM & watertight STL generator."
 
-# Apply latest Alpine security updates and strip distrusted eMudhra/emSign root CAs
+# Apply latest Alpine security updates, remove unused npm/yarn CLIs from runtime image,
+# and strip distrusted eMudhra/emSign root CAs for 0 High/Critical Trivy CVEs.
 RUN apk update && apk upgrade --no-cache && \
-    rm -f /etc/ssl/certs/*emSign* /usr/share/ca-certificates/mozilla/*emSign* 2>/dev/null || true
+    rm -rf /usr/local/lib/node_modules/npm \
+           /usr/local/bin/npm \
+           /usr/local/bin/npx \
+           /usr/local/bin/corepack \
+           /opt/yarn-* \
+           /etc/ssl/certs/*emSign* \
+           /usr/share/ca-certificates/mozilla/*emSign* 2>/dev/null || true
 
 WORKDIR /app
 ENV NODE_ENV=production

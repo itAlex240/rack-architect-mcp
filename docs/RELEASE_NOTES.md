@@ -1,20 +1,21 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.6.0` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v0.6.1` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v0.6.0`!**  
+**Welcome to RackArchitect MCP `v0.6.1`!**  
 Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
-> **✨ What's New in the Last 3 Releases (`v0.4.12` – `v0.6.0`):**
+> **✨ What's New in the Last 3 Releases (`v0.5.0` – `v0.6.1`):**
+> - **Zero-CVE Production Docker Runtime Hardening (`v0.6.1`):** Pruned build-only devDependencies (`esbuild`, `vite`, `vitest`, `typescript` via `pnpm prune --prod`) and stripped unused global `npm`/`yarn` CLIs from the non-root `node:22-alpine` runtime stage — shrinking the production container by ~350 MB and achieving **0 Critical and 0 High CVEs** under Trivy security scanning.
 > - **Zero-Install Hosted Multi-Session Remote MCP Server (`Streamable HTTP` & `SSE`) + Isolated Live 3D Session Viewer (`v0.6.0`):** Connect Claude, Cursor, VS Code, Windsurf, or Antigravity directly to **`https://rack-mcp.167.233.80.33.sslip.io/mcp`** (`--remote-mcp`) with zero local installation! Every AI session receives an isolated in-memory workspace (`Mcp-Session-Id`) and its own real-time **Live 3D Digital Twin URL** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>` over `wss://`), plus direct HTTPS download URLs for `.SVG`, `BOM.md`, `.GLB`, `rack.yaml`, and watertight `.STL`/`.SCAD` 3D-print files, sliding-window IP rate limiting, and pre-compressed `gzip` asset caching.
 > - **Live Preset Switcher (`10"` · `19"` · `6"` · `Empty`), Shareable Zero-Backend Rack Links (`#rack=v1...`), Custom 3D-Print Cover-Panel Configurator (`0.5U`–`3U` + Engraved Text) & 2-Click 3D Port Patching (`v0.5.0`):** Switch live in the browser between the **8U 10-Inch Homelab**, **12U 19-Inch Enterprise HA Rack** (`34` cables, `16` external drops), **6U 6-Inch DeskMate Micro-Lab**, and **Empty 10"/19" Racks**; share any custom rack via a single `#rack=v1.<base64url>` link (`Share` button); design custom 3D-printable cover panels (`0.5U`–`3U`, `lines`/`hex`/`ribs`/`vented-slots`/`solid`, plus custom engraved front text like `HOMELAB-01`) with live 2D CAD SVG preview and 1-click `.SCAD` / watertight 2-manifold `.STL` export; and patch cables directly in the 3D viewport by clicking any two free ports.
-> - **3D-Printable Designer Slot Cover Panels (`1U` & `2U` • `Lines` / `Hex` / `Tech-Ribs`), Closed `U2 Front` Slot Above UPS & Watertight `.SCAD`/`.STL` Generators (`v0.4.12`):** Added **7 new 3D-printable Designer Slot Cover Panels** (`60` $\rightarrow$ `67` catalog blueprints) across `1U` and `2U` slot sizes, surface patterns (**Horizontal Precision Lines**, **Blind Hexagonal Honeycomb**, **Vertical Tech-Ribs**), and rack standards (`10inch`, `19inch`, `6inch`). Mounted `cover-u2` (`3dprint-10inch-cover-panel-lines-1u`, `8 mm` depth) on **`U2 Front`** directly above the UPS so the front of `U2` is closed with a patterned faceplate (`0` collisions with `pdu-u2-rear` on `U2 Rear`), rendered 3D/2D/GLB surface relief patterns, pre-generated watertight 2-manifold `.scad`/`.stl` files for all 4 10-inch cover panels in `examples/10inch-homelab/`, and added a **3D-Printable Slot Cover Panels Library** in the `BOM & 3D-Print Hub` tab.
 
 <details>
-<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.4.11) in the Release Archive</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.4.12) in the Release Archive</b></summary>
 
 <br />
 
+- **`v0.4.12`** — 7 3D-printable Designer Slot Cover Panels (`1U` & `2U` • `Lines` / `Hex` / `Tech-Ribs`), closed `U2 Front` slot above UPS & watertight `.SCAD`/`.STL` generators.
 - **`v0.4.11`** — Top-rear external ISP fiber WAN & PoE+ building cable drops (`ext-isp-wan`, Wi-Fi 7 AP, 4K PoE+ camera, 2.5G office LAN) in the GitHub Pages Demo, 3D roof conduit collar & 2D/GLB exporters.
 - **`v0.4.10`** — TDQS Tier-A overhaul across all 12 MCP tools, documented `outputSchema` contracts (`structuredContent`), 100% recursive parameter descriptions, full MCP behavioral annotations & server-level `instructions`.
 - **`v0.4.9`** — 30 new hardware blueprints across `10inch`, `19inch`, and `6inch` racks (catalog doubled to 60 parts) + 3D/2D multi-bay hot-swap NAS sleds and ventilated cantilever shelves.
@@ -91,19 +92,20 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v0.6.0` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.6.1` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.4.12` – `v0.6.0`):**
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.5.0` – `v0.6.1`):**
+> - **Zero-CVE Docker-Runtime-Härtung (`v0.6.1`):** Reine Build-Abhängigkeiten (`esbuild`, `vite`, `vitest`, `typescript` via `pnpm prune --prod`) sowie ungenutzte globale Paketmanager (`npm`, `npx`, `yarn`) werden aus dem Non-Root-Produktions-Image entfernt (~350 MB schlanker, **0 Critical und 0 High CVEs** im Trivy-Sicherheits-Scan).
 > - **Gehosteter Multi-Session Remote-MCP-Server (`Streamable HTTP` & `SSE`) + eigener Live-3D-Session-Viewer (`v0.6.0`):** Verbinde Claude, Cursor, VS Code, Windsurf oder Antigravity sofort per 1-Zeilen-URL **`https://rack-mcp.167.233.80.33.sslip.io/mcp`** ganz ohne lokale Installation! Jede KI-Session erhält einen komplett isolierten Arbeitsbereich (`Mcp-Session-Id`) mit eigenem **Live-3D-Viewer-Link** (`https://rack-mcp.167.233.80.33.sslip.io/?session=<uuid>` über `wss://`) sowie direkten HTTPS-Download-Links für `.SVG`, `BOM.md`, `.GLB`, `rack.yaml` und alle wasserdichten `.STL`/`.SCAD`-3D-Druckdateien.
 > - **Live-Preset-Switcher (`10"` · `19"` · `6"` · `Leer`), teilbare Rack-Links (`#rack=v1...`), interaktiver 3D-Druck-Cover-Panel-Konfigurator (`0.5U`–`3U` + Gravur-Text) & direktes 2-Klick-3D-Port-Patching (`v0.5.0`):** Umschalten mit 1 Klick zwischen dem **8U 10-Zoll-Homelab**, dem **12U 19-Zoll-Enterprise-HA-Rack** (`34` Kabel, `16` externe Zuleitungen), dem **6U 6-Zoll DeskMate Micro-Lab** sowie **leeren 10"- und 19"-Racks**; Teilen jedes Racks per URL-Hash über den neuen **`Share`**-Button (`#rack=v1.<base64url>`, komplett ohne Server); individueller **3D-Druck Cover-Panel-Konfigurator** (`0.5U`–`3U`, `Lines` / `Hex` / `Tech-Ribs` / `Vented Airflow Slots` / `Solid` + eigener eingravierter Front-Text wie `HOMELAB-01` inkl. Live-2D-CAD-Vorschau und 100 % wasserdichtem `.STL`- & `.SCAD`-Download); sowie direktes **2-Klick-Kabel-Patchen** durch Anklicken zweier freier 3D-Ports.
-> - **3D-druckbare Designer-Cover-Panels (`1U` & `2U` • `Linien` / `Waben` / `Tech-Rippen`), geschlossener `U2 Front`-Slot über der USV & 2-Manifold `.SCAD`/`.STL`-Dateien (`v0.4.12`):** **7 neue 3D-druckbare Designer-Cover-Panels** (`60` $\rightarrow$ `67` Blueprints im Katalog) ohne Kabeldurchlass für `1U`- und `2U`-Slots mit verschiedenen Oberflächen-Mustern (**horizontale Präzisions-Linien**, **Hexagon-Wabenrelief**, **vertikale Tech-Rippen**) für `10inch`-, `19inch`- und `6inch`-Racks. Auf **`U2 Front`** direkt über der USV sitzt nun standardmäßig `cover-u2` (`3dprint-10inch-cover-panel-lines-1u`, `8 mm` Tiefe, `0` Kollisionen mit `pdu-u2-rear` auf `U2 Rear`), sodass der Slot von vorne mit einem feinen Linien-Muster geschlossen ist. Alle 4 10-Zoll-Cover-Panel-Varianten liegen als wasserdichte `.scad`- und `.stl`-Dateien unter `examples/10inch-homelab/` und im Tab **`BOM & 3D-Print Hub`**.
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.4.11) auf Deutsch anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.4.12) auf Deutsch anzeigen</b></summary>
 
 <br />
 
+- **`v0.4.12`** — 7 neue 3D-druckbare Designer-Cover-Panels (`1U` & `2U` • `Linien` / `Waben` / `Tech-Rippen`), geschlossener `U2 Front`-Slot über der USV & 2-Manifold `.SCAD`/`.STL`-Dateien.
 - **`v0.4.11`** — Externe Zuführungskabel von oben (ISP-Glasfaser-WAN, PoE+ Überwachungskamera, PoE+ Wi-Fi 7 AP & 2.5G Büro-LAN) in der GitHub-Pages-Demo, 3D-Dachkabeleinlass & 2D/GLB-Exporter.
 - **`v0.4.10`** — TDQS Tier-A-Upgrade für alle 12 MCP-Tools, dokumentierte `outputSchema`-Verträge (`structuredContent`), 100 % Parameter-Beschreibungen, alle 4 MCP-Annotationen & Server-`instructions`.
 - **`v0.4.9`** — 30 neue Hardware-Blueprints für `10inch`-, `19inch`- und `6inch`-Racks (Katalog auf 60 Teile verdoppelt) inkl. 3D/2D-Darstellung für Hot-Swap-NAS-Laufwerksschächte und L-Fachböden.

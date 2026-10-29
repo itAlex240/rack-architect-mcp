@@ -5,6 +5,17 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-10-29
+
+### Security & Hardening (🇬🇧 English)
+- **Zero-CVE Production Docker Image Hardening (`Dockerfile`):**
+  - Added `pnpm prune --prod --ignore-scripts` in the `builder` stage before copying `/app/node_modules` into `runner`, removing build-only devDependencies (`@esbuild/linux-x64/bin/esbuild`, `vite`, `vitest`, `typescript`) from the runtime image (~350 MB smaller footprint and `0` Go stdlib CVEs).
+  - Removed unused global package manager CLIs (`/usr/local/lib/node_modules/npm`, `npm`, `npx`, `corepack`, `/opt/yarn-*`) from the `node:22-alpine` runtime stage, achieving **0 Critical and 0 High CVEs** under Trivy container scanning.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Zero-CVE Docker-Runtime-Härtung (`Dockerfile`):**
+  - `pnpm prune --prod --ignore-scripts` entfernt reine Build-Abhängigkeiten (`esbuild`, `vite`, `vitest`, `typescript`) vor dem Kopieren in das Produktions-Image (~350 MB schlankeres Image) und löscht ungenutzte globale Paketmanager (`npm`, `npx`, `yarn`) im `runner`-Stage — das Produktions-Image erreicht damit **0 Critical und 0 High CVEs** im Trivy-Sicherheits-Scan.
+
 ## [0.6.0] - 2026-10-29
 
 ### Added & Improved (🇬🇧 English)

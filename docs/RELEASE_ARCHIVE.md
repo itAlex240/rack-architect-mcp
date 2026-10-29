@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.4.11`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.4.12`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.4.11`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.4.12`)
 
 ### 📦 `v0.4.x` Series — 3D Port & Brush-Panel Realism, External Building Drops & Collision-Free Routing
 
+- **[`v0.4.12`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.12) (2026-10-28) — 3D-Printable Designer Slot Cover Panels (`1U` & `2U` • `Lines` / `Hex` / `Tech-Ribs`), Closed `U2 Front` Slot Above UPS & Watertight `.SCAD`/`.STL` Generators:**
+  - Added 7 new 3D-printable Designer Slot Cover Panels (`60 -> 67` catalog blueprints), closed `U2 Front` above the UPS with `3dprint-10inch-cover-panel-lines-1u` (`8 mm` depth, `0` collisions with `pdu-u2-rear`), and added watertight 2-manifold `.SCAD`/`.STL` cover-panel generators.
 - **[`v0.4.11`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.11) (2026-10-28) — Top-Rear External ISP WAN & PoE Building Cable Drops in the GitHub Pages Demo, 3D Roof Conduit Collar & 2D/3D/GLB Exporters:**
   - Added 4 overhead external building & ISP drops (`top-rear`: ISP Fiber ONT 2.5G WAN, UniFi U7-Pro Wi-Fi 7 Ceiling AP `21W` PoE+, 4K PoE+ Driveway Camera `12.5W`, and Home-Office 2.5G Workstation Outlet) into the 8U 10-Inch Homelab reference scene and live GitHub Pages Demo, complete with 3D overhead roof conduit entry splines, 2D Rear/Side-Cutaway external drop paths, and `.glb` export meshes.
 - **[`v0.4.10`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.10) (2026-10-28) — TDQS Tier-A Overhaul Across All 12 MCP Tools, Documented `outputSchema` Contracts & Server Instructions:**
@@ -56,10 +58,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.4.11`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.4.12`)
 
 ### 📦 Serie `v0.4.x` — 3D-Ports, Bürstenpanels, Externe Haus-Verkabelung & Kollisionsfreie Kabelführung
 
+- **[`v0.4.12`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.12) (2026-10-28) — 3D-druckbare Designer-Cover-Panels (`1U` & `2U` • `Linien` / `Waben` / `Tech-Rippen`), geschlossener `U2 Front`-Slot über der USV & 2-Manifold `.SCAD`/`.STL`-Dateien:**
+  - 7 neue 3D-druckbare Designer-Cover-Panels (`60 -> 67` Blueprints), geschlossener `U2 Front`-Slot über der USV (`cover-u2`, `8 mm` Tiefe, `0` Kollisionen) sowie wasserdichte `.scad`/`.stl`-Cover-Panel-Generatoren.
 - **[`v0.4.11`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.11) (2026-10-28) — Externe Zuführungskabel von oben (ISP-Glasfaser-WAN, PoE+ Überwachungskamera, PoE+ Wi-Fi 7 AP & 2.5G Büro-LAN) in der GitHub-Pages-Demo & im 3D/2D-Viewer:**
   - 4 externe Gebäude- und Provider-Leitungen von oben (`top-rear`: ISP Glasfaser-ONT 2.5G WAN, UniFi U7-Pro Wi-Fi 7 Decken-AP `21W` PoE+, 4K PoE+ Überwachungskamera Einfahrt `12,5W` & 2.5G Home-Office-Dose) im 8U 10-Zoll-Homelab und in der GitHub-Demo ergänzt — inklusive sichtbarem 3D-Dachkabeleinlass, 2D-CAD-Rück-/Seitenschnitt-Darstellung und `.glb`-Export.
 - **[`v0.4.10`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.4.10) (2026-10-28) — TDQS Tier-A-Upgrade für alle 12 MCP-Tools, dokumentierte `outputSchema`-Verträge & Server-Instructions:**
