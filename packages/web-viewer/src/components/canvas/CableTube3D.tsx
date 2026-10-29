@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import * as THREE from 'three';
 import type { ThreeEvent } from '@react-three/fiber';
 import {
+  ensureHighContrastCableHex,
   isPowerCableType,
   type CableConnection,
   type ComputedCableRoute,
@@ -176,16 +177,17 @@ export function CableTube3D({
   };
 
   const opacity = isDimmed ? 0.2 : 1.0;
+  const displayColor3D = ensureHighContrastCableHex(cable.color_hex, '3d-dark');
 
   return (
     <group onClick={handleClick}>
       {/* Main 3D Spline Cable Jacket */}
       <mesh geometry={tubeGeo}>
         <meshStandardMaterial
-          color={cable.color_hex}
+          color={displayColor3D}
           roughness={0.42}
-          metalness={0.12}
-          emissive={isHighlighted ? cable.color_hex : '#000000'}
+          metalness={0.14}
+          emissive={isHighlighted ? displayColor3D : '#000000'}
           emissiveIntensity={isHighlighted ? 0.45 : 0}
           transparent={isDimmed}
           opacity={opacity}
@@ -198,7 +200,7 @@ export function CableTube3D({
           args={[tubeRadiusMm * 1.15, tubeRadiusMm * 1.48, 10, 12]}
         />
         <meshStandardMaterial
-          color={isHighlighted ? cable.color_hex : '#1E293B'}
+          color={isHighlighted ? displayColor3D : '#27272A'}
           roughness={0.5}
           metalness={0.3}
           transparent={isDimmed}
@@ -212,7 +214,7 @@ export function CableTube3D({
           args={[tubeRadiusMm * 1.15, tubeRadiusMm * 1.48, 10, 12]}
         />
         <meshStandardMaterial
-          color={isHighlighted ? cable.color_hex : '#1E293B'}
+          color={isHighlighted ? displayColor3D : '#27272A'}
           roughness={0.5}
           metalness={0.3}
           transparent={isDimmed}

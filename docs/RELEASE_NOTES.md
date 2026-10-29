@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.7.1` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v0.7.2` — 3D/2D Rack Planner, Hosted Remote MCP, CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v0.7.1`!**  
+**Welcome to RackArchitect MCP `v0.7.2`!**  
 Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint (`https://rack-mcp.167.233.80.33.sslip.io/mcp`)** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
 <p align="center">
@@ -11,16 +11,17 @@ Whether you are a **complete beginner with zero coding experience** who just wan
   </a>
 </p>
 
-> **✨ What's New in the Last 3 Releases (`v0.6.7` – `v0.7.1`):**
+> **✨ What's New in the Last 3 Releases (`v0.7.0` – `v0.7.2`):**
+> - **Collision-Free Rear-Cavity 3D Cable Routing & Overhauled 2D CAD / Multi-Track Wiring Plan (`v0.7.2`):** Fixed physical port-zone classification (`resolveEffectivePortZone`) for inward-facing ports on rear-mounted PDUs so UPS-to-PDU and PDU-to-Mini-PC power cords route cleanly inside the internal rear rack cavity (`0` chassis penetrations, `0` front-panel stabs), added detour-aware open-U pass-through portal scoring (`scorePortalCandidate`), projected true 3D `(z, y)` waypoints in the 2D Side-Profile Cutaway, lifted ultra-dark `#18181B` power cords to high-contrast metallic graphite, and upgraded the browser Wiring Plan to a full 2-Section **3-Tier Power/PoE DAG + Grouped Device Cards & Multi-Track Orthogonal Router**.
 > - **Animated 6-Scene 3D/2D Hero Showcase (`v0.7.1`):** Added a crisp, GitHub-autoplay-ready (`< 8 MB`) 6-scene animated Hero Demo GIF (`docs/assets/rack-architect-hero-demo.gif`) showcasing the live 3D Digital Twin, `X-Ray` + `140 mm` Z-Explode plug clearances, 5-stage `PLUG_CLEARANCE_COLLISION` diagnostics, autonomous MCP self-correction, synchronized 2D SVG CAD blueprints, `.STL`/`.SCAD` BOM hub, and instant `19"` / `10"` / `6"` EIA-310 rack presets.
 > - **Privacy-First Remote MCP Usage, AI Client & Wire-Traffic Telemetry (`v0.7.0`):** Added GDPR-compliant Prometheus (`GET /metrics`) and JSON (`GET /api/telemetry`) observability to `@rack-mcp/mcp-server` (protected by Bearer token / loopback auth), tracking active vs. connected MCP users (`Today` / `7d` / `30d` via salted HMAC-SHA256 hashes without storing raw IPs), per-tool call latencies across all 12 MCP tools, AI client families (`Claude`, `Claude Code`, `Cursor`, `Antigravity`, `VS Code`, `Windsurf`), CAD/STL deliverable downloads, and HTTP/WebSocket bandwidth consumption.
-> - **Release Pipeline Fix, Dual `mcpb` + Remote MCP Registry Manifest & CodeQL Security/Quality Hardening (`v0.6.7`):** Fixed the GitHub Actions `.mcpb` release bundling step so `server.json` publishes both the downloadable `mcpb` bundle and live Hosted Remote MCP endpoints (`streamable-http` + `sse`) within the official MCP Registry schema constraints, and resolved CodeQL `javascript-typescript` code-scanning alerts (`js/overly-large-range` in 3D cover-panel glyph sanitizers, sandboxed `<img />` SVG preview rendering, and linear $O(n)$ URL/slug sanitizers).
 
 <details>
-<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.6.6) in the Release Archive</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.6.7) in the Release Archive</b></summary>
 
 <br />
 
+- **`v0.6.7`** — GitHub Actions `.mcpb` release bundling fix, dual `mcpb` + Hosted Remote MCP `server.json` manifest & CodeQL `javascript-typescript` security/quality hardening.
 - **`v0.6.6`** — Instant Zero-Install Remote MCP quickstart & endpoint table across GitHub `README.md`, `glama.json`, `server.json`, package READMEs, `SKILL.md`, and Release Notes.
 - **`v0.6.5`** — Multi-agent operational handover (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md` Section 10), Zero-Egress DMZ invariants & automated Zero-Downtime GitHub `main` pull-deployments with Trivy CVE gating.
 - **`v0.6.4`** — Multi-tenant fair-share per-IP session isolation, WebSocket `256 KB` frame & CSWSH `Origin` guards, strict `Content-Security-Policy` + scoped CORS, algorithmic DoS schema bounds & `root:root`-owned Docker runtime binaries.
@@ -120,19 +121,20 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v0.7.1` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.7.2` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL (`https://rack-mcp.167.233.80.33.sslip.io/mcp`)** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.6.7` – `v0.7.1`):**
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.7.0` – `v0.7.2`):**
+> - **Kollisionsfreie 3D-Innenraum-Kabelführung & komplett erneuerter 2D-Bau- und Kabelplan (`v0.7.2`):** Nach innen gerichtete Strombuchsen an rückseitig montierten Steckdosenleisten (`resolveEffectivePortZone`) werden jetzt physikalisch exakt im hinteren Rack-Innenraum verdrahtet (USV- & PDU-Stromkabel laufen direkt hinten im freien Zwischenraum statt durch vordere Cover-Panels zu stechen; `0` Gehäuse-Durchdringungen), Front-zu-Heck-Kabel wählen automatisch den nächsten freien `U`-Durchlass ohne Umwege, dunkle `#18181B`-Stromkabel werden kontraststark als Metallic-Graphit dargestellt, der 2D-Seitenschnitt projiziert die echten 3D-Kabelwege und der Live-`Wiring Plan` zeigt jetzt einen **3-stufigen USV/PDU/PoE-Strombaum + gruppierte Geräte-Karten mit Multi-Track-Bus-Router**.
 > - **Animiertes 6-Szenen 3D/2D Hero-Demo-GIF (`v0.7.1`):** Ein gestochen scharfes, für GitHub-Inline-Autoplay optimiertes (`< 8 MB`) Hero-Demo-GIF (`docs/assets/rack-architect-hero-demo.gif`) ergänzt — zeigt in 6 Live-Szenen den 3D Digital Twin, `X-Ray` & `140 mm` Z-Explode Stecker-Freiräume, die Live-Kollisionserkennung (`PLUG_CLEARANCE_COLLISION`), die autonome MCP-Selbstkorrektur, maßstabsgetreue 2D-CAD-Pläne (`.svg`), den `.STL`/`.SCAD`-3D-Druck-Hub sowie den 1-Klick-Wechsel zwischen `19"`-, `10"`- und `6"`-Racks.
 > - **DSGVO-konformer MCP-Nutzungs-, KI-Client- & Traffic-Tracker (`v0.7.0`):** Geschützte Prometheus- (`GET /metrics`) und JSON-Telemetrie-Endpunkte (`GET /api/telemetry`, abgesichert per Bearer-Token / Loopback) in `@rack-mcp/mcp-server` ergänzt — erfasst aktive MCP-Tool-Nutzer vs. reine Verbindungen (`Heute` / `7T` / `30T` per gesalzenem HMAC-SHA256 ohne Speicherung echter IPs), Tool-Aufrufe über alle 12 MCP-Tools, verwendete KI-Clients (`Claude`, `Claude Code`, `Cursor`, `Antigravity`, `VS Code`, `Windsurf`), CAD-/STL-Downloads sowie den ausgehenden HTTP-/WebSocket-Traffic.
-> - **Release-Pipeline-Fix, Duales `mcpb`- + Remote-MCP-Registry-Manifest & CodeQL Security/Quality-Härtung (`v0.6.7`):** GitHub-Actions-Release-Step für das `.mcpb`-Bundle und `server.json` (kombiniert `mcpb`-Download + Live-Remote-MCP-Endpunkte innerhalb der offiziellen MCP-Registry-Vorgaben) repariert sowie alle CodeQL-Code-Scanning-Befunde (`js/overly-large-range` in den Cover-Panel-Textfiltern, gekapselte `<img />`-SVG-Vorschau und lineare $O(n)$-URL-/Slug-Helfer) behoben.
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.6.6) auf Deutsch anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.6.7) auf Deutsch anzeigen</b></summary>
 
 <br />
 
+- **`v0.6.7`** — Fix der GitHub-Actions-`.mcpb`-Release-Pipeline, kombiniertes `mcpb`- + Remote-MCP-`server.json`-Manifest & Behebung aller CodeQL-Code-Scanning-Befunde.
 - **`v0.6.6`** — Direkter Zero-Install Remote-MCP-Schnellstart & Endpunkt-Übersicht oben in der `README.md`, `glama.json`, `server.json`, den Paket-READMEs, `SKILL.md` und den Release Notes.
 - **`v0.6.5`** — Multi-Agenten-Übergaberegeln (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md` Abschnitt 10), Zero-Egress-DMZ-Invarianten & automatischer Zero-Downtime Auto-Updater vom GitHub-`main`-Branch inkl. Trivy-CVE-Gate.
 - **`v0.6.4`** — Fair-Share-Mandantenschutz pro IP (`maxSessionsPerIp = 12`), `256 KB` WebSocket-Frame-Limit + CSWSH-`Origin`-Prüfung, strikte `Content-Security-Policy` + Scoped CORS, DoS-Schema-Obergrenzen & `root:root`-Code-Schutz im Docker-Container.

@@ -556,4 +556,207 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     expect(sanitizeCoverPanelLabel('Lab!"#$%&\'()*+,9')).toBe('LAB9');
     expect(sanitizeCoverPanelLabel('  NAS / UPS-1  ')).toBe('NAS / UPS-1');
   });
+
+  it('routes 19-inch rear-PDU / short-depth-UPS internal cavity power cords and open-U cross-face cables without chassis penetration or dark-cable invisibility', () => {
+    const k8sRackInput = {
+      schema_version: '1.0' as const,
+      project_name: '10U 19-Inch K8s Homelab Cable Routing Regression',
+      rack: {
+        standard: '19inch' as const,
+        u_height: 10,
+        rail_depth_mm: 400,
+        enclosure_type: 'closed-vented-front' as const,
+        front_door_clearance_mm: 45,
+        rear_clearance_mm: 80,
+      },
+      mounted_devices: [
+        {
+          instance_id: 'ups-01',
+          blueprint_slug: 'apc-smart-ups-li-ion-short-depth-2u',
+          u_position: 1,
+          face: 'front' as const,
+          hostname: 'ups-01',
+          children: [],
+        },
+        {
+          instance_id: 'cover-u3',
+          blueprint_slug: '3dprint-19inch-cover-panel-lines-1u',
+          u_position: 3,
+          face: 'front' as const,
+          hostname: 'cover-u3',
+          children: [],
+        },
+        {
+          instance_id: 'pdu-01',
+          blueprint_slug: 'brennenstuhl-19inch-pdu-8way-schuko-1u',
+          u_position: 3,
+          face: 'rear' as const,
+          hostname: 'pdu-01',
+          children: [],
+        },
+        {
+          instance_id: 'carrier-k8s-prod',
+          blueprint_slug: '3dprint-19inch-dual-minipc-poe-carrier-1u',
+          u_position: 4,
+          face: 'front' as const,
+          hostname: 'carrier-k8s-prod',
+          children: [
+            {
+              instance_id: 'k8s-prod-01',
+              blueprint_slug: 'lenovo-thinkcentre-m920q',
+              slot_id: 'mini-pc-bay-1',
+              hostname: 'k8s-prod-01',
+            },
+          ],
+        },
+        {
+          instance_id: 'carrier-k8s-lab',
+          blueprint_slug: '3dprint-19inch-dual-minipc-poe-carrier-1u',
+          u_position: 5,
+          face: 'front' as const,
+          hostname: 'carrier-k8s-lab',
+          children: [
+            {
+              instance_id: 'k8s-lab-01',
+              blueprint_slug: 'hp-elitedesk-800-g6-mini',
+              slot_id: 'mini-pc-bay-1',
+              hostname: 'k8s-lab-01',
+            },
+          ],
+        },
+        {
+          instance_id: 'sw-01',
+          blueprint_slug: 'ubiquiti-usw-pro-max-24-poe',
+          u_position: 7,
+          face: 'front' as const,
+          hostname: 'sw-01',
+          children: [],
+        },
+        {
+          instance_id: 'fw-01',
+          blueprint_slug: 'ubiquiti-udm-pro',
+          u_position: 8,
+          face: 'front' as const,
+          hostname: 'fw-01',
+          children: [],
+        },
+        {
+          instance_id: 'brush-01',
+          blueprint_slug: 'generic-19inch-brush-panel-1u',
+          u_position: 9,
+          face: 'front' as const,
+          hostname: 'brush-01',
+          children: [],
+        },
+      ],
+      cables: [
+        {
+          cable_id: 'pwr-ups-to-pdu',
+          from: { instance_id: 'ups-01', port_id: 'iec_out3' },
+          to: { instance_id: 'pdu-01', port_id: 'ac_in' },
+          cable_type: 'power-c13-c14' as const,
+          color_hex: '#18181B',
+          routing_mode: 'shortest-direct' as const,
+        },
+        {
+          cable_id: 'pwr-ups-to-sw',
+          from: { instance_id: 'ups-01', port_id: 'iec_out2' },
+          to: { instance_id: 'sw-01', port_id: 'ac_in' },
+          cable_type: 'power-c13-c14' as const,
+          color_hex: '#18181B',
+          routing_mode: 'shortest-direct' as const,
+        },
+        {
+          cable_id: 'pwr-pdu-k8s-prod-01',
+          from: { instance_id: 'pdu-01', port_id: 'outlet1' },
+          to: { instance_id: 'k8s-prod-01', port_id: 'dc_in' },
+          cable_type: 'power-dc-5525' as const,
+          color_hex: '#18181B',
+          routing_mode: 'shortest-direct' as const,
+        },
+        {
+          cable_id: 'cbl-k8s-prod-01',
+          from: { instance_id: 'sw-01', port_id: 'eth9' },
+          to: { instance_id: 'k8s-prod-01', port_id: 'eth1' },
+          cable_type: 'cat6a' as const,
+          color_hex: '#10B981',
+          routing_mode: 'shortest-direct' as const,
+        },
+      ],
+      external_endpoints: [],
+    };
+
+    const scene = evaluateRackScene(
+      k8sRackInput,
+      defaultCatalogRegistry.toRecord(),
+    );
+    expect(scene.validation.is_valid).toBe(true);
+
+    // 1. Rear UPS -> inward-facing Rear PDU stays 100% in the rear cavity (never crosses front or stabs cover-u3)
+    const upsToPdu = scene.cable_routes.find(
+      (r) => r.cable_id === 'pwr-ups-to-pdu',
+    )!;
+    expect(upsToPdu.route_case).toBe('same-face-duct');
+    expect(upsToPdu.portal_u).toBeNull();
+    for (const wp of upsToPdu.waypoints) {
+      expect(wp.z).toBeGreaterThanOrEqual(289.9);
+      expect(wp.z).toBeLessThanOrEqual(347.0);
+    }
+
+    // 2. Rear UPS -> U7 Switch threads cleanly through the internal rear gap between sw-01 (325mm) and pdu-01 (346mm)
+    const upsToSw = scene.cable_routes.find(
+      (r) => r.cable_id === 'pwr-ups-to-sw',
+    )!;
+    expect(upsToSw.route_case).toBe('same-face-duct');
+    for (const pt of upsToSw.spline_points.slice(24, -24)) {
+      expect(pt.z).toBeGreaterThan(289.5);
+      expect(pt.z).toBeLessThan(345.0);
+    }
+
+    // 3. Cross-face U7 Switch -> U4 Mini-PC chooses adjacent open U6 portal (not U9 brush detour) and compact rear Z
+    const crossK8s = scene.cable_routes.find(
+      (r) => r.cable_id === 'cbl-k8s-prod-01',
+    )!;
+    expect(crossK8s.route_case).toBe('cross-face-portal');
+    expect(crossK8s.portal_u).toBe(6);
+    for (const wp of crossK8s.waypoints) {
+      expect(wp.z).toBeLessThan(260);
+    }
+
+    // 4. Zero intermediate spline points penetrate cover-u3 or pdu-01 across all cables
+    const solidBoxes = scene.geometry.devices
+      .filter((d) => d.blueprint.category !== 'modular-carrier')
+      .map((d) => ({ id: d.instance_id, box: d.chassis_box }));
+    for (const route of scene.cable_routes) {
+      const sp = route.spline_points;
+      for (let i = 24; i < sp.length - 24; i++) {
+        const pt = sp[i]!;
+        for (const { box } of solidBoxes) {
+          const inside =
+            pt.x > box.min.x + 1.5 &&
+            pt.x < box.max.x - 1.5 &&
+            pt.y > box.min.y + 1.5 &&
+            pt.y < box.max.y - 1.5 &&
+            pt.z > box.min.z + 1.5 &&
+            pt.z < box.max.z - 1.5;
+          expect(inside).toBe(false);
+        }
+      }
+    }
+
+    // 5. 2D Elevation & Wiring SVGs render pwr-ups-to-pdu on rear view, open-portal U6 band, and lift #18181B strokes
+    const elevationSvg = generateElevationSvg(scene);
+    expect(elevationSvg).toContain(
+      'data-cable-id="pwr-ups-to-pdu" data-cable-view="rear"',
+    );
+    expect(elevationSvg).not.toContain(
+      'data-cable-id="pwr-ups-to-pdu" data-cable-view="front"',
+    );
+    expect(elevationSvg).toContain('data-open-portal-u="6"');
+    expect(elevationSvg).not.toContain('stroke="#18181B"');
+
+    const wiringSvg = generateWiringSchematicSvg(scene);
+    expect(wiringSvg).toContain('data-schematic-cable="pwr-ups-to-pdu"');
+    expect(wiringSvg).not.toContain('stroke="#18181B"');
+  });
 });

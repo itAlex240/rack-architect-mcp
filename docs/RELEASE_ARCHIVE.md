@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.6.6`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.6.7`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.6.6`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.6.7`)
 
 ### 🌐 `v0.6.x` Series — Zero-Install Hosted Multi-Session Remote MCP & Zero-CVE Container Hardening
 
+- **[`v0.6.7`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.7) (2026-10-29) — Release Pipeline Fix, Dual `mcpb` + Remote MCP Registry Manifest & CodeQL Security/Quality Hardening:**
+  - Fixed the GitHub Actions `.mcpb` release bundling step so `server.json` publishes both the downloadable `mcpb` desktop bundle and live Hosted Remote MCP endpoints (`streamable-http` + `sse`) within the official MCP Registry schema constraints, and resolved CodeQL `javascript-typescript` code-scanning alerts (`js/overly-large-range` in 3D cover-panel glyph sanitizers, sandboxed `<img />` SVG preview rendering, and linear $O(n)$ URL/slug sanitizers).
 - **[`v0.6.6`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.6) (2026-10-29) — Zero-Install Hosted Remote MCP Visibility Across GitHub, Glama & MCP Registries:**
   - Promoted the live Zero-Install Hosted Remote MCP endpoints (`https://rack-mcp.167.233.80.33.sslip.io/mcp` via `Streamable HTTP`, `/sse` via `SSE`, and live per-session 3D viewer `/?session=<uuid>`) right into the top Hero callout and Option A of `README.md`, `glama.json`, `server.json`, package READMEs, `SKILL.md`, and Release Notes.
 - **[`v0.6.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.5) (2026-10-29) — Multi-Agent Handover Rules, Zero-Egress DMZ Invariants & Zero-Downtime Auto-Update Protocol:**
@@ -80,10 +82,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.6.6`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.6.7`)
 
 ### 🌐 Serie `v0.6.x` — Gehosteter Multi-Session Remote-MCP-Server & Zero-CVE Container-Härtung
 
+- **[`v0.6.7`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.7) (2026-10-29) — Fix der GitHub-Release-Pipeline, Duales `mcpb`- + Remote-MCP-Registry-Manifest & CodeQL Security/Quality-Härtung:**
+  - GitHub-Actions-Release-Step für das `.mcpb`-Bundle und `server.json` (kombiniert `mcpb`-Download + Live-Remote-MCP-Endpunkte innerhalb der offiziellen MCP-Registry-Vorgaben) repariert sowie alle CodeQL-Code-Scanning-Befunde (`js/overly-large-range` in den Cover-Panel-Textfiltern, gekapselte `<img />`-SVG-Vorschau und lineare $O(n)$-URL-/Slug-Helfer) behoben.
 - **[`v0.6.6`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.6) (2026-10-29) — Prominente Darstellung des Zero-Install Hosted Remote-MCP-Endpunkts auf GitHub, Glama & in allen MCP-Verzeichnissen:**
   - Den live gehosteten Zero-Install Remote-MCP-Server (`https://rack-mcp.167.233.80.33.sslip.io/mcp`, `/sse` sowie `/?session=<uuid>`) prominent in den Hero-Bereich und als Option A der `README.md`, `glama.json`, `server.json`, Paket-READMEs, `SKILL.md` und Release Notes gesetzt.
 - **[`v0.6.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.6.5) (2026-10-29) — Multi-Agenten-Übergabedokumentation, Zero-Egress-DMZ-Invarianten & Zero-Downtime Auto-Update-Protokoll:**

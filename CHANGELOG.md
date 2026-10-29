@@ -5,6 +5,26 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.2] - 2026-10-29
+
+### Fixed — 3D Cavity Cable Routing, Rear-PDU Port Zone Resolution & 2D CAD / Wiring Plan Overhaul (🇬🇧 English)
+- **Physical Port Zone Resolution & Internal Rear Cavity 3D Routing (`@rack-mcp/core-domain`):**
+  - Exported `resolveEffectivePortZone` in `catmull-rom-router.ts` so inward-facing (`-Z`) ports on rear-mounted PDUs (`device.face === 'rear'` or `world_position.z > 35 mm`, such as `brennenstuhl-19inch-pdu-8way-schuko-1u:ac_in`) classify as `'rear'` cavity endpoints rather than `'front'` rail endpoints — eliminating bogus cross-face detours where rear UPS-to-PDU power cords crossed out a front brush panel and stabbed straight through front cover panels (`cover-u3`).
+  - Added exact 3D Kay-Kajiya segment-vs-AABB chassis clearance checks (`segmentIntersectsExpandedAabb`, `computeMinChassisClearanceMm`), internal gap-first `computeRearPlenumZ` (`gapMinZ` / `gapMaxZ` threading between front device backs and rear-rail PDUs, plus `9.5 mm` outer-rear PDU step-overs), and detour-aware `scorePortalCandidate` so cross-face cables choose adjacent open-U portals (`U6`) and compact rear Z-depths behind short-depth Mini-PCs instead of detouring across distant brush panels (`U9`) or to the `400 mm` rear rails.
+- **High-Contrast 2D Elevation, True 3D Z-Y Cutaway & Multi-Track Wiring Plan (`@rack-mcp/exporters`, `@rack-mcp/web-viewer`):**
+  - Exported `ensureHighContrastCableHex` to lift ultra-dark `#18181B` / `#000000` power cords to crisp metallic graphite across 3D tubes (`CableTube3D.tsx`), `elevation.svg`, and `wiring-schematic.svg`, plus luminance-adaptive dark labels on anodized silver Ubiquiti faceplates and deferred top-layer `●->REAR` / `FRONT->●` portal grommet badges.
+  - Upgraded `SIDE-PROFILE DEPTH CUTAWAY (Z-Y)` in both `elevation-svg.ts` and `standalone-homelab.ts` to project actual 3D `route.waypoints` `(z, y)` trajectories, added dashed `OPEN CABLE PASS-THROUGH PORTAL` guide bands and nearest-rail left/right duct selection, and upgraded `renderClientSideWiringSvg` to a full 2-Section **3-Tier Power/PoE Distribution DAG + Grouped Device Cards & Multi-Track Orthogonal Channel Router**.
+  - Updated `useRackState.ts` so live session URLs carrying a `#rack=v1.` backup hash (`/?session=<uuid>#rack=v1...`) connect via live WebSocket first while preserving standalone `#rack=v1.` fallback when a session expires, and widened the 3D overhead roof conduit collar (`RackSceneCanvas.tsx`) for 9+ external building drops.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **3D-Kabelführung im hinteren Rack-Innenraum & Korrektur für rückseitig montierte PDUs (`@rack-mcp/core-domain`):**
+  - `resolveEffectivePortZone` in `catmull-rom-router.ts` eingeführt: Nach innen gerichtete Anschlüsse (`-Z`) an hinten montierten Steckdosenleisten (`pdu-01` auf `face: 'rear'`, z. B. `ac_in` & Schuko-Ausgänge) werden korrekt dem hinteren Rack-Raum (`'rear'`) zugeordnet — dadurch laufen USV-zu-PDU-Stromkabel direkt auf kurzem Weg im hinteren Zwischenraum (`Z ≈ 318 mm`), statt unsinnig vorne aus dem Bürstenpanel herauszukommen und quer durch die vordere `U3`-Blende (`cover-u3`) zu stechen.
+  - Exakte 3D-Segment-gegen-Gehäuse-Kollisionsprüfung (`segmentIntersectsExpandedAabb`), interne Spaltführung (`computeRearPlenumZ` führt USV-Stromkabel sauber durch den freien Innenraum zwischen kurzen Frontgeräten und der hinteren PDU bzw. sauber `9,5 mm` über die Oberkante der PDU hinweg) sowie umwegsensible Portal-Auswahl (`scorePortalCandidate` nutzt den direkt angrenzenden freien `U6`-Durchlass mit kompakter Tiefe hinter den Mini-PCs statt unnötiger Umwege über `U9` oder die `400 mm`-Rückwand).
+- **Kontraststarker 2D-Bauplan (`elevation.svg`), echter Z-Y-Seitenschnitt & komplett neuer Live-Kabelplan (`@rack-mcp/exporters`, `@rack-mcp/web-viewer`):**
+  - `ensureHighContrastCableHex` hebt tiefschwarze `#18181B`-Stromkabel in 3D und allen 2D-Plänen automatisch auf gut erkennbares Metallic-Graphit an; helle silberne Ubiquiti-Gehäuse erhalten kontraststarke dunkle Beschriftungen und `●->REAR` / `FRONT->●` Portal-Badges liegen stets sauber über allen Kabellinien.
+  - Der 2D-Seitenschnitt (`SIDE-PROFILE DEPTH CUTAWAY`) projiziert jetzt exakt die echten kollisionsfreien 3D-Waypoints `(z, y)`; der Live-/Browser-Kabelplan (`Wiring Plan` / `renderClientSideWiringSvg`) wurde von der alten flachen Liste auf einen vollwertigen **2-Sektionen-Schaltplan (3-stufiger USV/PDU/PoE-Strombaum + gruppierte Geräte-Karten mit Multi-Track-Bus-Router)** aktualisiert.
+  - Kombinierte Live-Session- & Share-Links (`/?session=<uuid>#rack=v1...`) verbinden sich jetzt vorrangig live per WebSocket mit der MCP-Session (mit `#rack=v1.` als automatischem Fallback nach Session-Ablauf).
+
 ## [0.7.1] - 2026-10-29
 
 ### Documentation & Visual Showcase (🇬🇧 English)

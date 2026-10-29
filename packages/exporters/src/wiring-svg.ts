@@ -1,4 +1,5 @@
 import {
+  ensureHighContrastCableHex,
   roundCentis,
   roundTenths,
   type CableType,
@@ -497,15 +498,16 @@ export function generateWiringSchematicSvg(scene: ComputedRackScene): string {
     const y2 = roundCentis(rightPos.y + 24 + (i % 3) * 10);
     const xTrack = roundCentis((x1 + x2) / 2 + (i - powerCables.length / 2) * 12);
 
+    const pcColor = ensureHighContrastCableHex(pc.color_hex, 'svg-dark');
     const d = buildRoundedManhattanPath(x1, y1, xTrack, x2, y2, 8);
     lines.push(
-      `    <path data-power-edge="${escapeXml(pc.cable_id)}" d="${d}" fill="none" stroke="${pc.color_hex}" stroke-width="2" stroke-dasharray="4,2" opacity="0.88" />`,
+      `    <path data-power-edge="${escapeXml(pc.cable_id)}" d="${d}" fill="none" stroke="${pcColor}" stroke-width="2" stroke-dasharray="4,2" opacity="0.88" />`,
     );
     lines.push(
-      `    <circle cx="${x1}" cy="${y1}" r="3" fill="${pc.color_hex}" stroke="#090D16" stroke-width="1" />`,
+      `    <circle cx="${x1}" cy="${y1}" r="3" fill="${pcColor}" stroke="#090D16" stroke-width="1" />`,
     );
     lines.push(
-      `    <circle cx="${x2}" cy="${y2}" r="3" fill="${pc.color_hex}" stroke="#090D16" stroke-width="1" />`,
+      `    <circle cx="${x2}" cy="${y2}" r="3" fill="${pcColor}" stroke="#090D16" stroke-width="1" />`,
     );
   }
   lines.push(`  </g>`);
@@ -642,19 +644,24 @@ export function generateWiringSchematicSvg(scene: ComputedRackScene): string {
         ? ` data-ip-cidr="${escapeXml(cable.ip_cidr)}"`
         : '';
 
+    const displayColor = ensureHighContrastCableHex(
+      cable.color_hex,
+      'svg-dark',
+    );
+
     lines.push(
       `    <g data-schematic-cable="${escapeXml(cable.cable_id)}" data-track-index="${trackIdx}" data-channel-x="${channelX}" data-start-pin="${startPin.pinX},${startPin.pinY}" data-end-pin="${endPin.pinX},${endPin.pinY}" data-cable-type="${cable.cable_type}"${vlanAttr}${cidrAttr}>`,
     );
     lines.push(
-      `      <path d="${manhattanPath}" fill="none" stroke="${cable.color_hex}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />`,
+      `      <path d="${manhattanPath}" fill="none" stroke="${displayColor}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />`,
     );
 
     // Plug dots directly on startPin and endPin
     lines.push(
-      `      <circle class="schematic-pin-plug" cx="${startPin.pinX}" cy="${startPin.pinY}" r="3.2" fill="${cable.color_hex}" stroke="#090D16" stroke-width="1" />`,
+      `      <circle class="schematic-pin-plug" cx="${startPin.pinX}" cy="${startPin.pinY}" r="3.2" fill="${displayColor}" stroke="#090D16" stroke-width="1" />`,
     );
     lines.push(
-      `      <circle class="schematic-pin-plug" cx="${endPin.pinX}" cy="${endPin.pinY}" r="3.2" fill="${cable.color_hex}" stroke="#090D16" stroke-width="1" />`,
+      `      <circle class="schematic-pin-plug" cx="${endPin.pinX}" cy="${endPin.pinY}" r="3.2" fill="${displayColor}" stroke="#090D16" stroke-width="1" />`,
     );
 
     // Non-overlapping Cable Tag (`cab-id | 0.25m Cat6A • VLAN10`) on the dedicated horizontal segment at startPin.pinY
@@ -665,7 +672,7 @@ export function generateWiringSchematicSvg(scene: ComputedRackScene): string {
     const pillText = `${cable.cable_id} | ${badgeText}${netSuffix}`;
 
     lines.push(
-      `      <rect x="${pillX}" y="${pillY}" width="${pillW}" height="${pillH}" rx="9.5" fill="#090D16" stroke="${cable.color_hex}" stroke-width="1.3" />`,
+      `      <rect x="${pillX}" y="${pillY}" width="${pillW}" height="${pillH}" rx="9.5" fill="#090D16" stroke="${displayColor}" stroke-width="1.3" />`,
     );
     lines.push(
       `      <text x="${roundCentis(pillX + pillW / 2)}" y="${roundCentis(startPin.pinY + 3.2)}" fill="#F8FAFC" font-size="8.4" font-weight="600" text-anchor="middle">${escapeXml(pillText.slice(0, 48))}</text>`,

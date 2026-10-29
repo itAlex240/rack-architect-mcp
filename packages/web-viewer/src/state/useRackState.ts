@@ -987,7 +987,10 @@ export function useRackState(): RackViewerState {
     if (typeof window === 'undefined' || typeof WebSocket === 'undefined') {
       return;
     }
-    if (window.location.hash.includes('rack=v1.')) {
+    const rawSessionParam =
+      new URLSearchParams(window.location.search).get('session')?.trim() ?? '';
+    const hasExplicitSession = /^[a-zA-Z0-9_-]{1,128}$/.test(rawSessionParam);
+    if (window.location.hash.includes('rack=v1.') && !hasExplicitSession) {
       return;
     }
     // Skip automatic network connection inside JSDOM / HappyDOM unit tests
@@ -1002,9 +1005,7 @@ export function useRackState(): RackViewerState {
     const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host || '127.0.0.1:3100';
-    const rawSessionParam =
-      new URLSearchParams(window.location.search).get('session')?.trim() ?? '';
-    const sessionQuery = /^[a-zA-Z0-9_-]{1,128}$/.test(rawSessionParam)
+    const sessionQuery = hasExplicitSession
       ? `?session=${encodeURIComponent(rawSessionParam)}`
       : '';
     const apiBase = `${protocol}//${host}`;

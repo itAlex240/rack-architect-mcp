@@ -3,9 +3,11 @@ import {
   EIA_310_SPECS,
   MM_PER_U,
   U_HOLE_OFFSETS_MM,
+  ensureHighContrastCableHex,
   getBoxIntersection,
   isPowerCableType,
   resolveCableEndpointPortGeometry,
+  resolveEffectivePortZone,
   roundCentis,
   roundTenths,
   type BoundingBox3D,
@@ -184,15 +186,48 @@ function buildRoundedOrthogonalPath(
     return `M ${roundCentis(pts[0]!.x)} ${roundCentis(pts[0]!.y)}`;
   }
 
-  // Filter consecutive duplicate points while preserving first and last
-  const clean: Array<{ readonly x: number; readonly y: number }> = [pts[0]!];
+  // Filter consecutive duplicate points while strictly preserving exact first and last endpoints
+  const deduped: Array<{ readonly x: number; readonly y: number }> = [pts[0]!];
   for (let i = 1; i < pts.length; i++) {
-    const prev = clean[clean.length - 1]!;
+    const prev = deduped[deduped.length - 1]!;
     const curr = pts[i]!;
+    const isLast = i === pts.length - 1;
     if (Math.hypot(curr.x - prev.x, curr.y - prev.y) > 0.5) {
-      clean.push(curr);
+      deduped.push(curr);
+    } else if (isLast) {
+      if (deduped.length >= 2) {
+        deduped[deduped.length - 1] = curr;
+      } else {
+        deduped.push(curr);
+      }
     }
   }
+
+  // Collapse strictly collinear intermediate segments (e.g. projected 3D X-only turns)
+  const clean: Array<{ readonly x: number; readonly y: number }> = [deduped[0]!];
+  for (let i = 1; i < deduped.length - 1; i++) {
+    const prev = clean[clean.length - 1]!;
+    const curr = deduped[i]!;
+    const next = deduped[i + 1]!;
+    const vx1 = curr.x - prev.x;
+    const vy1 = curr.y - prev.y;
+    const vx2 = next.x - curr.x;
+    const vy2 = next.y - curr.y;
+    const l1 = Math.hypot(vx1, vy1);
+    const l2 = Math.hypot(vx2, vy2);
+    if (l1 > 0.5 && l2 > 0.5) {
+      const cross = Math.abs(vx1 * vy2 - vy1 * vx2) / (l1 * l2);
+      const dot = (vx1 * vx2 + vy1 * vy2) / (l1 * l2);
+      if (cross < 1e-2 && dot > 0.98) {
+        continue;
+      }
+    }
+    clean.push(curr);
+  }
+  if (deduped.length >= 2) {
+    clean.push(deduped[deduped.length - 1]!);
+  }
+
   if (clean.length === 1) {
     const end = pts[pts.length - 1]!;
     return `M ${roundCentis(clean[0]!.x)} ${roundCentis(clean[0]!.y)} L ${roundCentis(end.x)} ${roundCentis(end.y)}`;
@@ -369,8 +404,18 @@ export function generateElevationSvg(
         )
       : undefined;
 
-    const fromFace: RackFace = cable.from.face ?? port1?.world_face ?? 'front';
-    const toFace: RackFace = cable.to.face ?? port2?.world_face ?? 'front';
+    const fromFace: RackFace =
+      fromDev && port1
+        ? resolveEffectivePortZone(fromDev, port1, cable.from.face)
+        : (cable.from.face ?? port1?.world_face ?? 'front');
+    const toFace: RackFace =
+      toDev && port2
+        ? resolveEffectivePortZone(toDev, port2, cable.to.face)
+        : (cable.to.face ?? port2?.world_face ?? 'front');
+    const displayColor = ensureHighContrastCableHex(
+      cable.color_hex,
+      'svg-dark',
+    );
 
     const fromKey = `${cable.from.instance_id}:${cable.from.port_id}:${fromFace}`;
     if (!calloutByEndpointKey.has(fromKey)) {
@@ -383,7 +428,7 @@ export function generateElevationSvg(
         cableId: cable.cable_id,
         cableType: cable.cable_type,
         peerDesc: `${cable.to.instance_id}:${cable.to.port_id}`,
-        colorHex: cable.color_hex,
+        colorHex: displayColor,
       };
       calloutByEndpointKey.set(fromKey, entry);
       calloutList.push(entry);
@@ -400,7 +445,7 @@ export function generateElevationSvg(
         cableId: cable.cable_id,
         cableType: cable.cable_type,
         peerDesc: `${cable.from.instance_id}:${cable.from.port_id}`,
-        colorHex: cable.color_hex,
+        colorHex: displayColor,
       };
       calloutByEndpointKey.set(toKey, entry);
       calloutList.push(entry);
@@ -1402,7 +1447,10 @@ export function generateElevationSvg(
     }
 
     for (const port of dev.ports) {
-      if (port.world_face === 'rear' || port.is_passthrough_coupler) {
+      if (
+        resolveEffectivePortZone(dev, port) === 'rear' ||
+        port.is_passthrough_coupler
+      ) {
         renderPortIcon(
           port,
           worldXToRearSvgX(port.world_position.x),
@@ -1703,14 +1751,65 @@ export function generateElevationSvg(
     const routesById = new Map(
       scene.cable_routes.map((r) => [r.cable_id, r]),
     );
-    let frontDuctTrackIdx = 0;
-    let rearDuctPowerTrackIdx = 0;
-    let rearDuctDataTrackIdx = 0;
+    let frontLeftDuctTrackIdx = 0;
+    let frontRightDuctTrackIdx = 0;
+    let rearLeftDuctTrackIdx = 0;
+    let rearRightDuctTrackIdx = 0;
     let adjacentBridgeTrackIdx = 0;
-    let crossFacePortalIdx = 0;
+    let frontPortalLeftChannelIdx = 0;
+    let frontPortalRightChannelIdx = 0;
+    let rearPortalLeftChannelIdx = 0;
+    let rearPortalRightChannelIdx = 0;
     const portalCountByU = new Map<number, number>();
     let sideFrontTrackIdx = 0;
     let sideRearTrackIdx = 0;
+
+    // Render subtle dashed CAD pass-through portal bands for any open-U portal without a dedicated brush-panel device
+    const activePortalUs = [
+      ...new Set(
+        scene.cable_routes
+          .map((r) => r.portal_u)
+          .filter((u): u is number => u !== null),
+      ),
+    ].sort((a, b) => a - b);
+
+    for (const portalU of activePortalUs) {
+      const hasBrushDevice = scene.geometry.devices.some(
+        (d) =>
+          d.blueprint.category === 'brush-panel' &&
+          portalU >= d.u_range[0] &&
+          portalU <= d.u_range[1],
+      );
+      if (hasBrushDevice) continue;
+
+      const uTopY = roundCentis(worldYToSvgY(portalU * MM_PER_U) + 4);
+      const uBandH = roundCentis(Math.max(18, px(MM_PER_U) - 8));
+      const bandInsetPx = roundCentis(px(20));
+      const bandWidthPx = roundCentis(Math.max(80, rackWidthPx - bandInsetPx * 2));
+
+      for (const [viewLabel, originX] of [
+        ['front', frontOriginX],
+        ['rear', rearOriginX],
+      ] as const) {
+        const bx = roundCentis(originX + bandInsetPx);
+        lines.push(
+          `    <g data-open-portal-u="${portalU}" data-portal-view="${viewLabel}">`,
+        );
+        lines.push(
+          `      <rect x="${bx}" y="${uTopY}" width="${bandWidthPx}" height="${uBandH}" rx="4" fill="#0B1120" fill-opacity="0.58" stroke="#38BDF8" stroke-opacity="0.42" stroke-width="1.1" stroke-dasharray="5,3" />`,
+        );
+        lines.push(
+          `      <text x="${roundCentis(bx + 8)}" y="${roundCentis(uTopY + 10)}" fill="#7DD3FC" fill-opacity="0.88" font-size="7.4" font-weight="700" letter-spacing="0.4">U${portalU} OPEN CABLE PASS-THROUGH PORTAL</text>`,
+        );
+        lines.push(`    </g>`);
+      }
+
+      const sideBandX1 = worldZToSideSvgX(0);
+      const sideBandX2 = worldZToSideSvgX(railDepthMm);
+      lines.push(
+        `    <rect data-open-portal-u="${portalU}" data-portal-view="side" x="${sideBandX1}" y="${uTopY}" width="${roundCentis(Math.max(12, sideBandX2 - sideBandX1))}" height="${uBandH}" rx="3" fill="#0EA5E9" fill-opacity="0.06" stroke="#38BDF8" stroke-opacity="0.32" stroke-width="1" stroke-dasharray="4,3" />`,
+      );
+    }
 
     const renderCablePathWithHalo = (
       cableId: string,
@@ -1731,6 +1830,8 @@ export function generateElevationSvg(
       );
     };
 
+    const deferredCableOverlays: string[] = [];
+
     const renderPlugEndpointDot = (
       x: number,
       y: number,
@@ -1738,10 +1839,15 @@ export function generateElevationSvg(
       cableId: string,
       anchorKey: string,
     ): void => {
-      lines.push(
+      deferredCableOverlays.push(
         `    <circle class="cable-plug-endpoint" data-cable-id="${escapeXml(cableId)}" data-anchor-key="${escapeXml(anchorKey)}" cx="${x}" cy="${y}" r="3.6" fill="${colorHex}" stroke="#090D16" stroke-width="1.4" />`,
       );
     };
+
+    const maxPortalCols = Math.max(
+      3,
+      Math.floor((rackWidthPx - px(68)) / 66),
+    );
 
     for (const cable of scene.project.cables) {
       const route = routesById.get(cable.cable_id);
@@ -1770,8 +1876,20 @@ export function generateElevationSvg(
       );
       if (!port1 || !port2) continue;
 
-      const fromFace: RackFace = cable.from.face ?? port1.world_face;
-      const toFace: RackFace = cable.to.face ?? port2.world_face;
+      const fromFace: RackFace = resolveEffectivePortZone(
+        fromDev,
+        port1,
+        cable.from.face,
+      );
+      const toFace: RackFace = resolveEffectivePortZone(
+        toDev,
+        port2,
+        cable.to.face,
+      );
+      const displayColor = ensureHighContrastCableHex(
+        cable.color_hex,
+        'svg-dark',
+      );
       const fromKey = `${cable.from.instance_id}:${cable.from.port_id}:${fromFace}`;
       const toKey = `${cable.to.instance_id}:${cable.to.port_id}:${toFace}`;
 
@@ -1825,31 +1943,57 @@ export function generateElevationSvg(
             ];
           }
         } else {
-          // Multi-U Same-Face Duct Route (runs in dedicated vertical channel beside rail)
+          // Multi-U Same-Face Duct Route: pick the nearest side rail duct (unless explicitly overridden)
+          const routingMode = cable.routing_mode ?? 'shortest-direct';
+          const avgRelX =
+            (startAnchor.x - viewOriginX + (endAnchor.x - viewOriginX)) * 0.5;
+          const useLeftDuct =
+            routingMode === 'left-duct'
+              ? true
+              : routingMode === 'right-duct'
+                ? false
+                : avgRelX <= rackWidthPx * 0.5;
+
           let channelX: number;
           let trackOffsetPx: number;
           if (fromFace === 'front') {
-            const idx = frontDuctTrackIdx++;
-            trackOffsetPx = ((idx % 4) - 1.5) * 3.2;
-            channelX = isPower
-              ? roundCentis(viewOriginX + px(11) + idx * 3.8)
-              : roundCentis(viewOriginX + rackWidthPx - px(11) - idx * 3.8);
-          } else {
-            if (isPower) {
-              const idx = rearDuctPowerTrackIdx++;
-              trackOffsetPx = ((idx % 5) - 2) * 3.2;
-              channelX = roundCentis(viewOriginX + px(11) + idx * 4.2);
+            if (useLeftDuct) {
+              const idx = frontLeftDuctTrackIdx++;
+              trackOffsetPx = ((idx % 5) - 2) * 2.8;
+              channelX = roundCentis(viewOriginX + px(9) + (idx % 9) * 3.6);
             } else {
-              const idx = rearDuctDataTrackIdx++;
-              trackOffsetPx = ((idx % 6) - 2.5) * 3.2;
+              const idx = frontRightDuctTrackIdx++;
+              trackOffsetPx = ((idx % 5) - 2) * 2.8;
               channelX = roundCentis(
-                viewOriginX + rackWidthPx - px(11) - idx * 4.2,
+                viewOriginX + rackWidthPx - px(9) - (idx % 9) * 3.6,
+              );
+            }
+          } else {
+            if (useLeftDuct) {
+              const idx = rearLeftDuctTrackIdx++;
+              trackOffsetPx = ((idx % 5) - 2) * 3.0;
+              channelX = roundCentis(
+                viewOriginX + px(isPower ? 9 : 12) + (idx % 9) * 3.8,
+              );
+            } else {
+              const idx = rearRightDuctTrackIdx++;
+              trackOffsetPx = ((idx % 5) - 2) * 3.0;
+              channelX = roundCentis(
+                viewOriginX +
+                  rackWidthPx -
+                  px(isPower ? 9 : 12) -
+                  (idx % 9) * 3.8,
               );
             }
           }
 
-          const startExitY = roundCentis(startAnchor.y + 10 + trackOffsetPx);
-          const endExitY = roundCentis(endAnchor.y + 10 + trackOffsetPx);
+          const dirToEnd = endAnchor.y >= startAnchor.y ? 1 : -1;
+          const startExitY = roundCentis(
+            startAnchor.y + dirToEnd * 9.5 + trackOffsetPx,
+          );
+          const endExitY = roundCentis(
+            endAnchor.y - dirToEnd * 9.5 + trackOffsetPx,
+          );
 
           pts = [
             { x: startAnchor.x, y: startAnchor.y },
@@ -1866,7 +2010,7 @@ export function generateElevationSvg(
           cable.cable_id,
           fromFace,
           pathD,
-          cable.color_hex,
+          displayColor,
           fromKey,
           toKey,
           `${startAnchor.x},${startAnchor.y}`,
@@ -1875,29 +2019,33 @@ export function generateElevationSvg(
         renderPlugEndpointDot(
           startAnchor.x,
           startAnchor.y,
-          cable.color_hex,
+          displayColor,
           cable.cable_id,
           fromKey,
         );
         renderPlugEndpointDot(
           endAnchor.x,
           endAnchor.y,
-          cable.color_hex,
+          displayColor,
           cable.cable_id,
           toKey,
         );
       } else if (fromFace !== toFace && startAnchor && endAnchor) {
         // -------------------------------------------------------------------
-        // CASE 2: Cross-Face Cable (`front <-> rear` through Brush-Panel Portal)
-        // Drawn as two connected halves meeting at a Brush-Panel Grommet Portal (`● -> REAR` / `FRONT -> ●`)
+        // CASE 2: Cross-Face Cable (`front <-> rear` through Brush-Panel / Open-U Portal)
+        // Drawn as two connected halves meeting at a Grommet Portal (`● -> REAR` / `FRONT -> ●`)
         // -------------------------------------------------------------------
-        const pIdx = crossFacePortalIdx++;
         const portalU = route?.portal_u ?? 6;
         const uPortalIdx = portalCountByU.get(portalU) ?? 0;
         portalCountByU.set(portalU, uPortalIdx + 1);
+        const colIdx = uPortalIdx % maxPortalCols;
+        const rowIdx = Math.floor(uPortalIdx / maxPortalCols);
+        const rowOffsetY =
+          rowIdx === 0
+            ? (colIdx % 2 === 0 ? -1 : 1) * 3.8
+            : (rowIdx % 2 === 1 ? -1 : 1) * 12.5;
         const portalSvgY = roundCentis(
-          worldYToSvgY((portalU - 0.5) * MM_PER_U) +
-            ((uPortalIdx % 2 === 0 ? -1 : 1) * 3.5),
+          worldYToSvgY((portalU - 0.5) * MM_PER_U) + rowOffsetY,
         );
 
         const frontAnchor = fromFace === 'front' ? startAnchor : endAnchor;
@@ -1906,18 +2054,29 @@ export function generateElevationSvg(
         const rearKey = fromFace === 'rear' ? fromKey : toKey;
 
         const frontPortalX = roundCentis(
-          frontOriginX + rackWidthPx - px(36) - uPortalIdx * 68,
+          frontOriginX + rackWidthPx - px(36) - colIdx * 64,
         );
         const frontPortalKey = `PORTAL:U${portalU}:front:${cable.cable_id}`;
-        const frontChannelX = roundCentis(
-          frontOriginX + rackWidthPx - px(12) - pIdx * 4.2,
-        );
+        const frontUseLeft =
+          (frontAnchor.x - frontOriginX + (frontPortalX - frontOriginX)) *
+            0.5 <=
+          rackWidthPx * 0.45;
+        const fTrackIdx = frontUseLeft
+          ? frontPortalLeftChannelIdx++
+          : frontPortalRightChannelIdx++;
+        const frontChannelX = frontUseLeft
+          ? roundCentis(frontOriginX + px(11) + (fTrackIdx % 8) * 3.8)
+          : roundCentis(
+              frontOriginX + rackWidthPx - px(11) - (fTrackIdx % 8) * 3.8,
+            );
+        const frontDirY = portalSvgY >= frontAnchor.y ? 1 : -1;
+        const frontStepY = roundCentis(frontAnchor.y + frontDirY * 10);
 
         // 2a. Front Half: frontAnchor -> frontChannel -> frontPortalGrommet
         const frontPts = [
           { x: frontAnchor.x, y: frontAnchor.y },
-          { x: frontAnchor.x, y: roundCentis(frontAnchor.y + 11) },
-          { x: frontChannelX, y: roundCentis(frontAnchor.y + 11) },
+          { x: frontAnchor.x, y: frontStepY },
+          { x: frontChannelX, y: frontStepY },
           { x: frontChannelX, y: portalSvgY },
           { x: frontPortalX, y: portalSvgY },
         ];
@@ -1926,7 +2085,7 @@ export function generateElevationSvg(
           cable.cable_id,
           'front',
           frontD,
-          cable.color_hex,
+          displayColor,
           frontKey,
           frontPortalKey,
           `${frontAnchor.x},${frontAnchor.y}`,
@@ -1935,38 +2094,44 @@ export function generateElevationSvg(
         renderPlugEndpointDot(
           frontAnchor.x,
           frontAnchor.y,
-          cable.color_hex,
+          displayColor,
           cable.cable_id,
           frontKey,
         );
 
-        // Draw Front Brush-Panel Grommet Badge (`● -> REAR`)
-        lines.push(
+        // Draw Front Portal Grommet Badge (`● -> REAR`) above all passing cable lines
+        deferredCableOverlays.push(
           `    <g data-portal-grommet="${escapeXml(frontPortalKey)}" transform="translate(${frontPortalX}, ${portalSvgY})">`,
-        );
-        lines.push(
-          `      <rect x="-46" y="-8" width="54" height="16" rx="8" fill="#090D16" stroke="${cable.color_hex}" stroke-width="1.4" />`,
-        );
-        lines.push(
-          `      <circle cx="0" cy="0" r="4.2" fill="${cable.color_hex}" stroke="#090D16" stroke-width="1.2" />`,
-        );
-        lines.push(
+          `      <rect x="-46" y="-8" width="54" height="16" rx="8" fill="#090D16" stroke="${displayColor}" stroke-width="1.4" />`,
+          `      <circle cx="0" cy="0" r="4.2" fill="${displayColor}" stroke="#090D16" stroke-width="1.2" />`,
           `      <text x="-22" y="3" fill="#F8FAFC" font-size="7.2" font-weight="700" text-anchor="middle">●-&gt;REAR</text>`,
+          `    </g>`,
         );
-        lines.push(`    </g>`);
 
         // 2b. Rear Half: rearPortalGrommet -> rearChannel -> rearAnchor
         const rearPortalX = roundCentis(
-          rearOriginX + px(36) + uPortalIdx * 68,
+          rearOriginX + px(36) + colIdx * 64,
         );
         const rearPortalKey = `PORTAL:U${portalU}:rear:${cable.cable_id}`;
-        const rearChannelX = roundCentis(rearOriginX + px(12) + pIdx * 4.2);
+        const rearUseLeft =
+          (rearAnchor.x - rearOriginX + (rearPortalX - rearOriginX)) * 0.5 <=
+          rackWidthPx * 0.55;
+        const rTrackIdx = rearUseLeft
+          ? rearPortalLeftChannelIdx++
+          : rearPortalRightChannelIdx++;
+        const rearChannelX = rearUseLeft
+          ? roundCentis(rearOriginX + px(11) + (rTrackIdx % 8) * 3.8)
+          : roundCentis(
+              rearOriginX + rackWidthPx - px(11) - (rTrackIdx % 8) * 3.8,
+            );
+        const rearDirY = rearAnchor.y >= portalSvgY ? 1 : -1;
+        const rearStepY = roundCentis(rearAnchor.y - rearDirY * 10);
 
         const rearPts = [
           { x: rearPortalX, y: portalSvgY },
           { x: rearChannelX, y: portalSvgY },
-          { x: rearChannelX, y: roundCentis(rearAnchor.y + 11) },
-          { x: rearAnchor.x, y: roundCentis(rearAnchor.y + 11) },
+          { x: rearChannelX, y: rearStepY },
+          { x: rearAnchor.x, y: rearStepY },
           { x: rearAnchor.x, y: rearAnchor.y },
         ];
         const rearD = buildRoundedOrthogonalPath(rearPts, 5.5);
@@ -1974,7 +2139,7 @@ export function generateElevationSvg(
           cable.cable_id,
           'rear',
           rearD,
-          cable.color_hex,
+          displayColor,
           rearPortalKey,
           rearKey,
           `${rearPortalX},${portalSvgY}`,
@@ -1983,29 +2148,23 @@ export function generateElevationSvg(
         renderPlugEndpointDot(
           rearAnchor.x,
           rearAnchor.y,
-          cable.color_hex,
+          displayColor,
           cable.cable_id,
           rearKey,
         );
 
-        // Draw Rear Brush-Panel Grommet Badge (`FRONT -> ●`)
-        lines.push(
+        // Draw Rear Portal Grommet Badge (`FRONT -> ●`) above all passing cable lines
+        deferredCableOverlays.push(
           `    <g data-portal-grommet="${escapeXml(rearPortalKey)}" transform="translate(${rearPortalX}, ${portalSvgY})">`,
-        );
-        lines.push(
-          `      <rect x="-8" y="-8" width="58" height="16" rx="8" fill="#090D16" stroke="${cable.color_hex}" stroke-width="1.4" />`,
-        );
-        lines.push(
-          `      <circle cx="0" cy="0" r="4.2" fill="${cable.color_hex}" stroke="#090D16" stroke-width="1.2" />`,
-        );
-        lines.push(
+          `      <rect x="-8" y="-8" width="58" height="16" rx="8" fill="#090D16" stroke="${displayColor}" stroke-width="1.4" />`,
+          `      <circle cx="0" cy="0" r="4.2" fill="${displayColor}" stroke="#090D16" stroke-width="1.2" />`,
           `      <text x="25" y="3" fill="#F8FAFC" font-size="7.2" font-weight="700" text-anchor="middle">FRONT-&gt;●</text>`,
+          `    </g>`,
         );
-        lines.push(`    </g>`);
       }
 
       // -------------------------------------------------------------------
-      // 3. Side-Profile Depth Cutaway Cable Harness (Orthogonal Z-Y Channels)
+      // 3. Side-Profile Depth Cutaway Cable Harness (True 3D Z-Y Waypoint Projection)
       // -------------------------------------------------------------------
       const sideStartX = worldZToSideSvgX(port1.world_position.z);
       const sideStartY = worldYToSvgY(port1.world_position.y);
@@ -2013,7 +2172,20 @@ export function generateElevationSvg(
       const sideEndY = worldYToSvgY(port2.world_position.y);
 
       let sidePts: Array<{ readonly x: number; readonly y: number }>;
-      if (fromFace === 'front' && toFace === 'front') {
+      if (route && route.waypoints.length >= 2) {
+        sidePts = route.waypoints.map((wp, wpIdx) => {
+          if (wpIdx === 0) {
+            return { x: sideStartX, y: sideStartY };
+          }
+          if (wpIdx === route.waypoints.length - 1) {
+            return { x: sideEndX, y: sideEndY };
+          }
+          return {
+            x: worldZToSideSvgX(wp.z),
+            y: worldYToSvgY(wp.y),
+          };
+        });
+      } else if (fromFace === 'front' && toFace === 'front') {
         const sIdx = sideFrontTrackIdx++;
         const frontTrackZMm = -16 - (sIdx % 6) * 4.2;
         const trackX = worldZToSideSvgX(frontTrackZMm);
@@ -2025,58 +2197,44 @@ export function generateElevationSvg(
         ];
       } else if (fromFace === 'rear' && toFace === 'rear') {
         const sIdx = sideRearTrackIdx++;
-        const isSameURearJumper = fromDev.u_position === toDev.u_position;
         const maxEndpointZ = Math.max(
           port1.world_position.z,
           port2.world_position.z,
         );
-        const rearTrackZMm = isSameURearJumper
-          ? maxEndpointZ + 12 + (sIdx % 3) * 3.5
-          : railDepthMm - 8 + sIdx * 3.8;
-        const stepOutY = isSameURearJumper
-          ? roundCentis(Math.min(sideStartY, sideEndY) - 6 - (sIdx % 3) * 2.5)
-          : sideEndY;
+        const rearTrackZMm = maxEndpointZ + 12 + (sIdx % 5) * 4.2;
         const trackX = worldZToSideSvgX(rearTrackZMm);
-        sidePts = isSameURearJumper
-          ? [
-              { x: sideStartX, y: sideStartY },
-              { x: trackX, y: sideStartY },
-              { x: trackX, y: stepOutY },
-              { x: sideEndX, y: stepOutY },
-              { x: sideEndX, y: sideEndY },
-            ]
-          : [
-              { x: sideStartX, y: sideStartY },
-              { x: trackX, y: sideStartY },
-              { x: trackX, y: sideEndY },
-              { x: sideEndX, y: sideEndY },
-            ];
+        sidePts = [
+          { x: sideStartX, y: sideStartY },
+          { x: trackX, y: sideStartY },
+          { x: trackX, y: sideEndY },
+          { x: sideEndX, y: sideEndY },
+        ];
       } else {
-        // Cross-Face Cable passing horizontally through U6 Brush Portal in Side Cutaway
         const portalU = route?.portal_u ?? 6;
         const portalSvgY = worldYToSvgY((portalU - 0.5) * MM_PER_U);
         const frontChannelX = worldZToSideSvgX(-24);
-        const rearChannelX = worldZToSideSvgX(railDepthMm + 16);
+        const rearChannelX = worldZToSideSvgX(
+          Math.min(railDepthMm - 18, Math.max(port1.world_position.z, port2.world_position.z) + 18),
+        );
 
-        if (fromFace === 'front') {
-          sidePts = [
-            { x: sideStartX, y: sideStartY },
-            { x: frontChannelX, y: sideStartY },
-            { x: frontChannelX, y: portalSvgY },
-            { x: rearChannelX, y: portalSvgY },
-            { x: rearChannelX, y: sideEndY },
-            { x: sideEndX, y: sideEndY },
-          ];
-        } else {
-          sidePts = [
-            { x: sideStartX, y: sideStartY },
-            { x: rearChannelX, y: sideStartY },
-            { x: rearChannelX, y: portalSvgY },
-            { x: frontChannelX, y: portalSvgY },
-            { x: frontChannelX, y: sideEndY },
-            { x: sideEndX, y: sideEndY },
-          ];
-        }
+        sidePts =
+          fromFace === 'front'
+            ? [
+                { x: sideStartX, y: sideStartY },
+                { x: frontChannelX, y: sideStartY },
+                { x: frontChannelX, y: portalSvgY },
+                { x: rearChannelX, y: portalSvgY },
+                { x: rearChannelX, y: sideEndY },
+                { x: sideEndX, y: sideEndY },
+              ]
+            : [
+                { x: sideStartX, y: sideStartY },
+                { x: rearChannelX, y: sideStartY },
+                { x: rearChannelX, y: portalSvgY },
+                { x: frontChannelX, y: portalSvgY },
+                { x: frontChannelX, y: sideEndY },
+                { x: sideEndX, y: sideEndY },
+              ];
       }
 
       const sideD = buildRoundedOrthogonalPath(sidePts, 5.0);
@@ -2084,16 +2242,15 @@ export function generateElevationSvg(
         `    <path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="side-halo" d="${sideD}" fill="none" stroke="#090D16" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />`,
       );
       lines.push(
-        `    <path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="side" data-start-xy="${sideStartX},${sideStartY}" data-end-xy="${sideEndX},${sideEndY}" d="${sideD}" fill="none" stroke="${cable.color_hex}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />`,
+        `    <path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="side" data-start-xy="${sideStartX},${sideStartY}" data-end-xy="${sideEndX},${sideEndY}" d="${sideD}" fill="none" stroke="${displayColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.94" />`,
       );
-      lines.push(
-        `    <circle class="side-cable-plug" cx="${sideStartX}" cy="${sideStartY}" r="3.0" fill="${cable.color_hex}" stroke="#090D16" stroke-width="1.2" />`,
-      );
-      lines.push(
-        `    <circle class="side-cable-plug" cx="${sideEndX}" cy="${sideEndY}" r="3.0" fill="${cable.color_hex}" stroke="#090D16" stroke-width="1.2" />`,
+      deferredCableOverlays.push(
+        `    <circle class="side-cable-plug" cx="${sideStartX}" cy="${sideStartY}" r="3.0" fill="${displayColor}" stroke="#090D16" stroke-width="1.2" />`,
+        `    <circle class="side-cable-plug" cx="${sideEndX}" cy="${sideEndY}" r="3.0" fill="${displayColor}" stroke="#090D16" stroke-width="1.2" />`,
       );
     }
 
+    lines.push(...deferredCableOverlays);
     lines.push(`  </g>`);
   }
 

@@ -64,7 +64,7 @@
 | `cat6a` | **0.75 m** (750 mm) | `#3B82F6` | 1 | `trunk-ucg-lan1-to-patch1` (UCG-Max LAN1 -> Patch P1 (Rear)) |
 | `cat6a` | **0.75 m** (750 mm) | `#10B981` | 1 | `trunk-pve1-eth1-to-patch2` (PVE-01 2.5G ETH1 -> Patch P2 (Rear)) |
 | `cat6a` | **0.75 m** (750 mm) | `#06B6D4` | 1 | `cross-sw6-to-ucg-lan2` (Switch Port 6 (Front) -> U6 Brush Portal -> UCG-Max LAN2 (Rear)) |
-| `power-c13-c14` | **0.75 m** (750 mm) | `#EF4444` | 1 | `pwr-ups-to-sw` (UPS C13-2 -> USW-Flex-2.5G) |
+| `power-c13-c14` | **1.00 m** (1000 mm) | `#EF4444` | 1 | `pwr-ups-to-sw` (UPS C13-2 -> USW-Flex-2.5G) |
 | `power-dc-5525` | **0.50 m** (500 mm) | `#F59E0B` | 2 | `pwr-pdu-to-pve1`, `pwr-pdu-to-pve2` (PDU Schuko 2 -> PVE-01 20V DC Brick, PDU Schuko 3 -> PVE-02 20V DC Brick) |
 | `power-schuko-c13` | **0.25 m** (250 mm) | `#EF4444` | 1 | `pwr-ups-to-pdu` (UPS C13-1 -> Rear PDU Input) |
 | `power-usb-c` | **0.50 m** (500 mm) | `#F97316` | 1 | `pwr-pdu-to-ucg` (PDU Schuko 1 -> UCG-Max USB-C PD) |
@@ -94,7 +94,7 @@
 
 ### Phase B: Power & Network Cable Patching
 - [ ] Patch **0.25m Schuko-C13** [`pwr-ups-to-pdu`, `#EF4444`]: Connect `ups-u1:iec_out1` (rear) $\rightarrow$ `pdu-u2-rear:mains_in` — _UPS C13-1 -> Rear PDU Input_.
-- [ ] Patch **0.75m IEC C13-C14** [`pwr-ups-to-sw`, `#EF4444`]: Connect `ups-u1:iec_out2` (rear) $\rightarrow$ `sw-u8:pwr_in` (rear) — _UPS C13-2 -> USW-Flex-2.5G_.
+- [ ] Patch **1.00m IEC C13-C14** [`pwr-ups-to-sw`, `#EF4444`]: Connect `ups-u1:iec_out2` (rear) $\rightarrow$ `sw-u8:pwr_in` (rear) — _UPS C13-2 -> USW-Flex-2.5G_.
 - [ ] Patch **0.50m USB-C PD** [`pwr-pdu-to-ucg`, `#F97316`]: Connect `pdu-u2-rear:outlet1` $\rightarrow$ `ucg-max:usbc_pwr` (rear) — _PDU Schuko 1 -> UCG-Max USB-C PD_.
 - [ ] Patch **0.50m DC Barrel** [`pwr-pdu-to-pve1`, `#F59E0B`]: Connect `pdu-u2-rear:outlet2` $\rightarrow$ `pve-node-01:dc_in` (rear) — _PDU Schuko 2 -> PVE-01 20V DC Brick_.
 - [ ] Patch **0.50m DC Barrel** [`pwr-pdu-to-pve2`, `#F59E0B`]: Connect `pdu-u2-rear:outlet3` $\rightarrow$ `pve-node-02:dc_in` (rear) — _PDU Schuko 3 -> PVE-02 20V DC Brick_.

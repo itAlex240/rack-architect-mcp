@@ -1,13 +1,18 @@
 import {
   EIA_310_SPECS,
   MM_PER_U,
+  ensureHighContrastCableHex,
   evaluateRackScene,
   isPowerCableType,
+  resolveCableEndpointPortGeometry,
+  resolveEffectivePortZone,
   roundCentis,
   roundTenths,
   serializeRackScene,
+  type CableType,
   type ComputedDeviceGeometry,
   type HardwareBlueprint,
+  type RackFace,
   type RackProjectInput,
   type RackStandard,
   type SerializedRackScene,
@@ -434,16 +439,51 @@ function buildClientRoundedPath(
   points: ReadonlyArray<{ readonly x: number; readonly y: number }>,
   radiusPx = 5.0,
 ): string {
-  const pts: Array<{ readonly x: number; readonly y: number }> = [];
-  for (const pt of points) {
-    const prev = pts[pts.length - 1];
-    if (
-      prev === undefined ||
-      Math.hypot(pt.x - prev.x, pt.y - prev.y) > 0.4
-    ) {
-      pts.push(pt);
+  if (points.length === 0) return '';
+  if (points.length === 1) return `M ${points[0]!.x} ${points[0]!.y}`;
+
+  const deduped: Array<{ readonly x: number; readonly y: number }> = [
+    points[0]!,
+  ];
+  for (let i = 1; i < points.length; i++) {
+    const prev = deduped[deduped.length - 1]!;
+    const pt = points[i]!;
+    const isLast = i === points.length - 1;
+    if (Math.hypot(pt.x - prev.x, pt.y - prev.y) > 0.4) {
+      deduped.push(pt);
+    } else if (isLast) {
+      if (deduped.length >= 2) {
+        deduped[deduped.length - 1] = pt;
+      } else {
+        deduped.push(pt);
+      }
     }
   }
+
+  const pts: Array<{ readonly x: number; readonly y: number }> = [deduped[0]!];
+  for (let i = 1; i < deduped.length - 1; i++) {
+    const prev = pts[pts.length - 1]!;
+    const curr = deduped[i]!;
+    const next = deduped[i + 1]!;
+    const vx1 = curr.x - prev.x;
+    const vy1 = curr.y - prev.y;
+    const vx2 = next.x - curr.x;
+    const vy2 = next.y - curr.y;
+    const l1 = Math.hypot(vx1, vy1);
+    const l2 = Math.hypot(vx2, vy2);
+    if (l1 > 0.5 && l2 > 0.5) {
+      const cross = Math.abs(vx1 * vy2 - vy1 * vx2) / (l1 * l2);
+      const dot = (vx1 * vx2 + vy1 * vy2) / (l1 * l2);
+      if (cross < 1e-2 && dot > 0.98) {
+        continue;
+      }
+    }
+    pts.push(curr);
+  }
+  if (deduped.length >= 2) {
+    pts.push(deduped[deduped.length - 1]!);
+  }
+
   if (pts.length === 0) return '';
   if (pts.length === 1) return `M ${pts[0]!.x} ${pts[0]!.y}`;
 
@@ -682,9 +722,33 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
           }
         }
         extraFrontSvg = patternParts.join('');
+      } else if (dev.blueprint.category === 'brush-panel') {
+        const bx = roundCentis(x + px(10));
+        const bw = Math.max(24, roundCentis(w - px(20)));
+        const by = roundCentis(y + px(7));
+        const bh = Math.max(8, roundCentis(h - px(14)));
+        const bristles: string[] = [
+          `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="1.5" fill="#050507" stroke="#3F3F46" stroke-width="1" />`,
+        ];
+        for (let sx = bx + 4; sx < bx + bw - 2; sx += 4.5) {
+          bristles.push(
+            `<line x1="${roundCentis(sx)}" y1="${by + 1}" x2="${roundCentis(sx)}" y2="${roundCentis(by + bh - 1)}" stroke="#27272A" stroke-width="1" />`,
+          );
+        }
+        extraFrontSvg = bristles.join('');
       }
+      const chassisHex = dev.blueprint.visuals.chassis_color_hex;
+      const cleanHex = chassisHex.replace('#', '');
+      const chLum =
+        cleanHex.length === 6
+          ? (0.2126 * parseInt(cleanHex.slice(0, 2), 16) +
+              0.7152 * parseInt(cleanHex.slice(2, 4), 16) +
+              0.0722 * parseInt(cleanHex.slice(4, 6), 16)) /
+            255
+          : 0.15;
+      const frontTextHex = chLum > 0.48 ? '#09090B' : '#E4E4E7';
       lines.push(
-        `<g data-instance-id="${escapeXml(dev.instance_id)}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${dev.blueprint.visuals.chassis_color_hex}" stroke="${isSubModule ? '#3B82F6' : '#52525B'}" stroke-width="1.3" />${extraFrontSvg}${!isCarrier ? `<text x="${x + 6}" y="${y + 11}" fill="#E4E4E7" font-size="8.2" font-weight="700">${escapeXml(dev.hostname ?? dev.instance_id)}</text>` : ''}</g>`,
+        `<g data-instance-id="${escapeXml(dev.instance_id)}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${chassisHex}" stroke="${isSubModule ? '#3B82F6' : '#52525B'}" stroke-width="1.3" />${extraFrontSvg}${!isCarrier ? `<text x="${x + 6}" y="${y + 11}" fill="${frontTextHex}" font-size="8.2" font-weight="700">${escapeXml(dev.hostname ?? dev.instance_id)}</text>` : ''}</g>`,
       );
     }
 
@@ -697,14 +761,52 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
       const rearX = roundCentis(
         rearOriginX + px(panelWidthMm - dev.chassis_box.max.x),
       );
+      let extraRearSvg = '';
+      if (dev.blueprint.category === 'brush-panel') {
+        const bx = roundCentis(rearX + px(10));
+        const bw = Math.max(24, roundCentis(w - px(20)));
+        const by = roundCentis(y + px(7));
+        const bh = Math.max(8, roundCentis(h - px(14)));
+        const bristles: string[] = [
+          `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="1.5" fill="#050507" stroke="#3F3F46" stroke-width="1" />`,
+        ];
+        for (let sx = bx + 4; sx < bx + bw - 2; sx += 4.5) {
+          bristles.push(
+            `<line x1="${roundCentis(sx)}" y1="${by + 1}" x2="${roundCentis(sx)}" y2="${roundCentis(by + bh - 1)}" stroke="#27272A" stroke-width="1" />`,
+          );
+        }
+        extraRearSvg = bristles.join('');
+      }
+      const rearHex = dev.blueprint.visuals.chassis_color_hex.replace('#', '');
+      const rearLum =
+        rearHex.length === 6
+          ? (0.2126 * parseInt(rearHex.slice(0, 2), 16) +
+              0.7152 * parseInt(rearHex.slice(2, 4), 16) +
+              0.0722 * parseInt(rearHex.slice(4, 6), 16)) /
+            255
+          : 0.15;
+      const rearTextHex =
+        rearLum > 0.45
+          ? '#09090B'
+          : dev.face === 'rear'
+            ? '#F4F4F5'
+            : '#D4D4D8';
+      const rearLabel =
+        !isCarrier && w > px(40)
+          ? `<text x="${roundCentis(rearX + 6)}" y="${roundCentis(y + 10.5)}" fill="${rearTextHex}" font-size="7.8" font-weight="700">${escapeXml(isSubModule ? (dev.hostname ?? dev.instance_id) : `${dev.hostname ?? dev.instance_id}${dev.face === 'rear' ? ' [REAR]' : ''}`)}</text>`
+          : '';
       lines.push(
-        `<g data-rear-instance="${escapeXml(dev.instance_id)}"><rect x="${rearX}" y="${y}" width="${w}" height="${h}" rx="2" fill="${dev.blueprint.visuals.chassis_color_hex}" fill-opacity="${dev.face === 'rear' ? '1' : '0.82'}" stroke="${dev.face === 'rear' ? '#F59E0B' : '#3F3F46'}" stroke-width="1.2" /></g>`,
+        `<g data-rear-instance="${escapeXml(dev.instance_id)}"><rect x="${rearX}" y="${y}" width="${w}" height="${h}" rx="2" fill="${dev.blueprint.visuals.chassis_color_hex}" fill-opacity="${dev.face === 'rear' ? '1' : '0.82'}" stroke="${dev.face === 'rear' ? '#F59E0B' : '#3F3F46'}" stroke-width="1.2" />${extraRearSvg}${rearLabel}</g>`,
       );
     }
 
     for (const p of dev.ports) {
       const py = worldYToSvgY(p.world_position.y);
-      if (p.world_face === 'front' || p.is_passthrough_coupler) {
+      const effectiveZone = resolveEffectivePortZone(dev, p);
+      if (
+        (effectiveZone === 'front' && dev.face === 'front') ||
+        (p.is_passthrough_coupler && dev.face === 'front')
+      ) {
         const pxFront = roundCentis(frontOriginX + px(p.world_position.x));
         portAnchors.set(`${dev.instance_id}:${p.port_id}:front`, {
           x: pxFront,
@@ -717,7 +819,7 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
           `<rect x="${pxFront - 4}" y="${py - 3.5}" width="8" height="7" rx="1" fill="#09090B" stroke="#3B82F6" stroke-width="1.1" />`,
         );
       }
-      if (p.world_face === 'rear' || p.is_passthrough_coupler) {
+      if (effectiveZone === 'rear' || p.is_passthrough_coupler) {
         const pxRear = roundCentis(
           rearOriginX + px(panelWidthMm - p.world_position.x),
         );
@@ -781,26 +883,91 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
     }
   }
 
+  // Render dashed Open-U Cable Pass-Through Portal bands for any portal U without a brush-panel device
+  const activePortalUs = [
+    ...new Set(
+      scene.cable_routes
+        .map((r) => r.portal_u)
+        .filter((u): u is number => u !== null),
+    ),
+  ].sort((a, b) => a - b);
+
+  for (const portalU of activePortalUs) {
+    const hasBrushDevice = scene.geometry.devices.some(
+      (d) =>
+        d.blueprint.category === 'brush-panel' &&
+        portalU >= d.u_range[0] &&
+        portalU <= d.u_range[1],
+    );
+    if (hasBrushDevice) continue;
+
+    const uTopY = roundCentis(worldYToSvgY(portalU * MM_PER_U) + 4);
+    const uBandH = roundCentis(Math.max(18, px(MM_PER_U) - 8));
+    const bandInsetPx = roundCentis(px(20));
+    const bandWidthPx = roundCentis(Math.max(80, rackWidthPx - bandInsetPx * 2));
+    for (const [viewLabel, originX] of [
+      ['front', frontOriginX],
+      ['rear', rearOriginX],
+    ] as const) {
+      const bx = roundCentis(originX + bandInsetPx);
+      lines.push(
+        `<g data-open-portal-u="${portalU}" data-portal-view="${viewLabel}"><rect x="${bx}" y="${uTopY}" width="${bandWidthPx}" height="${uBandH}" rx="4" fill="#121216" fill-opacity="0.72" stroke="#3B82F6" stroke-opacity="0.48" stroke-width="1.1" stroke-dasharray="5,3" /><text x="${roundCentis(bx + 8)}" y="${roundCentis(uTopY + 10)}" fill="#93C5FD" fill-opacity="0.92" font-size="7.4" font-weight="700" letter-spacing="0.35">U${portalU} OPEN CABLE PASS-THROUGH PORTAL</text></g>`,
+      );
+    }
+
+    const sideBandX1 = worldZToSideSvgX(0);
+    const sideBandX2 = worldZToSideSvgX(railDepthMm);
+    lines.push(
+      `<rect data-open-portal-u="${portalU}" data-portal-view="side" x="${sideBandX1}" y="${uTopY}" width="${roundCentis(Math.max(12, sideBandX2 - sideBandX1))}" height="${uBandH}" rx="3" fill="#3B82F6" fill-opacity="0.06" stroke="#3B82F6" stroke-opacity="0.32" stroke-width="1" stroke-dasharray="4,3" />`,
+    );
+  }
+
   // Render Front, Rear, and Side-Profile Cables
-  let frontDuctIdx = 0;
-  let rearPowerIdx = 0;
-  let rearDataIdx = 0;
+  let frontLeftDuctIdx = 0;
+  let frontRightDuctIdx = 0;
+  let rearLeftDuctIdx = 0;
+  let rearRightDuctIdx = 0;
   let bridgeIdx = 0;
-  let portalIdx = 0;
+  let frontPortalLeftIdx = 0;
+  let frontPortalRightIdx = 0;
+  let rearPortalLeftIdx = 0;
+  let rearPortalRightIdx = 0;
   const portalCountByU = new Map<number, number>();
   let sideFrontIdx = 0;
   let sideRearIdx = 0;
+  const maxPortalCols = Math.max(3, Math.floor((rackWidthPx - px(68)) / 64));
+  const deferredCableOverlays: string[] = [];
 
   for (const cable of scene.project.cables) {
     const d1 = devicesById.get(cable.from.instance_id);
     const d2 = devicesById.get(cable.to.instance_id);
     if (!d1 || !d2) continue;
-    const p1 = d1.ports.find((p) => p.port_id === cable.from.port_id);
-    const p2 = d2.ports.find((p) => p.port_id === cable.to.port_id);
-    const f1 =
-      cable.from.face ?? p1?.world_face ?? (d1.face === 'rear' ? 'rear' : 'front');
-    const f2 =
-      cable.to.face ?? p2?.world_face ?? (d2.face === 'rear' ? 'rear' : 'front');
+    const p1Parent = d1.parent_carrier_id
+      ? devicesById.get(d1.parent_carrier_id)
+      : undefined;
+    const p2Parent = d2.parent_carrier_id
+      ? devicesById.get(d2.parent_carrier_id)
+      : undefined;
+    const p1 = resolveCableEndpointPortGeometry(
+      d1,
+      cable.from.port_id,
+      cable.from.face,
+      p1Parent,
+    );
+    const p2 = resolveCableEndpointPortGeometry(
+      d2,
+      cable.to.port_id,
+      cable.to.face,
+      p2Parent,
+    );
+    if (!p1 || !p2) continue;
+
+    const f1: RackFace = resolveEffectivePortZone(d1, p1, cable.from.face);
+    const f2: RackFace = resolveEffectivePortZone(d2, p2, cable.to.face);
+    const displayColor = ensureHighContrastCableHex(
+      cable.color_hex,
+      'svg-dark',
+    );
     const a1 =
       portAnchors.get(`${cable.from.instance_id}:${cable.from.port_id}:${f1}`) ??
       portAnchors.get(`${cable.from.instance_id}:${cable.from.port_id}:front`) ??
@@ -842,27 +1009,51 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
           ];
         }
       } else {
+        const routingMode = cable.routing_mode ?? 'shortest-direct';
+        const avgRelX = (a1.x - viewOriginX + (a2.x - viewOriginX)) * 0.5;
+        const useLeftDuct =
+          routingMode === 'left-duct'
+            ? true
+            : routingMode === 'right-duct'
+              ? false
+              : avgRelX <= rackWidthPx * 0.5;
+
         let channelX: number;
         let offsetPx: number;
         if (f1 === 'front') {
-          const idx = frontDuctIdx++;
-          offsetPx = ((idx % 4) - 1.5) * 3.0;
-          channelX = isPower
-            ? roundCentis(viewOriginX + px(11) + idx * 3.6)
-            : roundCentis(viewOriginX + rackWidthPx - px(11) - idx * 3.6);
-        } else if (isPower) {
-          const idx = rearPowerIdx++;
-          offsetPx = ((idx % 5) - 2) * 3.0;
-          channelX = roundCentis(viewOriginX + px(11) + idx * 4.0);
+          if (useLeftDuct) {
+            const idx = frontLeftDuctIdx++;
+            offsetPx = ((idx % 5) - 2) * 2.8;
+            channelX = roundCentis(viewOriginX + px(9) + (idx % 9) * 3.6);
+          } else {
+            const idx = frontRightDuctIdx++;
+            offsetPx = ((idx % 5) - 2) * 2.8;
+            channelX = roundCentis(
+              viewOriginX + rackWidthPx - px(9) - (idx % 9) * 3.6,
+            );
+          }
         } else {
-          const idx = rearDataIdx++;
-          offsetPx = ((idx % 6) - 2.5) * 3.0;
-          channelX = roundCentis(
-            viewOriginX + rackWidthPx - px(11) - idx * 4.0,
-          );
+          if (useLeftDuct) {
+            const idx = rearLeftDuctIdx++;
+            offsetPx = ((idx % 5) - 2) * 2.8;
+            channelX = roundCentis(
+              viewOriginX + px(isPower ? 9 : 12) + (idx % 9) * 3.8,
+            );
+          } else {
+            const idx = rearRightDuctIdx++;
+            offsetPx = ((idx % 5) - 2) * 2.8;
+            channelX = roundCentis(
+              viewOriginX +
+                rackWidthPx -
+                px(isPower ? 9 : 12) -
+                (idx % 9) * 3.8,
+            );
+          }
         }
-        const yExit1 = roundCentis(a1.y + 10 + offsetPx);
-        const yExit2 = roundCentis(a2.y + 10 + offsetPx);
+
+        const dirToEnd = a2.y >= a1.y ? 1 : -1;
+        const yExit1 = roundCentis(a1.y + dirToEnd * 9 + offsetPx);
+        const yExit2 = roundCentis(a2.y - dirToEnd * 9 + offsetPx);
         pts = [
           { x: a1.x, y: a1.y },
           { x: a1.x, y: yExit1 },
@@ -877,85 +1068,122 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
         `<path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="${f1}-halo" d="${d}" fill="none" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />`,
       );
       lines.push(
-        `<path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="${f1}" d="${d}" fill="none" stroke="${cable.color_hex}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />`,
+        `<path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="${f1}" d="${d}" fill="none" stroke="${displayColor}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />`,
       );
-      lines.push(
-        `<circle cx="${a1.x}" cy="${a1.y}" r="3.2" fill="${cable.color_hex}" stroke="#09090B" stroke-width="1.2" />`,
-      );
-      lines.push(
-        `<circle cx="${a2.x}" cy="${a2.y}" r="3.2" fill="${cable.color_hex}" stroke="#09090B" stroke-width="1.2" />`,
+      deferredCableOverlays.push(
+        `<circle cx="${a1.x}" cy="${a1.y}" r="3.2" fill="${displayColor}" stroke="#09090B" stroke-width="1.2" />`,
+        `<circle cx="${a2.x}" cy="${a2.y}" r="3.2" fill="${displayColor}" stroke="#09090B" stroke-width="1.2" />`,
       );
     } else {
-      // Cross-Face Cable via Brush-Panel Portal Grommets
-      const pIdx = portalIdx++;
+      // Cross-Face Cable via Brush-Panel / Open-U Portal Grommets
       const portalU = route?.portal_u ?? 6;
       const uPortalIdx = portalCountByU.get(portalU) ?? 0;
       portalCountByU.set(portalU, uPortalIdx + 1);
+      const colIdx = uPortalIdx % maxPortalCols;
+      const rowIdx = Math.floor(uPortalIdx / maxPortalCols);
+      const rowOffsetY =
+        rowIdx === 0
+          ? (colIdx % 2 === 0 ? -1 : 1) * 3.6
+          : (rowIdx % 2 === 1 ? -1 : 1) * 12.0;
       const portalSvgY = roundCentis(
-        worldYToSvgY((portalU - 0.5) * MM_PER_U) +
-          (uPortalIdx % 2 === 0 ? -1 : 1) * 3.5,
+        worldYToSvgY((portalU - 0.5) * MM_PER_U) + rowOffsetY,
       );
       const frontAnchor = f1 === 'front' ? a1 : a2;
       const rearAnchor = f1 === 'rear' ? a1 : a2;
       const frontPortalX = roundCentis(
-        frontOriginX + rackWidthPx - px(38) - uPortalIdx * 68,
+        frontOriginX + rackWidthPx - px(36) - colIdx * 64,
       );
-      const frontChannelX = roundCentis(
-        frontOriginX + rackWidthPx - px(12) - pIdx * 4.0,
-      );
+      const frontUseLeft =
+        (frontAnchor.x - frontOriginX + (frontPortalX - frontOriginX)) * 0.5 <=
+        rackWidthPx * 0.45;
+      const fTrackIdx = frontUseLeft
+        ? frontPortalLeftIdx++
+        : frontPortalRightIdx++;
+      const frontChannelX = frontUseLeft
+        ? roundCentis(frontOriginX + px(11) + (fTrackIdx % 8) * 3.8)
+        : roundCentis(
+            frontOriginX + rackWidthPx - px(11) - (fTrackIdx % 8) * 3.8,
+          );
+      const frontDirY = portalSvgY >= frontAnchor.y ? 1 : -1;
+      const frontStepY = roundCentis(frontAnchor.y + frontDirY * 9.5);
       const frontD = buildClientRoundedPath(
         [
           { x: frontAnchor.x, y: frontAnchor.y },
-          { x: frontAnchor.x, y: roundCentis(frontAnchor.y + 10) },
-          { x: frontChannelX, y: roundCentis(frontAnchor.y + 10) },
+          { x: frontAnchor.x, y: frontStepY },
+          { x: frontChannelX, y: frontStepY },
           { x: frontChannelX, y: portalSvgY },
           { x: frontPortalX, y: portalSvgY },
         ],
         5.0,
       );
       lines.push(
-        `<path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="front" d="${frontD}" fill="none" stroke="${cable.color_hex}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />`,
+        `<path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="front-halo" d="${frontD}" fill="none" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />`,
       );
       lines.push(
-        `<circle cx="${frontAnchor.x}" cy="${frontAnchor.y}" r="3.2" fill="${cable.color_hex}" stroke="#09090B" stroke-width="1.2" />`,
+        `<path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="front" d="${frontD}" fill="none" stroke="${displayColor}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />`,
       );
-      lines.push(
-        `<circle cx="${frontPortalX}" cy="${portalSvgY}" r="4.0" fill="${cable.color_hex}" stroke="#09090B" stroke-width="1.2" />`,
+      deferredCableOverlays.push(
+        `<circle cx="${frontAnchor.x}" cy="${frontAnchor.y}" r="3.2" fill="${displayColor}" stroke="#09090B" stroke-width="1.2" />`,
+        `<g transform="translate(${frontPortalX}, ${portalSvgY})"><rect x="-46" y="-8" width="54" height="16" rx="8" fill="#09090B" stroke="${displayColor}" stroke-width="1.3" /><circle cx="0" cy="0" r="3.8" fill="${displayColor}" stroke="#09090B" stroke-width="1.1" /><text x="-22" y="2.8" fill="#F4F4F5" font-size="7" font-weight="700" text-anchor="middle">●-&gt;REAR</text></g>`,
       );
 
       const rearPortalX = roundCentis(
-        rearOriginX + px(38) + uPortalIdx * 68,
+        rearOriginX + px(36) + colIdx * 64,
       );
-      const rearChannelX = roundCentis(rearOriginX + px(12) + pIdx * 4.0);
+      const rearUseLeft =
+        (rearAnchor.x - rearOriginX + (rearPortalX - rearOriginX)) * 0.5 <=
+        rackWidthPx * 0.55;
+      const rTrackIdx = rearUseLeft
+        ? rearPortalLeftIdx++
+        : rearPortalRightIdx++;
+      const rearChannelX = rearUseLeft
+        ? roundCentis(rearOriginX + px(11) + (rTrackIdx % 8) * 3.8)
+        : roundCentis(
+            rearOriginX + rackWidthPx - px(11) - (rTrackIdx % 8) * 3.8,
+          );
+      const rearDirY = rearAnchor.y >= portalSvgY ? 1 : -1;
+      const rearStepY = roundCentis(rearAnchor.y - rearDirY * 9.5);
       const rearD = buildClientRoundedPath(
         [
           { x: rearPortalX, y: portalSvgY },
           { x: rearChannelX, y: portalSvgY },
-          { x: rearChannelX, y: roundCentis(rearAnchor.y + 10) },
-          { x: rearAnchor.x, y: roundCentis(rearAnchor.y + 10) },
+          { x: rearChannelX, y: rearStepY },
+          { x: rearAnchor.x, y: rearStepY },
           { x: rearAnchor.x, y: rearAnchor.y },
         ],
         5.0,
       );
       lines.push(
-        `<path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="rear" d="${rearD}" fill="none" stroke="${cable.color_hex}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />`,
+        `<path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="rear-halo" d="${rearD}" fill="none" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.88" />`,
       );
       lines.push(
-        `<circle cx="${rearPortalX}" cy="${portalSvgY}" r="4.0" fill="${cable.color_hex}" stroke="#09090B" stroke-width="1.2" />`,
+        `<path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="rear" d="${rearD}" fill="none" stroke="${displayColor}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />`,
       );
-      lines.push(
-        `<circle cx="${rearAnchor.x}" cy="${rearAnchor.y}" r="3.2" fill="${cable.color_hex}" stroke="#09090B" stroke-width="1.2" />`,
+      deferredCableOverlays.push(
+        `<circle cx="${rearAnchor.x}" cy="${rearAnchor.y}" r="3.2" fill="${displayColor}" stroke="#09090B" stroke-width="1.2" />`,
+        `<g transform="translate(${rearPortalX}, ${portalSvgY})"><rect x="-8" y="-8" width="58" height="16" rx="8" fill="#09090B" stroke="${displayColor}" stroke-width="1.3" /><circle cx="0" cy="0" r="3.8" fill="${displayColor}" stroke="#09090B" stroke-width="1.1" /><text x="25" y="2.8" fill="#F4F4F5" font-size="7" font-weight="700" text-anchor="middle">FRONT-&gt;●</text></g>`,
       );
     }
 
-    // 2. Side-Profile Depth Cutaway Cable Harness (Z-Y Plane)
-    const sideStartX = worldZToSideSvgX(a1.worldZ);
-    const sideStartY = a1.y;
-    const sideEndX = worldZToSideSvgX(a2.worldZ);
-    const sideEndY = a2.y;
+    // 2. Side-Profile Depth Cutaway Cable Harness (True 3D Z-Y Waypoint Projection)
+    const sideStartX = worldZToSideSvgX(p1.world_position.z);
+    const sideStartY = worldYToSvgY(p1.world_position.y);
+    const sideEndX = worldZToSideSvgX(p2.world_position.z);
+    const sideEndY = worldYToSvgY(p2.world_position.y);
 
     let sidePts: Array<{ readonly x: number; readonly y: number }>;
-    if (f1 === 'front' && f2 === 'front') {
+    if (route && route.waypoints.length >= 2) {
+      sidePts = route.waypoints.map((wp, wpIdx) => {
+        if (wpIdx === 0) return { x: sideStartX, y: sideStartY };
+        if (wpIdx === route.waypoints.length - 1) {
+          return { x: sideEndX, y: sideEndY };
+        }
+        return {
+          x: worldZToSideSvgX(wp.z),
+          y: worldYToSvgY(wp.y),
+        };
+      });
+    } else if (f1 === 'front' && f2 === 'front') {
       const sIdx = sideFrontIdx++;
       const trackX = worldZToSideSvgX(-15 - (sIdx % 6) * 4.0);
       sidePts = [
@@ -966,34 +1194,24 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
       ];
     } else if (f1 === 'rear' && f2 === 'rear') {
       const sIdx = sideRearIdx++;
-      const isSameURearJumper = a1.u === a2.u;
-      const maxZ = Math.max(a1.worldZ, a2.worldZ);
-      const rearTrackZMm = isSameURearJumper
-        ? maxZ + 12 + (sIdx % 3) * 3.5
-        : railDepthMm - 8 + sIdx * 3.8;
-      const stepOutY = isSameURearJumper
-        ? roundCentis(Math.min(sideStartY, sideEndY) - 6 - (sIdx % 3) * 2.5)
-        : sideEndY;
-      const trackX = worldZToSideSvgX(rearTrackZMm);
-      sidePts = isSameURearJumper
-        ? [
-            { x: sideStartX, y: sideStartY },
-            { x: trackX, y: sideStartY },
-            { x: trackX, y: stepOutY },
-            { x: sideEndX, y: stepOutY },
-            { x: sideEndX, y: sideEndY },
-          ]
-        : [
-            { x: sideStartX, y: sideStartY },
-            { x: trackX, y: sideStartY },
-            { x: trackX, y: sideEndY },
-            { x: sideEndX, y: sideEndY },
-          ];
+      const maxZ = Math.max(p1.world_position.z, p2.world_position.z);
+      const trackX = worldZToSideSvgX(maxZ + 12 + (sIdx % 5) * 4.0);
+      sidePts = [
+        { x: sideStartX, y: sideStartY },
+        { x: trackX, y: sideStartY },
+        { x: trackX, y: sideEndY },
+        { x: sideEndX, y: sideEndY },
+      ];
     } else {
       const portalU = route?.portal_u ?? 6;
       const portalSvgY = worldYToSvgY((portalU - 0.5) * MM_PER_U);
       const frontChannelX = worldZToSideSvgX(-24);
-      const rearChannelX = worldZToSideSvgX(railDepthMm + 16);
+      const rearChannelX = worldZToSideSvgX(
+        Math.min(
+          railDepthMm - 18,
+          Math.max(p1.world_position.z, p2.world_position.z) + 18,
+        ),
+      );
       sidePts =
         f1 === 'front'
           ? [
@@ -1019,23 +1237,22 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
       `<path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="side-halo" d="${sideD}" fill="none" stroke="#09090B" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.86" />`,
     );
     lines.push(
-      `<path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="side" data-start-xy="${sideStartX},${sideStartY}" data-end-xy="${sideEndX},${sideEndY}" d="${sideD}" fill="none" stroke="${cable.color_hex}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.95" />`,
+      `<path data-cable-id="${escapeXml(cable.cable_id)}" data-cable-view="side" data-start-xy="${sideStartX},${sideStartY}" data-end-xy="${sideEndX},${sideEndY}" d="${sideD}" fill="none" stroke="${displayColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.95" />`,
     );
-    lines.push(
-      `<circle class="side-cable-plug" cx="${sideStartX}" cy="${sideStartY}" r="3.0" fill="${cable.color_hex}" stroke="#09090B" stroke-width="1.2" />`,
-    );
-    lines.push(
-      `<circle class="side-cable-plug" cx="${sideEndX}" cy="${sideEndY}" r="3.0" fill="${cable.color_hex}" stroke="#09090B" stroke-width="1.2" />`,
+    deferredCableOverlays.push(
+      `<circle class="side-cable-plug" cx="${sideStartX}" cy="${sideStartY}" r="3.0" fill="${displayColor}" stroke="#09090B" stroke-width="1.2" />`,
+      `<circle class="side-cable-plug" cx="${sideEndX}" cy="${sideEndY}" r="3.0" fill="${displayColor}" stroke="#09090B" stroke-width="1.2" />`,
     );
   }
+  lines.push(...deferredCableOverlays);
 
   // Render External Building / ISP Drops (`external_endpoints`) entering from Top-Rear / Bottom-Rear
   const externalEndpoints = scene.project.external_endpoints ?? [];
   if (externalEndpoints.length > 0) {
     lines.push(`<g data-layer="external-building-drops">`);
     const collarWidthPx = Math.min(
-      rackWidthPx * 0.56,
-      Math.max(92, externalEndpoints.length * 16 + 34),
+      rackWidthPx * 0.65,
+      Math.max(108, externalEndpoints.length * 14 + 36),
     );
     const rearCollarX = roundCentis(
       rearOriginX + (rackWidthPx - collarWidthPx) / 2,
@@ -1049,18 +1266,20 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
     );
 
     const sideConduitZMm = Math.min(
-      railDepthMm - 18,
-      Math.max(120, railDepthMm * 0.72),
+      railDepthMm - 24,
+      Math.max(96, railDepthMm * 0.45),
     );
     const sideCollarX = worldZToSideSvgX(sideConduitZMm);
+    const sideCollarW = Math.max(68, externalEndpoints.length * 4.5 + 24);
     lines.push(
-      `<rect x="${roundCentis(sideCollarX - 34)}" y="${topCollarY}" width="68" height="12" rx="3" fill="#18181D" stroke="#52525B" stroke-width="1.2" />`,
+      `<rect x="${roundCentis(sideCollarX - sideCollarW / 2)}" y="${topCollarY}" width="${roundCentis(sideCollarW)}" height="12" rx="3" fill="#18181D" stroke="#52525B" stroke-width="1.2" />`,
     );
     lines.push(
       `<text x="${sideCollarX}" y="${roundCentis(topCollarY + 8.5)}" fill="#E4E4E7" font-size="7" font-weight="700" text-anchor="middle">ROOF ENTRY</text>`,
     );
 
     externalEndpoints.forEach((ext, idx) => {
+      const extColor = ensureHighContrastCableHex(ext.color_hex, 'svg-dark');
       const rearAnchor =
         portAnchors.get(
           `${ext.patch_panel_instance_id}:${ext.patch_panel_port_id}:rear`,
@@ -1073,7 +1292,7 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
       const entrySpreadX = roundCentis(
         rearOriginX +
           rackWidthPx / 2 +
-          (idx - (externalEndpoints.length - 1) / 2) * 12,
+          (idx - (externalEndpoints.length - 1) / 2) * 11,
       );
       const entryY =
         ext.entry_position === 'bottom-rear'
@@ -1091,14 +1310,16 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
         4.5,
       );
       lines.push(
-        `<path data-external-endpoint-id="${escapeXml(ext.endpoint_id)}" data-external-view="rear" d="${rearDropD}" fill="none" stroke="${ext.color_hex}" stroke-width="2.1" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />`,
+        `<path data-external-endpoint-id="${escapeXml(ext.endpoint_id)}" data-external-view="rear" d="${rearDropD}" fill="none" stroke="${extColor}" stroke-width="2.1" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />`,
       );
       lines.push(
-        `<circle cx="${rearAnchor.x}" cy="${rearAnchor.y}" r="3.0" fill="${ext.color_hex}" stroke="#09090B" stroke-width="1.1" />`,
+        `<circle cx="${rearAnchor.x}" cy="${rearAnchor.y}" r="3.0" fill="${extColor}" stroke="#09090B" stroke-width="1.1" />`,
       );
 
       // Side-Cutaway Top-Rear Drop Path
-      const sideTrackX = worldZToSideSvgX(sideConduitZMm - 10 + idx * 4.5);
+      const sideTrackX = worldZToSideSvgX(
+        sideConduitZMm + (idx - (externalEndpoints.length - 1) / 2) * 3.6,
+      );
       const sidePortX = worldZToSideSvgX(rearAnchor.worldZ);
       const sideDropD = buildClientRoundedPath(
         [
@@ -1109,10 +1330,10 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
         4.5,
       );
       lines.push(
-        `<path data-external-endpoint-id="${escapeXml(ext.endpoint_id)}" data-external-view="side" d="${sideDropD}" fill="none" stroke="${ext.color_hex}" stroke-width="2.0" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />`,
+        `<path data-external-endpoint-id="${escapeXml(ext.endpoint_id)}" data-external-view="side" d="${sideDropD}" fill="none" stroke="${extColor}" stroke-width="2.0" stroke-dasharray="5,2" stroke-linecap="round" stroke-linejoin="round" />`,
       );
       lines.push(
-        `<circle cx="${sidePortX}" cy="${rearAnchor.y}" r="2.8" fill="${ext.color_hex}" stroke="#09090B" stroke-width="1.1" />`,
+        `<circle cx="${sidePortX}" cy="${rearAnchor.y}" r="2.8" fill="${extColor}" stroke="#09090B" stroke-width="1.1" />`,
       );
     });
     lines.push(`</g>`);
@@ -1122,81 +1343,660 @@ export function renderClientSideElevationSvg(scene: SerializedRackScene): string
   return lines.join('\n');
 }
 
+function formatClientCableBadge(
+  cableType: CableType,
+  commercialMm: number,
+): string {
+  const meters = (commercialMm / 1000).toFixed(2);
+  const labelMap: Record<CableType, string> = {
+    cat6a: 'Cat6A',
+    'cat6a-angled': 'Cat6A Angled',
+    cat6: 'Cat6',
+    'cat6-angled': 'Cat6 Angled',
+    cat5e: 'Cat5e',
+    'cat5e-angled': 'Cat5e Angled',
+    'sfp-plus-dac': '10G DAC',
+    'sfp-plus-dac-angled': '10G DAC Angled',
+    'fiber-lc-duplex': 'OM4 Fiber',
+    'fiber-lc-duplex-angled': 'OM4 Fiber Angled',
+    'rj45-serial-rollover': 'Serial',
+    'rj45-serial-rollover-angled': 'Serial Angled',
+    'power-c13-c14': 'IEC C13-C14',
+    'power-c13-c14-angled': 'IEC C13-C14 Angled',
+    'power-schuko-c13': 'Schuko-C13',
+    'power-schuko-c13-angled': 'Schuko-C13 Angled',
+    'power-dc-5525': 'DC Barrel',
+    'power-dc-5525-angled': 'DC Barrel Angled',
+    'power-usb-c': 'USB-C PD',
+    'power-usb-c-angled': 'USB-C PD Angled',
+  };
+  return `${meters}m ${labelMap[cableType]}`;
+}
+
 /**
- * Generates a standalone 2D Wiring & Power Schematic SVG from a `SerializedRackScene`.
+ * Generates a standalone 2-Section 2D Technical Wiring & Power Schematic SVG
+ * (Section 1: Hierarchical Power Distribution DAG + Section 2: Grouped Device Schematic Cards
+ * & 16px Multi-Track Orthogonal Channel Router) in Precision Carbon/Zinc Studio styling.
  */
 export function renderClientSideWiringSvg(scene: SerializedRackScene): string {
-  const rowPitch = 30;
   const cables = scene.project.cables;
   const routesById = new Map(scene.cable_routes.map((r) => [r.cable_id, r]));
-  const svgWidth = 1360;
-  const svgHeight = Math.max(580, 180 + cables.length * rowPitch + 60);
+  const devicesById = new Map<string, ComputedDeviceGeometry>(
+    scene.geometry.devices.map((d) => [d.instance_id, d]),
+  );
+
+  // -------------------------------------------------------------------------
+  // Section 1: Power Distribution Topology (Tier 1 UPS -> Tier 2 PDU/Direct -> Tier 3 Loads & PoE PDs)
+  // -------------------------------------------------------------------------
+  const powerCables = cables.filter((c) => isPowerCableType(c.cable_type));
+  const poeEdges: Array<{
+    readonly cableId: string;
+    readonly fromId: string;
+    readonly toId: string;
+    readonly colorHex: string;
+  }> = [];
+  for (const c of cables) {
+    if (isPowerCableType(c.cable_type)) continue;
+    const d1 = devicesById.get(c.from.instance_id);
+    const d2 = devicesById.get(c.to.instance_id);
+    if (!d1 || !d2) continue;
+    const p1 = d1.ports.find((p) => p.port_id === c.from.port_id);
+    const p2 = d2.ports.find((p) => p.port_id === c.to.port_id);
+    const d1IsPse =
+      (d1.blueprint.power_and_thermal.poe_budget_watts ?? 0) > 0 ||
+      d1.blueprint.power_and_thermal.electrical_role === 'pse-switch';
+    const d2IsPd =
+      p2?.capabilities.some((cap) => cap.startsWith('poe-in')) === true;
+    const d2IsPse =
+      (d2.blueprint.power_and_thermal.poe_budget_watts ?? 0) > 0 ||
+      d2.blueprint.power_and_thermal.electrical_role === 'pse-switch';
+    const d1IsPd =
+      p1?.capabilities.some((cap) => cap.startsWith('poe-in')) === true;
+    if (d1IsPse && d2IsPd) {
+      poeEdges.push({
+        cableId: c.cable_id,
+        fromId: d1.instance_id,
+        toId: d2.instance_id,
+        colorHex: c.color_hex,
+      });
+    } else if (d2IsPse && d1IsPd) {
+      poeEdges.push({
+        cableId: c.cable_id,
+        fromId: d2.instance_id,
+        toId: d1.instance_id,
+        colorHex: c.color_hex,
+      });
+    }
+  }
+
+  const powerDeviceIds = new Set<string>();
+  for (const pc of powerCables) {
+    powerDeviceIds.add(pc.from.instance_id);
+    powerDeviceIds.add(pc.to.instance_id);
+  }
+  for (const pe of poeEdges) {
+    powerDeviceIds.add(pe.fromId);
+    powerDeviceIds.add(pe.toId);
+  }
+  for (const d of scene.geometry.devices) {
+    if (d.blueprint.category === 'ups' || d.blueprint.category === 'pdu') {
+      powerDeviceIds.add(d.instance_id);
+    }
+  }
+
+  const tier1Ids = new Set<string>();
+  for (const id of powerDeviceIds) {
+    const dev = devicesById.get(id);
+    if (dev?.blueprint.category === 'ups') tier1Ids.add(id);
+  }
+
+  // Devices directly fed by a Tier-1 UPS (or PDUs/PoE switches) sit in Column 2 so edges never skip across Column 2 boxes
+  const fedDirectlyByUps = new Set<string>();
+  const fedByNonUps = new Set<string>();
+  for (const pc of powerCables) {
+    const aIsUps = tier1Ids.has(pc.from.instance_id);
+    const bIsUps = tier1Ids.has(pc.to.instance_id);
+    if (aIsUps && !bIsUps) fedDirectlyByUps.add(pc.to.instance_id);
+    else if (bIsUps && !aIsUps) fedDirectlyByUps.add(pc.from.instance_id);
+    else if (!aIsUps && !bIsUps) {
+      const aDev = devicesById.get(pc.from.instance_id);
+      if (aDev?.blueprint.category === 'pdu') fedByNonUps.add(pc.to.instance_id);
+      else fedByNonUps.add(pc.from.instance_id);
+    }
+  }
+  for (const pe of poeEdges) {
+    fedByNonUps.add(pe.toId);
+  }
+
+  const tier1Ups: ComputedDeviceGeometry[] = [];
+  const tier2Pdus: ComputedDeviceGeometry[] = [];
+  const tier3Loads: ComputedDeviceGeometry[] = [];
+  for (const id of powerDeviceIds) {
+    const dev = devicesById.get(id);
+    if (!dev) continue;
+    if (dev.blueprint.category === 'ups') {
+      tier1Ups.push(dev);
+    } else if (
+      dev.blueprint.category === 'pdu' ||
+      (fedDirectlyByUps.has(id) && !fedByNonUps.has(id))
+    ) {
+      tier2Pdus.push(dev);
+    } else {
+      tier3Loads.push(dev);
+    }
+  }
+  tier1Ups.sort((a, b) => b.u_position - a.u_position);
+  tier2Pdus.sort((a, b) => {
+    const aPdu = a.blueprint.category === 'pdu' ? 1 : 0;
+    const bPdu = b.blueprint.category === 'pdu' ? 1 : 0;
+    if (aPdu !== bPdu) return bPdu - aPdu;
+    return b.u_position - a.u_position;
+  });
+  tier3Loads.sort((a, b) => b.u_position - a.u_position);
+
+  const dagRowCount = Math.max(
+    1,
+    tier1Ups.length,
+    tier2Pdus.length,
+    Math.ceil(tier3Loads.length / 2),
+  );
+  const sec1Top = 80;
+  const sec1Height = Math.max(154, 62 + dagRowCount * 58 + 20);
+
+  // -------------------------------------------------------------------------
+  // Section 2: Grouped Device Cards & Multi-Track Orthogonal Channel Router
+  // -------------------------------------------------------------------------
+  const classifyColumn = (
+    dev: ComputedDeviceGeometry | undefined,
+  ): 'left' | 'right' => {
+    const cat = dev?.blueprint.category;
+    if (
+      cat === 'ups' ||
+      cat === 'pdu' ||
+      cat === 'patch-panel' ||
+      cat === 'switch'
+    ) {
+      return 'left';
+    }
+    return 'right';
+  };
+
+  interface RawClientPin {
+    readonly cableId: string;
+    readonly instanceId: string;
+    readonly portId: string;
+    readonly face: RackFace | undefined;
+  }
+
+  const leftDevicePins = new Map<string, RawClientPin[]>();
+  const rightDevicePins = new Map<string, RawClientPin[]>();
+
+  for (const cable of cables) {
+    const fromDev = devicesById.get(cable.from.instance_id);
+    const toDev = devicesById.get(cable.to.instance_id);
+    const fromCol = classifyColumn(fromDev);
+    const toCol = classifyColumn(toDev);
+
+    // When both endpoints classify as 'left' (e.g. Patch Panel -> Switch or UPS -> PDU/Switch),
+    // place the higher-priority distribution hub (Patch Panel / UPS) on the left and the target on the right!
+    let placeFromLeft = true;
+    if (fromCol === 'left' && toCol === 'left') {
+      const fromCat = fromDev?.blueprint.category;
+      const toCat = toDev?.blueprint.category;
+      if (
+        (toCat === 'patch-panel' && fromCat !== 'patch-panel') ||
+        (toCat === 'ups' && fromCat !== 'ups')
+      ) {
+        placeFromLeft = false;
+      } else {
+        placeFromLeft = true;
+      }
+    } else {
+      placeFromLeft =
+        fromCol === 'left' || (fromCol === 'right' && toCol === 'right');
+    }
+
+    const leftEp = placeFromLeft ? cable.from : cable.to;
+    const rightEp = placeFromLeft ? cable.to : cable.from;
+
+    const lList = leftDevicePins.get(leftEp.instance_id) ?? [];
+    lList.push({
+      cableId: cable.cable_id,
+      instanceId: leftEp.instance_id,
+      portId: leftEp.port_id,
+      face: leftEp.face,
+    });
+    leftDevicePins.set(leftEp.instance_id, lList);
+
+    const rList = rightDevicePins.get(rightEp.instance_id) ?? [];
+    rList.push({
+      cableId: cable.cable_id,
+      instanceId: rightEp.instance_id,
+      portId: rightEp.port_id,
+      face: rightEp.face,
+    });
+    rightDevicePins.set(rightEp.instance_id, rList);
+  }
+
+  const sortMapEntriesByU = (
+    map: ReadonlyMap<string, RawClientPin[]>,
+  ): Array<[string, RawClientPin[]]> =>
+    [...map.entries()].sort((a, b) => {
+      const da = devicesById.get(a[0]);
+      const db = devicesById.get(b[0]);
+      return (db?.u_position ?? 0) - (da?.u_position ?? 0);
+    });
+
+  const trackCount = Math.max(1, cables.length);
+  const trackSpacingPx = 15;
+  const tagCorridorPx = 312;
+  const channelWidthPx = tagCorridorPx + trackCount * trackSpacingPx + 28;
+  const cardW = 324;
+  const leftCardX = 40;
+  const channelStartX = leftCardX + cardW;
+  const rightCardX = channelStartX + channelWidthPx;
+  const svgWidth = Math.max(1420, rightCardX + cardW + 40);
+
+  const sec2Top = sec1Top + sec1Height + 22;
+  const cardHeaderPx = 38;
+  const portRowPitchPx = 28;
+  const cardBottomPadPx = 8;
+  const cardGapY = 16;
+
+  interface PinCoord {
+    readonly cableId: string;
+    readonly instanceId: string;
+    readonly portId: string;
+    readonly capabilityBadge: string;
+    readonly pinX: number;
+    readonly pinY: number;
+  }
+
+  interface SchematicCardLayout {
+    readonly instanceId: string;
+    readonly title: string;
+    readonly subtitle: string;
+    readonly column: 'left' | 'right';
+    readonly cardX: number;
+    readonly cardY: number;
+    readonly cardW: number;
+    readonly cardH: number;
+    readonly pins: readonly PinCoord[];
+  }
+
+  const pinMap = new Map<string, PinCoord>();
+
+  const buildCards = (
+    entries: ReadonlyArray<[string, RawClientPin[]]>,
+    column: 'left' | 'right',
+    cardX: number,
+  ): { cards: SchematicCardLayout[]; height: number } => {
+    const cards: SchematicCardLayout[] = [];
+    let curY = sec2Top + 52;
+
+    for (const [instanceId, rawPins] of entries) {
+      const dev = devicesById.get(instanceId);
+      const title = dev
+        ? `${dev.hostname ?? dev.blueprint.model}`
+        : instanceId;
+      const effectiveFaceLabel = dev
+        ? dev.mount_target === 'carrier-slot'
+          ? `U${dev.u_position} SLOT`
+          : `U${dev.u_position} ${dev.face.toUpperCase()}`
+        : 'DEVICE';
+      const subtitle = dev
+        ? `${effectiveFaceLabel} • ${instanceId} • ${dev.blueprint.category}`
+        : instanceId;
+      const cardH =
+        cardHeaderPx + rawPins.length * portRowPitchPx + cardBottomPadPx;
+      const pinX = roundCentis(column === 'left' ? cardX + cardW : cardX);
+
+      const pins: PinCoord[] = rawPins.map((rp, idx) => {
+        const pinY = roundCentis(
+          curY + cardHeaderPx + idx * portRowPitchPx + portRowPitchPx / 2,
+        );
+        const portObj = dev?.ports.find((pt) => pt.port_id === rp.portId);
+        const cap =
+          portObj?.capabilities[0] ??
+          portObj?.connector_type ??
+          'port';
+        const coord: PinCoord = {
+          cableId: rp.cableId,
+          instanceId: rp.instanceId,
+          portId: rp.portId,
+          capabilityBadge: String(cap),
+          pinX,
+          pinY,
+        };
+        pinMap.set(`${rp.cableId}:${column}`, coord);
+        return coord;
+      });
+
+      cards.push({
+        instanceId,
+        title,
+        subtitle,
+        column,
+        cardX,
+        cardY: curY,
+        cardW,
+        cardH,
+        pins,
+      });
+      curY += cardH + cardGapY;
+    }
+
+    return {
+      cards,
+      height: Math.max(180, curY - sec2Top + 18),
+    };
+  };
+
+  const leftLayout = buildCards(
+    sortMapEntriesByU(leftDevicePins),
+    'left',
+    leftCardX,
+  );
+  const rightLayout = buildCards(
+    sortMapEntriesByU(rightDevicePins),
+    'right',
+    rightCardX,
+  );
+  const sec2Height = Math.max(leftLayout.height, rightLayout.height);
+  const svgHeight = roundCentis(sec2Top + sec2Height + 36);
 
   const lines: string[] = [];
   lines.push(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace">`,
-  );
-  lines.push(`<rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" fill="#090D16" />`);
-  lines.push(
-    `<text x="32" y="36" fill="#F8FAFC" font-size="16" font-weight="700">${escapeXml(scene.project.project_name)} — 2D Wiring &amp; Power Schematic</text>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace">`,
   );
   lines.push(
-    `<text x="32" y="58" fill="#94A3B8" font-size="11">Total System Draw: ${roundTenths(scene.validation.power_summary.total_system_watts)}W • PoE Load: ${roundTenths(scene.validation.power_summary.total_poe_watts)}W • Active Connections: ${cables.length}</text>`,
+    `<rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" fill="#09090B" />`,
+  );
+  lines.push(
+    `<text x="32" y="34" fill="#F4F4F5" font-size="16" font-weight="700">${escapeXml(scene.project.project_name)} — Power Distribution DAG &amp; Multi-Track Wiring Plan</text>`,
+  );
+  lines.push(
+    `<text x="32" y="55" fill="#A1A1AA" font-size="11">Total System Draw: ${roundTenths(scene.validation.power_summary.total_system_watts)}W • PoE Load: ${roundTenths(scene.validation.power_summary.total_poe_watts)}W • Active Cables: ${cables.length} • Validation: ${scene.validation.status}</text>`,
   );
 
-  const leftCardX = 48;
-  const leftCardW = 300;
-  const rightCardX = 990;
-  const rightCardW = 320;
-  const baseChannelX = 640;
+  // Render Section 1: Power Distribution DAG
+  lines.push(`<g data-section="power-dag">`);
+  lines.push(
+    `<rect x="24" y="${sec1Top}" width="${svgWidth - 48}" height="${sec1Height}" rx="8" fill="#0E0E11" stroke="#27272A" stroke-width="1.4" />`,
+  );
+  lines.push(
+    `<text x="44" y="${sec1Top + 26}" fill="#E4E4E7" font-size="12" font-weight="700" letter-spacing="0.3">SECTION 1: POWER DISTRIBUTION TOPOLOGY (UPS -&gt; PDU -&gt; COMPUTE &amp; NETWORK LOADS)</text>`,
+  );
 
+  const dagPos = new Map<
+    string,
+    { readonly x: number; readonly y: number; readonly w: number; readonly h: number }
+  >();
+  const drawDagNode = (
+    id: string,
+    label: string,
+    sub: string,
+    x: number,
+    y: number,
+    w: number,
+    accentHex: string,
+  ) => {
+    const h = 44;
+    dagPos.set(id, { x, y, w, h });
+    lines.push(
+      `<g data-dag-node="${escapeXml(id)}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="#121216" stroke="#27272A" stroke-width="1.2" /><line x1="${x}" y1="${y + 4}" x2="${x}" y2="${y + h - 4}" stroke="${accentHex}" stroke-width="3" stroke-linecap="round" /><text x="${x + 12}" y="${y + 18}" fill="#F4F4F5" font-size="9.8" font-weight="700">${escapeXml(label.slice(0, 34))}</text><text x="${x + 12}" y="${y + 33}" fill="#A1A1AA" font-size="8.4">${escapeXml(sub.slice(0, 38))}</text></g>`,
+    );
+  };
+
+  if (tier1Ups.length === 0) {
+    drawDagNode(
+      '__mains__',
+      '230V AC Mains Feed',
+      'Facility Grid Supply',
+      48,
+      sec1Top + 48,
+      240,
+      '#10B981',
+    );
+  } else {
+    tier1Ups.forEach((ups, idx) => {
+      drawDagNode(
+        ups.instance_id,
+        `${ups.hostname ?? ups.blueprint.model}`,
+        `U${ups.u_position} UPS • ${ups.instance_id}`,
+        48,
+        sec1Top + 46 + idx * 56,
+        268,
+        '#10B981',
+      );
+    });
+  }
+
+  tier2Pdus.forEach((node, idx) => {
+    const isPdu = node.blueprint.category === 'pdu';
+    const poeBudget = node.blueprint.power_and_thermal.poe_budget_watts ?? 0;
+    const isPse =
+      poeBudget > 0 ||
+      node.blueprint.power_and_thermal.electrical_role === 'pse-switch';
+    const roleTag = isPdu
+      ? `${node.face.toUpperCase()} PDU`
+      : isPse
+        ? `PoE PSE (${poeBudget}W)`
+        : `${node.blueprint.power_and_thermal.max_system_watts}W Direct UPS`;
+    drawDagNode(
+      node.instance_id,
+      `${node.hostname ?? node.blueprint.model}`,
+      `U${node.u_position} ${roleTag} • ${node.instance_id}`,
+      430,
+      sec1Top + 46 + idx * 56,
+      292,
+      isPdu ? '#F59E0B' : isPse ? '#06B6D4' : '#3B82F6',
+    );
+  });
+
+  tier3Loads.forEach((ld, idx) => {
+    const col = idx % 2;
+    const row = Math.floor(idx / 2);
+    const lx = 840 + col * 288;
+    const ly = sec1Top + 46 + row * 56;
+    const isPoePd = poeEdges.some((pe) => pe.toId === ld.instance_id);
+    drawDagNode(
+      ld.instance_id,
+      `${ld.hostname ?? ld.blueprint.model}`,
+      `U${ld.u_position} • ${ld.blueprint.power_and_thermal.max_system_watts}W max${isPoePd ? ' (PoE PD)' : ''}`,
+      lx,
+      ly,
+      268,
+      isPoePd ? '#10B981' : '#3B82F6',
+    );
+  });
+
+  const allDagEdges: Array<{
+    readonly id: string;
+    readonly fromId: string;
+    readonly toId: string;
+    readonly colorHex: string;
+    readonly isPoe: boolean;
+  }> = [
+    ...powerCables.map((pc) => ({
+      id: pc.cable_id,
+      fromId: pc.from.instance_id,
+      toId: pc.to.instance_id,
+      colorHex: pc.color_hex,
+      isPoe: false,
+    })),
+    ...poeEdges.map((pe) => ({
+      id: pe.cableId,
+      fromId: pe.fromId,
+      toId: pe.toId,
+      colorHex: pe.colorHex,
+      isPoe: true,
+    })),
+  ];
+
+  allDagEdges.forEach((edge, idx) => {
+    const posA = dagPos.get(edge.fromId);
+    const posB = dagPos.get(edge.toId);
+    if (!posA || !posB) return;
+    const leftP = posA.x <= posB.x ? posA : posB;
+    const rightP = posA.x <= posB.x ? posB : posA;
+    const x1 = roundCentis(leftP.x + leftP.w);
+    const y1 = roundCentis(leftP.y + 13 + (idx % 4) * 6);
+    const x2 = roundCentis(rightP.x);
+    const y2 = roundCentis(rightP.y + 13 + (idx % 4) * 6);
+    const gapEndX = rightP.x > 900 ? 836 : rightP.x;
+    const midX = roundCentis(
+      x1 + (gapEndX - x1) * (0.28 + ((idx % 6) / 6) * 0.56),
+    );
+    const edgeColor = ensureHighContrastCableHex(edge.colorHex, 'svg-dark');
+    const edgeWaypoints =
+      rightP.x > 900
+        ? [
+            { x: x1, y: y1 },
+            { x: midX, y: y1 },
+            {
+              x: midX,
+              y: roundCentis(rightP.y - 6.5 + (idx % 2) * 2.5),
+            },
+            {
+              x: roundCentis(rightP.x - 11 + (idx % 3) * 2.5),
+              y: roundCentis(rightP.y - 6.5 + (idx % 2) * 2.5),
+            },
+            {
+              x: roundCentis(rightP.x - 11 + (idx % 3) * 2.5),
+              y: y2,
+            },
+            { x: x2, y: y2 },
+          ]
+        : [
+            { x: x1, y: y1 },
+            { x: midX, y: y1 },
+            { x: midX, y: y2 },
+            { x: x2, y: y2 },
+          ];
+    const edgeD = buildClientRoundedPath(edgeWaypoints, 5.0);
+    lines.push(
+      `<path data-power-edge="${escapeXml(edge.id)}" d="${edgeD}" fill="none" stroke="${edgeColor}" stroke-width="2" ${edge.isPoe ? '' : 'stroke-dasharray="5,2.5" '}opacity="0.92" />`,
+    );
+    lines.push(
+      `<circle cx="${x1}" cy="${y1}" r="2.8" fill="${edgeColor}" stroke="#09090B" stroke-width="1" /><circle cx="${x2}" cy="${y2}" r="2.8" fill="${edgeColor}" stroke="#09090B" stroke-width="1" />`,
+    );
+  });
+  lines.push(`</g>`);
+
+  // Render Section 2: Grouped Port-to-Port Schematic
+  lines.push(`<g data-section="port-to-port-schematic">`);
+  lines.push(
+    `<rect x="24" y="${sec2Top}" width="${svgWidth - 48}" height="${sec2Height}" rx="8" fill="#0E0E11" stroke="#27272A" stroke-width="1.4" />`,
+  );
+  lines.push(
+    `<text x="44" y="${sec2Top + 28}" fill="#E4E4E7" font-size="12" font-weight="700" letter-spacing="0.3">SECTION 2: PORT-TO-PORT PATCH &amp; POWER SCHEMATIC (GROUPED DEVICE CARDS &amp; MULTI-TRACK ROUTER)</text>`,
+  );
+
+  const renderCardCol = (cards: readonly SchematicCardLayout[]) => {
+    for (const card of cards) {
+      const isLeft = card.column === 'left';
+      lines.push(
+        `<g data-schematic-device="${escapeXml(card.instanceId)}">`,
+      );
+      lines.push(
+        `<rect x="${card.cardX}" y="${card.cardY}" width="${card.cardW}" height="${card.cardH}" rx="6" fill="#121216" stroke="#27272A" stroke-width="1.4" />`,
+      );
+      lines.push(
+        `<rect x="${card.cardX}" y="${card.cardY}" width="${card.cardW}" height="${cardHeaderPx}" rx="6" fill="#18181D" stroke="#27272A" stroke-width="1" />`,
+      );
+      lines.push(
+        `<text x="${card.cardX + 12}" y="${card.cardY + 16}" fill="#F4F4F5" font-size="10.2" font-weight="700">${escapeXml(card.title.slice(0, 38))}</text>`,
+      );
+      lines.push(
+        `<text x="${card.cardX + 12}" y="${card.cardY + 30}" fill="#A1A1AA" font-size="8.6">${escapeXml(card.subtitle.slice(0, 44))}</text>`,
+      );
+
+      for (const pin of card.pins) {
+        const rowTop = roundCentis(pin.pinY - portRowPitchPx / 2);
+        const textX = roundCentis(isLeft ? pin.pinX - 16 : pin.pinX + 16);
+        const textAnchor = isLeft ? 'end' : 'start';
+        const badgeW = 92;
+        const badgeX = roundCentis(
+          isLeft ? card.cardX + 10 : card.cardX + card.cardW - badgeW - 10,
+        );
+        lines.push(
+          `<line x1="${card.cardX + 6}" y1="${rowTop}" x2="${card.cardX + card.cardW - 6}" y2="${rowTop}" stroke="#27272A" stroke-width="0.7" />`,
+        );
+        lines.push(
+          `<rect x="${badgeX}" y="${roundCentis(pin.pinY - 7.5)}" width="${badgeW}" height="15" rx="3" fill="#09090B" stroke="#3F3F46" stroke-width="0.8" />`,
+        );
+        lines.push(
+          `<text x="${roundCentis(badgeX + badgeW / 2)}" y="${roundCentis(pin.pinY + 3)}" fill="#A1A1AA" font-size="7.4" font-weight="600" text-anchor="middle">${escapeXml(pin.capabilityBadge.slice(0, 15))}</text>`,
+        );
+        lines.push(
+          `<text x="${textX}" y="${roundCentis(pin.pinY + 3.5)}" fill="#F4F4F5" font-size="9.6" font-weight="700" text-anchor="${textAnchor}">${escapeXml(pin.portId)}</text>`,
+        );
+        lines.push(
+          `<circle cx="${pin.pinX}" cy="${pin.pinY}" r="3.8" fill="#18181D" stroke="#52525B" stroke-width="1.3" />`,
+        );
+      }
+      lines.push(`</g>`);
+    }
+  };
+
+  renderCardCol(leftLayout.cards);
+  renderCardCol(rightLayout.cards);
+
+  const baseChannelX = roundCentis(channelStartX + tagCorridorPx);
   for (let i = 0; i < cables.length; i++) {
     const cable = cables[i]!;
+    const startPin = pinMap.get(`${cable.cable_id}:left`);
+    const endPin = pinMap.get(`${cable.cable_id}:right`);
+    if (!startPin || !endPin) continue;
+
     const route = routesById.get(cable.cable_id);
-    const commMeters = ((route?.recommended_commercial_mm ?? 500) / 1000).toFixed(2);
-    const pinY = 120 + i * rowPitch;
-    const startPinX = leftCardX + leftCardW;
-    const endPinX = rightCardX;
-    const channelX = baseChannelX + i * 14;
-
-    lines.push(
-      `<rect x="${leftCardX}" y="${pinY - 12}" width="${leftCardW}" height="24" rx="4" fill="#1E293B" stroke="#334155" stroke-width="1.2" />`,
+    const commMm = route?.recommended_commercial_mm ?? 500;
+    const badgeText = formatClientCableBadge(cable.cable_type, commMm);
+    const displayColor = ensureHighContrastCableHex(
+      cable.color_hex,
+      'svg-dark',
     );
-    lines.push(
-      `<text x="${startPinX - 14}" y="${pinY + 4}" fill="#F8FAFC" font-size="10" font-weight="600" text-anchor="end">${escapeXml(`${cable.from.instance_id}:${cable.from.port_id}`)}</text>`,
-    );
-    lines.push(
-      `<circle cx="${startPinX}" cy="${pinY}" r="3.6" fill="${cable.color_hex}" stroke="#090D16" stroke-width="1.2" />`,
-    );
-
-    lines.push(
-      `<rect x="${rightCardX}" y="${pinY - 12}" width="${rightCardW}" height="24" rx="4" fill="#1E293B" stroke="#334155" stroke-width="1.2" />`,
-    );
-    lines.push(
-      `<text x="${endPinX + 14}" y="${pinY + 4}" fill="#F8FAFC" font-size="10" font-weight="600">${escapeXml(`${cable.to.instance_id}:${cable.to.port_id}`)}</text>`,
-    );
-    lines.push(
-      `<circle cx="${endPinX}" cy="${pinY}" r="3.6" fill="${cable.color_hex}" stroke="#090D16" stroke-width="1.2" />`,
+    const channelX = roundCentis(baseChannelX + i * trackSpacingPx);
+    const pathD = buildClientRoundedPath(
+      [
+        { x: startPin.pinX, y: startPin.pinY },
+        { x: channelX, y: startPin.pinY },
+        { x: channelX, y: endPin.pinY },
+        { x: endPin.pinX, y: endPin.pinY },
+      ],
+      7.5,
     );
 
-    const d = `M ${startPinX} ${pinY} L ${channelX} ${pinY} L ${endPinX} ${pinY}`;
     lines.push(
-      `<path data-schematic-cable="${escapeXml(cable.cable_id)}" d="${d}" fill="none" stroke="${cable.color_hex}" stroke-width="2.2" />`,
+      `<path d="${pathD}" fill="none" stroke="#09090B" stroke-width="4.0" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />`,
+    );
+    lines.push(
+      `<path data-schematic-cable="${escapeXml(cable.cable_id)}" d="${pathD}" fill="none" stroke="${displayColor}" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" />`,
+    );
+    lines.push(
+      `<circle cx="${startPin.pinX}" cy="${startPin.pinY}" r="3.2" fill="${displayColor}" stroke="#09090B" stroke-width="1" />`,
+    );
+    lines.push(
+      `<circle cx="${endPin.pinX}" cy="${endPin.pinY}" r="3.2" fill="${displayColor}" stroke="#09090B" stroke-width="1" />`,
     );
 
     const netParts: string[] = [];
     if (cable.vlan_id !== undefined) netParts.push(`VLAN${cable.vlan_id}`);
     if (cable.ip_cidr !== undefined) netParts.push(cable.ip_cidr);
     const netSuffix = netParts.length > 0 ? ` • ${netParts.join(' ')}` : '';
-    const tagText = `${cable.cable_id} | ${commMeters}m ${cable.cable_type}${netSuffix}`;
-    const pillW = netSuffix.length > 0 ? 304 : 250;
+    const pillText = `${cable.cable_id} | ${badgeText}${netSuffix}`;
+    const pillW = netSuffix.length > 0 ? 292 : 244;
+    const pillX = roundCentis(startPin.pinX + 12);
+    const pillY = roundCentis(startPin.pinY - 9);
     lines.push(
-      `<rect x="${startPinX + 16}" y="${pinY - 9}" width="${pillW}" height="18" rx="9" fill="#090D16" stroke="${cable.color_hex}" stroke-width="1.2" />`,
+      `<rect x="${pillX}" y="${pillY}" width="${pillW}" height="18" rx="9" fill="#09090B" stroke="${displayColor}" stroke-width="1.25" />`,
     );
     lines.push(
-      `<text x="${startPinX + 16 + pillW / 2}" y="${pinY + 3}" fill="#F8FAFC" font-size="8.5" font-weight="600" text-anchor="middle">${escapeXml(tagText.slice(0, 48))}</text>`,
+      `<text x="${roundCentis(pillX + pillW / 2)}" y="${roundCentis(startPin.pinY + 3)}" fill="#F4F4F5" font-size="8.2" font-weight="600" text-anchor="middle">${escapeXml(pillText.slice(0, 46))}</text>`,
     );
   }
+  lines.push(`</g>`);
 
   lines.push(`</svg>`);
   return lines.join('\n');

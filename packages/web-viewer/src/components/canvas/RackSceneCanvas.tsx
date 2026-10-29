@@ -176,8 +176,8 @@ function ExternalBuildingDrops3D({
       const rearFaceZ = ppDev.chassis_box.max.z + offsetZ + 2.2;
 
       const conduitZ = Math.min(
-        railDepthMm - 22,
-        Math.max(rearFaceZ + 88, railDepthMm * 0.56),
+        railDepthMm - 26,
+        Math.max(rearFaceZ + 56, Math.min(135, railDepthMm * 0.45)),
       );
       const isBottomEntry = ext.entry_position === 'bottom-rear';
       const roofOrFloorEntryY = isBottomEntry ? -24.0 : totalHeightMm + 30.0;
@@ -238,15 +238,15 @@ function ExternalBuildingDrops3D({
     (firstPpDev?.chassis_box.max.z ?? 35) +
     computeDeviceExplodeOffsetZMm(firstPpDev, explodeZMm);
   const collarZ = Math.min(
-    railDepthMm - 22,
-    Math.max(firstRearZ + 88, railDepthMm * 0.56),
+    railDepthMm - 26,
+    Math.max(firstRearZ + 56, Math.min(135, railDepthMm * 0.45)),
   );
   const isFirstBottomEntry =
     externalEndpoints[0]?.entry_position === 'bottom-rear';
   const collarY = isFirstBottomEntry ? -3.0 : totalHeightMm + 3.0;
   const collarWidth = Math.min(
-    panelWidthMm * 0.52,
-    Math.max(70, externalEndpoints.length * 6.5 + 28),
+    panelWidthMm * 0.65,
+    Math.max(78, externalEndpoints.length * 8.8 + 32),
   );
 
   return (
