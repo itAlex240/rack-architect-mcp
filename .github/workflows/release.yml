@@ -18,7 +18,7 @@ jobs:
       MCP_PUBLISHER_VERSION: v1.8.1
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
