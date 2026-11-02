@@ -67,7 +67,7 @@ jobs:
           ' "$VERSION" "$SHA256"
 
       - name: Create GitHub Release with Beginner-Friendly Guide & CAD/3D-Print Assets
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: "🏗️ RackArchitect MCP ${{ github.ref_name }} — 3D/2D Rack Planner, CAD Blueprints & 3D-Print Files (.STL)"
           body_path: docs/RELEASE_NOTES.md
