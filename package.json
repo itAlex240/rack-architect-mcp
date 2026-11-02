@@ -44,7 +44,7 @@
     "export:demo": "node ./packages/cli/dist/bin.js export ./examples/10inch-homelab/rack.yaml --out-dir ./examples/10inch-homelab"
   },
   "devDependencies": {
-    "@types/node": "^26.6.5",
+    "@types/node": "^26.6.6",
     "happy-dom": "^21.0.4",
     "typescript": "^5.7.2",
     "vitest": "^4.1.12",
