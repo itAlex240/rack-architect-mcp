@@ -41,7 +41,46 @@ export interface ToolExecutionEnvelope<T = unknown> {
 
 export interface RemoteToolSessionContext {
   readonly sessionId: string;
+  readonly viewerToken?: string | undefined;
   readonly getPublicBaseUrl: () => string;
+}
+
+function isPathContainedInRoot(targetDir: string, rootDir: string): boolean {
+  const resolvedRoot = path.resolve(rootDir);
+  const resolvedTarget = path.resolve(resolvedRoot, targetDir);
+  if (
+    resolvedTarget !== resolvedRoot &&
+    !resolvedTarget.startsWith(resolvedRoot + path.sep)
+  ) {
+    return false;
+  }
+
+  try {
+    const realRoot = fs.existsSync(resolvedRoot)
+      ? fs.realpathSync(resolvedRoot)
+      : resolvedRoot;
+    let probe = resolvedTarget;
+    while (!fs.existsSync(probe)) {
+      const parent = path.dirname(probe);
+      if (parent === probe) {
+        break;
+      }
+      probe = parent;
+    }
+    if (fs.existsSync(probe)) {
+      const realProbe = fs.realpathSync(probe);
+      if (
+        realProbe !== realRoot &&
+        !realProbe.startsWith(realRoot + path.sep)
+      ) {
+        return false;
+      }
+    }
+  } catch {
+    return false;
+  }
+
+  return true;
 }
 
 function trimTrailingSlashes(raw: string): string {
@@ -95,7 +134,9 @@ export class RackMcpToolHandlers {
     }
 
     const baseUrl = trimTrailingSlashes(this.remoteSession.getPublicBaseUrl());
-    const encodedSession = encodeURIComponent(this.remoteSession.sessionId);
+    const publicSessionToken =
+      this.remoteSession.viewerToken ?? this.remoteSession.sessionId;
+    const encodedSession = encodeURIComponent(publicSessionToken);
     const liveViewerUrl = `${baseUrl}/?session=${encodedSession}`;
 
     const enrichedData =
@@ -1133,7 +1174,8 @@ export class RackMcpToolHandlers {
   }
 
   public exportDeliverables(
-    rawInput: z.input<typeof ExportDeliverablesInputSchema> = {}
+    rawInput: z.input<typeof ExportDeliverablesInputSchema> = {},
+    options?: { readonly allowTrustedCliOutDir?: boolean | undefined }
   ): ToolExecutionEnvelope {
     const input = ExportDeliverablesInputSchema.parse(rawInput);
     const scene = this.stateManager.getScene();
@@ -1145,7 +1187,9 @@ export class RackMcpToolHandlers {
     // Instead, compute deterministic byte sizes in memory and return direct HTTPS download URLs.
     if (this.remoteSession !== undefined) {
       const baseUrl = trimTrailingSlashes(this.remoteSession.getPublicBaseUrl());
-      const sid = encodeURIComponent(this.remoteSession.sessionId);
+      const publicSessionToken =
+        this.remoteSession.viewerToken ?? this.remoteSession.sessionId;
+      const sid = encodeURIComponent(publicSessionToken);
       const liveViewerUrl = `${baseUrl}/?session=${sid}`;
       const rackYamlUrl = `${baseUrl}/api/export/rack.yaml?session=${sid}`;
 
@@ -1255,13 +1299,42 @@ export class RackMcpToolHandlers {
     }
 
     const projectPath = this.stateManager.getProjectPath();
+    const allowedRoot =
+      projectPath !== undefined
+        ? path.resolve(path.dirname(projectPath))
+        : path.resolve(process.cwd());
 
     const outDir =
       input.output_dir !== undefined
-        ? path.resolve(input.output_dir)
+        ? path.resolve(allowedRoot, input.output_dir)
         : projectPath !== undefined
-          ? path.dirname(projectPath)
-          : path.resolve(process.cwd(), 'exports');
+          ? allowedRoot
+          : path.resolve(allowedRoot, 'exports');
+
+    if (
+      options?.allowTrustedCliOutDir !== true &&
+      !isPathContainedInRoot(outDir, allowedRoot)
+    ) {
+      const issue: DiagnosticIssue = {
+        code: 'OUT_OF_RACK_BOUNDS',
+        severity: 'ERROR',
+        message: `Rejected output_dir '${input.output_dir ?? outDir}': export directory must reside inside the active project workspace ('${allowedRoot}').`,
+        affected_instances: ['export_deliverables'],
+        remediation_suggestions: [
+          `Omit output_dir to export into '${allowedRoot}', or specify a relative subdirectory within the project workspace such as './exports'.`
+        ]
+      };
+      return this.finalize('export_deliverables', {
+        status: 'INVALID',
+        summary: issue.message,
+        data: {
+          output_dir: outDir,
+          exported_files: [],
+          validation: scene.validation
+        },
+        issues: [issue]
+      });
+    }
 
     fs.mkdirSync(outDir, { recursive: true });
 

@@ -447,6 +447,228 @@ function segmentIntersectsExpandedAabb(
   return true;
 }
 
+interface CompactedSegment {
+  readonly p: Vector3D;
+  readonly q: Vector3D;
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+  readonly minZ: number;
+  readonly maxZ: number;
+}
+
+interface CompactedSpline {
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+  readonly minZ: number;
+  readonly maxZ: number;
+  readonly segments: readonly CompactedSegment[];
+}
+
+const compactedSplineCache = new WeakMap<
+  readonly Vector3D[],
+  CompactedSpline
+>();
+
+function getCompactedSpline(points: readonly Vector3D[]): CompactedSpline {
+  const cached = compactedSplineCache.get(points);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+  let minZ = Number.POSITIVE_INFINITY;
+  let maxZ = Number.NEGATIVE_INFINITY;
+
+  for (const pt of points) {
+    if (pt.x < minX) minX = pt.x;
+    if (pt.x > maxX) maxX = pt.x;
+    if (pt.y < minY) minY = pt.y;
+    if (pt.y > maxY) maxY = pt.y;
+    if (pt.z < minZ) minZ = pt.z;
+    if (pt.z > maxZ) maxZ = pt.z;
+  }
+
+  const segments: CompactedSegment[] = [];
+  const n = points.length;
+  if (n >= 2) {
+    const stride = n <= 128 ? 1 : 2;
+    let segStart = points[0]!;
+    let segEnd = points[Math.min(stride, n - 1)]!;
+
+    for (let i = stride; i < n - 1; i += stride) {
+      const nextPt = points[Math.min(i + stride, n - 1)]!;
+      const ux = segEnd.x - segStart.x;
+      const uy = segEnd.y - segStart.y;
+      const uz = segEnd.z - segStart.z;
+      const vx = nextPt.x - segEnd.x;
+      const vy = nextPt.y - segEnd.y;
+      const vz = nextPt.z - segEnd.z;
+
+      const uLenSq = ux * ux + uy * uy + uz * uz;
+      const vLenSq = vx * vx + vy * vy + vz * vz;
+      const dot = ux * vx + uy * vy + uz * vz;
+      const cx = uy * vz - uz * vy;
+      const cy = uz * vx - ux * vz;
+      const cz = ux * vy - uy * vx;
+      const crossSq = cx * cx + cy * cy + cz * cz;
+
+      if (
+        vLenSq <= 1e-10 ||
+        (dot >= 0 && crossSq <= 1e-7 * uLenSq * vLenSq)
+      ) {
+        segEnd = nextPt;
+      } else {
+        segments.push({
+          p: segStart,
+          q: segEnd,
+          minX: Math.min(segStart.x, segEnd.x),
+          maxX: Math.max(segStart.x, segEnd.x),
+          minY: Math.min(segStart.y, segEnd.y),
+          maxY: Math.max(segStart.y, segEnd.y),
+          minZ: Math.min(segStart.z, segEnd.z),
+          maxZ: Math.max(segStart.z, segEnd.z)
+        });
+        segStart = segEnd;
+        segEnd = nextPt;
+      }
+    }
+
+    segments.push({
+      p: segStart,
+      q: segEnd,
+      minX: Math.min(segStart.x, segEnd.x),
+      maxX: Math.max(segStart.x, segEnd.x),
+      minY: Math.min(segStart.y, segEnd.y),
+      maxY: Math.max(segStart.y, segEnd.y),
+      minZ: Math.min(segStart.z, segEnd.z),
+      maxZ: Math.max(segStart.z, segEnd.z)
+    });
+  }
+
+  const compacted: CompactedSpline = {
+    minX,
+    maxX,
+    minY,
+    maxY,
+    minZ,
+    maxZ,
+    segments
+  };
+  compactedSplineCache.set(points, compacted);
+  return compacted;
+}
+
+interface PrecomputedSolidObstacle {
+  readonly instanceId: string;
+  readonly isPassThroughDevice: boolean;
+  readonly uMin: number;
+  readonly uMax: number;
+  readonly box: BoundingBox3D;
+}
+
+interface PrecomputedPortBootShaft {
+  readonly pos: Vector3D;
+  readonly bootTip: Vector3D;
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+  readonly minZ: number;
+  readonly maxZ: number;
+}
+
+interface GeometryRoutingCache {
+  readonly obstacles: readonly PrecomputedSolidObstacle[];
+  readonly portShafts: readonly PrecomputedPortBootShaft[];
+}
+
+const geometryRoutingCache = new WeakMap<
+  ComputedRackGeometry,
+  GeometryRoutingCache
+>();
+
+function getGeometryRoutingCache(
+  geometry: ComputedRackGeometry
+): GeometryRoutingCache {
+  const cached = geometryRoutingCache.get(geometry);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const obstacles: PrecomputedSolidObstacle[] = [];
+  const portShafts: PrecomputedPortBootShaft[] = [];
+
+  for (const dev of geometry.devices) {
+    const cat = dev.blueprint.category;
+    if (cat !== 'keystone-module') {
+      const isPassThroughDevice =
+        cat === 'brush-panel' ||
+        dev.blueprint.geometry.has_cable_pass_through === true;
+      let box: BoundingBox3D = dev.chassis_box;
+      if (cat === 'modular-carrier') {
+        box = {
+          min: dev.chassis_box.min,
+          max: vec3(
+            dev.chassis_box.max.x,
+            Math.min(dev.chassis_box.max.y, dev.chassis_box.min.y + 4.6),
+            dev.chassis_box.max.z
+          )
+        };
+      } else if (cat === 'shelf') {
+        box = {
+          min: dev.chassis_box.min,
+          max: vec3(
+            dev.chassis_box.max.x,
+            Math.min(dev.chassis_box.max.y, dev.chassis_box.min.y + 13.5),
+            dev.chassis_box.max.z
+          )
+        };
+      }
+
+      obstacles.push({
+        instanceId: dev.instance_id,
+        isPassThroughDevice,
+        uMin: dev.u_range[0],
+        uMax: dev.u_range[1],
+        box
+      });
+    }
+
+    for (const p of dev.ports) {
+      const pos = p.world_position;
+      const shaftLenMm =
+        p.world_face === 'rear' && pos.z < geometry.rail_depth_mm - 15.0
+          ? Math.max(
+              24.0,
+              Math.min(105.0, geometry.rail_depth_mm - 10.0 - pos.z)
+            )
+          : 22.0;
+      const bootTip = vec3Add(pos, vec3Scale(p.world_normal, shaftLenMm));
+      portShafts.push({
+        pos,
+        bootTip,
+        minX: Math.min(pos.x, bootTip.x),
+        maxX: Math.max(pos.x, bootTip.x),
+        minY: Math.min(pos.y, bootTip.y),
+        maxY: Math.max(pos.y, bootTip.y),
+        minZ: Math.min(pos.z, bootTip.z),
+        maxZ: Math.max(pos.z, bootTip.z)
+      });
+    }
+  }
+
+  const built: GeometryRoutingCache = { obstacles, portShafts };
+  geometryRoutingCache.set(geometry, built);
+  return built;
+}
+
 /**
  * Checks whether a candidate 3D cable spline penetrates or grazes any mounted solid
  * device chassis (such as rear-mounted PDUs, front blanking panels, switches, or Mini-PCs),
@@ -471,66 +693,38 @@ function computeMinChassisClearanceMm(
     return 10.0;
   }
 
-  interface SolidObstacle {
-    readonly instanceId: string;
-    readonly box: BoundingBox3D;
-  }
+  const cand = getCompactedSpline(candidateSpline);
+  const { obstacles } = getGeometryRoutingCache(geometry);
 
-  const obstacles: SolidObstacle[] = [];
-  for (const dev of geometry.devices) {
-    const cat = dev.blueprint.category;
-    if (cat === 'keystone-module') {
-      continue;
-    }
+  const activeObstacles: PrecomputedSolidObstacle[] = [];
+  for (const obs of obstacles) {
     if (
       portalU !== null &&
-      portalU >= dev.u_range[0] &&
-      portalU <= dev.u_range[1] &&
-      (cat === 'brush-panel' ||
-        dev.blueprint.geometry.has_cable_pass_through === true)
+      obs.isPassThroughDevice &&
+      portalU >= obs.uMin &&
+      portalU <= obs.uMax
     ) {
       continue;
     }
-
-    if (cat === 'modular-carrier') {
-      // Open L-shaped 3D-printed carrier tray: solid 4.6mm floor shelf
-      obstacles.push({
-        instanceId: dev.instance_id,
-        box: {
-          min: dev.chassis_box.min,
-          max: vec3(
-            dev.chassis_box.max.x,
-            Math.min(dev.chassis_box.max.y, dev.chassis_box.min.y + 4.6),
-            dev.chassis_box.max.z
-          )
-        }
-      });
+    if (
+      cand.maxX + 3.4 < obs.box.min.x ||
+      obs.box.max.x + 3.4 < cand.minX ||
+      cand.maxY + 3.4 < obs.box.min.y ||
+      obs.box.max.y + 3.4 < cand.minY ||
+      cand.maxZ + 3.4 < obs.box.min.z ||
+      obs.box.max.z + 3.4 < cand.minZ
+    ) {
       continue;
     }
+    activeObstacles.push(obs);
+  }
 
-    if (cat === 'shelf') {
-      obstacles.push({
-        instanceId: dev.instance_id,
-        box: {
-          min: dev.chassis_box.min,
-          max: vec3(
-            dev.chassis_box.max.x,
-            Math.min(dev.chassis_box.max.y, dev.chassis_box.min.y + 13.5),
-            dev.chassis_box.max.z
-          )
-        }
-      });
-      continue;
-    }
-
-    obstacles.push({
-      instanceId: dev.instance_id,
-      box: dev.chassis_box
-    });
+  if (activeObstacles.length === 0) {
+    return 10.0;
   }
 
   let bestScore = 10.0;
-  const stride = 2;
+  const stride = candidateSpline.length <= 128 ? 1 : 2;
 
   for (let i = 0; i < candidateSpline.length - 1; i += stride) {
     const a = candidateSpline[i]!;
@@ -544,7 +738,7 @@ function computeMinChassisClearanceMm(
     const nearP1 = vec3Distance(mid, p1) <= 15.5;
     const nearP2 = vec3Distance(mid, p2) <= 15.5;
 
-    for (const obs of obstacles) {
+    for (const obs of activeObstacles) {
       if (
         (obs.instanceId === fromDevId && nearP1) ||
         (obs.instanceId === toDevId && nearP2)
@@ -635,69 +829,55 @@ export function computeMinSplineClearanceMm(
     return Number.POSITIVE_INFINITY;
   }
 
-  let cMinX = Number.POSITIVE_INFINITY;
-  let cMaxX = Number.NEGATIVE_INFINITY;
-  let cMinY = Number.POSITIVE_INFINITY;
-  let cMaxY = Number.NEGATIVE_INFINITY;
-  let cMinZ = Number.POSITIVE_INFINITY;
-  let cMaxZ = Number.NEGATIVE_INFINITY;
-
-  for (const pt of candidateSpline) {
-    if (pt.x < cMinX) cMinX = pt.x;
-    if (pt.x > cMaxX) cMaxX = pt.x;
-    if (pt.y < cMinY) cMinY = pt.y;
-    if (pt.y > cMaxY) cMaxY = pt.y;
-    if (pt.z < cMinZ) cMinZ = pt.z;
-    if (pt.z > cMaxZ) cMaxZ = pt.z;
-  }
-
+  const cand = getCompactedSpline(candidateSpline);
+  const earlyExitLimit = earlyExitThresholdMm * 0.45;
   let minClearance = Number.POSITIVE_INFINITY;
-  const stride = 2;
 
   for (const otherRoute of existingRoutes) {
     const otherPts = otherRoute.spline_points;
     if (otherPts.length < 2) continue;
 
-    let oMinX = Number.POSITIVE_INFINITY;
-    let oMaxX = Number.NEGATIVE_INFINITY;
-    let oMinY = Number.POSITIVE_INFINITY;
-    let oMaxY = Number.NEGATIVE_INFINITY;
-    let oMinZ = Number.POSITIVE_INFINITY;
-    let oMaxZ = Number.NEGATIVE_INFINITY;
-
-    for (const pt of otherPts) {
-      if (pt.x < oMinX) oMinX = pt.x;
-      if (pt.x > oMaxX) oMaxX = pt.x;
-      if (pt.y < oMinY) oMinY = pt.y;
-      if (pt.y > oMaxY) oMaxY = pt.y;
-      if (pt.z < oMinZ) oMinZ = pt.z;
-      if (pt.z > oMaxZ) oMaxZ = pt.z;
-    }
+    const other = getCompactedSpline(otherPts);
 
     if (
-      cMaxX + minClearance < oMinX ||
-      oMaxX + minClearance < cMinX ||
-      cMaxY + minClearance < oMinY ||
-      oMaxY + minClearance < cMinY ||
-      cMaxZ + minClearance < oMinZ ||
-      oMaxZ + minClearance < cMinZ
+      cand.maxX + minClearance < other.minX ||
+      other.maxX + minClearance < cand.minX ||
+      cand.maxY + minClearance < other.minY ||
+      other.maxY + minClearance < cand.minY ||
+      cand.maxZ + minClearance < other.minZ ||
+      other.maxZ + minClearance < cand.minZ
     ) {
       continue;
     }
 
-    for (let i = 0; i < candidateSpline.length - 1; i += stride) {
-      const p1 = candidateSpline[i]!;
-      const q1 =
-        candidateSpline[Math.min(i + stride, candidateSpline.length - 1)]!;
+    for (const s1 of cand.segments) {
+      if (
+        s1.maxX + minClearance < other.minX ||
+        other.maxX + minClearance < s1.minX ||
+        s1.maxY + minClearance < other.minY ||
+        other.maxY + minClearance < s1.minY ||
+        s1.maxZ + minClearance < other.minZ ||
+        other.maxZ + minClearance < s1.minZ
+      ) {
+        continue;
+      }
 
-      for (let j = 0; j < otherPts.length - 1; j += stride) {
-        const p2 = otherPts[j]!;
-        const q2 = otherPts[Math.min(j + stride, otherPts.length - 1)]!;
+      for (const s2 of other.segments) {
+        if (
+          s1.maxX + minClearance < s2.minX ||
+          s2.maxX + minClearance < s1.minX ||
+          s1.maxY + minClearance < s2.minY ||
+          s2.maxY + minClearance < s1.minY ||
+          s1.maxZ + minClearance < s2.minZ ||
+          s2.maxZ + minClearance < s1.minZ
+        ) {
+          continue;
+        }
 
-        const d = segmentToSegmentDistance3D(p1, q1, p2, q2);
+        const d = segmentToSegmentDistance3D(s1.p, s1.q, s2.p, s2.q);
         if (d < minClearance) {
           minClearance = d;
-          if (minClearance < earlyExitThresholdMm * 0.45) {
+          if (minClearance < earlyExitLimit) {
             return minClearance;
           }
         }
@@ -719,33 +899,55 @@ function computeMinPortBootClearanceMm(
   ignoreP1: Vector3D,
   ignoreP2: Vector3D
 ): number {
-  let minClearance = Number.POSITIVE_INFINITY;
-  const stride = 2;
+  if (candidateSpline.length < 2) {
+    return Number.POSITIVE_INFINITY;
+  }
 
-  for (const dev of geometry.devices) {
-    for (const p of dev.ports) {
-      const pos = p.world_position;
+  const cand = getCompactedSpline(candidateSpline);
+  const { portShafts } = getGeometryRoutingCache(geometry);
+  let minClearance = Number.POSITIVE_INFINITY;
+
+  for (const shaft of portShafts) {
+    if (
+      shaft.maxX + minClearance < cand.minX ||
+      cand.maxX + minClearance < shaft.minX ||
+      shaft.maxY + minClearance < cand.minY ||
+      cand.maxY + minClearance < shaft.minY ||
+      shaft.maxZ + minClearance < cand.minZ ||
+      cand.maxZ + minClearance < shaft.minZ
+    ) {
+      continue;
+    }
+
+    if (
+      vec3Distance(shaft.pos, ignoreP1) < 1.0 ||
+      vec3Distance(shaft.pos, ignoreP2) < 1.0
+    ) {
+      continue;
+    }
+
+    for (const seg of cand.segments) {
       if (
-        vec3Distance(pos, ignoreP1) < 1.0 ||
-        vec3Distance(pos, ignoreP2) < 1.0
+        seg.maxX + minClearance < shaft.minX ||
+        shaft.maxX + minClearance < seg.minX ||
+        seg.maxY + minClearance < shaft.minY ||
+        shaft.maxY + minClearance < seg.minY ||
+        seg.maxZ + minClearance < shaft.minZ ||
+        shaft.maxZ + minClearance < seg.minZ
       ) {
         continue;
       }
-      const shaftLenMm =
-        p.world_face === 'rear' && pos.z < geometry.rail_depth_mm - 15.0
-          ? Math.max(24.0, Math.min(105.0, geometry.rail_depth_mm - 10.0 - pos.z))
-          : 22.0;
-      const bootTip = vec3Add(pos, vec3Scale(p.world_normal, shaftLenMm));
-      for (let i = 0; i < candidateSpline.length - 1; i += stride) {
-        const a = candidateSpline[i]!;
-        const b =
-          candidateSpline[Math.min(i + stride, candidateSpline.length - 1)]!;
-        const d = segmentToSegmentDistance3D(a, b, pos, bootTip);
-        if (d < minClearance) {
-          minClearance = d;
-          if (minClearance < 3.5) {
-            return minClearance;
-          }
+
+      const d = segmentToSegmentDistance3D(
+        seg.p,
+        seg.q,
+        shaft.pos,
+        shaft.bootTip
+      );
+      if (d < minClearance) {
+        minClearance = d;
+        if (minClearance < 3.5) {
+          return minClearance;
         }
       }
     }
@@ -1312,10 +1514,13 @@ export function routeSingleCable(
     };
 
     let bestWaypoints = buildCaseAWaypoints(0);
-    let bestSpline = evaluateCentripetalCatmullRomSpline(bestWaypoints, 32);
-    let bestClearance = computeMinSplineClearanceMm(bestSpline, existingRoutes);
+    let bestCandSpline = evaluateCentripetalCatmullRomSpline(bestWaypoints, 8);
+    let bestClearance = computeMinSplineClearanceMm(
+      bestCandSpline,
+      existingRoutes
+    );
     let bestChassisClearance = computeMinChassisClearanceMm(
-      bestSpline,
+      bestCandSpline,
       geometry,
       fromDev.instance_id,
       toDev.instance_id,
@@ -1329,11 +1534,7 @@ export function routeSingleCable(
         const candWaypoints = buildCaseAWaypoints(attempt);
         const candSpline = evaluateCentripetalCatmullRomSpline(
           candWaypoints,
-          32
-        );
-        const clearance = computeMinSplineClearanceMm(
-          candSpline,
-          existingRoutes
+          8
         );
         const chassisClearance = computeMinChassisClearanceMm(
           candSpline,
@@ -1344,6 +1545,13 @@ export function routeSingleCable(
           p2,
           null
         );
+        if (chassisClearance < bestChassisClearance) {
+          continue;
+        }
+        const clearance = computeMinSplineClearanceMm(
+          candSpline,
+          existingRoutes
+        );
         if (
           chassisClearance > bestChassisClearance ||
           (chassisClearance >= bestChassisClearance &&
@@ -1352,7 +1560,6 @@ export function routeSingleCable(
           bestChassisClearance = chassisClearance;
           bestClearance = clearance;
           bestWaypoints = candWaypoints;
-          bestSpline = candSpline;
         }
         if (bestClearance >= 6.2 && bestChassisClearance >= 9.0) {
           break;
@@ -1360,6 +1567,7 @@ export function routeSingleCable(
       }
     }
 
+    const bestSpline = evaluateCentripetalCatmullRomSpline(bestWaypoints, 32);
     const arcLength = computeSplineArcLengthMm(bestSpline);
     const { requiredLengthMm, recommendedCommercialMm } =
       computeCommercialCableLength(arcLength);
@@ -1893,16 +2101,19 @@ export function routeSingleCable(
 
     let chosenAttempt = 0;
     let bestWaypoints = buildCaseBWaypoints(0);
-    let bestSpline = evaluateCentripetalCatmullRomSpline(bestWaypoints, 32);
-    let bestClearance = computeMinSplineClearanceMm(bestSpline, existingRoutes);
+    let bestCandSpline = evaluateCentripetalCatmullRomSpline(bestWaypoints, 8);
+    let bestClearance = computeMinSplineClearanceMm(
+      bestCandSpline,
+      existingRoutes
+    );
     let bestPortBootClearance = computeMinPortBootClearanceMm(
-      bestSpline,
+      bestCandSpline,
       geometry,
       p1,
       p2
     );
     let bestChassisClearance = computeMinChassisClearanceMm(
-      bestSpline,
+      bestCandSpline,
       geometry,
       fromDev.instance_id,
       toDev.instance_id,
@@ -1920,7 +2131,7 @@ export function routeSingleCable(
         const candWaypoints = buildCaseBWaypoints(attempt);
         const candSpline = evaluateCentripetalCatmullRomSpline(
           candWaypoints,
-          32
+          8
         );
         const chassisClearance = computeMinChassisClearanceMm(
           candSpline,
@@ -1931,6 +2142,9 @@ export function routeSingleCable(
           p2,
           null
         );
+        if (chassisClearance < bestChassisClearance) {
+          continue;
+        }
         const clearance = computeMinSplineClearanceMm(
           candSpline,
           existingRoutes
@@ -1970,7 +2184,6 @@ export function routeSingleCable(
           bestPortBootClearance = portBootClearance;
           chosenAttempt = attempt;
           bestWaypoints = candWaypoints;
-          bestSpline = candSpline;
         }
         if (
           bestChassisClearance >= 9.0 &&
@@ -1987,6 +2200,7 @@ export function routeSingleCable(
       basePlaneSlot + chosenAttempt + 1
     );
 
+    const bestSpline = evaluateCentripetalCatmullRomSpline(bestWaypoints, 32);
     const arcLength = computeSplineArcLengthMm(bestSpline);
     const { requiredLengthMm, recommendedCommercialMm } =
       computeCommercialCableLength(arcLength);
@@ -2207,16 +2421,19 @@ export function routeSingleCable(
 
   let chosenAttempt = 0;
   let bestWaypoints = buildCaseCWaypoints(0);
-  let bestSpline = evaluateCentripetalCatmullRomSpline(bestWaypoints, 32);
-  let bestClearance = computeMinSplineClearanceMm(bestSpline, existingRoutes);
+  let bestCandSpline = evaluateCentripetalCatmullRomSpline(bestWaypoints, 8);
+  let bestClearance = computeMinSplineClearanceMm(
+    bestCandSpline,
+    existingRoutes
+  );
   let bestPortBootClearance = computeMinPortBootClearanceMm(
-    bestSpline,
+    bestCandSpline,
     geometry,
     p1,
     p2
   );
   let bestChassisClearance = computeMinChassisClearanceMm(
-    bestSpline,
+    bestCandSpline,
     geometry,
     fromDev.instance_id,
     toDev.instance_id,
@@ -2232,7 +2449,7 @@ export function routeSingleCable(
   ) {
     for (let attempt = 1; attempt < 28; attempt++) {
       const candWaypoints = buildCaseCWaypoints(attempt);
-      const candSpline = evaluateCentripetalCatmullRomSpline(candWaypoints, 32);
+      const candSpline = evaluateCentripetalCatmullRomSpline(candWaypoints, 8);
       const chassisClearance = computeMinChassisClearanceMm(
         candSpline,
         geometry,
@@ -2242,6 +2459,9 @@ export function routeSingleCable(
         p2,
         chosenPortalU
       );
+      if (chassisClearance < bestChassisClearance) {
+        continue;
+      }
       const clearance = computeMinSplineClearanceMm(
         candSpline,
         existingRoutes
@@ -2281,7 +2501,6 @@ export function routeSingleCable(
         bestPortBootClearance = portBootClearance;
         chosenAttempt = attempt;
         bestWaypoints = candWaypoints;
-        bestSpline = candSpline;
       }
       if (
         bestChassisClearance >= 9.0 &&
@@ -2297,6 +2516,7 @@ export function routeSingleCable(
   ductOccupancyCounters.set('PLANE:REAR', rearPlaneBase + chosenAttempt + 1);
   ductOccupancyCounters.set(portalCounterKey, portalBase + chosenAttempt + 1);
 
+  const bestSpline = evaluateCentripetalCatmullRomSpline(bestWaypoints, 32);
   const arcLength = computeSplineArcLengthMm(bestSpline);
   const { requiredLengthMm, recommendedCommercialMm } =
     computeCommercialCableLength(arcLength);

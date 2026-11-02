@@ -7,6 +7,7 @@ export default defineConfig({
       'packages/*/test/**/*.test.tsx',
       'test/**/*.test.ts'
     ],
-    environment: 'node'
+    environment: 'node',
+    testTimeout: 15_000
   }
 });

@@ -156,8 +156,18 @@ function discoverActiveSidecarProjectPath(
               typeof parsed['projectPath'] === 'string' &&
               parsed['projectPath'].length > 0
             ) {
-              resolve(parsed['projectPath']);
-              return;
+              const candidate = path.resolve(parsed['projectPath']);
+              const cwdRoot = path.resolve(process.cwd());
+              const isYaml =
+                candidate.endsWith('.yaml') || candidate.endsWith('.yml');
+              if (
+                isYaml &&
+                (candidate === cwdRoot ||
+                  candidate.startsWith(cwdRoot + path.sep))
+              ) {
+                resolve(candidate);
+                return;
+              }
             }
           } catch {
             // Ignore parse errors
@@ -215,17 +225,20 @@ export async function runCli(
         ? path.resolve(parsed.outDir)
         : path.dirname(targetPath);
 
-    const envelope = handlers.exportDeliverables({
-      formats: [
-        'elevation-svg',
-        'wiring-svg',
-        'bom-md',
-        'scene-glb',
-        'carrier-scad',
-        'carrier-stl'
-      ],
-      output_dir: outDir
-    });
+    const envelope = handlers.exportDeliverables(
+      {
+        formats: [
+          'elevation-svg',
+          'wiring-svg',
+          'bom-md',
+          'scene-glb',
+          'carrier-scad',
+          'carrier-stl'
+        ],
+        output_dir: outDir
+      },
+      { allowTrustedCliOutDir: true }
+    );
 
     const lines = [
       envelope.summary,

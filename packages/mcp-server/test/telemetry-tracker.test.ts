@@ -41,9 +41,11 @@ describe('@rack-mcp/mcp-server Telemetry, AI-Client Classification & Protected P
     const twoDaysAgo = baseNow - 2 * 86_400_000;
     const fifteenDaysAgo = baseNow - 15 * 86_400_000;
 
+    const customSaltHex = 'a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90';
     const tracker = new RackTelemetryTracker({
       mode: 'remote-mcp',
-      telemetryFilePath: checkpointFile
+      telemetryFilePath: checkpointFile,
+      saltHex: customSaltHex
     });
 
     // Same active MCP user across 3 different days must count as 1 unique user in 7d & 30d
@@ -104,16 +106,19 @@ describe('@rack-mcp/mcp-server Telemetry, AI-Client Classification & Protected P
 
     tracker.close();
 
-    // Ensure raw visitor IPs NEVER appear anywhere in the persisted file
+    // Ensure raw visitor IPs and the secret HMAC salt key NEVER appear anywhere in the persisted file
     const rawSaved = fs.readFileSync(checkpointFile, 'utf8');
     expect(rawSaved).not.toContain('203.0.113.42');
     expect(rawSaved).not.toContain('198.51.100.77');
     expect(rawSaved).not.toContain('192.0.2.199');
+    expect(rawSaved).not.toContain('saltHex');
+    expect(rawSaved).not.toContain(customSaltHex);
 
     // Reload into a fresh tracker instance (simulating container update or nightly 03:00 reboot)
     const reloaded = new RackTelemetryTracker({
       mode: 'remote-mcp',
-      telemetryFilePath: checkpointFile
+      telemetryFilePath: checkpointFile,
+      saltHex: customSaltHex
     });
     const summary = reloaded.getSummary(
       { activeMcpSessions: 2, activeWebSocketClients: 1 },
@@ -146,6 +151,8 @@ describe('@rack-mcp/mcp-server Telemetry, AI-Client Classification & Protected P
     expect(classifyMcpClientFamily('cursor-vscode', '')).toBe('cursor');
     expect(classifyMcpClientFamily('Google Antigravity', '')).toBe('antigravity');
     expect(classifyMcpClientFamily('Glama MCP Scanner', '')).toBe('registry-probe');
+    expect(classifyMcpClientFamily('m8ven-trust-scanner', '')).toBe('registry-probe');
+    expect(classifyMcpClientFamily(undefined, 'M8ven-Probe/1.0 (+https://m8ven.ai)')).toBe('registry-probe');
     // Automated MCP directory crawlers & liveness monitors observed in production access logs
     expect(
       classifyMcpClientFamily(undefined, 'mcpbeat/0.1 (+https://mcpbeat.com/bot/; liveness check)')

@@ -759,4 +759,64 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     expect(wiringSvg).toContain('data-schematic-cable="pwr-ups-to-pdu"');
     expect(wiringSvg).not.toContain('stroke="#18181B"');
   });
+
+  it('sanitizes OpenSCAD comment newline injections and escapes Markdown BOM table pipes and HTML tags', () => {
+    const baseCarrier = defaultCatalogRegistry.getBlueprintBySlug(
+      '3dprint-10inch-ucg-ultra-plus-3keystone',
+    )!;
+    const injectedCarrier = {
+      ...baseCarrier,
+      manufacturer: 'EvilVendor\ninclude </etc/passwd>',
+      model: 'EvilModel\r\nuse <malicious.scad>',
+      slots: baseCarrier.slots.map((s, idx) =>
+        idx === 0
+          ? {
+              ...s,
+              slot_id: 'slot-1\nsystem("id");',
+              accepted_slot_type: 'keystone\r\necho("pwn");',
+            }
+          : s,
+      ),
+    };
+
+    const scadCode = generateCarrierOpenScad(injectedCarrier, '10inch');
+    expect(scadCode).not.toContain('\ninclude </etc/passwd>');
+    expect(scadCode).not.toContain('\nuse <malicious.scad>');
+    expect(scadCode).not.toContain('\nsystem("id");');
+    expect(scadCode).not.toContain('\necho("pwn");');
+
+    const baseProject = create10InchHomelabProjectInput();
+    const evilProject = {
+      ...baseProject,
+      project_name: 'Lab <script>alert(1)</script> | Pipe',
+      mounted_devices: (baseProject.mounted_devices ?? []).map((d, idx) =>
+        idx === 0
+          ? {
+              ...d,
+              hostname: 'node-01 <img src=x onerror=alert(1)>',
+            }
+          : d,
+      ),
+      cables: (baseProject.cables ?? []).map((c, idx) =>
+        idx === 0
+          ? {
+              ...c,
+              label: 'uplink-01 | <img src=x onerror=alert(1)>',
+            }
+          : c,
+      ),
+    };
+    const scene = evaluateRackScene(
+      evilProject,
+      defaultCatalogRegistry.toRecord(),
+    );
+    const bomMd = generateBomMarkdown(
+      scene,
+      defaultCatalogRegistry.toRecord(),
+    );
+    expect(bomMd).not.toContain('<script>');
+    expect(bomMd).not.toContain('<img');
+    expect(bomMd).toContain('&lt;script&gt;');
+    expect(bomMd).toContain('uplink-01 \\| &lt;img');
+  });
 });

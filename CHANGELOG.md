@@ -5,6 +5,29 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.7] - 2026-11-03
+
+### Security & Performance — Dual Security Audit Remediation, 3D Cable Router Acceleration & Viewer Token Isolation (🇬🇧 English)
+- **Workspace-Confined `export_deliverables` & Local Sidecar DNS-Rebinding Guard (`@rack-mcp/mcp-server`, `@rack-mcp/cli`):**
+  - Confined MCP `export_deliverables` `output_dir` resolution to the active project workspace directory (including `fs.realpathSync` ancestor symlink checks) so prompt-injected `../` or absolute paths cannot write files outside the workspace, while preserving explicit `--out-dir` support for human CLI invocations.
+  - Added `Host` header validation (`isAllowedLocalHostHeader`, returning `421 Misdirected Request`) on local sidecar HTTP and WebSocket upgrade endpoints to block DNS rebinding attacks, added a stderr warning when local sidecar binds to `0.0.0.0`/`::`, and validated `discoverActiveSidecarProjectPath` against `process.cwd()`.
+- **HMAC `viewerToken` Separation, Read-Only Remote Viewer WebSockets & Proxy/IPv6 Hardening (`@rack-mcp/mcp-server`, `@rack-mcp/web-viewer`):**
+  - Separated the public read-only `viewerToken` (`HMAC-SHA256(secret, sessionId).slice(0, 32)`) used in `live_viewer_url` (`/?session=<viewerToken>`) and `/api/export/*` from the secret write-capable `Mcp-Session-Id` header so shared viewer links cannot be used to hijack `POST /mcp`.
+  - Enforced read-only tool execution on remote viewer WebSockets (`/ws?session=<viewerToken>`) unless authenticated with `Mcp-Session-Id`, added per-WebSocket command rate limiting (`60 commands/min`) and `4 MB` `bufferedAmount` backpressure guards, restricted `isTrustedProxyAddress` to loopback, the Docker DMZ bridge (`172.30.250.0/29`), and explicit `RACK_MCP_TRUSTED_PROXIES`, normalized IPv6 rate-limit buckets to `/64` prefixes, rate-limited `/metrics` and `/api/telemetry` prior to Bearer-token verification, and stopped persisting the HMAC secret `saltHex` inside `telemetry.json`.
+- **10x Faster 3D Catmull-Rom Cable Routing & Exporter/Schema Hardening (`@rack-mcp/core-domain`, `@rack-mcp/exporters`):**
+  - Accelerated `routeProjectCables` in `catmull-rom-router.ts` via collinear spline segment compaction, 3D AABB segment/route bounding-box culling, `WeakMap<ComputedRackGeometry, ...>` obstacle caching, 8-subdivision candidate screening, and geometry-preserving route reuse in `evaluateRackScene` (e.g., on `hostname` renames).
+  - Sanitized control/newline characters in OpenSCAD `.scad` comment interpolations, bounded `.stl` grid subdivisions (`MAX_STL_GRID_CELLS = 200,000`), escaped `|` and `<`/`>` in `BOM.md` Markdown tables, added missing `.max(...)` bounds across `hardware-blueprint.ts` and `mcp-tools.ts`, moved `pnpm` workspace overrides to `pnpm-workspace.yaml` for `pnpm v12` compatibility, split Three.js into a dedicated `vendor-three` Vite chunk, and added `.github/dependabot.yml`.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Pfad-Containment für `export_deliverables` & DNS-Rebinding-Schutz (`@rack-mcp/mcp-server`, `@rack-mcp/cli`):**
+  - `export_deliverables` prüft in lokalen MCP-Sessions das Zielverzeichnis `output_dir` (inkl. `fs.realpathSync`-Symlink-Prüfung) strikt gegen das aktive Projektverzeichnis (`OUT_OF_RACK_BOUNDS` bei Ausbruchsversuchen per `../` oder absoluten Pfaden).
+  - Der lokale Sidecar-Server (`127.0.0.1:3100`) validiert den `Host`-Header bei HTTP- und WebSocket-Anfragen (`421 Misdirected Request` gegen DNS-Rebinding).
+- **Getrennte Read-Only `viewerToken`, geschützte Remote-WebSockets & IPv6-`/64`-Rate-Limiting (`@rack-mcp/mcp-server`, `@rack-mcp/web-viewer`):**
+  - Öffentliche `live_viewer_url`- und Export-Links nutzen ab sofort einen abgeleiteten HMAC-SHA256-`viewerToken` statt der geheimen `Mcp-Session-Id`; unauthentifizierte Remote-Viewer-WebSockets sind schreibgeschützt (`readOnly: true`) und auf `60 Befehle/Min.` begrenzt.
+  - Proxy-Header (`X-Forwarded-For`, `X-Real-IP`) werden nur noch von Loopback, der Docker-DMZ (`172.30.250.0/29`) oder `RACK_MCP_TRUSTED_PROXIES` akzeptiert; IPv6-Adressen werden für Rate-Limits auf `/64`-Präfixe zusammengefasst, und der geheime Telemetrie-HMAC-Schlüssel (`saltHex`) wird nicht mehr in `telemetry.json` auf die Festplatte geschrieben.
+- **10x schnelleres 3D-Kabel-Routing & Exporter-/Schema-Härtung (`@rack-mcp/core-domain`, `@rack-mcp/exporters`):**
+  - 3D-AABB-Vorfilterung, kollineare Spline-Kompaktierung, `WeakMap`-Geometrie-Caching und Routen-Wiederverwendung bei reinen Umbenennungen (`evaluateRackScene`) beschleunigen das 3D-Kabel-Routing drastisch; OpenSCAD-Kommentare und Markdown-BOM-Tabellen sind gegen Newline-/Pipe-/HTML-Injection gehärtet.
+
 ## [0.7.6] - 2026-11-02
 
 ### Fixed — Remote MCP Crawler Telemetry, Idle Probe Session Cleanup & Resilient MCP Registry Publishing (🇬🇧 English)

@@ -58,9 +58,10 @@ Damit jeder Besucher auf Reddit/GitHub den 3D-Viewer sofort im Browser ohne Inst
 ### Schritt 3: In die offiziellen MCP-Verzeichnisse eintragen (2 Minuten)
 Sobald das Repo öffentlich ist, trage die GitHub-URL hier ein (die Konfigurationsdateien `smithery.yaml` und `glama.json` liegen bereits im Root):
 1. **Glama MCP Directory:** [https://glama.ai/mcp/servers](https://glama.ai/mcp/servers) $\rightarrow$ *Submit Server*
-2. **Smithery.ai:** [https://smithery.ai/](https://smithery.ai/) $\rightarrow$ *Publish MCP Server*
-3. **PulseMCP / mcp.so:** [https://mcp.so/](https://mcp.so/) $\rightarrow$ *Submit*
-4. **Awesome-MCP-Servers (PR):** Pull Request in `punkpeye/awesome-mcp-servers` unter *Developer Tools / Hardware & CAD*.
+2. **M8ven Trust Index:** [https://m8ven.ai/mcp/italex240-rack-architect-mcp-wbdnt1](https://m8ven.ai/mcp/italex240-rack-architect-mcp-wbdnt1) $\rightarrow$ *Claim Listing / Verified Publisher*
+3. **Smithery.ai:** [https://smithery.ai/](https://smithery.ai/) $\rightarrow$ *Publish MCP Server*
+4. **PulseMCP / mcp.so:** [https://mcp.so/](https://mcp.so/) $\rightarrow$ *Submit*
+5. **Awesome-MCP-Servers (PR):** Pull Request in `punkpeye/awesome-mcp-servers` unter *Developer Tools / Hardware & CAD*.
 
 ---
 

@@ -1,2 +1,12 @@
 packages:
   - "packages/*"
+
+allowBuilds:
+  esbuild: false
+
+overrides:
+  tinypool: "^2.2.0"
+  zod: "^4.6.7"
+  vitest: "^4.1.12"
+  "@vitest/mocker": "^4.1.12"
+

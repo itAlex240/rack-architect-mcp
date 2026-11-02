@@ -6,6 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](./LICENSE)
 [![Glama MCP Score](https://glama.ai/mcp/servers/itAlex240/rack-architect-mcp/badges/score.svg)](https://glama.ai/mcp/servers/itAlex240/rack-architect-mcp)
+[![M8ven Score](https://m8ven.ai/badge/mcp/italex240-rack-architect-mcp-wbdnt1?v=fa98e21da4ee42bb02bb30f0dc61d0a3)](https://m8ven.ai/mcp/italex240-rack-architect-mcp-wbdnt1?s=readme)
 [![Listed on mcpservers.org](https://mcpservers.org/badge.svg)](https://mcpservers.org/servers/italex240/rack-architect-mcp)
 [![Live 3D Demo](https://img.shields.io/badge/Live_3D_Demo-GitHub_Pages-0EA5E9.svg)](https://italex240.github.io/rack-architect-mcp/)
 [![TypeScript 5.9 Strict](https://img.shields.io/badge/TypeScript-5.9_Strict-3178C6.svg)](./tsconfig.base.json)
@@ -14,7 +15,7 @@
 [![EIA-310 Standards](https://img.shields.io/badge/EIA--310-19%22_%7C_10%22_%7C_6%22-06B6D4.svg)](./ARCHITECTURE.md)
 [![3D Print Ready](https://img.shields.io/badge/3D--Print-OpenSCAD_.SCAD_%2B_.STL-F59E0B.svg)](./packages/exporters/src/openscad-carrier.ts)
 [![Remote MCP](https://img.shields.io/badge/Remote_MCP-Streamable_HTTP-8B5CF6.svg)](https://mcp.rackarchitect.dev/mcp)
-[![Tests](https://img.shields.io/badge/Vitest-53%2F53_Passing-10B981.svg)](./vitest.config.ts)
+[![Tests](https://img.shields.io/badge/Vitest-57%2F57_Passing-10B981.svg)](./vitest.config.ts)
 
 [**⚡ Zero-Install Remote MCP (`.../mcp`)**](#-connect-claude-desktop-claude-code-cursor-vs-code-windsurf-or-antigravity) · [**🖥️ Hosted Live 3D Studio**](https://mcp.rackarchitect.dev/) · [**🌐 Static 3D Demo**](https://italex240.github.io/rack-architect-mcp/) · [**Quickstart**](#-30-second-quickstart) · [**Agent Skill**](#-official-open-source-agent-skill-skillsrack-architectskillmd) · [**3D-Print (.SCAD / .STL)**](#-parametric-3d-print-generator-scad--stl) · [**Add Blueprint**](./CONTRIBUTING.md) · [**Handbook (DE)**](./docs/COMPLETE_SYSTEM_HANDBOOK.md)
 
@@ -105,9 +106,9 @@ Open **`http://127.0.0.1:3100/`** in your browser to inspect the 3D Digital Twin
 ### Option C: Self-Hosted Docker (Zero Local Node Dependencies)
 
 ```bash
-# Build & run directly from GitHub in one step:
+# Build & run directly from GitHub in one step (bound to localhost):
 docker build -t rack-architect-mcp https://github.com/itAlex240/rack-architect-mcp.git
-docker run --rm -p 3100:3100 rack-architect-mcp
+docker run --rm -p 127.0.0.1:3100:3100 rack-architect-mcp
 # Open http://127.0.0.1:3100/
 ```
 

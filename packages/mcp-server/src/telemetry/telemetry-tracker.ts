@@ -80,7 +80,6 @@ interface PersistedDailyBucket {
 
 interface PersistedTelemetryState {
   readonly schemaVersion: 1;
-  readonly saltHex: string;
   readonly startedAtIso: string;
   readonly updatedAtIso: string;
   readonly sessionsCreatedByTransport: Record<McpTransportKind, number>;
@@ -226,6 +225,7 @@ export function classifyMcpClientFamily(
 const AUTOMATED_MCP_PROBE_TOKENS = [
   'glama',
   'smithery',
+  'm8ven',
   'mcpservers',
   'uptime-kuma',
   'healthcheck',
@@ -946,12 +946,6 @@ export class RackTelemetryTracker {
       if (parsed.schemaVersion !== 1) {
         return;
       }
-      if (
-        typeof parsed.saltHex === 'string' &&
-        /^[0-9a-fA-F]{32,128}$/.test(parsed.saltHex)
-      ) {
-        this.saltHex = parsed.saltHex.toLowerCase();
-      }
       if (typeof parsed.startedAtIso === 'string') {
         this.startedAtIso = parsed.startedAtIso;
       }
@@ -1126,7 +1120,6 @@ export class RackTelemetryTracker {
 
       const payload: PersistedTelemetryState = {
         schemaVersion: 1,
-        saltHex: this.saltHex,
         startedAtIso: this.startedAtIso,
         updatedAtIso: new Date().toISOString(),
         sessionsCreatedByTransport: {

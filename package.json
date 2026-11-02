@@ -1,6 +1,6 @@
 {
   "name": "rack-architect-mcp",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -49,14 +49,6 @@
     "typescript": "^5.7.2",
     "vitest": "^4.1.12",
     "zod": "^4.6.7"
-  },
-  "pnpm": {
-    "overrides": {
-      "tinypool": "^2.2.0",
-      "zod": "^4.6.7",
-      "vitest": "^4.1.12",
-      "@vitest/mocker": "^4.1.12"
-    }
   },
   "mcpName": "io.github.itAlex240/rack-architect-mcp"
 }

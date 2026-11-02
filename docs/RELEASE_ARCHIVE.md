@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.3`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.4`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.3`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.4`)
 
 ### 📊 `v0.7.x` Series — Privacy-First Remote MCP Observability & Visual Showcase
 
+- **[`v0.7.4`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.4) (2026-10-29) — Synchronized Agent Skill (`SKILL.md`), 5 EIA-310 Archetypes (`10"`/`19"`/`6"`) & Exact Schema/Prompt Alignment:**
+  - Upgraded `skills/rack-architect/SKILL.md` (and `.agents/skills/rack-architect/SKILL.md`), `RACK_MCP_SERVER_INSTRUCTIONS`, and all 5 guided MCP prompts with 100% exact schema parity across all `21` `DiagnosticCodeSchema` codes (`Stages 1–5`), all `20` `CableTypeSchema` assemblies, all `67` catalog blueprints, Hosted Remote MCP `data.live_viewer_url` / zero-disk HTTPS `download_url` workflows, rear-PDU cavity routing + front 3D-print designer cover-panel pairing, `19"` dual vs. triple Mini-PC carrier slot-width guidance, and a new **Archetype 5 (`6-Inch Portable Micro-Homelab`)**.
 - **[`v0.7.3`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.3) (2026-10-29) — Official `https://mcp.rackarchitect.dev` Dual-Stack HTTPS Domain & Multi-Origin CSWSH Compatibility:**
   - Launched the official Dual-Stack IPv4 + IPv6 production domain `https://mcp.rackarchitect.dev` (Let's Encrypt ECDSA TLS, HTTP/2, HSTS, Streamable HTTP `/mcp`, SSE `/sse`, `wss://` Live 3D Session Viewer `/?session=<uuid>`) and added `RACK_MCP_ALLOWED_ORIGINS` multi-origin CSWSH/CORS verification so legacy `sslip.io` links keep working in parallel.
 - **[`v0.7.2`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.2) (2026-10-29) — Collision-Free Rear-Cavity 3D Cable Routing & Overhauled 2D CAD / Multi-Track Wiring Plan:**
@@ -93,10 +95,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.3`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.4`)
 
 ### 📊 Serie `v0.7.x` — DSGVO-konforme Remote-MCP-Telemetrie & Hero-Showcase
 
+- **[`v0.7.4`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.4) (2026-10-29) — Aktualisierter AI-Agent-Skill (`SKILL.md`), 5 Rack-Archetypen (`10"`/`19"`/`6"`) & 100 % Schema-/Prompt-Abgleich:**
+  - `skills/rack-architect/SKILL.md` (und `.agents/skills/rack-architect/SKILL.md`), `RACK_MCP_SERVER_INSTRUCTIONS` und alle 5 geführten MCP-Prompts vollständig auf den aktuellen Engine-Stand gebracht — exakte Übereinstimmung mit allen `21` `DiagnosticCodeSchema`-Codes (`Stufen 1–5`), allen `20` `CableTypeSchema`-Typen und allen `67` Katalog-Blueprints, Best-Practices für Remote-MCP (`data.live_viewer_url`, direkte HTTPS-`download_url`-Exporte & `#rack=v1.`-Share-Links), rückseitige PDU-Innenraumführung + vordere 3D-Druck-Cover-Panels, `19"` Dual- vs. Triple-Mini-PC-Trägerbreiten sowie neuer **Archetyp 5 (`6-Zoll Micro-Homelab`)**.
 - **[`v0.7.3`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.3) (2026-10-29) — Offizielle Dual-Stack-HTTPS-Domain `https://mcp.rackarchitect.dev` & nahtloser Parallelbetrieb:**
   - Gehosteter Remote-MCP-Server und Live-3D-Studio unter `https://mcp.rackarchitect.dev` (Dual-Stack IPv4 + IPv6, Let's Encrypt ECDSA-TLS, HTTP/2, HSTS, `/mcp`, `/sse`, `/?session=<uuid>`) inkl. Multi-Origin-CSWSH/CORS (`RACK_MCP_ALLOWED_ORIGINS`), damit bestehende `sslip.io`-Links weiter funktionieren.
 - **[`v0.7.2`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.2) (2026-10-29) — Kollisionsfreie 3D-Innenraum-Kabelführung & komplett erneuerter 2D-Bau- und Kabelplan:**

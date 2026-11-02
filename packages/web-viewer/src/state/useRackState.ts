@@ -251,6 +251,7 @@ interface SidecarWsIncoming {
     | 'COMMAND_RESULT'
     | 'ERROR';
   readonly projectPath?: string | null | undefined;
+  readonly readOnly?: boolean | undefined;
   readonly scene?: SerializedRackScene | undefined;
   readonly blueprints?: readonly HardwareBlueprint[] | undefined;
   readonly undoAvailable?: number | undefined;
@@ -328,6 +329,7 @@ export function useRackState(): RackViewerState {
   );
 
   const wsRef = useRef<WebSocket | null>(null);
+  const wsReadOnlyRef = useRef<boolean>(false);
 
   const refreshSidecarExports = useCallback(
     async (baseUrl: string, sessionQuery = '') => {
@@ -379,6 +381,7 @@ export function useRackState(): RackViewerState {
       );
       if (
         connectionMode === 'sidecar-live' &&
+        !wsReadOnlyRef.current &&
         wsRef.current &&
         wsRef.current.readyState === WebSocket.OPEN
       ) {
@@ -412,6 +415,7 @@ export function useRackState(): RackViewerState {
   const undo = useCallback(() => {
     if (
       connectionMode === 'sidecar-live' &&
+      !wsReadOnlyRef.current &&
       wsRef.current &&
       wsRef.current.readyState === WebSocket.OPEN
     ) {
@@ -440,6 +444,7 @@ export function useRackState(): RackViewerState {
   const redo = useCallback(() => {
     if (
       connectionMode === 'sidecar-live' &&
+      !wsReadOnlyRef.current &&
       wsRef.current &&
       wsRef.current.readyState === WebSocket.OPEN
     ) {
@@ -603,6 +608,7 @@ export function useRackState(): RackViewerState {
 
       if (
         connectionMode === 'sidecar-live' &&
+        !wsReadOnlyRef.current &&
         wsRef.current &&
         wsRef.current.readyState === WebSocket.OPEN
       ) {
@@ -645,6 +651,7 @@ export function useRackState(): RackViewerState {
     (instanceId: string) => {
       if (
         connectionMode === 'sidecar-live' &&
+        !wsReadOnlyRef.current &&
         wsRef.current &&
         wsRef.current.readyState === WebSocket.OPEN
       ) {
@@ -734,6 +741,7 @@ export function useRackState(): RackViewerState {
 
       if (
         connectionMode === 'sidecar-live' &&
+        !wsReadOnlyRef.current &&
         wsRef.current &&
         wsRef.current.readyState === WebSocket.OPEN
       ) {
@@ -822,6 +830,7 @@ export function useRackState(): RackViewerState {
     (cableId: string) => {
       if (
         connectionMode === 'sidecar-live' &&
+        !wsReadOnlyRef.current &&
         wsRef.current &&
         wsRef.current.readyState === WebSocket.OPEN
       ) {
@@ -865,6 +874,7 @@ export function useRackState(): RackViewerState {
     (params: InitNewRackParams) => {
       if (
         connectionMode === 'sidecar-live' &&
+        !wsReadOnlyRef.current &&
         wsRef.current &&
         wsRef.current.readyState === WebSocket.OPEN
       ) {
@@ -936,6 +946,7 @@ export function useRackState(): RackViewerState {
   const clearMcpToolLog = useCallback(() => {
     if (
       connectionMode === 'sidecar-live' &&
+      !wsReadOnlyRef.current &&
       wsRef.current &&
       wsRef.current.readyState === WebSocket.OPEN
     ) {
@@ -1065,12 +1076,16 @@ export function useRackState(): RackViewerState {
           if (cancelled) return;
           try {
             const msg = JSON.parse(String(ev.data)) as SidecarWsIncoming;
+            if (msg.readOnly !== undefined) {
+              wsReadOnlyRef.current = msg.readOnly;
+            }
             if (
               (msg.type === 'INITIAL_STATE' ||
                 msg.type === 'STATE_UPDATED' ||
                 msg.type === 'RACK_SCENE_UPDATE') &&
               msg.scene
             ) {
+              initialInputRef.current = structuredClone(msg.scene.project);
               setScene(msg.scene);
               if (msg.projectPath !== undefined) {
                 setProjectPath(msg.projectPath ?? null);

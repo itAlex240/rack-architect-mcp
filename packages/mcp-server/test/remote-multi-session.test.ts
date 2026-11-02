@@ -6,6 +6,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { afterEach, describe, expect, it } from 'vitest';
 import { WebSocket } from 'ws';
 import {
+  isTrustedProxyAddress,
   ProjectStateManager,
   startRackSidecarServer,
   type RackSidecarServer,
@@ -98,10 +99,16 @@ describe('@rack-mcp/mcp-server Hosted Multi-Session Remote MCP (Streamable HTTP 
       readonly summary: string;
       readonly data: { readonly live_viewer_url: string };
     };
+    const sessionRecordA = server.remoteRegistry?.getSession(sessionA);
+    expect(sessionRecordA).toBeDefined();
+    expect(sessionRecordA!.viewerToken).toMatch(/^[0-9a-f]{32}$/);
+    expect(sessionRecordA!.viewerToken).not.toBe(sessionA);
+
     expect(initAEnv.status).toBe('VALID');
     expect(initAEnv.data.live_viewer_url).toBe(
-      `https://rack-mcp.example.test/?session=${encodeURIComponent(sessionA!)}`
+      `https://rack-mcp.example.test/?session=${encodeURIComponent(sessionRecordA!.viewerToken)}`
     );
+    expect(initAEnv.data.live_viewer_url).not.toContain(sessionA!);
     expect(initAEnv.summary).toContain(initAEnv.data.live_viewer_url);
 
     await clientB.callTool({
@@ -115,10 +122,10 @@ describe('@rack-mcp/mcp-server Hosted Multi-Session Remote MCP (Streamable HTTP 
       }
     });
 
-    // 5. Connect a live 3D Web-Viewer WebSocket strictly to Session A
+    // 5. Connect a live 3D Web-Viewer WebSocket strictly to Session A using its read-only viewerToken
     const wsMessagesA: SidecarWsMessage[] = [];
     const wsA = new WebSocket(
-      `${server.wsUrl}?session=${encodeURIComponent(sessionA!)}`
+      `${server.wsUrl}?session=${encodeURIComponent(sessionRecordA!.viewerToken)}`
     );
     await new Promise<void>((resolve, reject) => {
       wsA.once('error', reject);
@@ -653,6 +660,150 @@ describe('@rack-mcp/mcp-server Hosted Multi-Session Remote MCP (Streamable HTTP 
       }
     });
     expect(xssBlueprintRes.isError).toBe(true);
+
+    await transport.terminateSession();
+    await client.close();
+  });
+
+  it('enforces read-only viewerToken separation, blocks unauthenticated WS mutations, restricts proxy trust, and buckets IPv6 /64 prefixes', async () => {
+    // 1. Verify strict proxy CIDR trust (rejects arbitrary RFC1918 LAN IPs, trusts loopback & Docker DMZ)
+    expect(isTrustedProxyAddress('127.0.0.1')).toBe(true);
+    expect(isTrustedProxyAddress('::1')).toBe(true);
+    expect(isTrustedProxyAddress('::ffff:172.30.250.2')).toBe(true);
+    expect(isTrustedProxyAddress('10.0.0.42')).toBe(false);
+    expect(isTrustedProxyAddress('192.168.1.10')).toBe(false);
+    expect(isTrustedProxyAddress('172.16.0.5')).toBe(false);
+
+    const baseState = new ProjectStateManager({ watchFile: false });
+    const server = await startRackSidecarServer(baseState, {
+      port: 0,
+      host: '127.0.0.1',
+      remoteMcp: true,
+      publicBaseUrl: 'https://rack-mcp.example.test',
+      rateLimitPerMinute: 6,
+      metricsAuthToken: 'secret-audit-token-123456'
+    });
+    activeServers.push(server);
+
+    const transport = new StreamableHTTPClientTransport(
+      new URL(`${server.url}/mcp`)
+    );
+    const client = new Client({ name: 'viewer-token-audit', version: '1.0.0' });
+    await client.connect(transport);
+    const sessionId = transport.sessionId!;
+    const sessionRecord = server.remoteRegistry!.getSession(sessionId)!;
+    const viewerToken = sessionRecord.viewerToken;
+    expect(viewerToken).not.toBe(sessionId);
+
+    // 2. Attempting to hijack POST /mcp using the public viewerToken as Mcp-Session-Id MUST fail with 404
+    const hijackRes = await fetch(`${server.url}/mcp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json, text/event-stream',
+        'mcp-session-id': viewerToken
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 99,
+        method: 'tools/call',
+        params: {
+          name: 'init_rack',
+          arguments: {
+            project_name: 'Hijacked Rack',
+            standard: '10inch',
+            u_height: 8,
+            rail_depth_mm: 240
+          }
+        }
+      })
+    });
+    expect(hijackRes.status).toBe(404);
+
+    // 3. Connect to /ws?session=<viewerToken> without Mcp-Session-Id: verify readOnly=true and mutating commands are blocked
+    const roWs = new WebSocket(
+      `${server.wsUrl}?session=${encodeURIComponent(viewerToken)}`,
+      { origin: 'https://rack-mcp.example.test' }
+    );
+    const initialMsg = await new Promise<SidecarWsMessage>((resolve, reject) => {
+      roWs.once('error', reject);
+      roWs.on('message', (raw) => {
+        const parsed = JSON.parse(String(raw)) as SidecarWsMessage;
+        if (parsed.type === 'INITIAL_STATE') {
+          resolve(parsed);
+        }
+      });
+    });
+    expect(initialMsg.readOnly).toBe(true);
+
+    // Mutating command over read-only viewer WS must return ERROR and leave project_name unchanged
+    const mutatingReplyPromise = new Promise<SidecarWsMessage>((resolve) => {
+      roWs.on('message', (raw) => {
+        const parsed = JSON.parse(String(raw)) as SidecarWsMessage;
+        if (parsed.type === 'ERROR' || parsed.type === 'COMMAND_RESULT') {
+          resolve(parsed);
+        }
+      });
+    });
+    roWs.send(
+      JSON.stringify({
+        type: 'EXECUTE_TOOL',
+        tool: 'init_rack',
+        args: {
+          project_name: 'WS Unauthorized Wipe',
+          standard: '19inch',
+          u_height: 42,
+          rail_depth_mm: 800
+        }
+      })
+    );
+    const mutatingReply = await mutatingReplyPromise;
+    expect(mutatingReply.type).toBe('ERROR');
+    expect(mutatingReply.message).toContain('Read-only remote viewer session');
+    expect(sessionRecord.stateManager.getProject().project_name).toBe(
+      'Default 10-Inch Homelab Rack'
+    );
+
+    // Read-only command (`validate_rack`) over viewer WS is permitted
+    const roCmdPromise = new Promise<SidecarWsMessage>((resolve) => {
+      roWs.on('message', (raw) => {
+        const parsed = JSON.parse(String(raw)) as SidecarWsMessage;
+        if (parsed.type === 'COMMAND_RESULT' && parsed.tool === 'validate_rack') {
+          resolve(parsed);
+        }
+      });
+    });
+    roWs.send(
+      JSON.stringify({
+        type: 'EXECUTE_TOOL',
+        tool: 'validate_rack',
+        args: {}
+      })
+    );
+    const roCmdReply = await roCmdPromise;
+    expect(roCmdReply.type).toBe('COMMAND_RESULT');
+    roWs.close();
+
+    // 4. IPv6 /64 prefix bucketing: rotating interface IDs within 2001:db8:abcd:0012::/64 shares rate-limit bucket
+    const ipv6Rotations = [
+      '2001:db8:abcd:0012::1',
+      '2001:db8:abcd:12::2',
+      '2001:0db8:abcd:0012:1111:2222:3333:4444',
+      '2001:db8:abcd:12:aaaa:bbbb:cccc:dddd',
+      '2001:db8:abcd:12::5',
+      '2001:db8:abcd:12::6'
+    ];
+    for (const ip of ipv6Rotations) {
+      const res = await fetch(`${server.url}/api/mcp-info`, {
+        headers: { 'X-Real-IP': ip }
+      });
+      expect(res.status).toBe(200);
+    }
+    // 7th request from a new /128 address in the same /64 subnet is rate-limited (429)
+    const ipv6Blocked = await fetch(`${server.url}/api/mcp-info`, {
+      headers: { 'X-Real-IP': '2001:db8:abcd:12:9999:8888:7777:6666' }
+    });
+    expect(ipv6Blocked.status).toBe(429);
 
     await transport.terminateSession();
     await client.close();

@@ -21,5 +21,22 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: true,
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (
+            id.includes('node_modules/three') ||
+            id.includes('node_modules/@react-three')
+          ) {
+            return 'vendor-three';
+          }
+          if (id.includes('node_modules/react')) {
+            return 'vendor-react';
+          }
+          return undefined;
+        },
+      },
+    },
   },
 });

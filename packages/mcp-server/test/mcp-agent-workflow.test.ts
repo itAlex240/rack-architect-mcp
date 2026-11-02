@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import * as http from 'node:http';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -737,6 +738,91 @@ describe('@rack-mcp/mcp-server End-to-End Agentic Workflow & Sidecar Suite', () 
       }
     } finally {
       await mcpInstance.close();
+    }
+  });
+
+  it('blocks DNS rebinding via Host header validation (421) on local sidecar and prevents export_deliverables path/symlink traversal outside project workspace', async () => {
+    const tmpDir = createTempDir();
+    const outsideDir = createTempDir();
+    const projectPath = path.join(tmpDir, 'rack.yaml');
+
+    const stateManager = new ProjectStateManager({
+      projectPath,
+      watchFile: false
+    });
+    const handlers = new RackMcpToolHandlers(stateManager);
+
+    // 1. Direct relative traversal (`../`) outside project directory is blocked
+    const relTraversalRes = handlers.exportDeliverables({
+      output_dir: path.join(tmpDir, '..', path.basename(outsideDir)),
+      formats: ['bom-md']
+    });
+    expect(relTraversalRes.status).toBe('INVALID');
+    expect(relTraversalRes.issues[0]?.code).toBe('OUT_OF_RACK_BOUNDS');
+    expect(fs.existsSync(path.join(outsideDir, 'BOM.md'))).toBe(false);
+
+    // 2. Absolute path outside project directory is blocked for MCP tool calls
+    const absTraversalRes = handlers.exportDeliverables({
+      output_dir: outsideDir,
+      formats: ['elevation-svg']
+    });
+    expect(absTraversalRes.status).toBe('INVALID');
+    expect(fs.existsSync(path.join(outsideDir, 'elevation.svg'))).toBe(false);
+
+    // 3. Symlink inside project workspace pointing to outside directory is blocked via realpath containment
+    const symlinkPath = path.join(tmpDir, 'symlink-escape');
+    fs.symlinkSync(outsideDir, symlinkPath, 'dir');
+    const symlinkEscapeRes = handlers.exportDeliverables({
+      output_dir: path.join(symlinkPath, 'nested'),
+      formats: ['bom-md']
+    });
+    expect(symlinkEscapeRes.status).toBe('INVALID');
+    expect(fs.existsSync(path.join(outsideDir, 'nested', 'BOM.md'))).toBe(false);
+
+    // 4. Local sidecar DNS-rebinding protection (421 Misdirected Request on untrusted Host header)
+    const sidecar = await startRackSidecarServer(stateManager, {
+      port: 0,
+      host: '127.0.0.1'
+    });
+    try {
+      const validRes = await fetch(`${sidecar.url}/api/state`);
+      expect(validRes.status).toBe(200);
+
+      // Simulate DNS rebinding request with Host: evil.rebind.attacker:3100
+      const rebindHttpCode = await new Promise<number>((resolve, reject) => {
+        const req = http.get(
+          `${sidecar.url}/api/state`,
+          {
+            headers: {
+              Host: `evil.rebind.attacker:${sidecar.port}`
+            }
+          },
+          (res) => {
+            res.resume();
+            resolve(res.statusCode ?? 0);
+          }
+        );
+        req.once('error', reject);
+      });
+      expect(rebindHttpCode).toBe(421);
+
+      // Simulate DNS rebinding on WebSocket upgrade
+      const rebindWsStatus = await new Promise<string>((resolve) => {
+        const ws = new WebSocket(sidecar.wsUrl, {
+          headers: {
+            Host: `evil.rebind.attacker:${sidecar.port}`
+          }
+        });
+        ws.once('unexpected-response', (_req, res) => {
+          resolve(`HTTP_${res.statusCode}`);
+        });
+        ws.once('error', (err) => {
+          resolve(err.message);
+        });
+      });
+      expect(rebindWsStatus).toBe('HTTP_421');
+    } finally {
+      await sidecar.close();
     }
   });
 });

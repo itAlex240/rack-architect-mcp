@@ -131,9 +131,13 @@ export const PortCoordinatesSchema = z
   .object({
     x_mm: z
       .number()
+      .min(-2000)
+      .max(2000)
       .describe('Horizontal offset in mm from the bottom-left corner of the face.'),
     y_mm: z
       .number()
+      .min(-3000)
+      .max(3000)
       .describe('Vertical offset in mm from the bottom-left corner of the face.'),
     orientation: PortOrientationSchema.default('upright')
   })
@@ -286,31 +290,41 @@ export type HardwareGeometry = z.infer<typeof HardwareGeometrySchema>;
 export const PowerAndThermalSchema = z
   .object({
     electrical_role: ElectricalRoleSchema,
-    idle_watts: z.number().nonnegative().default(0).describe('Idle power draw in watts.'),
+    idle_watts: z
+      .number()
+      .nonnegative()
+      .max(100000)
+      .default(0)
+      .describe('Idle power draw in watts.'),
     max_system_watts: z
       .number()
       .nonnegative()
+      .max(100000)
       .default(0)
       .describe('Peak own system power consumption in watts (excluding PoE output).'),
     poe_budget_watts: z
       .number()
       .nonnegative()
+      .max(100000)
       .optional()
       .describe('Maximum total PoE output power budget in watts for PSE switches.'),
     ups_capacity_watts: z
       .number()
       .positive()
+      .max(100000)
       .optional()
       .describe('Maximum output load capacity in watts for UPS units.'),
     pdu_capacity_watts: z
       .number()
       .positive()
+      .max(100000)
       .optional()
       .describe('Maximum output load capacity in watts for PDU units.'),
     airflow: AirflowDirectionSchema.default('passive-convection'),
     noise_db_a: z
       .number()
       .nonnegative()
+      .max(200)
       .optional()
       .describe('Acoustic noise emission in dB(A) at 1 meter distance.')
   })
@@ -319,28 +333,29 @@ export type PowerAndThermal = z.infer<typeof PowerAndThermalSchema>;
 
 export const SlotOffsetMmSchema = z
   .object({
-    x: z.number().describe('Local X offset from carrier origin in mm.'),
-    y: z.number().describe('Local Y offset from carrier origin in mm.'),
-    z: z.number().default(0).describe('Local Z offset from carrier origin in mm.')
+    x: z.number().min(-2000).max(2000).describe('Local X offset from carrier origin in mm.'),
+    y: z.number().min(-3000).max(3000).describe('Local Y offset from carrier origin in mm.'),
+    z: z.number().min(-2000).max(2000).default(0).describe('Local Z offset from carrier origin in mm.')
   })
   .describe('Local 3D offset of a sub-module slot relative to its parent carrier.');
 export type SlotOffsetMm = z.infer<typeof SlotOffsetMmSchema>;
 
 export const SlotMaxDimensionsMmSchema = z
   .object({
-    width: z.number().positive().describe('Maximum allowed child width in mm.'),
-    height: z.number().positive().describe('Maximum allowed child height in mm.'),
-    depth: z.number().positive().describe('Maximum allowed child depth in mm.')
+    width: z.number().positive().max(2000).describe('Maximum allowed child width in mm.'),
+    height: z.number().positive().max(3000).describe('Maximum allowed child height in mm.'),
+    depth: z.number().positive().max(2000).describe('Maximum allowed child depth in mm.')
   })
   .describe('Maximum internal bounding dimensions of a carrier slot in mm.');
 export type SlotMaxDimensionsMm = z.infer<typeof SlotMaxDimensionsMmSchema>;
 
 export const SlotDefinitionSchema = z
   .object({
-    slot_id: z.string().min(1).describe('Unique slot identifier within the carrier.'),
+    slot_id: z.string().min(1).max(100).describe('Unique slot identifier within the carrier.'),
     accepted_slot_type: z
       .string()
       .min(1)
+      .max(100)
       .describe('Required child slot_compatibility token (e.g. "mini-pc-1liter").'),
     offset_mm: SlotOffsetMmSchema,
     max_dimensions_mm: SlotMaxDimensionsMmSchema
@@ -373,6 +388,7 @@ export const HardwareVisualsSchema = z
       .describe('True if the front panel includes a status OLED screen.'),
     stl_mesh_path: z
       .string()
+      .max(512)
       .nullable()
       .default(null)
       .describe('Optional relative path to custom 3D mesh (.stl/.glb).')

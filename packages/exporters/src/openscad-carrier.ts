@@ -45,6 +45,13 @@ function isCoverPanelBlueprint(blueprint: HardwareBlueprint): boolean {
   );
 }
 
+function sanitizeScadCommentText(value: string): string {
+  return value.replace(/[\r\n\x00-\x1f\x7f]+/g, ' ').trim();
+}
+
+const MAX_CARRIER_SLOTS = 32;
+const MAX_STL_GRID_CELLS = 200_000;
+
 /**
  * Generates a parametric OpenSCAD (`.scad`) script for a 3D-printable modular rack carrier
  * or patterned slot cover panel (`blank-panel`), complete with EIA-310 mounting slots,
@@ -58,23 +65,40 @@ export function generateCarrierOpenScad(
   const std =
     rackStandard ?? inferRackStandardFromBlueprint(blueprint, '10inch');
   const spec = EIA_310_SPECS[std];
-  const uCount = Math.max(1, Math.round(blueprint.geometry.u_height || 1));
+  const uCount = Math.max(
+    1,
+    Math.min(12, Math.round(blueprint.geometry.u_height || 1))
+  );
   const panelWidthMm = roundCentis(spec.W_panel);
   const apertureWidthMm = roundCentis(spec.W_aperture);
   const holePitchXMm = roundCentis(spec.W_holes);
-  const panelHeightMm = roundCentis(blueprint.geometry.height_mm || uCount * MM_PER_U - 0.75);
+  const panelHeightMm = roundCentis(
+    Math.min(600, blueprint.geometry.height_mm || uCount * MM_PER_U - 0.75)
+  );
   const earWidthMm = roundCentis((panelWidthMm - apertureWidthMm) / 2);
+  const safeManufacturer = sanitizeScadCommentText(blueprint.manufacturer);
+  const safeModel = sanitizeScadCommentText(blueprint.model);
+  const safeSlug = sanitizeScadCommentText(blueprint.slug);
+  const safeMaterial = sanitizeScadCommentText(
+    blueprint.printable_metadata?.material_recommendation ??
+      (isCoverPanelBlueprint(blueprint)
+        ? 'PETG / PLA / ASA (4 Perimeters, 25% Gyroid Infill)'
+        : 'PETG / ABS / ASA (4 Perimeters, 25% Gyroid Infill)')
+  );
+  const boundedSlots = blueprint.slots.slice(0, MAX_CARRIER_SLOTS);
 
   if (isCoverPanelBlueprint(blueprint)) {
     const pattern = resolveCoverPanelPattern(blueprint.slug);
-    const totalDepthMm = roundCentis(Math.max(6.0, blueprint.geometry.depth_mm));
+    const totalDepthMm = roundCentis(
+      Math.min(600, Math.max(6.0, blueprint.geometry.depth_mm))
+    );
     const lines: string[] = [];
     lines.push(`// ============================================================================`);
     lines.push(`// RackArchitect MCP — Parametric 3D-Printable Slot Cover Panel (.scad)`);
-    lines.push(`// Blueprint: ${blueprint.manufacturer} ${blueprint.model} (${blueprint.slug})`);
+    lines.push(`// Blueprint: ${safeManufacturer} ${safeModel} (${safeSlug})`);
     lines.push(`// Standard:  ${std.toUpperCase()} EIA-310 (${panelWidthMm}mm Total Width, ${uCount}U = ${panelHeightMm}mm)`);
     lines.push(`// Pattern:   ${pattern.toUpperCase()} (Closed Front Faceplate — Zero Cable Pass-Through)`);
-    lines.push(`// Material:  ${blueprint.printable_metadata?.material_recommendation ?? 'PETG / PLA / ASA (4 Perimeters, 25% Gyroid Infill)'}`);
+    lines.push(`// Material:  ${safeMaterial}`);
     lines.push(`// ============================================================================`);
     lines.push(``);
     lines.push(`/* [EIA-310 Cover Panel Parameters (mm)] */`);
@@ -185,14 +209,16 @@ export function generateCarrierOpenScad(
     return lines.join('\n');
   }
 
-  const trayDepthMm = roundCentis(Math.max(40, blueprint.geometry.depth_mm));
+  const trayDepthMm = roundCentis(
+    Math.min(600, Math.max(40, blueprint.geometry.depth_mm))
+  );
 
   const lines: string[] = [];
   lines.push(`// ============================================================================`);
   lines.push(`// RackArchitect MCP — Parametric 3D-Printable Rack Carrier (.scad)`);
-  lines.push(`// Blueprint: ${blueprint.manufacturer} ${blueprint.model} (${blueprint.slug})`);
+  lines.push(`// Blueprint: ${safeManufacturer} ${safeModel} (${safeSlug})`);
   lines.push(`// Standard:  ${std.toUpperCase()} EIA-310 (${panelWidthMm}mm Total Width, ${uCount}U = ${panelHeightMm}mm)`);
-  lines.push(`// Material:  ${blueprint.printable_metadata?.material_recommendation ?? 'PETG / ABS / ASA (4 Perimeters, 25% Gyroid Infill)'}`);
+  lines.push(`// Material:  ${safeMaterial}`);
   lines.push(`// ============================================================================`);
   lines.push(``);
   lines.push(`/* [EIA-310 Rack & Chassis Parameters (mm)] */`);
@@ -231,15 +257,17 @@ export function generateCarrierOpenScad(
   lines.push(``);
   lines.push(`module slot_bay_cutouts() {`);
 
-  if (blueprint.slots.length === 0) {
+  if (boundedSlots.length === 0) {
     lines.push(`  // Solid blanking / structural carrier (no front sub-module cutouts)`);
   } else {
-    for (const slot of blueprint.slots) {
+    for (const slot of boundedSlots) {
       const sx = roundCentis(slot.offset_mm.x);
       const sy = roundCentis(slot.offset_mm.y);
       const sw = roundCentis(slot.max_dimensions_mm.width);
       const sh = roundCentis(slot.max_dimensions_mm.height);
-      lines.push(`  // Slot '${slot.slot_id}' (${slot.accepted_slot_type}): ${sw} x ${sh} mm at X=${sx}mm, Y=${sy}mm`);
+      const safeSlotId = sanitizeScadCommentText(slot.slot_id);
+      const safeSlotType = sanitizeScadCommentText(slot.accepted_slot_type);
+      lines.push(`  // Slot '${safeSlotId}' (${safeSlotType}): ${sw} x ${sh} mm at X=${sx}mm, Y=${sy}mm`);
       lines.push(`  translate([${sx} - print_tolerance_mm, ${sy} - print_tolerance_mm, -1.0])`);
       lines.push(`    cube([${sw} + 2 * print_tolerance_mm, ${sh} + 2 * print_tolerance_mm, faceplate_thickness_mm + 2.0]);`);
     }
@@ -247,14 +275,15 @@ export function generateCarrierOpenScad(
   lines.push(`}`);
   lines.push(``);
   lines.push(`module slot_retention_rails() {`);
-  for (const slot of blueprint.slots) {
+  for (const slot of boundedSlots) {
     if (slot.accepted_slot_type === 'standard-keystone') continue;
     const sx = roundCentis(slot.offset_mm.x);
     const sy = roundCentis(slot.offset_mm.y);
     const sw = roundCentis(slot.max_dimensions_mm.width);
     const sd = roundCentis(Math.min(trayDepthMm - 6, slot.max_dimensions_mm.depth));
     const railHeightMm = roundCentis(Math.min(panelHeightMm, Math.max(8.0, sy + 6.0)));
-    lines.push(`  // Guide rails for '${slot.slot_id}' (fused to tray floor Y=0..${railHeightMm}mm)`);
+    const safeSlotId = sanitizeScadCommentText(slot.slot_id);
+    lines.push(`  // Guide rails for '${safeSlotId}' (fused to tray floor Y=0..${railHeightMm}mm)`);
     lines.push(`  translate([${sx} - print_tolerance_mm - 2.2, 0, faceplate_thickness_mm])`);
     lines.push(`    cube([2.2, ${railHeightMm}, ${sd}]);`);
     lines.push(`  translate([${roundCentis(sx + sw)} + print_tolerance_mm, 0, faceplate_thickness_mm])`);
@@ -366,12 +395,15 @@ export function generateCarrierStl(
   const std =
     rackStandard ?? inferRackStandardFromBlueprint(blueprint, '10inch');
   const spec = EIA_310_SPECS[std];
-  const uCount = Math.max(1, Math.round(blueprint.geometry.u_height || 1));
+  const uCount = Math.max(
+    1,
+    Math.min(12, Math.round(blueprint.geometry.u_height || 1))
+  );
   const panelWidthMm = roundCentis(spec.W_panel);
   const apertureWidthMm = roundCentis(spec.W_aperture);
   const holePitchXMm = roundCentis(spec.W_holes);
   const panelHeightMm = roundCentis(
-    blueprint.geometry.height_mm || uCount * MM_PER_U - 0.75
+    Math.min(600, blueprint.geometry.height_mm || uCount * MM_PER_U - 0.75)
   );
   const isCoverPanel = isCoverPanelBlueprint(blueprint);
   const faceplateThicknessMm = 4.2;
@@ -379,9 +411,10 @@ export function generateCarrierStl(
   const sideGussetThicknessMm = 3.5;
   const printToleranceMm = 0.35;
   const trayDepthMm = isCoverPanel
-    ? roundCentis(Math.max(6.0, blueprint.geometry.depth_mm))
-    : roundCentis(Math.max(40, blueprint.geometry.depth_mm));
+    ? roundCentis(Math.min(600, Math.max(6.0, blueprint.geometry.depth_mm)))
+    : roundCentis(Math.min(600, Math.max(40, blueprint.geometry.depth_mm)));
   const earWidthMm = roundCentis((panelWidthMm - apertureWidthMm) / 2);
+  const boundedSlots = blueprint.slots.slice(0, MAX_CARRIER_SLOTS);
 
   // 1. Primary additive CSG volumes
   const faceplateBox = normalizeBox({
@@ -561,7 +594,7 @@ export function generateCarrierStl(
   // 3. Sub-Module Bay Cutouts (with +0.35mm 3D-print clearance) & Retention Guide Rails
   const slotCutoutBoxes: Box3DMm[] = [];
   const railBoxes: Box3DMm[] = [];
-  for (const slot of blueprint.slots) {
+  for (const slot of boundedSlots) {
     const sx0 = roundCentis(
       Math.max(earWidthMm + 1.0, slot.offset_mm.x - printToleranceMm)
     );
@@ -668,33 +701,58 @@ export function generateCarrierStl(
   }
 
   // 5. Build exact rectilinear coordinate grid across all features
-  const allBoxes = [
+  const buildGridFromBoxes = (boxes: readonly Box3DMm[]) => {
+    const gridXs = collectUniqueSortedCoords(
+      boxes
+        .flatMap((b) => [b.x0, b.x1])
+        .filter((x) => x >= 0 && x <= panelWidthMm)
+    );
+    const gridYs = collectUniqueSortedCoords(
+      boxes
+        .flatMap((b) => [b.y0, b.y1])
+        .filter((y) => y >= 0 && y <= panelHeightMm)
+    );
+    const gridZs = collectUniqueSortedCoords(
+      boxes
+        .flatMap((b) => [b.z0, b.z1])
+        .filter((z) => z >= 0 && z <= trayDepthMm)
+    );
+    return { gridXs, gridYs, gridZs };
+  };
+
+  let activeVentCutoutBoxes = ventCutoutBoxes;
+  let activePatternGrooveBoxes = patternGrooveBoxes;
+
+  let { gridXs: xs, gridYs: ys, gridZs: zs } = buildGridFromBoxes([
     faceplateBox,
     trayFloorBox,
     ...(topStiffenerBox ? [topStiffenerBox] : []),
     ...gussetBoxes,
     ...earHoleBoxes,
-    ...patternGrooveBoxes,
+    ...activePatternGrooveBoxes,
     ...slotCutoutBoxes,
     ...railBoxes,
-    ...ventCutoutBoxes
-  ];
+    ...activeVentCutoutBoxes
+  ]);
 
-  const xs = collectUniqueSortedCoords(
-    allBoxes
-      .flatMap((b) => [b.x0, b.x1])
-      .filter((x) => x >= 0 && x <= panelWidthMm)
-  );
-  const ys = collectUniqueSortedCoords(
-    allBoxes
-      .flatMap((b) => [b.y0, b.y1])
-      .filter((y) => y >= 0 && y <= panelHeightMm)
-  );
-  const zs = collectUniqueSortedCoords(
-    allBoxes
-      .flatMap((b) => [b.z0, b.z1])
-      .filter((z) => z >= 0 && z <= trayDepthMm)
-  );
+  if (
+    Math.max(1, xs.length - 1) *
+      Math.max(1, ys.length - 1) *
+      Math.max(1, zs.length - 1) >
+    MAX_STL_GRID_CELLS
+  ) {
+    activeVentCutoutBoxes = [];
+    activePatternGrooveBoxes = [];
+    ({ gridXs: xs, gridYs: ys, gridZs: zs } = buildGridFromBoxes([
+      faceplateBox,
+      trayFloorBox,
+      ...(topStiffenerBox ? [topStiffenerBox] : []),
+      ...gussetBoxes,
+      ...earHoleBoxes,
+      ...slotCutoutBoxes,
+      ...railBoxes
+    ]));
+  }
 
   const nx = xs.length - 1;
   const ny = ys.length - 1;
@@ -727,12 +785,12 @@ export function generateCarrierStl(
     const inFaceplate =
       isPointInsideBox(mx, my, mz, faceplateBox) &&
       !earHoleBoxes.some((b) => isPointInsideBox(mx, my, mz, b)) &&
-      !patternGrooveBoxes.some((b) => isPointInsideBox(mx, my, mz, b)) &&
+      !activePatternGrooveBoxes.some((b) => isPointInsideBox(mx, my, mz, b)) &&
       !slotCutoutBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
 
     const inTrayFloor =
       isPointInsideBox(mx, my, mz, trayFloorBox) &&
-      !ventCutoutBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
+      !activeVentCutoutBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
 
     const inTopStiffener =
       topStiffenerBox !== null && isPointInsideBox(mx, my, mz, topStiffenerBox);

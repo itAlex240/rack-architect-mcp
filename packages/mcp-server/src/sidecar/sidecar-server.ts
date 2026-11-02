@@ -41,6 +41,7 @@ export interface SidecarWsMessage {
   readonly type: 'INITIAL_STATE' | 'STATE_UPDATED' | 'COMMAND_RESULT' | 'ERROR';
   readonly reason?: StateChangeEvent['reason'] | undefined;
   readonly projectPath?: string | null | undefined;
+  readonly readOnly?: boolean | undefined;
   readonly scene?: SerializedRackScene | undefined;
   readonly blueprints?: readonly unknown[] | undefined;
   readonly undoAvailable?: number | undefined;
@@ -122,7 +123,7 @@ const HTML_CONTENT_SECURITY_POLICY = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  "connect-src 'self' ws: wss:",
+  "connect-src 'self'",
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
@@ -133,6 +134,48 @@ const HTML_CONTENT_SECURITY_POLICY = [
 const MAX_WS_PAYLOAD_BYTES = 256 * 1024;
 const MAX_WS_CONNECTIONS_PER_IP = 16;
 const MAX_WS_CLIENTS_PER_SESSION = 8;
+const MAX_WS_COMMANDS_PER_MINUTE = 60;
+const WS_COMMAND_WINDOW_MS = 60_000;
+
+const READ_ONLY_WS_TOOLS = new Set<string>([
+  'search_catalog',
+  'get_device_blueprint',
+  'validate_rack',
+  'export_deliverables'
+]);
+
+function isAllowedLocalHostHeader(
+  rawHostHeader: string | undefined,
+  boundHost: string
+): boolean {
+  if (rawHostHeader === undefined || rawHostHeader.trim().length === 0) {
+    return false;
+  }
+  const trimmed = rawHostHeader.trim().toLowerCase();
+  let hostname = trimmed;
+  if (trimmed.startsWith('[')) {
+    const closeBracket = trimmed.indexOf(']');
+    if (closeBracket < 0) {
+      return false;
+    }
+    hostname = trimmed.slice(0, closeBracket + 1);
+  } else {
+    const colonIdx = trimmed.indexOf(':');
+    if (colonIdx >= 0) {
+      hostname = trimmed.slice(0, colonIdx);
+    }
+  }
+  const normalizedBound = boundHost.toLowerCase();
+  return (
+    hostname === '127.0.0.1' ||
+    hostname === 'localhost' ||
+    hostname === '[::1]' ||
+    hostname === '::1' ||
+    (normalizedBound !== '0.0.0.0' &&
+      normalizedBound !== '::' &&
+      hostname === normalizedBound)
+  );
+}
 
 function tryExtractOrigin(rawUrl: string | undefined): string | undefined {
   if (rawUrl === undefined || rawUrl.trim().length === 0) {
@@ -423,11 +466,22 @@ function executeWsToolCommand(
   ws: WebSocket,
   rawData: unknown,
   targetHandlers: RackMcpToolHandlers,
-  targetStateManager: ProjectStateManager
+  targetStateManager: ProjectStateManager,
+  options?: { readonly readOnly?: boolean | undefined }
 ): void {
   try {
     const parsed = JSON.parse(String(rawData)) as SidecarClientCommand;
     if (parsed.type !== 'COMMAND' && parsed.type !== 'EXECUTE_TOOL') {
+      return;
+    }
+    if (options?.readOnly === true && !READ_ONLY_WS_TOOLS.has(parsed.tool)) {
+      const errReply: SidecarWsMessage = {
+        type: 'ERROR',
+        tool: parsed.tool,
+        message:
+          'Read-only remote viewer session: mutating tool commands require MCP session authentication.'
+      };
+      ws.send(JSON.stringify(errReply));
       return;
     }
     const args = (parsed.args ?? {}) as never;
@@ -574,6 +628,11 @@ export async function startRackSidecarServer(
   const requestedPort = options.port ?? 3100;
   const remoteMcp = options.remoteMcp === true;
   const host = options.host ?? (remoteMcp ? '0.0.0.0' : '127.0.0.1');
+  if (!remoteMcp && (host === '0.0.0.0' || host === '::')) {
+    process.stderr.write(
+      `[rack-mcp] SECURITY WARNING: Local sidecar is bound to all interfaces (${host}) without --remote-mcp isolation.\n`
+    );
+  }
   const localHandlers = new RackMcpToolHandlers(stateManager);
   const staticAssets = loadStaticWebViewerAssets();
   const configuredPublicOrigin = tryExtractOrigin(options.publicBaseUrl);
@@ -713,10 +772,48 @@ export async function startRackSidecarServer(
       boundPort: activeBoundPort
     });
 
+    if (!remoteMcp && !isAllowedLocalHostHeader(req.headers.host, host)) {
+      res.writeHead(421, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(
+        JSON.stringify({
+          error:
+            'Misdirected Request: untrusted Host header rejected by local sidecar DNS-rebinding guard.'
+        })
+      );
+      return;
+    }
+
     if (req.method === 'OPTIONS') {
       res.writeHead(204);
       res.end();
       return;
+    }
+
+    // Apply per-IP rate limiting on dynamic MCP, API, and telemetry endpoints in remote mode
+    if (
+      rateLimiter !== undefined &&
+      (pathname === '/mcp' ||
+        pathname === '/sse' ||
+        pathname === '/messages' ||
+        pathname === '/metrics' ||
+        pathname.startsWith('/api/'))
+    ) {
+      const check = rateLimiter.check(clientIp);
+      if (!check.allowed) {
+        telemetry.recordRateLimited();
+        req.resume();
+        res.writeHead(429, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Retry-After': String(check.retryAfterSeconds)
+        });
+        res.end(
+          JSON.stringify({
+            error: 'Too Many Requests',
+            retry_after_seconds: check.retryAfterSeconds
+          })
+        );
+        return;
+      }
     }
 
     // Internal / Bearer-token-protected Prometheus & JSON Telemetry endpoints
@@ -755,32 +852,6 @@ export async function startRackSidecarServer(
       });
       res.end(JSON.stringify(summary, null, 2));
       return;
-    }
-
-    // Apply per-IP rate limiting on dynamic MCP and API endpoints in remote mode
-    if (
-      rateLimiter !== undefined &&
-      (pathname === '/mcp' ||
-        pathname === '/sse' ||
-        pathname === '/messages' ||
-        pathname.startsWith('/api/'))
-    ) {
-      const check = rateLimiter.check(clientIp);
-      if (!check.allowed) {
-        telemetry.recordRateLimited();
-        req.resume();
-        res.writeHead(429, {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Retry-After': String(check.retryAfterSeconds)
-        });
-        res.end(
-          JSON.stringify({
-            error: 'Too Many Requests',
-            retry_after_seconds: check.retryAfterSeconds
-          })
-        );
-        return;
-      }
     }
 
     if (req.method === 'GET' && pathname === '/health') {
@@ -1172,6 +1243,15 @@ export async function startRackSidecarServer(
       return;
     }
 
+    if (!remoteMcp && !isAllowedLocalHostHeader(req.headers.host, host)) {
+      rejectUpgradeSocket(
+        socket,
+        '421 Misdirected Request',
+        'Forbidden Host header'
+      );
+      return;
+    }
+
     // Cross-Site WebSocket Hijacking (CSWSH) Origin verification whenever browser sends Origin
     const originHeader = req.headers.origin;
     if (
@@ -1266,6 +1346,25 @@ export async function startRackSidecarServer(
   });
 
   wss.on('connection', (ws: WebSocket, req: http.IncomingMessage) => {
+    const commandTimestamps: number[] = [];
+    const checkWsCommandRateLimit = (): boolean => {
+      const now = Date.now();
+      const cutoff = now - WS_COMMAND_WINDOW_MS;
+      while (commandTimestamps.length > 0 && (commandTimestamps[0] ?? 0) <= cutoff) {
+        commandTimestamps.shift();
+      }
+      if (commandTimestamps.length >= MAX_WS_COMMANDS_PER_MINUTE) {
+        const errReply: SidecarWsMessage = {
+          type: 'ERROR',
+          message: `WebSocket command rate limit exceeded (max ${MAX_WS_COMMANDS_PER_MINUTE} commands/min).`
+        };
+        ws.send(JSON.stringify(errReply));
+        return false;
+      }
+      commandTimestamps.push(now);
+      return true;
+    };
+
     if (remoteRegistry !== undefined) {
       const wsUrlObj = new URL(req.url ?? '/ws', 'http://127.0.0.1');
       const sid = wsUrlObj.searchParams.get('session');
@@ -1280,6 +1379,10 @@ export async function startRackSidecarServer(
         return;
       }
 
+      const rawMcpHeader = req.headers['mcp-session-id'];
+      const mcpHeader = Array.isArray(rawMcpHeader) ? rawMcpHeader[0] : rawMcpHeader;
+      const isWriteAuthorized = mcpHeader === session.sessionId;
+
       session.wsClients.add(ws);
       ws.on('close', () => {
         session.wsClients.delete(ws);
@@ -1290,6 +1393,7 @@ export async function startRackSidecarServer(
         type: 'INITIAL_STATE',
         reason: 'init',
         projectPath: `remote-session:${session.sessionId.slice(0, 8)}`,
+        readOnly: !isWriteAuthorized,
         scene: serializeRackScene(session.stateManager.getScene()),
         blueprints: session.stateManager.getCatalog().getAllBlueprints(),
         undoAvailable: history.undoAvailable,
@@ -1299,8 +1403,17 @@ export async function startRackSidecarServer(
       ws.send(JSON.stringify(initialMsg));
 
       ws.on('message', (rawData) => {
+        if (!checkWsCommandRateLimit()) {
+          return;
+        }
         session.lastAccessedAt = Date.now();
-        executeWsToolCommand(ws, rawData, session.handlers, session.stateManager);
+        executeWsToolCommand(
+          ws,
+          rawData,
+          session.handlers,
+          session.stateManager,
+          { readOnly: !isWriteAuthorized }
+        );
       });
       return;
     }
@@ -1310,6 +1423,7 @@ export async function startRackSidecarServer(
       type: 'INITIAL_STATE',
       reason: 'init',
       projectPath: stateManager.getProjectPath() ?? null,
+      readOnly: false,
       scene: serializeRackScene(stateManager.getScene()),
       blueprints: stateManager.getCatalog().getAllBlueprints(),
       undoAvailable: history.undoAvailable,
@@ -1319,7 +1433,12 @@ export async function startRackSidecarServer(
     ws.send(JSON.stringify(initialMsg));
 
     ws.on('message', (rawData) => {
-      executeWsToolCommand(ws, rawData, localHandlers, stateManager);
+      if (!checkWsCommandRateLimit()) {
+        return;
+      }
+      executeWsToolCommand(ws, rawData, localHandlers, stateManager, {
+        readOnly: false
+      });
     });
   });
 

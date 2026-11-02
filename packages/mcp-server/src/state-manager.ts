@@ -278,7 +278,11 @@ export class ProjectStateManager {
     this.redoStack.length = 0;
 
     this.project = structuredClone(validatedNext);
-    this.scene = evaluateRackScene(this.project, this.catalog.toRecord());
+    this.scene = evaluateRackScene(
+      this.project,
+      this.catalog.toRecord(),
+      this.scene
+    );
     this.persistProjectAtomically();
     this.emitChange(reason);
     return this.scene;
@@ -309,7 +313,11 @@ export class ProjectStateManager {
     }
 
     this.project = structuredClone(previous);
-    this.scene = evaluateRackScene(this.project, this.catalog.toRecord());
+    this.scene = evaluateRackScene(
+      this.project,
+      this.catalog.toRecord(),
+      this.scene
+    );
     this.persistProjectAtomically();
     this.emitChange('undo');
 
@@ -346,7 +354,11 @@ export class ProjectStateManager {
     }
 
     this.project = structuredClone(next);
-    this.scene = evaluateRackScene(this.project, this.catalog.toRecord());
+    this.scene = evaluateRackScene(
+      this.project,
+      this.catalog.toRecord(),
+      this.scene
+    );
     this.persistProjectAtomically();
     this.emitChange('redo');
 

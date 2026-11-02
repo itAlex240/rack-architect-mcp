@@ -37,6 +37,18 @@ interface CableBomGroup {
   readonly labels: string[];
 }
 
+function sanitizeMarkdownText(value: string): string {
+  return value
+    .replace(/[\r\n\x00-\x1f\x7f]+/g, ' ')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .trim();
+}
+
+function sanitizeMarkdownCell(value: string): string {
+  return sanitizeMarkdownText(value).replace(/\|/g, '\\|');
+}
+
 /**
  * Generates a structured 5-section Bill of Materials & Assembly Guide in GitHub-Flavored Markdown (`BOM.md`):
  * 1. Project & Validation Summary
@@ -57,7 +69,7 @@ export function generateBomMarkdown(
   // =========================================================================
   // 1. Project & Validation Summary
   // =========================================================================
-  lines.push(`# ${project.project_name} — Bill of Materials & Assembly Guide`);
+  lines.push(`# ${sanitizeMarkdownText(project.project_name)} — Bill of Materials & Assembly Guide`);
   lines.push('');
   lines.push(`## 1. Project & Validation Summary`);
   lines.push('');
@@ -145,14 +157,14 @@ export function generateBomMarkdown(
     const locations = group.instances
       .map((d) =>
         d.mount_target === 'carrier-slot'
-          ? `\`${d.instance_id}\` (U${d.u_position} \`${d.parent_carrier_id}:${d.slot_id}\`)`
-          : `\`${d.instance_id}\` (U${d.u_position} ${d.face})`,
+          ? `\`${sanitizeMarkdownCell(d.instance_id)}\` (U${d.u_position} \`${sanitizeMarkdownCell(String(d.parent_carrier_id))}:${sanitizeMarkdownCell(String(d.slot_id))}\`)`
+          : `\`${sanitizeMarkdownCell(d.instance_id)}\` (U${d.u_position} ${d.face})`,
       )
       .join(', ');
     const totalWatts = roundTenths(qty * group.unitMaxWatts);
     const totalWeight = Math.round(qty * group.unitWeightGrams);
     lines.push(
-      `| \`${group.slug}\` | ${group.manufacturer} | ${group.model} | \`${group.category}\` | ${qty} | ${locations} | ${totalWatts} W | ${totalWeight} g |`,
+      `| \`${sanitizeMarkdownCell(group.slug)}\` | ${sanitizeMarkdownCell(group.manufacturer)} | ${sanitizeMarkdownCell(group.model)} | \`${group.category}\` | ${qty} | ${locations} | ${totalWatts} W | ${totalWeight} g |`,
     );
   }
   lines.push('');
@@ -160,12 +172,12 @@ export function generateBomMarkdown(
   lines.push('');
   for (const dev of geometry.devices) {
     if (dev.blueprint.category === 'keystone-module') continue;
-    const hostPart = dev.hostname ? ` — Hostname: \`${dev.hostname}\`` : '';
+    const hostPart = dev.hostname ? ` — Hostname: \`${sanitizeMarkdownText(dev.hostname)}\`` : '';
     const descPart = dev.blueprint.description
-      ? `: ${dev.blueprint.description}`
+      ? `: ${sanitizeMarkdownText(dev.blueprint.description)}`
       : '';
     lines.push(
-      `- **\`${dev.instance_id}\` (${dev.blueprint.manufacturer} ${dev.blueprint.model}${hostPart})**${descPart}`,
+      `- **\`${sanitizeMarkdownText(dev.instance_id)}\` (${sanitizeMarkdownText(dev.blueprint.manufacturer)} ${sanitizeMarkdownText(dev.blueprint.model)}${hostPart})**${descPart}`,
     );
   }
   lines.push('');
@@ -191,7 +203,7 @@ export function generateBomMarkdown(
       totalFilamentGrams += sumFilament;
       const uList = pg.instances.map((d) => `U${d.u_position}`).join(', ');
       lines.push(
-        `| \`${pg.slug}\` (${uList}) | ${qty} | ${pg.material} | ${sumFilament} g | ${pg.heatSetInserts} | ${pg.fasteners} | ${pg.printablesUrl} |`,
+        `| \`${sanitizeMarkdownCell(pg.slug)}\` (${uList}) | ${qty} | ${sanitizeMarkdownCell(pg.material)} | ${sumFilament} g | ${sanitizeMarkdownCell(pg.heatSetInserts)} | ${sanitizeMarkdownCell(pg.fasteners)} | ${sanitizeMarkdownCell(pg.printablesUrl)} |`,
       );
     }
     lines.push('');
@@ -223,9 +235,9 @@ export function generateBomMarkdown(
 
       const existing = cableGroups.get(key);
       if (existing !== undefined) {
-        existing.cableIds.push(`\`${cable.cable_id}\``);
+        existing.cableIds.push(`\`${sanitizeMarkdownCell(cable.cable_id)}\``);
         if (cable.label !== undefined) {
-          existing.labels.push(cable.label);
+          existing.labels.push(sanitizeMarkdownCell(cable.label));
         }
       } else {
         cableGroups.set(key, {
@@ -234,8 +246,8 @@ export function generateBomMarkdown(
           commercialLengthMm: commMm,
           colorHex: color,
           badge: formatCableTypeBadge(cable.cable_type, commMm),
-          cableIds: [`\`${cable.cable_id}\``],
-          labels: cable.label !== undefined ? [cable.label] : [],
+          cableIds: [`\`${sanitizeMarkdownCell(cable.cable_id)}\``],
+          labels: cable.label !== undefined ? [sanitizeMarkdownCell(cable.label)] : [],
         });
       }
     }
@@ -270,15 +282,15 @@ export function generateBomMarkdown(
   );
   for (const m of sortedMounted) {
     const devGeo = geometry.devices_by_id.get(m.instance_id);
-    const modelName = devGeo?.blueprint.model ?? m.blueprint_slug;
+    const modelName = sanitizeMarkdownText(devGeo?.blueprint.model ?? m.blueprint_slug);
     lines.push(
-      `- [ ] Mount **${modelName}** (\`${m.instance_id}\`) at **U${m.u_position}** (${m.face.toUpperCase()} rails).`,
+      `- [ ] Mount **${modelName}** (\`${sanitizeMarkdownText(m.instance_id)}\`) at **U${m.u_position}** (${m.face.toUpperCase()} rails).`,
     );
     for (const child of m.children) {
       const childGeo = geometry.devices_by_id.get(child.instance_id);
-      const childModel = childGeo?.blueprint.model ?? child.blueprint_slug;
+      const childModel = sanitizeMarkdownText(childGeo?.blueprint.model ?? child.blueprint_slug);
       lines.push(
-        `  - [ ] Insert sub-module **${childModel}** (\`${child.instance_id}\`) into carrier slot \`${m.instance_id}:${child.slot_id}\`.`,
+        `  - [ ] Insert sub-module **${childModel}** (\`${sanitizeMarkdownText(child.instance_id)}\`) into carrier slot \`${sanitizeMarkdownText(m.instance_id)}:${sanitizeMarkdownText(child.slot_id)}\`.`,
       );
     }
   }
@@ -291,9 +303,9 @@ export function generateBomMarkdown(
     const badge = formatCableTypeBadge(cable.cable_type, commMm);
     const fromFace = cable.from.face ? ` (${cable.from.face})` : '';
     const toFace = cable.to.face ? ` (${cable.to.face})` : '';
-    const labelSuffix = cable.label ? ` — _${cable.label}_` : '';
+    const labelSuffix = cable.label ? ` — _${sanitizeMarkdownText(cable.label)}_` : '';
     lines.push(
-      `- [ ] Patch **${badge}** [\`${cable.cable_id}\`, \`${cable.color_hex}\`]: Connect \`${cable.from.instance_id}:${cable.from.port_id}\`${fromFace} $\\rightarrow$ \`${cable.to.instance_id}:${cable.to.port_id}\`${toFace}${labelSuffix}.`,
+      `- [ ] Patch **${badge}** [\`${sanitizeMarkdownText(cable.cable_id)}\`, \`${cable.color_hex}\`]: Connect \`${sanitizeMarkdownText(cable.from.instance_id)}:${sanitizeMarkdownText(cable.from.port_id)}\`${fromFace} $\\rightarrow$ \`${sanitizeMarkdownText(cable.to.instance_id)}:${sanitizeMarkdownText(cable.to.port_id)}\`${toFace}${labelSuffix}.`,
     );
   }
 
@@ -324,14 +336,14 @@ export function generateBomMarkdown(
           : frontPatch.from
         : null;
       const roomText = ext.room_or_zone
-        ? `${ext.label} (${ext.room_or_zone})`
-        : ext.label;
+        ? `${sanitizeMarkdownCell(ext.label)} (${sanitizeMarkdownCell(ext.room_or_zone)})`
+        : sanitizeMarkdownCell(ext.label);
       const poeText =
         ext.poe_draw_watts > 0 ? `PoE ${ext.poe_draw_watts} W` : 'No PoE';
-      const step1 = `Building cable (${ext.entry_position}) $\\rightarrow$ \`${ext.patch_panel_instance_id}:${ext.patch_panel_port_id}\` (REAR)`;
+      const step1 = `Building cable (${ext.entry_position}) $\\rightarrow$ \`${sanitizeMarkdownCell(ext.patch_panel_instance_id)}:${sanitizeMarkdownCell(ext.patch_panel_port_id)}\` (REAR)`;
       const step2 =
         swEnd && frontPatch
-          ? `Patch cable \`${frontPatch.cable_id}\` (\`${frontPatch.color_hex}\`) from \`${ext.patch_panel_instance_id}:${ext.patch_panel_port_id}\` (FRONT) $\\rightarrow$ \`${swEnd.instance_id}:${swEnd.port_id}\``
+          ? `Patch cable \`${sanitizeMarkdownCell(frontPatch.cable_id)}\` (\`${frontPatch.color_hex}\`) from \`${sanitizeMarkdownCell(ext.patch_panel_instance_id)}:${sanitizeMarkdownCell(ext.patch_panel_port_id)}\` (FRONT) $\\rightarrow$ \`${sanitizeMarkdownCell(swEnd.instance_id)}:${sanitizeMarkdownCell(swEnd.port_id)}\``
           : 'Unpatched on front';
       lines.push(
         `| ${idx + 1} | **${roomText}** | \`${ext.category}\` (${poeText}) | ${step1} | ${step2} |`,

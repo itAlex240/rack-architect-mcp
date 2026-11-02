@@ -73,6 +73,81 @@ export function serializeRackScene(scene: ComputedRackScene): SerializedRackScen
   };
 }
 
+function canReuseCableRoutes(
+  prev: RackProject,
+  next: RackProject
+): boolean {
+  if (
+    prev.rack.standard !== next.rack.standard ||
+    prev.rack.u_height !== next.rack.u_height ||
+    prev.rack.rail_depth_mm !== next.rack.rail_depth_mm ||
+    prev.rack.enclosure_type !== next.rack.enclosure_type ||
+    prev.rack.front_door_clearance_mm !== next.rack.front_door_clearance_mm ||
+    prev.rack.rear_clearance_mm !== next.rack.rear_clearance_mm
+  ) {
+    return false;
+  }
+
+  if (
+    prev.mounted_devices.length !== next.mounted_devices.length ||
+    prev.cables.length !== next.cables.length
+  ) {
+    return false;
+  }
+
+  for (let i = 0; i < prev.mounted_devices.length; i++) {
+    const a = prev.mounted_devices[i];
+    const b = next.mounted_devices[i];
+    if (
+      a === undefined ||
+      b === undefined ||
+      a.instance_id !== b.instance_id ||
+      a.blueprint_slug !== b.blueprint_slug ||
+      a.u_position !== b.u_position ||
+      a.face !== b.face ||
+      a.children.length !== b.children.length
+    ) {
+      return false;
+    }
+    for (let j = 0; j < a.children.length; j++) {
+      const ca = a.children[j];
+      const cb = b.children[j];
+      if (
+        ca === undefined ||
+        cb === undefined ||
+        ca.instance_id !== cb.instance_id ||
+        ca.blueprint_slug !== cb.blueprint_slug ||
+        ca.slot_id !== cb.slot_id
+      ) {
+        return false;
+      }
+    }
+  }
+
+  for (let i = 0; i < prev.cables.length; i++) {
+    const a = prev.cables[i];
+    const b = next.cables[i];
+    if (
+      a === undefined ||
+      b === undefined ||
+      a.cable_id !== b.cable_id ||
+      a.cable_type !== b.cable_type ||
+      a.preferred_portal_u !== b.preferred_portal_u ||
+      (a.routing_mode ?? 'shortest-direct') !== (b.routing_mode ?? 'shortest-direct') ||
+      a.from.instance_id !== b.from.instance_id ||
+      a.from.port_id !== b.from.port_id ||
+      a.from.face !== b.from.face ||
+      a.to.instance_id !== b.to.instance_id ||
+      a.to.port_id !== b.to.port_id ||
+      a.to.face !== b.to.face
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 /**
  * Full deterministic evaluation pipeline for a `RackProject`:
  * 1. Validates & parses project schema
@@ -82,12 +157,34 @@ export function serializeRackScene(scene: ComputedRackScene): SerializedRackScen
  */
 export function evaluateRackScene(
   projectInput: RackProject | RackProjectInput,
-  catalog: BlueprintCatalogMap
+  catalog: BlueprintCatalogMap,
+  previousScene?: ComputedRackScene
 ): ComputedRackScene {
   const project = RackProjectSchema.parse(projectInput);
   const geometry = computeRackGeometry(project, catalog);
   const validation = validateRackProject(project, catalog, geometry);
-  const cableRoutes = routeProjectCables(project, catalog, geometry);
+  let cableRoutes: readonly ComputedCableRoute[];
+  if (
+    previousScene !== undefined &&
+    canReuseCableRoutes(previousScene.project, project)
+  ) {
+    const cableMetaById = new Map(
+      project.cables.map((c) => [c.cable_id, c] as const)
+    );
+    cableRoutes = previousScene.cable_routes.map((route) => {
+      const updated = cableMetaById.get(route.cable_id);
+      if (updated === undefined) {
+        return route;
+      }
+      return {
+        ...route,
+        color_hex: updated.color_hex,
+        label: updated.label
+      };
+    });
+  } else {
+    cableRoutes = routeProjectCables(project, catalog, geometry);
+  }
 
   return {
     project,

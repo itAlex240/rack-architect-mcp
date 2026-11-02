@@ -24,6 +24,7 @@ import {
 
 export interface RemoteMcpSession {
   readonly sessionId: string;
+  readonly viewerToken: string;
   readonly ownerIp: string;
   readonly createdAt: number;
   lastAccessedAt: number;
@@ -56,22 +57,71 @@ export interface RemoteSessionRegistryOptions {
   readonly telemetryTracker?: RackTelemetryTracker | undefined;
 }
 
-function isTrustedProxyAddress(remoteAddress: string | undefined): boolean {
+const DEFAULT_TRUSTED_PROXY_PREFIXES = [
+  '172.30.250.',
+  '172.18.',
+  '172.19.'
+] as const;
+
+export function isTrustedProxyAddress(remoteAddress: string | undefined): boolean {
   if (remoteAddress === undefined) {
     return false;
   }
-  const normalized = remoteAddress.replace(/^::ffff:/, '');
-  return (
-    normalized === '127.0.0.1' ||
-    normalized === '::1' ||
-    normalized.startsWith('10.') ||
-    normalized.startsWith('192.168.') ||
-    /^172\.(1[6-9]|2\d|3[0-1])\./.test(normalized)
-  );
+  const normalized = remoteAddress.replace(/^::ffff:/, '').trim();
+  if (normalized === '127.0.0.1' || normalized === '::1') {
+    return true;
+  }
+  for (const prefix of DEFAULT_TRUSTED_PROXY_PREFIXES) {
+    if (normalized.startsWith(prefix)) {
+      return true;
+    }
+  }
+  const customProxies = process.env['RACK_MCP_TRUSTED_PROXIES'];
+  if (customProxies !== undefined && customProxies.length > 0) {
+    for (const rawEntry of customProxies.split(',')) {
+      const entry = rawEntry.trim();
+      if (entry.length === 0) {
+        continue;
+      }
+      if (normalized === entry || (entry.endsWith('.') && normalized.startsWith(entry))) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function normalizeIpv6ToSlash64(ip: string): string {
+  const withoutZone = (ip.split('%')[0] ?? ip).replace(/^\[|\]$/g, '').toLowerCase();
+  if (withoutZone === '::1' || withoutZone === '::') {
+    return withoutZone;
+  }
+  let hextets: string[];
+  if (withoutZone.includes('::')) {
+    const parts = withoutZone.split('::');
+    const left = parts[0] !== undefined && parts[0].length > 0 ? parts[0].split(':') : [];
+    const right = parts[1] !== undefined && parts[1].length > 0 ? parts[1].split(':') : [];
+    const missing = Math.max(0, 8 - (left.length + right.length));
+    hextets = [...left, ...new Array<string>(missing).fill('0'), ...right];
+  } else {
+    hextets = withoutZone.split(':');
+  }
+  if (hextets.length < 4) {
+    return withoutZone.slice(0, 64);
+  }
+  const first4 = hextets.slice(0, 4).map((h) => {
+    const parsed = Number.parseInt(h.length > 0 ? h : '0', 16);
+    return Number.isFinite(parsed) ? parsed.toString(16) : '0';
+  });
+  return `${first4.join(':')}::/64`;
 }
 
 function normalizeIpToken(raw: string): string {
-  return raw.trim().replace(/^::ffff:/, '').slice(0, 64);
+  const stripped = raw.trim().replace(/^::ffff:/, '').slice(0, 64);
+  if (stripped.includes(':')) {
+    return normalizeIpv6ToSlash64(stripped);
+  }
+  return stripped;
 }
 
 export function extractClientIp(req: http.IncomingMessage): string {
@@ -328,8 +378,12 @@ function isValidHostHeader(rawHost: string): boolean {
  * Guarantees strict per-session isolation (zero host filesystem writes, zero cross-user state leakage),
  * per-IP fair-share tenant eviction protection, and real-time WebSocket synchronization to `/?session=<uuid>`.
  */
+const MAX_WS_BUFFERED_AMOUNT_BYTES = 4 * 1024 * 1024;
+
 export class RemoteSessionRegistry {
   private readonly sessions = new Map<string, RemoteMcpSession>();
+  private readonly sessionsByViewerToken = new Map<string, RemoteMcpSession>();
+  private readonly viewerTokenSecret = crypto.randomBytes(32);
   private readonly configuredBaseUrl: string | undefined;
   private inferredBaseUrl = 'http://127.0.0.1:3100';
   private inferredBaseUrlLocked = false;
@@ -410,15 +464,31 @@ export class RemoteSessionRegistry {
     return this.sessions.size;
   }
 
-  public getSession(sessionId: string | null | undefined): RemoteMcpSession | undefined {
-    if (sessionId === undefined || sessionId === null || sessionId.length === 0) {
+  public getSession(
+    sessionIdOrViewerToken: string | null | undefined
+  ): RemoteMcpSession | undefined {
+    if (
+      sessionIdOrViewerToken === undefined ||
+      sessionIdOrViewerToken === null ||
+      sessionIdOrViewerToken.length === 0
+    ) {
       return undefined;
     }
-    const session = this.sessions.get(sessionId);
+    const session =
+      this.sessions.get(sessionIdOrViewerToken) ??
+      this.sessionsByViewerToken.get(sessionIdOrViewerToken);
     if (session !== undefined) {
       session.lastAccessedAt = Date.now();
     }
     return session;
+  }
+
+  private deriveViewerToken(sessionId: string): string {
+    return crypto
+      .createHmac('sha256', this.viewerTokenSecret)
+      .update(sessionId)
+      .digest('hex')
+      .slice(0, 32);
   }
 
   private createSessionRecord(
@@ -429,11 +499,12 @@ export class RemoteSessionRegistry {
       readonly sseTransport?: SSEServerTransport | undefined;
     }
   ): RemoteMcpSession {
+    const viewerToken = this.deriveViewerToken(sessionId);
     const stateManager = new ProjectStateManager({
       ...(this.initialProjectTemplate !== undefined
         ? { initialProject: structuredClone(this.initialProjectTemplate) }
         : {}),
-      maxHistory: 30,
+      maxHistory: 10,
       maxCustomBlueprints: this.maxCustomBlueprintsPerSession,
       watchFile: false
     });
@@ -442,6 +513,7 @@ export class RemoteSessionRegistry {
     const mcpServer = createRackMcpServer(stateManager, {
       remoteSession: {
         sessionId,
+        viewerToken,
         getPublicBaseUrl: () => this.getPublicBaseUrl()
       },
       onToolCall: (event) => {
@@ -475,7 +547,10 @@ export class RemoteSessionRegistry {
       };
       const serialized = JSON.stringify(broadcastMsg);
       for (const client of wsClients) {
-        if (client.readyState === WebSocket.OPEN) {
+        if (
+          client.readyState === WebSocket.OPEN &&
+          client.bufferedAmount < MAX_WS_BUFFERED_AMOUNT_BYTES
+        ) {
           client.send(serialized);
         }
       }
@@ -484,6 +559,7 @@ export class RemoteSessionRegistry {
     const now = Date.now();
     sessionRef = {
       sessionId,
+      viewerToken,
       ownerIp,
       createdAt: now,
       lastAccessedAt: now,
@@ -498,6 +574,7 @@ export class RemoteSessionRegistry {
       wsClients,
       unsubscribeStateChange
     };
+    this.sessionsByViewerToken.set(viewerToken, sessionRef);
     return sessionRef;
   }
 
@@ -610,6 +687,7 @@ export class RemoteSessionRegistry {
       return;
     }
     this.sessions.delete(sessionId);
+    this.sessionsByViewerToken.delete(existing.viewerToken);
     existing.unsubscribeStateChange();
     existing.stateManager.stopWatching();
     for (const ws of existing.wsClients) {

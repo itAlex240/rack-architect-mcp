@@ -51,6 +51,7 @@ export type SearchFormFactor = z.infer<typeof SearchFormFactorSchema>;
 export const SearchCatalogInputSchema = z.object({
   query: z
     .string()
+    .max(200)
     .optional()
     .describe(
       'Optional case-insensitive substring filter matching slug, manufacturer, or model name (omit to match all).'
@@ -67,16 +68,19 @@ export const SearchCatalogInputSchema = z.object({
   max_depth_mm: z
     .number()
     .positive()
+    .max(2000)
     .optional()
     .describe('Maximum allowed chassis depth in millimeters (inclusive upper bound).'),
   min_poe_budget_watts: z
     .number()
     .nonnegative()
+    .max(100000)
     .optional()
     .describe('Minimum required PSE PoE output power budget in watts (inclusive lower bound).'),
   accepted_slot_type: z
     .string()
     .min(1)
+    .max(100)
     .optional()
     .describe(
       'Sub-module slot compatibility token matching either a sub-module slot_compatibility or a carrier slot accepted_slot_type (e.g., "mini-pc-1liter", "sbc-rpi5", "standard-keystone").'
@@ -87,6 +91,7 @@ export const GetDeviceBlueprintInputSchema = z.object({
   slug: z
     .string()
     .min(1)
+    .max(100)
     .describe(
       'Exact lowercase kebab-case hardware catalog blueprint slug to retrieve (discoverable via search_catalog).'
     )
@@ -144,21 +149,25 @@ export const MountEquipmentInputSchema = z.object({
   instance_id: z
     .string()
     .min(1)
+    .max(100)
     .describe(
       'Unique project-wide instance identifier for this mounted device (e.g., "ups-u1", "sw-core-01").'
     ),
   blueprint_slug: z
     .string()
     .min(1)
+    .max(100)
     .describe('Catalog or custom hardware blueprint slug to instantiate.'),
   hostname: z
     .string()
+    .max(160)
     .optional()
     .describe('Optional logical hostname or display label shown in elevations and schematics.'),
   u_position: z
     .number()
     .int()
     .positive()
+    .max(60)
     .optional()
     .describe(
       '1-indexed lowest Rack Unit (U) when mounting directly onto the rack rails (mutually exclusive with parent_carrier_id/slot_id).'
@@ -168,12 +177,14 @@ export const MountEquipmentInputSchema = z.object({
     .describe('Target rack mounting face ("front" or "rear") for direct rackmount equipment.'),
   parent_carrier_id: z
     .string()
+    .max(100)
     .optional()
     .describe(
       'Mounted parent modular-carrier instance_id when mounting a sub-module (requires slot_id; mutually exclusive with u_position).'
     ),
   slot_id: z
     .string()
+    .max(100)
     .optional()
     .describe(
       'Target bay slot_id inside parent_carrier_id when mounting a sub-module (e.g., "left-bay", "keystone-1").'
@@ -184,6 +195,7 @@ export const ModifyEquipmentInputSchema = z.object({
   instance_id: z
     .string()
     .min(1)
+    .max(100)
     .describe('Existing mounted device or child sub-module instance_id to modify.'),
   action: z
     .enum(['move', 'rename', 'remove'])
@@ -194,6 +206,7 @@ export const ModifyEquipmentInputSchema = z.object({
     .number()
     .int()
     .positive()
+    .max(60)
     .optional()
     .describe(
       'New 1-indexed U position when action is "move" on a direct rackmount device (takes precedence over new_u_position).'
@@ -202,6 +215,7 @@ export const ModifyEquipmentInputSchema = z.object({
     .number()
     .int()
     .positive()
+    .max(60)
     .optional()
     .describe('Optional alias for u_position when action is "move".'),
   face: RackFaceSchema.optional().describe(
@@ -213,21 +227,25 @@ export const ModifyEquipmentInputSchema = z.object({
   parent_carrier_id: z
     .string()
     .min(1)
+    .max(100)
     .optional()
     .describe('Target parent carrier instance_id when action is "move" on a child sub-module.'),
   slot_id: z
     .string()
     .min(1)
+    .max(100)
     .optional()
     .describe('Target slot_id inside parent_carrier_id when action is "move" on a child sub-module.'),
   hostname: z
     .string()
     .min(1)
+    .max(160)
     .optional()
     .describe('New logical hostname when action is "rename" (takes precedence over new_hostname).'),
   new_hostname: z
     .string()
     .min(1)
+    .max(160)
     .optional()
     .describe('Optional alias for hostname when action is "rename".'),
   remove_connected_cables: z
@@ -251,13 +269,15 @@ export const ConnectCablesInputSchema = z.object({
 
 export const DisconnectCablesInputSchema = z.object({
   cable_ids: z
-    .array(z.string())
+    .array(z.string().min(1).max(128))
+    .max(512)
     .optional()
     .describe(
       'Specific cable_id values to disconnect (can be combined with instance_id; at least one of cable_ids or instance_id must be provided).'
     ),
   instance_id: z
     .string()
+    .max(100)
     .optional()
     .describe(
       'Mounted device or modular-carrier instance_id whose attached cables (including child sub-module cables) should all be disconnected.'
@@ -278,6 +298,7 @@ export const ExportDeliverablesInputSchema = z.object({
         'carrier-stl'
       ])
     )
+    .max(6)
     .default([
       'elevation-svg',
       'wiring-svg',
@@ -291,6 +312,7 @@ export const ExportDeliverablesInputSchema = z.object({
     ),
   output_dir: z
     .string()
+    .max(512)
     .optional()
     .describe(
       'Optional target filesystem directory for generated files in local stdio mode (defaults to the directory of the active rack.yaml file; ignored on hosted remote MCP servers where HTTPS download URLs are returned instead).'
@@ -332,6 +354,7 @@ export const ExternalEndpointGroupInputSchema = z.object({
   poe_draw_watts: z
     .number()
     .nonnegative()
+    .max(200)
     .default(0)
     .describe('PoE power draw in watts per drop (0 for standard LAN; e.g., 9 for PoE camera, 18 for Wi-Fi AP).'),
   required_speed: ExternalEndpointSpeedSchema.optional().default('1gbe'),
@@ -353,23 +376,27 @@ export const ExternalEndpointItemInputSchema = z.object({
   endpoint_id: z
     .string()
     .min(1)
+    .max(100)
     .optional()
     .describe('Optional explicit endpoint_id (auto-generated if omitted).'),
   label: z
     .string()
     .min(1)
+    .max(200)
     .describe('Human-readable label for this room/device drop (e.g., "Kamera 1 – Einfahrt").'),
   category: ExternalEndpointCategorySchema.default('other-lan'),
-  room_or_zone: z.string().optional().describe('Optional building zone or room name.'),
+  room_or_zone: z.string().max(160).optional().describe('Optional building zone or room name.'),
   poe_draw_watts: z
     .number()
     .nonnegative()
+    .max(200)
     .default(0)
     .describe('Required PoE power draw in watts (0 for non-PoE LAN).'),
   required_speed: ExternalEndpointSpeedSchema.optional().default('1gbe'),
   patch_panel_port_id: z
     .string()
     .min(1)
+    .max(128)
     .optional()
     .describe('Optional explicit patch panel port_id (e.g., "p1"); auto-assigned sequentially if omitted.'),
   color_hex: z
@@ -378,18 +405,20 @@ export const ExternalEndpointItemInputSchema = z.object({
     .optional()
     .describe('Optional hex color code for this drop and its front patch cable.'),
   vlan_id: z.number().int().min(1).max(4094).optional().describe('Optional VLAN ID (1..4094).'),
-  notes: z.string().optional().describe('Optional installation notes.')
+  notes: z.string().max(1000).optional().describe('Optional installation notes.')
 });
 
 export const PlanExternalEndpointsInputSchema = z.object({
   patch_panel_instance_id: z
     .string()
     .min(1)
+    .max(100)
     .describe('Mounted patch panel instance_id whose rear ports receive the incoming building cable drops.'),
   start_port_number: z
     .number()
     .int()
     .positive()
+    .max(256)
     .optional()
     .describe('1-indexed starting port number on the patch panel (defaults to next free rear port or 1).'),
   entry_position: ExternalEntryPositionSchema.optional().default('top-rear'),
@@ -408,6 +437,7 @@ export const PlanExternalEndpointsInputSchema = z.object({
   auto_connect_switch_instance_id: z
     .string()
     .min(1)
+    .max(100)
     .optional()
     .describe(
       'Optional switch instance_id to automatically patch from the front of the patch panel using labeled Cat6A cables.'
@@ -416,6 +446,7 @@ export const PlanExternalEndpointsInputSchema = z.object({
     .number()
     .int()
     .positive()
+    .max(256)
     .optional()
     .default(1)
     .describe('1-indexed starting Ethernet port number on auto_connect_switch_instance_id (e.g., 1 for eth1).'),
@@ -1051,14 +1082,15 @@ export const MCP_TOOL_DEFINITIONS = {
     name: 'export_deliverables',
     title: 'Export 2D SVG, BOM, 3D GLB, and 3D-Print Deliverables',
     description:
-      "Generate 2D elevation and wiring SVGs, a Markdown BOM, a binary 3D GLB scene, and parametric OpenSCAD or watertight STL 3D-print models for the active rack project. Omitting 'formats' exports all six types; 'carrier-scad' and 'carrier-stl' emit one file per mounted modular carrier, switch cradle, or printable cover panel and emit zero files when none are mounted, while 'output_dir' resolves relative paths and creates missing folders. Local stdio execution writes deterministic filenames—elevation.svg, wiring-schematic.svg, BOM.md, rack-scene.glb, and <slug>.scad or <slug>.stl—overwriting same-named files in place, whereas hosted remote sessions stream in-memory HTTPS download URLs; neither mode mutates rack state or undo history. Use after validate_rack confirms a valid layout; use validate_rack instead for read-only validation and ASCII elevation inspection without generating export files.",
+      "Generate 2D elevation and wiring SVGs, a Markdown BOM, a binary 3D GLB scene, and parametric OpenSCAD or watertight STL 3D-print models for the active rack project. Omitting 'formats' exports all six types; 'carrier-scad' and 'carrier-stl' emit one file per mounted modular carrier, switch cradle, or printable cover panel and emit zero files when none are mounted, while 'output_dir' resolves relative paths within the project directory and creates missing folders. Local stdio execution writes deterministic filenames—elevation.svg, wiring-schematic.svg, BOM.md, rack-scene.glb, and <slug>.scad or <slug>.stl—overwriting same-named files in place, whereas hosted remote sessions stream in-memory HTTPS download URLs; neither mode mutates rack state or undo history. Use after validate_rack confirms a valid layout; use validate_rack instead for read-only validation and ASCII elevation inspection without generating export files.",
     inputSchema: ExportDeliverablesInputSchema,
     outputSchema: ExportDeliverablesOutputSchema,
     annotations: {
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: false,
+      consequentialHint: true
     } satisfies McpToolAnnotations
   },
   undo_redo: {
