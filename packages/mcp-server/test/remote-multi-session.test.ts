@@ -356,6 +356,78 @@ describe('@rack-mcp/mcp-server Hosted Multi-Session Remote MCP (Streamable HTTP 
     expect(healthJson.activeSessions).toBe(3);
   });
 
+  it('expires idle probe sessions that never executed a tool after the short unused-session TTL while keeping active tool sessions', async () => {
+    const baseState = new ProjectStateManager({ watchFile: false });
+    const server = await startRackSidecarServer(baseState, {
+      port: 0,
+      host: '127.0.0.1',
+      remoteMcp: true,
+      rateLimitPerMinute: 200
+    });
+    activeServers.push(server);
+
+    const mcpHeaders = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json, text/event-stream'
+    } as const;
+    const initialize = async (clientName: string): Promise<string> => {
+      const res = await fetch(`${server.url}/mcp`, {
+        method: 'POST',
+        headers: { ...mcpHeaders, 'User-Agent': `${clientName}/1.0` },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'initialize',
+          params: {
+            protocolVersion: '2025-03-26',
+            capabilities: {},
+            clientInfo: { name: clientName, version: '1.0.0' }
+          }
+        })
+      });
+      expect(res.status).toBe(200);
+      await res.text();
+      const sid = res.headers.get('mcp-session-id');
+      expect(typeof sid).toBe('string');
+      return sid!;
+    };
+
+    // 1. Liveness crawler only initializes; interactive agent initializes and executes a tool
+    await initialize('mcpbeat-liveness-probe');
+    const agentSid = await initialize('claude-code');
+    const toolRes = await fetch(`${server.url}/mcp`, {
+      method: 'POST',
+      headers: { ...mcpHeaders, 'mcp-session-id': agentSid },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 2,
+        method: 'tools/call',
+        params: { name: 'validate_rack', arguments: {} }
+      })
+    });
+    expect(toolRes.status).toBe(200);
+    await toolRes.text();
+
+    const registry = server.remoteRegistry;
+    expect(registry).toBeDefined();
+    expect(registry!.getActiveSessionCount()).toBe(2);
+
+    // 2. After 11 idle minutes only the never-used probe session is swept
+    const removedAfter11Min = await registry!.sweepExpiredSessions(Date.now() + 11 * 60 * 1000);
+    expect(removedAfter11Min).toBe(1);
+    expect(registry!.getActiveSessionCount()).toBe(1);
+    expect(registry!.getSession(agentSid)).toBeDefined();
+
+    // 3. Probe sessions are counted as 'registry-probe' instead of inflating 'other-mcp'
+    const summary = server.telemetry.getSummary({
+      activeMcpSessions: registry!.getActiveSessionCount(),
+      activeWebSocketClients: 0
+    });
+    expect(summary.aiClients.sessionsByClient['registry-probe']).toBe(1);
+    expect(summary.aiClients.sessionsByClient['claude-code']).toBe(1);
+    expect(summary.aiClients.sessionsByClient['other-mcp']).toBe(0);
+  });
+
   it('rejects oversized HTTP bodies (413), cross-site WebSocket origins (403 CSWSH), oversized WS frames (1009), and cleans up closed SSE streams', async () => {
     const baseState = new ProjectStateManager({ watchFile: false });
     const server = await startRackSidecarServer(baseState, {

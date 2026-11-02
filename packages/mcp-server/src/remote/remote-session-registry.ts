@@ -47,6 +47,11 @@ export interface RemoteSessionRegistryOptions {
   readonly maxNewSessionsPerMinutePerIp?: number | undefined;
   readonly maxCustomBlueprintsPerSession?: number | undefined;
   readonly sessionTtlMs?: number | undefined;
+  /**
+   * Idle TTL in milliseconds for sessions that never executed a single MCP tool and have no
+   * open 3D Web-Viewer WebSocket (typically directory crawlers / liveness probes). Default: 10 minutes.
+   */
+  readonly unusedSessionTtlMs?: number | undefined;
   readonly maxRequestBodyBytes?: number | undefined;
   readonly telemetryTracker?: RackTelemetryTracker | undefined;
 }
@@ -333,6 +338,7 @@ export class RemoteSessionRegistry {
   private readonly maxSessionsPerIp: number;
   private readonly maxCustomBlueprintsPerSession: number;
   private readonly sessionTtlMs: number;
+  private readonly unusedSessionTtlMs: number;
   private readonly maxRequestBodyBytes: number;
   private readonly sessionCreationLimiter: SlidingWindowRateLimiter;
   private readonly sweepTimer: ReturnType<typeof setInterval>;
@@ -357,6 +363,10 @@ export class RemoteSessionRegistry {
     this.maxCustomBlueprintsPerSession =
       options.maxCustomBlueprintsPerSession ?? 32;
     this.sessionTtlMs = options.sessionTtlMs ?? 2 * 60 * 60 * 1000;
+    this.unusedSessionTtlMs = Math.min(
+      this.sessionTtlMs,
+      options.unusedSessionTtlMs ?? 10 * 60 * 1000
+    );
     this.maxRequestBodyBytes = options.maxRequestBodyBytes ?? 512 * 1024;
     this.sessionCreationLimiter = new SlidingWindowRateLimiter(
       options.maxNewSessionsPerMinutePerIp ?? 20,
@@ -580,7 +590,11 @@ export class RemoteSessionRegistry {
         if (now - session.lastAccessedAt > this.sessionTtlMs * 4) {
           expiredIds.push(id);
         }
-      } else if (now - session.lastAccessedAt > this.sessionTtlMs) {
+      } else if (
+        now - session.lastAccessedAt >
+        (session.hasExecutedTool ? this.sessionTtlMs : this.unusedSessionTtlMs)
+      ) {
+        // Sessions that never executed a tool (crawlers / liveness probes) expire after a short idle TTL.
         expiredIds.push(id);
       }
     }

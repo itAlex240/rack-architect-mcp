@@ -175,8 +175,18 @@ jobs:
             | tar xz mcp-publisher
           chmod +x ./mcp-publisher
           ./mcp-publisher validate
-          ./mcp-publisher login github-oidc
-          ./mcp-publisher publish
+          # Retry OIDC login + publish to tolerate transient registry/GitHub CDN hiccups
+          # (e.g. the freshly uploaded .mcpb release asset not yet resolvable for SHA-256 verification).
+          for attempt in 1 2 3 4 5; do
+            if ./mcp-publisher login github-oidc && ./mcp-publisher publish; then
+              echo "Published to registry.modelcontextprotocol.io on attempt ${attempt}."
+              exit 0
+            fi
+            echo "::warning::MCP Registry publish attempt ${attempt}/5 failed; retrying in $((attempt * 20))s..."
+            sleep $((attempt * 20))
+          done
+          echo "::error::MCP Registry publish failed after 5 attempts."
+          exit 1
 
       - name: Log in to GitHub Container Registry (ghcr.io)
         continue-on-error: true

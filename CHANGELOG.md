@@ -5,6 +5,18 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.6] - 2026-11-02
+
+### Fixed — Remote MCP Crawler Telemetry, Idle Probe Session Cleanup & Resilient MCP Registry Publishing (🇬🇧 English)
+- **Accurate AI-Client Telemetry (`@rack-mcp/mcp-server`, `telemetry-tracker.ts`):** `classifyMcpClientFamily` now evaluates interactive MCP `clientInfo.name` first and then classifies automated MCP directory crawlers, liveness monitors, trust scorers, and indexers (`mcpbeat`, `AgentRankProbe`, `SealKeeperBot`, `EveryMCP-Probe`, `mcptry.com indexer`, `MCPWatch`, `GolemreachTrustBot`, and any `*Bot` / `probe` / `indexer` / `(+https://…)` User-Agent) as `registry-probe`, so ~1,500 crawler sessions per few days no longer inflate the `other-mcp` session counter on the Grafana dashboard.
+- **Short Idle TTL for Never-Used Sessions (`remote-session-registry.ts`):** Remote MCP sessions that never executed a single tool and have no open 3D Web-Viewer WebSocket now expire after `10 min` idle (`unusedSessionTtlMs`) instead of `2 h`, releasing crawler-held in-memory rack workspaces far sooner while interactive tool sessions keep the full `2 h` TTL.
+- **Resilient MCP Registry Publishing (`.github/workflows/release.yml`):** Wrapped `mcp-publisher login github-oidc` + `publish` in a 5-attempt linear-backoff retry loop after the `v0.7.5` release job failed transiently at the registry publish step (all build, test, CAD deliverable, `.mcpb`, and GitHub Release steps had succeeded).
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Korrekte KI-Client-Statistik:** Automatische MCP-Verzeichnis-Crawler und Erreichbarkeits-Checker (`mcpbeat`, `AgentRankProbe`, `SealKeeperBot`, `EveryMCP-Probe`, `mcptry.com` u. a.) werden jetzt als `registry-probe` statt `other-mcp` gezählt — die ~1.570 „other-mcp"-Sessions im Grafana-Dashboard waren fast ausschließlich solche Bots.
+- **Schnellere Bereinigung ungenutzter Sessions:** Sessions ohne einen einzigen Tool-Aufruf und ohne offenen 3D-Viewer laufen nach `10 Min.` Leerlauf ab (statt `2 Std.`); echte Nutzer-Sessions behalten `2 Std.`.
+- **Robuster MCP-Registry-Upload:** Der Veröffentlichungsschritt im Release-Workflow versucht es jetzt bis zu 5-mal erneut, nachdem `v0.7.5` dort einmalig fehlgeschlagen war.
+
 ## [0.7.5] - 2026-10-29
 
 ### Improved — Precision 5/5 TDQS MCP Tool Descriptions Across All 12 Tools (`@rack-mcp/core-domain`) (🇬🇧 English)

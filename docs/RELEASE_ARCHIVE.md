@@ -1,13 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.2`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.3`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.2`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.3`)
 
 ### 📊 `v0.7.x` Series — Privacy-First Remote MCP Observability & Visual Showcase
 
+- **[`v0.7.3`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.3) (2026-10-29) — Official `https://mcp.rackarchitect.dev` Dual-Stack HTTPS Domain & Multi-Origin CSWSH Compatibility:**
+  - Launched the official Dual-Stack IPv4 + IPv6 production domain `https://mcp.rackarchitect.dev` (Let's Encrypt ECDSA TLS, HTTP/2, HSTS, Streamable HTTP `/mcp`, SSE `/sse`, `wss://` Live 3D Session Viewer `/?session=<uuid>`) and added `RACK_MCP_ALLOWED_ORIGINS` multi-origin CSWSH/CORS verification so legacy `sslip.io` links keep working in parallel.
 - **[`v0.7.2`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.2) (2026-10-29) — Collision-Free Rear-Cavity 3D Cable Routing & Overhauled 2D CAD / Multi-Track Wiring Plan:**
   - Fixed physical port-zone classification (`resolveEffectivePortZone`) for inward-facing ports on rear-mounted PDUs so UPS-to-PDU and PDU-to-Mini-PC power cords route cleanly inside the internal rear rack cavity (`0` chassis penetrations, `0` front-panel stabs), added detour-aware open-`U` pass-through portal scoring (`scorePortalCandidate`), projected true 3D `(z, y)` waypoints in the 2D Side-Profile Cutaway, lifted ultra-dark `#18181B` power cords to high-contrast metallic graphite, and upgraded the browser Wiring Plan to a full 2-Section **3-Tier Power/PoE DAG + Grouped Device Cards & Multi-Track Orthogonal Router**.
 - **[`v0.7.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.1) (2026-10-29) — Animated 6-Scene 3D/2D Hero Showcase:**
@@ -91,10 +93,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.2`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.3`)
 
 ### 📊 Serie `v0.7.x` — DSGVO-konforme Remote-MCP-Telemetrie & Hero-Showcase
 
+- **[`v0.7.3`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.3) (2026-10-29) — Offizielle Dual-Stack-HTTPS-Domain `https://mcp.rackarchitect.dev` & nahtloser Parallelbetrieb:**
+  - Gehosteter Remote-MCP-Server und Live-3D-Studio unter `https://mcp.rackarchitect.dev` (Dual-Stack IPv4 + IPv6, Let's Encrypt ECDSA-TLS, HTTP/2, HSTS, `/mcp`, `/sse`, `/?session=<uuid>`) inkl. Multi-Origin-CSWSH/CORS (`RACK_MCP_ALLOWED_ORIGINS`), damit bestehende `sslip.io`-Links weiter funktionieren.
 - **[`v0.7.2`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.2) (2026-10-29) — Kollisionsfreie 3D-Innenraum-Kabelführung & komplett erneuerter 2D-Bau- und Kabelplan:**
   - Nach innen gerichtete Strombuchsen an rückseitig montierten Steckdosenleisten (`resolveEffectivePortZone`) werden physikalisch exakt im hinteren Rack-Innenraum verdrahtet (`0` Gehäuse-Durchdringungen), Front-zu-Heck-Kabel wählen automatisch den nächsten freien `U`-Durchlass ohne Umwege, dunkle `#18181B`-Stromkabel werden kontraststark als Metallic-Graphit dargestellt, der 2D-Seitenschnitt projiziert die echten 3D-Kabelwege und der Live-`Wiring Plan` zeigt einen **3-stufigen USV/PDU/PoE-Strombaum + gruppierte Geräte-Karten mit Multi-Track-Bus-Router**.
 - **[`v0.7.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.1) (2026-10-29) — Animiertes 6-Szenen 3D/2D Hero-Demo-GIF:**

@@ -203,16 +203,63 @@ export function classifyMcpClientFamily(
   clientInfoName?: string | undefined,
   userAgent?: string | undefined
 ): McpClientFamily {
+  // 1. A recognized interactive AI client in MCP `initialize` clientInfo.name always wins.
+  const byClientInfo = matchInteractiveMcpClient((clientInfoName ?? '').toLowerCase());
+  if (byClientInfo !== undefined) {
+    return byClientInfo;
+  }
+  // 2. Automated MCP directory crawlers, liveness monitors, and indexers.
   const combined = `${clientInfoName ?? ''} ${userAgent ?? ''}`.toLowerCase();
-  if (
-    combined.includes('glama') ||
-    combined.includes('smithery') ||
-    combined.includes('mcpservers') ||
-    combined.includes('uptime-kuma') ||
-    combined.includes('healthcheck')
-  ) {
+  if (isAutomatedMcpProbe(combined)) {
     return 'registry-probe';
   }
+  // 3. Fall back to HTTP User-Agent matching for interactive clients.
+  return matchInteractiveMcpClient((userAgent ?? '').toLowerCase()) ?? 'other-mcp';
+}
+
+/**
+ * Tokens identifying automated MCP directory crawlers, liveness monitors, trust scorers,
+ * and indexers (e.g. `mcpbeat/0.1 (+https://mcpbeat.com/bot/; liveness check)`,
+ * `AgentRankProbe/0.1`, `EveryMCP-Probe/1.0`, `mcptry.com indexer`). These open an MCP
+ * session via `initialize` and list tools, but never represent an interactive AI user.
+ */
+const AUTOMATED_MCP_PROBE_TOKENS = [
+  'glama',
+  'smithery',
+  'mcpservers',
+  'uptime-kuma',
+  'healthcheck',
+  'bot/',
+  'bot)',
+  'bot ',
+  'probe',
+  'indexer',
+  'crawler',
+  'spider',
+  'liveness',
+  'monitor',
+  'mcpwatch',
+  'security research',
+  'scanner',
+  '(+http',
+  '+https://'
+] as const;
+
+function isAutomatedMcpProbe(lowerCombined: string): boolean {
+  for (const token of AUTOMATED_MCP_PROBE_TOKENS) {
+    if (lowerCombined.includes(token)) {
+      return true;
+    }
+  }
+  // Trailing-token bots without a version suffix (e.g. `SealKeeperBot`).
+  return /bot(\/|\s|$|;)/.test(lowerCombined);
+}
+
+function matchInteractiveMcpClient(lower: string): McpClientFamily | undefined {
+  if (lower.length === 0) {
+    return undefined;
+  }
+  const combined = lower;
   if (combined.includes('claude-code') || combined.includes('claude code')) {
     return 'claude-code';
   }
@@ -245,7 +292,7 @@ export function classifyMcpClientFamily(
   if (combined.includes('zed')) {
     return 'zed';
   }
-  return 'other-mcp';
+  return undefined;
 }
 
 export function isLikelyScannerRequest(

@@ -146,6 +146,27 @@ describe('@rack-mcp/mcp-server Telemetry, AI-Client Classification & Protected P
     expect(classifyMcpClientFamily('cursor-vscode', '')).toBe('cursor');
     expect(classifyMcpClientFamily('Google Antigravity', '')).toBe('antigravity');
     expect(classifyMcpClientFamily('Glama MCP Scanner', '')).toBe('registry-probe');
+    // Automated MCP directory crawlers & liveness monitors observed in production access logs
+    expect(
+      classifyMcpClientFamily(undefined, 'mcpbeat/0.1 (+https://mcpbeat.com/bot/; liveness check)')
+    ).toBe('registry-probe');
+    expect(
+      classifyMcpClientFamily('probe', 'AgentRankProbe/0.1 (+https://spark.tail6ec125.ts.net/developers)')
+    ).toBe('registry-probe');
+    expect(
+      classifyMcpClientFamily(undefined, 'SealKeeperBot/1.0 (+https://sealkeeper.run/checks)')
+    ).toBe('registry-probe');
+    expect(classifyMcpClientFamily(undefined, 'mcptry.com indexer (+https://mcptry.com/about)')).toBe(
+      'registry-probe'
+    );
+    expect(classifyMcpClientFamily(undefined, 'EveryMCP-Probe/1.0 (+https://everymcp.ai/probe)')).toBe(
+      'registry-probe'
+    );
+    // Interactive client identified via clientInfo.name wins even behind a generic HTTP library UA
+    expect(classifyMcpClientFamily('claude-ai', 'node')).toBe('claude-desktop');
+    expect(classifyMcpClientFamily('Visual Studio Code', 'node')).toBe('vscode-copilot');
+    // Unknown generic HTTP libraries without bot markers remain 'other-mcp'
+    expect(classifyMcpClientFamily('my-agent', 'python-httpx/0.28.1')).toBe('other-mcp');
 
     const secretToken = 'test-secret-metrics-bearer-token-256bit';
     const baseState = new ProjectStateManager({ watchFile: false });
