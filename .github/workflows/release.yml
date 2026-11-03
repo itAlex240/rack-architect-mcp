@@ -18,15 +18,15 @@ jobs:
       MCP_PUBLISHER_VERSION: v1.8.1
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           version: 10
 
       - name: Setup Node.js 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -67,7 +67,7 @@ jobs:
           ' "$VERSION" "$SHA256"
 
       - name: Create GitHub Release with Beginner-Friendly Guide & CAD/3D-Print Assets
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: "🏗️ RackArchitect MCP ${{ github.ref_name }} — 3D/2D Rack Planner, CAD Blueprints & 3D-Print Files (.STL)"
           body_path: docs/RELEASE_NOTES.md
@@ -190,7 +190,7 @@ jobs:
 
       - name: Log in to GitHub Container Registry (ghcr.io)
         continue-on-error: true
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
