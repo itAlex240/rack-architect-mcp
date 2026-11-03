@@ -40,13 +40,18 @@ interface CableBomGroup {
 function sanitizeMarkdownText(value: string): string {
   return value
     .replace(/[\r\n\x00-\x1f\x7f]+/g, ' ')
+    .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
     .trim();
 }
 
 function sanitizeMarkdownCell(value: string): string {
-  return sanitizeMarkdownText(value).replace(/\|/g, '\\|');
+  return sanitizeMarkdownText(value)
+    .replace(/\\/g, '\\\\')
+    .replace(/\|/g, '\\|');
 }
 
 /**

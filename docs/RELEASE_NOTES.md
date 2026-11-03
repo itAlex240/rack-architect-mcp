@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.7.7` — 3D/2D Rack Planner, Hosted Remote MCP (`mcp.rackarchitect.dev`), CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v0.7.8` — 3D/2D Rack Planner, Hosted Remote MCP (`mcp.rackarchitect.dev`), CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v0.7.7`!**  
+**Welcome to RackArchitect MCP `v0.7.8`!**  
 Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint (`https://mcp.rackarchitect.dev/mcp`)** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
 <p align="center">
@@ -11,16 +11,17 @@ Whether you are a **complete beginner with zero coding experience** who just wan
   </a>
 </p>
 
-> **✨ What's New in the Last 3 Releases (`v0.7.5` – `v0.7.7`):**
+> **✨ What's New in the Last 3 Releases (`v0.7.6` – `v0.7.8`):**
+> - **CodeQL Full HTML/Markdown Sanitization & Grouped Dependabot Updates (`v0.7.8`):** Resolved the GitHub CodeQL High Alert (`js/incomplete-sanitization`) in `bom-markdown.ts` by escaping all special characters (`&`, `<`, `>`, `"`, `'`) and table backslashes/pipes, consolidated Dependabot updates into 3 atomic groups (`production-dependencies`, `dev-dependencies`, `github-actions`), locked TypeScript to semver-minor to protect TS 5.9 compiler gates, and closed failing PRs.
 > - **Dual Security Audit Hardening, 10x Faster 3D Cable Router & Read-Only Viewer Token Isolation (`v0.7.7`):** Separated public HMAC-SHA256 `viewerToken` URLs (`/?session=<viewerToken>`) from the write-capable `Mcp-Session-Id` header, enforced read-only remote viewer WebSockets (`60 commands/min` limit), confined local `export_deliverables` `output_dir` to the project workspace (with `fs.realpathSync` symlink checks), added local DNS-rebinding `Host` header guards (`421`), tightened proxy trust & IPv6 `/64` rate-limit bucketing, removed `saltHex` persistence from `telemetry.json`, and accelerated 3D Catmull-Rom cable routing via 3D AABB culling and collinear spline compaction.
 > - **Accurate Remote MCP Crawler Telemetry, Idle Probe Session Cleanup & Resilient Registry Publishing (`v0.7.6`):** Automated MCP directory crawlers and liveness monitors (`mcpbeat`, `AgentRankProbe`, `SealKeeperBot`, `EveryMCP-Probe`, `mcptry.com`, …) are now counted as `registry-probe` instead of inflating `other-mcp` on the Grafana dashboard, never-used crawler sessions are released after `10 min` idle instead of `2 h`, and the MCP Registry publish step now retries up to 5 times.
-> - **Precision 5/5 TDQS MCP Tool Descriptions Across All 12 Tools (`v0.7.5`):** Refined all 12 `MCP_TOOL_DEFINITIONS` descriptions in `@rack-mcp/core-domain` into crisp, parenthetical-free 4-sentence contracts with explicit catalog ordering/bounds (`search_catalog`, `get_device_blueprint`), deterministic export filenames and overwrite vs. zero-disk remote URL behavior (`export_deliverables`), top-level `blueprint` wrapper and cross-field constraints (`define_custom_blueprint`, `init_rack`, `mount_equipment`, `modify_equipment`, `plan_external_endpoints`), and undo/redo history exclusions (`undo_redo`).
 
 <details>
-<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.7.4) in the Release Archive</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.7.5) in the Release Archive</b></summary>
 
 <br />
 
+- **`v0.7.5`** — Precision 5/5 TDQS MCP Tool Descriptions Across All 12 Tools (`search_catalog`, `export_deliverables`, `init_rack`, `define_custom_blueprint`, `undo_redo`).
 - **`v0.7.4`** — Synchronized Agent Skill (`SKILL.md`), 5 EIA-310 Archetypes (`10"`/`19"`/`6"`) & 100% exact schema/prompt parity across all 21 diagnostic codes, 20 cable types, and 67 blueprints.
 - **`v0.7.3`** — Official Dual-Stack HTTPS domain `https://mcp.rackarchitect.dev` (`/mcp`, `/sse`, `/?session=<uuid>`) & multi-origin CSWSH/CORS compatibility for legacy `sslip.io` links.
 - **`v0.7.2`** — Collision-free rear-cavity 3D cable routing (`resolveEffectivePortZone`), detour-aware open-`U` pass-through portal scoring, true 3D `(z, y)` 2D Side-Cutaway projection & 2-Section 3-Tier Power/PoE DAG + Multi-Track Wiring Plan.
@@ -126,19 +127,20 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v0.7.7` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.7.8` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL (`https://mcp.rackarchitect.dev/mcp`)** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.7.5` – `v0.7.7`):**
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.7.6` – `v0.7.8`):**
+> - **CodeQL-HTML/Markdown-Vollmaskierung & gruppierte Dependabot-Updates (`v0.7.8`):** Vollständige Behebung des CodeQL-High-Alerts (`js/incomplete-sanitization`) in `bom-markdown.ts` durch vollständiges Encoding (`&`, `<`, `>`, `"`, `'`) und Backslash-Escaping vor Tabellen-Pipes, Zusammenfassung von Dependabot-Updates in 3 logische Gruppen (`production-dependencies`, `dev-dependencies`, `github-actions`), Ausschluss von TypeScript-Major-Versionen zur Wahrung der TS 5.9 Compiler-Gates und Schließen fehlerhafter PRs.
 > - **Security-Audit-Härtung, 10x schnelleres 3D-Kabel-Routing & Read-Only Viewer-Token (`v0.7.7`):** Getrennte HMAC-SHA256-`viewerToken` für geteilte Live-3D-Viewer-Links (`/?session=<viewerToken>`), Schreibschutz für unauthentifizierte Remote-Viewer-WebSockets (`60 Befehle/Min.`), strikte Projektverzeichnis-Prüfung inkl. Symlink-Schutz bei lokalem `export_deliverables`, DNS-Rebinding-Schutz (`421`) am lokalen Sidecar, verschärftes Proxy-Trust- & IPv6-`/64`-Rate-Limiting, keine Speicherung des Telemetrie-HMAC-Schlüssels auf der Festplatte sowie 10x schnelleres 3D-Spline-Routing durch 3D-AABB-Culling und Segment-Kompaktierung.
 > - **Korrekte Crawler-Statistik, schnellere Bereinigung ungenutzter Sessions & robuster Registry-Upload (`v0.7.6`):** Automatische MCP-Verzeichnis-Crawler und Erreichbarkeits-Checker (`mcpbeat`, `AgentRankProbe`, `SealKeeperBot`, `EveryMCP-Probe`, `mcptry.com` …) zählen jetzt als `registry-probe` statt `other-mcp` im Grafana-Dashboard, ungenutzte Crawler-Sessions werden nach `10 Min.` statt `2 Std.` freigegeben und der MCP-Registry-Upload versucht es bis zu 5-mal erneut.
-> - **TDQS-5/5-Feinschliff aller 12 MCP-Tool-Beschreibungen (`v0.7.5`):** Alle 12 MCP-Tool-Definitionen (`MCP_TOOL_DEFINITIONS`) in prägnante 4-Satz-Verträge ohne verschachtelte Klammern oder Schema-Doppelungen optimiert — inklusive deterministischer Katalog-Sortierung (`search_catalog`, `get_device_blueprint`), exakten Export-Dateinamen (`elevation.svg`, `wiring-schematic.svg`, `BOM.md`, `rack-scene.glb`, `<slug>.scad/.stl`) und Überschreib-Verhalten (`export_deliverables`), Top-Level-`blueprint`-Wrapper (`define_custom_blueprint`), `rail_depth_mm + rear_clearance_mm`-Tiefengrenzen (`init_rack`) sowie Undo-/Redo-Stack-Regeln (`undo_redo`).
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.7.4) auf Deutsch anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.7.5) auf Deutsch anzeigen</b></summary>
 
 <br />
 
+- **`v0.7.5`** — TDQS-5/5-Feinschliff aller 12 MCP-Tool-Beschreibungen (`search_catalog`, `export_deliverables`, `init_rack`, `define_custom_blueprint`, `undo_redo`).
 - **`v0.7.4`** — Aktualisierter AI-Agent-Skill (`SKILL.md`), 5 Rack-Archetypen (`10"`/`19"`/`6"`) & 100 % Schema-/Prompt-Abgleich über alle 21 Diagnose-Codes, 20 Kabeltypen und 67 Blueprints.
 - **`v0.7.3`** — Offizielle Dual-Stack-HTTPS-Domain `https://mcp.rackarchitect.dev` (`/mcp`, `/sse`, `/?session=<uuid>`) & Multi-Origin-CSWSH/CORS für bestehende `sslip.io`-Links.
 - **`v0.7.2`** — Kollisionsfreie 3D-Innenraum-Kabelführung (`resolveEffectivePortZone`), automatische Open-`U`-Portalwahl, echter 3D-Seitenschnitt & 2-teiliger 3-Stufen-Strom-/PoE-Baum + Multi-Track-Kabelplan.

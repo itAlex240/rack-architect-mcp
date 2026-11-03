@@ -1,12 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.4`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.5`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.4`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.5`)
 
 ### 📊 `v0.7.x` Series — Privacy-First Remote MCP Observability & Visual Showcase
+
+- **[`v0.7.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.5) (2026-11-02) — Precision 5/5 TDQS MCP Tool Contracts Across All 12 Tools:**
+  - Refined all 12 `MCP_TOOL_DEFINITIONS` descriptions in `@rack-mcp/core-domain` into crisp, parenthetical-free 4-sentence contracts with explicit catalog ordering/bounds (`search_catalog`, `get_device_blueprint`), deterministic export filenames and overwrite vs. zero-disk remote URL behavior (`export_deliverables`), top-level `blueprint` wrapper and cross-field constraints (`define_custom_blueprint`, `init_rack`, `mount_equipment`, `modify_equipment`, `plan_external_endpoints`), and undo/redo history exclusions (`undo_redo`).
 
 - **[`v0.7.4`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.4) (2026-10-29) — Synchronized Agent Skill (`SKILL.md`), 5 EIA-310 Archetypes (`10"`/`19"`/`6"`) & Exact Schema/Prompt Alignment:**
   - Upgraded `skills/rack-architect/SKILL.md` (and `.agents/skills/rack-architect/SKILL.md`), `RACK_MCP_SERVER_INSTRUCTIONS`, and all 5 guided MCP prompts with 100% exact schema parity across all `21` `DiagnosticCodeSchema` codes (`Stages 1–5`), all `20` `CableTypeSchema` assemblies, all `67` catalog blueprints, Hosted Remote MCP `data.live_viewer_url` / zero-disk HTTPS `download_url` workflows, rear-PDU cavity routing + front 3D-print designer cover-panel pairing, `19"` dual vs. triple Mini-PC carrier slot-width guidance, and a new **Archetype 5 (`6-Inch Portable Micro-Homelab`)**.
@@ -95,9 +98,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.4`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.5`)
 
 ### 📊 Serie `v0.7.x` — DSGVO-konforme Remote-MCP-Telemetrie & Hero-Showcase
+
+- **[`v0.7.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.5) (2026-11-02) — TDQS Tier-A-Feinschliff aller 12 MCP-Tool-Beschreibungen:**
+  - Alle 12 MCP-Tool-Definitionen (`MCP_TOOL_DEFINITIONS`) in prägnante 4-Satz-Verträge ohne verschachtelte Klammern oder Schema-Doppelungen optimiert — inklusive deterministischer Katalog-Sortierung (`search_catalog`, `get_device_blueprint`), exakten Export-Dateinamen (`elevation.svg`, `wiring-schematic.svg`, `BOM.md`, `rack-scene.glb`, `<slug>.scad/.stl`) und Überschreib-Verhalten (`export_deliverables`), Top-Level-`blueprint`-Wrapper (`define_custom_blueprint`), `rail_depth_mm + rear_clearance_mm`-Tiefengrenzen (`init_rack`) sowie Undo-/Redo-Stack-Regeln (`undo_redo`).
 
 - **[`v0.7.4`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.4) (2026-10-29) — Aktualisierter AI-Agent-Skill (`SKILL.md`), 5 Rack-Archetypen (`10"`/`19"`/`6"`) & 100 % Schema-/Prompt-Abgleich:**
   - `skills/rack-architect/SKILL.md` (und `.agents/skills/rack-architect/SKILL.md`), `RACK_MCP_SERVER_INSTRUCTIONS` und alle 5 geführten MCP-Prompts vollständig auf den aktuellen Engine-Stand gebracht — exakte Übereinstimmung mit allen `21` `DiagnosticCodeSchema`-Codes (`Stufen 1–5`), allen `20` `CableTypeSchema`-Typen und allen `67` Katalog-Blueprints, Best-Practices für Remote-MCP (`data.live_viewer_url`, direkte HTTPS-`download_url`-Exporte & `#rack=v1.`-Share-Links), rückseitige PDU-Innenraumführung + vordere 3D-Druck-Cover-Panels, `19"` Dual- vs. Triple-Mini-PC-Trägerbreiten sowie neuer **Archetyp 5 (`6-Zoll Micro-Homelab`)**.

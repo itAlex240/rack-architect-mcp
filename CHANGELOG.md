@@ -5,6 +5,23 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.8] - 2026-11-03
+
+### Security & CI — CodeQL Full HTML/Markdown Sanitization & Grouped Dependabot (`@rack-mcp/exporters`, `.github`)
+- **CodeQL High Alert Remediation for Incomplete String Escaping (`@rack-mcp/exporters`, `bom-markdown.ts`):**
+  - Resolved GitHub CodeQL High Alert (`js/incomplete-sanitization` / `js/incomplete-html-sanitization`) in `sanitizeMarkdownText` and `sanitizeMarkdownCell` by fully encoding `&`, `<`, `>`, `"`, and `'` into valid XML/HTML entities (`&amp;`, `&lt;`, `&gt;`, `&quot;`, `&#39;`) and escaping Markdown table cell backslashes (`\\`) before pipes (`\|`).
+- **Grouped Dependabot Updates & TypeScript Major Version Lock (`.github/dependabot.yml`):**
+  - Grouped Dependabot updates into `production-dependencies`, `dev-dependencies`, and `github-actions` to eliminate individual PR spam (consolidating 11 fragmented PRs into single atomic batches).
+  - Explicitly locked TypeScript to semver-minor (`ignore: [typescript: semver-major]`) to preserve strict TypeScript 5.9 compiler gates and prevent broken TS 7 major bumps.
+  - Closed failing Dependabot PRs #8 and #11.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Behebung der CodeQL-Sicherheitswarnung in `bom-markdown.ts`:**
+  - Vollständige HTML- und Markdown-Zeichenmaskierung (`&`, `<`, `>`, `"`, `'` sowie Backslash-Escaping vor Tabellen-Pipes `\|`), wodurch der CodeQL-High-Alert („Incomplete string escaping or encoding") restlos aufgelöst wird.
+- **Gruppierte Dependabot-Updates & TypeScript 5.9 Schutz:**
+  - Dependabot fasst Aktualisierungen ab sofort gebündelt nach `production-dependencies`, `dev-dependencies` und `github-actions` zusammen (beendet die Flut an Einzel-PRs).
+  - Major-Versionen von TypeScript werden ignoriert, um die strikten TypeScript 5.9 Compiler-Gates stabil zu halten; die fehlerhaften PRs #8 und #11 wurden geschlossen.
+
 ## [0.7.7] - 2026-11-03
 
 ### Security & Performance — Dual Security Audit Remediation, 3D Cable Router Acceleration & Viewer Token Isolation (🇬🇧 English)
