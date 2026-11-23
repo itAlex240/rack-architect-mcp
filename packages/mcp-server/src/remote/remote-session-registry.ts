@@ -487,8 +487,8 @@ export class RemoteSessionRegistry {
     return crypto
       .createHmac('sha256', this.viewerTokenSecret)
       .update(sessionId)
-      .digest('hex')
-      .slice(0, 32);
+      .digest('base64url')
+      .slice(0, 22);
   }
 
   private createSessionRecord(

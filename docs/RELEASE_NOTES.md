@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.9.1` — 3D/2D Rack Planner, Hosted Remote MCP (`mcp.rackarchitect.dev`), CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v0.10.0` — 3D/2D Rack Planner, Hosted Remote MCP (`mcp.rackarchitect.dev`), CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v0.9.1`!**  
+**Welcome to RackArchitect MCP `v0.10.0`!**  
 Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint (`https://mcp.rackarchitect.dev/mcp`)** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
 <p align="center">
@@ -11,15 +11,17 @@ Whether you are a **complete beginner with zero coding experience** who just wan
   </a>
 </p>
 
-> **✨ What's New in the Last 3 Releases (`v0.8.1` – `v0.9.1`):**
+> **✨ What's New in the Last 3 Releases (`v0.9.0` – `v0.10.0`):**
+> - **Short Share Links (`/?s=<id>` & `/s/:id`), Client `#rack=v2.` Deflate Compression & Compact Session Tokens (`v0.10.0`):** Added content-addressed zero-PII `RackShareStore` (`POST /api/share`, `GET /api/share/:id`, `GET /s/:id`, 5,000-entry LRU / 90-day TTL / SHA-256 deduplication) turning multi-thousand-character rack share links into ~40-character URLs on `mcp.rackarchitect.dev`, added `CompressionStream('deflate-raw')` `#rack=v2.` fallback (~75–85% shorter static GitHub Pages URLs with full `#rack=v1.` compatibility), and compacted live MCP `viewerToken`s from 32 hex chars to 22 URL-safe Base64URL chars.
 > - **CodeQL Hostname Boundary Security Fix (`v0.9.1`):** Replaced `hostname.endsWith('github.io')` in `packages/web-viewer/src/state/ui-telemetry.ts` with exact domain boundary checking (`normalizedHost === 'github.io' || normalizedHost.endsWith('.github.io')`) to close CodeQL High Alert `#8` (`js/incomplete-url-substring-sanitization`).
 > - **2-Part 19" Print-Bed STL Splitting (`<= 245 mm`), 16:9 Share Card PNG, URL Deep-Links, UI Event Telemetry & Launch Kit (`v0.9.0`):** Split `482.6 mm` 19-inch custom device brackets into `241.3 mm` left/right halves with rear **M3 bolt joiner lugs** for standard Bambu/Prusa print beds (`split_half` in `.STL`/`.SCAD`/SVG + quick UI buttons), added deterministic `1200×675` **Share Card PNG/SVG** exports (`TopNavBar` & BOM hub), `?preset=...&tab=...#custom-bracket` URL deep-linking, 1-click **GitHub Catalog** issue submission in `CatalogBuilderDrawer`, privacy-first same-origin `POST /api/ui-event` + `rack_mcp_ui_events_total` Prometheus counters, GitHub homepage/topics discovery optimization, and `docs/LAUNCH_KIT.md`.
-> - **CodeQL ReDoS Hardening & GitHub Pages Build Fix (`v0.8.1`):** Replaced the trailing-hyphen trimming regex in `packages/exporters/src/importers.ts` (`toSlugToken`) with a deterministic $O(n)$ loop to close CodeQL Alert `#7` (`js/polynomial-redos`), and added `@rack-mcp/exporters` to the `.github/workflows/pages.yml` build sequence prior to `@rack-mcp/web-viewer`.
 
 <details>
-<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.8.0) in the Release Archive</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.8.1) in the Release Archive</b></summary>
 
 <br />
+
+- **`v0.8.1`** — Replaced trailing-hyphen regex trimming in `packages/exporters/src/importers.ts` with an $O(n)$ character scan loop (closing CodeQL Alert `#7`, `js/polynomial-redos`) and built `@rack-mcp/exporters` prior to `@rack-mcp/web-viewer` in `pages.yml`.
 
 - **`v0.8.0`** — Added parametric Custom Device Bracket `.STL`/3D preview, Brother/DYMO/Niimbot thermal cable labels (`labels.csv`/`labels.svg`), UPS battery runtime + `€/kWh` energy cost & budget KPIs, NetBox/UniFi/Proxmox drag-and-drop & CLI import, 3D `Shift+Drag` U-slot movement, Custom Hardware Blueprint Wizard, unified Web-Viewer exporters onto `@rack-mcp/exporters`, Dependabot + 7-day `--pull` refreshes, and expanded catalog from `67` to `73` blueprints.
 
@@ -137,18 +139,20 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v0.9.1` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.10.0` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL (`https://mcp.rackarchitect.dev/mcp`)** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.8.1` – `v0.9.1`):**
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.9.0` – `v0.10.0`):**
+> - **Kurze Share-Links (`/?s=<ID>` & `/s/:id`), Client-`#rack=v2.`-Kompression & kompakte Session-Tokens (`v0.10.0`):** Neuer Zero-PII-`RackShareStore` (`POST /api/share`, `GET /api/share/:id`, `GET /s/:id`, 5.000-Einträge-LRU, 90 Tage TTL, SHA-256-Deduplizierung) verkürzt tausende Zeichen lange Teil-Links auf `mcp.rackarchitect.dev` automatisch auf ca. 40 Zeichen, zusätzlicher `CompressionStream('deflate-raw')` `#rack=v2.`-Fallback (~75–85 % kürzere Links für GitHub Pages mit voller `#rack=v1.`-Kompatibilität) und kürzere 22-Zeichen Base64URL-`viewerToken` für Live-MCP-Sessions.
 > - **CodeQL-Sicherheitsfix für Hostnamen-Prüfung (`v0.9.1`):** Ersetzung von `hostname.endsWith('github.io')` in `packages/web-viewer/src/state/ui-telemetry.ts` durch exakte Domain-Grenzprüfung (`normalizedHost === 'github.io' || normalizedHost.endsWith('.github.io')`) zur Behebung von CodeQL High Alert `#8` (`js/incomplete-url-substring-sanitization`).
 > - **Zweiteilige 19"-Druckbett-Teilung (`<= 245 mm`), 16:9 Share-Card (PNG), URL-Deep-Links, UI-Telemetrie & Launch-Kit (`v0.9.0`):** Breite `482,6 mm`-19-Zoll-Halterungen werden mit `split_half` in zwei `241,3 mm`-Hälften inklusive hinterem **M3-Schraubverbinder-Block** und 2-Manifold-`.STL` für Bambu/Prusa-Drucker geteilt (`Left Half .STL` / `Right Half .STL`), neuer **1200×675 Share Card PNG/SVG**-Export (`Card`-Button & BOM-Ansicht), direkte Start-Links `?preset=...&tab=...#custom-bracket`, 1-Klick-Button **GitHub Catalog** im Custom-Blueprint-Wizard, anonyme Zero-PII UI-Event-Telemetrie (`POST /api/ui-event` + `rack_mcp_ui_events_total`), optimierte GitHub-Topics + Homepage-Link sowie Community-Vorlagen in `docs/LAUNCH_KIT.md`.
-> - **CodeQL-ReDoS-Härtung & GitHub-Pages-Buildfix (`v0.8.1`):** Ersetzung der Regex zum Entfernen führender/abschließender Bindestriche in `packages/exporters/src/importers.ts` (`toSlugToken`) durch eine lineare $O(n)$-Schleife (schließt CodeQL High Alert `#7`, `js/polynomial-redos`) sowie Bau von `@rack-mcp/exporters` vor `@rack-mcp/web-viewer` in `.github/workflows/pages.yml`.
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.8.0) auf Deutsch anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.8.1) auf Deutsch anzeigen</b></summary>
 
 <br />
+
+- **`v0.8.1`** — Ersetzung der Regex zum Entfernen führender/abschließender Bindestriche in `packages/exporters/src/importers.ts` durch eine lineare $O(n)$-Schleife (schließt CodeQL High Alert `#7`, `js/polynomial-redos`) sowie expliziter Build von `@rack-mcp/exporters` vor `@rack-mcp/web-viewer` in `pages.yml`.
 
 - **`v0.8.0`** — Parametrischer Custom-Device-Bracket-Konfigurator (`.STL` & `<StlPreview3D />`), Brother-/DYMO-/Niimbot-Kabel-Etiketten (`labels.csv`/`labels.svg`), USV-Laufzeit + editierbarer `€/kWh`-Stromkosten- & Budget-Rechner, NetBox-/UniFi-/Proxmox-Import (Drag-and-Drop & `rack-mcp import`), `Shift+Drag` 3D U-Slot-Verschieben, Custom-Blueprint-Wizard, vereinheitlichte Web-Viewer-Exporter (`@rack-mcp/exporters`), Dependabot + 7-Tage Alpine-`--pull`-Rebuilds sowie Katalog-Ausbau von `67` auf `73` Blueprints.
 

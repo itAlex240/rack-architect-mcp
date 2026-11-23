@@ -37,7 +37,7 @@ export interface TopNavBarProps {
   readonly onSelectTab: (tab: WorkspaceTab) => void;
   readonly onToggleCatalogDrawer: () => void;
   readonly onSelectPreset?: ((presetId: StandalonePresetId) => void) | undefined;
-  readonly onShareRackUrl?: (() => string) | undefined;
+  readonly onShareRackUrl?: (() => string | Promise<string>) | undefined;
   readonly onExportShareCard?: (() => void) | undefined;
   readonly onImportProjectJson: (rawJson: string) => boolean;
   readonly onImportProjectFile?:
@@ -781,16 +781,18 @@ export function TopNavBar({
               data-testid="btn-share-rack-link"
               title="Copy Shareable Rack URL (#rack=v1...)"
               onClick={() => {
-                const url = onShareRackUrl();
-                if (
-                  typeof navigator !== 'undefined' &&
-                  navigator.clipboard &&
-                  typeof navigator.clipboard.writeText === 'function'
-                ) {
-                  void navigator.clipboard.writeText(url).catch(() => {});
-                }
-                setShareCopiedFlash(true);
-                setTimeout(() => setShareCopiedFlash(false), 1800);
+                void (async () => {
+                  const url = await onShareRackUrl();
+                  if (
+                    typeof navigator !== 'undefined' &&
+                    navigator.clipboard &&
+                    typeof navigator.clipboard.writeText === 'function'
+                  ) {
+                    void navigator.clipboard.writeText(url).catch(() => {});
+                  }
+                  setShareCopiedFlash(true);
+                  setTimeout(() => setShareCopiedFlash(false), 1800);
+                })();
               }}
               style={{
                 display: 'inline-flex',

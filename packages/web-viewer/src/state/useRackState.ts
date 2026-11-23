@@ -35,7 +35,8 @@ import {
 } from './standalone-presets.js';
 import {
   decodeRackProjectFromHash,
-  encodeRackProjectToHash,
+  decodeRackProjectFromHashAsync,
+  encodeRackProjectToCompressedHash,
 } from './rack-url-codec.js';
 import { trackUiEvent } from './ui-telemetry.js';
 
@@ -244,7 +245,7 @@ export interface RackViewerState {
   setDoorOpen(open: boolean): void;
   setCatalogDrawerOpen(open: boolean): void;
   selectPreset(presetId: StandalonePresetId): void;
-  buildShareableRackUrl(): string;
+  buildShareableRackUrl(): Promise<string>;
   selectDevice(instanceId: string | null): void;
   selectCable(cableId: string | null): void;
   setHoveredPort(info: HoveredPortInfo | null): void;
@@ -641,12 +642,17 @@ export function useRackState(): RackViewerState {
       ]);
       if (
         typeof window !== 'undefined' &&
-        window.location.hash.includes('rack=v1.')
+        (window.location.hash.includes('rack=v1.') ||
+          window.location.hash.includes('rack=v2.') ||
+          new URLSearchParams(window.location.search).has('s'))
       ) {
+        const nextParams = new URLSearchParams(window.location.search);
+        nextParams.delete('s');
+        const nextQuery = nextParams.toString();
         window.history.replaceState(
           null,
           '',
-          `${window.location.pathname}${window.location.search}`,
+          `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}`,
         );
       }
     },
@@ -965,14 +971,60 @@ export function useRackState(): RackViewerState {
     [connectInteractiveCable, pendingPort],
   );
 
-  const buildShareableRackUrl = useCallback((): string => {
-    const hash = encodeRackProjectToHash(scene.project);
+  const buildShareableRackUrl = useCallback(async (): Promise<string> => {
     if (typeof window === 'undefined') {
-      return hash;
+      return encodeRackProjectToCompressedHash(scene.project);
     }
-    const base = `${window.location.origin}${window.location.pathname}${window.location.search}`;
-    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${hash}`);
-    return `${base}${hash}`;
+
+    const { protocol, hostname, origin, pathname } = window.location;
+    const normalizedHost = hostname.toLowerCase();
+    const isGitHubPages =
+      normalizedHost === 'github.io' || normalizedHost.endsWith('.github.io');
+    const isTestRunner =
+      typeof navigator !== 'undefined' &&
+      (navigator.userAgent.includes('jsdom') ||
+        navigator.userAgent.includes('HappyDOM'));
+
+    if (
+      !isGitHubPages &&
+      !isTestRunner &&
+      (protocol === 'http:' || protocol === 'https:') &&
+      typeof fetch === 'function'
+    ) {
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), 4000);
+      try {
+        const res = await fetch('/api/share', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ project: scene.project }),
+          signal: controller.signal,
+        });
+        if (res.ok) {
+          const data = (await res.json()) as { readonly id?: unknown };
+          if (
+            typeof data.id === 'string' &&
+            /^[a-z0-9]{8}$/.test(data.id)
+          ) {
+            const shortPath = `/?s=${data.id}`;
+            window.history.replaceState(null, '', shortPath);
+            return `${origin}${shortPath}`;
+          }
+        }
+      } catch {
+        // Fall through cleanly to compressed client-side `#rack=v2.` hash
+      } finally {
+        window.clearTimeout(timer);
+      }
+    }
+
+    const hash = await encodeRackProjectToCompressedHash(scene.project);
+    const nextParams = new URLSearchParams(window.location.search);
+    nextParams.delete('s');
+    const nextQuery = nextParams.toString();
+    const querySuffix = nextQuery ? `?${nextQuery}` : '';
+    window.history.replaceState(null, '', `${pathname}${querySuffix}${hash}`);
+    return `${origin}${pathname}${querySuffix}${hash}`;
   }, [scene.project]);
 
   const disconnectCable = useCallback(
@@ -1292,23 +1344,91 @@ export function useRackState(): RackViewerState {
     }
   }, []);
 
-  // Hydrate shared `#rack=v1.<base64url>` URL hash changes in standalone mode
+  const hydrateSharedProject = useCallback(
+    (projectInput: RackProjectInput, sourceLabel: string) => {
+      undoStackRef.current = [];
+      redoStackRef.current = [];
+      initialInputRef.current = projectInput;
+      const nextScene = evaluateStandaloneScene(
+        projectInput,
+        catalogRecordRef.current,
+      );
+      sceneRef.current = nextScene;
+      setScene(nextScene);
+      setPendingPort(null);
+      setSelectedCableId(null);
+      setSelectedDeviceId(
+        projectInput.mounted_devices?.[0]?.instance_id ?? null,
+      );
+      setUndoAvailable(0);
+      setRedoAvailable(0);
+      syncDerivedExports(nextScene);
+      setMcpToolLog((prev) => [
+        {
+          id: `shared-${Date.now()}`,
+          timestamp: 'SHARED',
+          tool: 'validate_rack',
+          summary: `Loaded shared rack '${nextScene.project.project_name}' via ${sourceLabel} (${nextScene.validation.error_count} Errors).`,
+          status: nextScene.validation.is_valid ? 'VALID' : 'INVALID',
+          errorCount: nextScene.validation.error_count,
+          warningCount: nextScene.validation.warning_count,
+        },
+        ...prev.slice(0, 19),
+      ]);
+    },
+    [syncDerivedExports],
+  );
+
+  // Hydrate `?s=<8-char-id>` short links & `#rack=v2.` compressed hashes on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    let cancelled = false;
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const shortId = searchParams.get('s')?.trim() ?? '';
+    if (/^[a-z0-9]{8}$/.test(shortId) && typeof fetch === 'function') {
+      void fetch(`/api/share/${encodeURIComponent(shortId)}`)
+        .then(async (res) => {
+          if (!res.ok || cancelled) return;
+          const body = (await res.json()) as { readonly project?: unknown };
+          const validated = RackProjectSchema.safeParse(body.project);
+          if (validated.success && !cancelled) {
+            hydrateSharedProject(validated.data, `short link ?s=${shortId}`);
+          }
+        })
+        .catch(() => {});
+    } else if (window.location.hash.includes('rack=v2.')) {
+      void decodeRackProjectFromHashAsync(window.location.hash).then(
+        (decoded) => {
+          if (decoded && !cancelled) {
+            hydrateSharedProject(decoded, 'compressed #rack=v2 URL');
+          }
+        },
+      );
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrateSharedProject]);
+
+  // Hydrate shared `#rack=v1.` or `#rack=v2.` URL hash changes in standalone mode
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const onHashChange = () => {
       if (connectionMode === 'sidecar-live') return;
-      const decoded = decodeRackProjectFromHash(window.location.hash);
-      if (!decoded) return;
-      applyStandaloneMutation(() => decoded);
-      setPendingPort(null);
-      setSelectedCableId(null);
-      setSelectedDeviceId(decoded.mounted_devices?.[0]?.instance_id ?? null);
+      void decodeRackProjectFromHashAsync(window.location.hash).then(
+        (decoded) => {
+          if (!decoded) return;
+          hydrateSharedProject(decoded, 'shared URL hash');
+        },
+      );
     };
     window.addEventListener('hashchange', onHashChange);
     return () => {
       window.removeEventListener('hashchange', onHashChange);
     };
-  }, [applyStandaloneMutation, connectionMode]);
+  }, [connectionMode, hydrateSharedProject]);
 
   // Connect to Sidecar via HTTP + WebSocket when running in browser
   useEffect(() => {
@@ -1318,12 +1438,17 @@ export function useRackState(): RackViewerState {
     const searchParams = new URLSearchParams(window.location.search);
     const rawSessionParam = searchParams.get('session')?.trim() ?? '';
     const hasExplicitSession = /^[a-zA-Z0-9_-]{1,128}$/.test(rawSessionParam);
+    const rawShortShareParam = searchParams.get('s')?.trim() ?? '';
+    const hasShortShare = /^[a-z0-9]{8}$/.test(rawShortShareParam);
     const rawDeepLinkPreset = searchParams.get('preset')?.trim() ?? '';
     const hasDeepLinkPreset = STANDALONE_PRESET_OPTIONS.some(
       (opt) => opt.id === rawDeepLinkPreset,
     );
     if (
-      (window.location.hash.includes('rack=v1.') || hasDeepLinkPreset) &&
+      (window.location.hash.includes('rack=v1.') ||
+        window.location.hash.includes('rack=v2.') ||
+        hasShortShare ||
+        hasDeepLinkPreset) &&
       !hasExplicitSession
     ) {
       return;

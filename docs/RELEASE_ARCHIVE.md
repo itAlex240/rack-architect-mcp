@@ -1,12 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.8.0`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.8.1`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.8.0`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.8.1`)
 
 ### ⚡ `v0.8.x` Series — Custom 3D-Print Brackets, Infrastructure Imports & Energy Telemetry
+
+- **[`v0.8.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.8.1) (2026-11-23) — CodeQL ReDoS Hardening & GitHub Pages Build Fix:**
+  - Replaced trailing-hyphen regex trimming in `packages/exporters/src/importers.ts` (`toSlugToken`) with a deterministic $O(n)$ loop to close CodeQL Alert `#7` (`js/polynomial-redos`), and added `@rack-mcp/exporters` build execution prior to `@rack-mcp/web-viewer` in `.github/workflows/pages.yml`.
 
 - **[`v0.8.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.8.0) (2026-11-23) — Custom Bracket `.STL`/3D Preview, Cable Labels, UPS/Energy KPIs, NetBox/UniFi/Proxmox Import, 3D U-Slot Drag & Custom Blueprint Wizard:**
   - Added parametric Custom Device Bracket OpenSCAD + watertight 2-manifold `.STL` generation & interactive `<StlPreview3D />` Three.js preview, Brother/DYMO/Niimbot cable labels (`labels.csv` + `12/18/24mm` `labels.svg`), UPS battery runtime + editable `€/kWh` energy cost & budget KPIs, drag-and-drop & CLI import (`rack-mcp import`) for `rack.yaml`, NetBox, UniFi & Proxmox VE, interactive 3D `Shift+Drag` U-slot repositioning, Custom Hardware Blueprint Wizard (`rack-mcp new-blueprint` & UI tab), unified `@rack-mcp/web-viewer` exporters onto `@rack-mcp/exporters`, enabled Dependabot + weekly Alpine `--pull` image refreshes, and expanded the catalog from `67` to `73` blueprints.
@@ -115,9 +118,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.8.0`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.8.1`)
 
 ### ⚡ Serie `v0.8.x` — Custom 3D-Druck-Halterungen, Infrastruktur-Import & USV-/Stromkosten-Telemetrie
+
+- **[`v0.8.1`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.8.1) (2026-11-23) — CodeQL-ReDoS-Härtung & GitHub-Pages-Buildfix:**
+  - Ersetzung der Regex zum Entfernen führender/abschließender Bindestriche in `packages/exporters/src/importers.ts` (`toSlugToken`) durch eine lineare $O(n)$-Schleife (schließt CodeQL High Alert `#7`, `js/polynomial-redos`) sowie Bau von `@rack-mcp/exporters` vor `@rack-mcp/web-viewer` in `.github/workflows/pages.yml`.
 
 - **[`v0.8.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.8.0) (2026-11-23) — Custom-Device-Bracket `.STL` & 3D-Vorschau, Kabel-Etiketten, USV-/Stromkosten-Telemetrie, NetBox/UniFi/Proxmox-Import, 3D U-Slot Shift+Drag & Custom-Blueprint-Wizard:**
   - Neuer parametrischer Halterungs-Konfigurator (OpenSCAD + wasserdichtes `.STL` + interaktive `<StlPreview3D />` Three.js-Vorschau), Brother-/DYMO-/Niimbot-Kabel-Etiketten (`labels.csv` + `12/18/24mm` `labels.svg`), USV-Laufzeit (typisch/Peak) + editierbarer `€/kWh`-Stromkosten- & Budget-Rechner, Drag-and-Drop-/CLI-Import (`rack-mcp import`) für `rack.yaml`, NetBox, UniFi & Proxmox VE, vertikales 3D-Verschieben via `Shift+Drag`, grafischer Custom-Blueprint-Wizard, deduplizierte Web-Viewer-Exporter (`@rack-mcp/exporters`), Dependabot + 7-Tage Alpine-`--pull`-Rebuilds sowie Ausbau des Hardware-Katalogs von `67` auf `73` Blueprints.

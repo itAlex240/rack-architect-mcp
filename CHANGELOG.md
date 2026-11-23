@@ -5,6 +5,18 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-11-24
+
+### Added & Improved (Short Share Links, Client URL Compression & Compact Session Tokens)
+- **Short Server-Side Share Links (`/?s=<8-char-id>` & `/s/:id`):** Added zero-PII content-addressed `RackShareStore` (`packages/mcp-server/src/remote/rack-share-store.ts`, SHA-256 deduplication, 5,000-entry LRU cache, 90-day TTL, 128 KB payload limit, atomic disk checkpointing alongside telemetry) plus `POST /api/share` (per-IP rate limit `30/min`, strict `Origin` check), `GET /api/share/:id`, and `GET /s/:id` (`302` redirect to `/?s=<id>`) in `@rack-mcp/mcp-server`, turning multi-thousand-char share URLs into ~40-char links on `https://mcp.rackarchitect.dev/`.
+- **Compressed `#rack=v2.` Hash Fallback (`packages/web-viewer/src/state/rack-url-codec.ts` & `useRackState.ts`):** Added native `CompressionStream('deflate-raw')` / `DecompressionStream('deflate-raw')` URL hash encoding (`#rack=v2.<base64url>` with 256 KB decompression size cap and automatic `#rack=v1.` backwards compatibility), cutting static GitHub Pages / offline share links by ~75–85%.
+- **Compact 22-Char Live Session `viewerToken` (`packages/mcp-server/src/remote/remote-session-registry.ts`):** Switched `deriveViewerToken` from 32 hex chars to 22 URL-safe Base64URL chars (~132 bits HMAC-SHA256 entropy), making `live_viewer_url` links shorter across all MCP clients.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Kurze Server-Share-Links (`/?s=<8-Zeichen-ID>` & `/s/:id`):** Neuer Zero-PII-Speicher `RackShareStore` (SHA-256-Deduplizierung, 5.000-Einträge-LRU, 90 Tage TTL, 128-KB-Limit) sowie `POST /api/share`, `GET /api/share/:id` und `GET /s/:id` in `@rack-mcp/mcp-server` — verwandelt lange JSON-Links auf `https://mcp.rackarchitect.dev/` automatisch in kompakte ~40-Zeichen-URLs.
+- **Komprimierter `#rack=v2.`-Client-Fallback (`CompressionStream('deflate-raw')`):** Auf GitHub Pages / ohne Server komprimiert der `Share`-Button Rack-Projekte im Browser um ~75–85 % (inkl. 256-KB-Entpackungslimit und voller Abwärtskompatibilität zu `#rack=v1.`).
+- **Kompaktere Live-Session-Tokens (`viewerToken`):** HMAC-SHA256-`viewerToken` für `live_viewer_url` von 32 Hex-Zeichen auf 22 URL-sichere Base64URL-Zeichen (ca. 132 Bit Entropie) verkürzt.
+
 ## [0.9.1] - 2026-11-24
 
 ### Security Fix

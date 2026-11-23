@@ -101,7 +101,7 @@ describe('@rack-mcp/mcp-server Hosted Multi-Session Remote MCP (Streamable HTTP 
     };
     const sessionRecordA = server.remoteRegistry?.getSession(sessionA);
     expect(sessionRecordA).toBeDefined();
-    expect(sessionRecordA!.viewerToken).toMatch(/^[0-9a-f]{32}$/);
+    expect(sessionRecordA!.viewerToken).toMatch(/^[A-Za-z0-9_-]{22}$/);
     expect(sessionRecordA!.viewerToken).not.toBe(sessionA);
 
     expect(initAEnv.status).toBe('VALID');

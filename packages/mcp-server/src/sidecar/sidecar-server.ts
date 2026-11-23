@@ -8,6 +8,7 @@ import * as zlib from 'node:zlib';
 import { WebSocket, WebSocketServer } from 'ws';
 import {
   RACK_MCP_SERVER_NAME,
+  RackProjectSchema,
   serializeRackScene,
   type SerializedRackScene
 } from '@rack-mcp/core-domain';
@@ -27,6 +28,7 @@ import {
   RemoteSessionRegistry,
   SlidingWindowRateLimiter
 } from '../remote/remote-session-registry.js';
+import { RackShareStore } from '../remote/rack-share-store.js';
 import type {
   McpToolCallEntry,
   ProjectStateManager,
@@ -89,6 +91,7 @@ export interface RackSidecarServerOptions {
   readonly rateLimitPerMinute?: number | undefined;
   readonly telemetryTracker?: RackTelemetryTracker | undefined;
   readonly telemetryFilePath?: string | undefined;
+  readonly shareStoreFilePath?: string | undefined;
   readonly metricsAuthToken?: string | undefined;
 }
 
@@ -661,15 +664,27 @@ export async function startRackSidecarServer(
   const metricsAuthToken =
     options.metricsAuthToken ?? process.env['RACK_MCP_METRICS_TOKEN'];
 
+  const resolvedTelemetryPath =
+    options.telemetryFilePath ?? process.env['RACK_MCP_TELEMETRY_FILE'];
+  const resolvedShareStorePath =
+    options.shareStoreFilePath ??
+    process.env['RACK_MCP_SHARE_FILE'] ??
+    (resolvedTelemetryPath !== undefined &&
+    resolvedTelemetryPath.trim().length > 0
+      ? path.join(path.dirname(resolvedTelemetryPath.trim()), 'shares.json')
+      : undefined);
+
   const ownsTelemetryTracker = options.telemetryTracker === undefined;
   const telemetry =
     options.telemetryTracker ??
     new RackTelemetryTracker({
       mode: remoteMcp ? 'remote-mcp' : 'local-sidecar',
-      telemetryFilePath:
-        options.telemetryFilePath ?? process.env['RACK_MCP_TELEMETRY_FILE'],
+      telemetryFilePath: resolvedTelemetryPath,
       saltHex: process.env['RACK_MCP_TELEMETRY_SALT']
     });
+  const shareStore = new RackShareStore({
+    filePath: resolvedShareStorePath
+  });
 
   const remoteRegistry = remoteMcp
     ? new RemoteSessionRegistry({
@@ -697,6 +712,9 @@ export async function startRackSidecarServer(
 
   const rateLimiter = remoteMcp
     ? new SlidingWindowRateLimiter(options.rateLimitPerMinute ?? 240, 60_000)
+    : undefined;
+  const shareRateLimiter = remoteMcp
+    ? new SlidingWindowRateLimiter(30, 60_000)
     : undefined;
 
   let activeBoundPort = requestedPort;
@@ -992,6 +1010,157 @@ export async function startRackSidecarServer(
       }
       telemetry.recordUiEvent(eventName as UiEventName);
       res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    if (req.method === 'POST' && pathname === '/api/share') {
+      const originHeader = req.headers.origin;
+      if (
+        originHeader !== undefined &&
+        resolveAllowedViewerOrigin(originHeader, {
+          remoteMcp,
+          configuredPublicOrigin,
+          additionalPublicOrigins,
+          dynamicPublicOrigin: tryExtractOrigin(remoteRegistry?.getPublicBaseUrl()),
+          boundHost: host,
+          boundPort: activeBoundPort
+        }) === undefined
+      ) {
+        req.resume();
+        res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Forbidden origin for rack sharing.' }));
+        return;
+      }
+
+      if (shareRateLimiter !== undefined) {
+        const check = shareRateLimiter.check(clientIp);
+        if (!check.allowed) {
+          telemetry.recordRateLimited();
+          req.resume();
+          res.writeHead(429, {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Retry-After': String(check.retryAfterSeconds)
+          });
+          res.end(
+            JSON.stringify({
+              error: 'Too Many Requests',
+              retry_after_seconds: check.retryAfterSeconds
+            })
+          );
+          return;
+        }
+      }
+
+      const MAX_SHARE_BODY_BYTES = 128 * 1024;
+      const chunks: Buffer[] = [];
+      let totalBytes = 0;
+      let tooLarge = false;
+      await new Promise<void>((resolve) => {
+        req.on('data', (chunk: Buffer) => {
+          totalBytes += chunk.byteLength;
+          if (totalBytes > MAX_SHARE_BODY_BYTES) {
+            tooLarge = true;
+            req.resume();
+            return;
+          }
+          chunks.push(chunk);
+        });
+        req.on('end', resolve);
+        req.on('error', resolve);
+      });
+
+      if (tooLarge) {
+        res.writeHead(413, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Payload too large (max 128 KB).' }));
+        return;
+      }
+
+      let rawBody: unknown;
+      try {
+        rawBody = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      } catch {
+        rawBody = null;
+      }
+      const candidate =
+        rawBody !== null &&
+        typeof rawBody === 'object' &&
+        'project' in rawBody
+          ? (rawBody as { readonly project: unknown }).project
+          : rawBody;
+      const validated = RackProjectSchema.safeParse(candidate);
+      if (!validated.success) {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Invalid RackProject payload.' }));
+        return;
+      }
+
+      let saveResult: { readonly id: string; readonly created: boolean };
+      try {
+        saveResult = shareStore.save(validated.data);
+      } catch {
+        res.writeHead(413, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Shared rack exceeds size cap.' }));
+        return;
+      }
+
+      remoteRegistry?.updateDynamicBaseUrl(req);
+      const baseUrl =
+        remoteRegistry?.getPublicBaseUrl() ?? `http://${host}:${activeBoundPort}`;
+      const sharePath = `/?s=${saveResult.id}`;
+      res.writeHead(saveResult.created ? 201 : 200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store'
+      });
+      res.end(
+        JSON.stringify({
+          id: saveResult.id,
+          sharePath,
+          shareUrl: `${baseUrl}${sharePath}`
+        })
+      );
+      return;
+    }
+
+    const shareGetMatch =
+      req.method === 'GET' ? /^\/api\/share\/([a-z0-9]{8})$/.exec(pathname) : null;
+    if (shareGetMatch !== null) {
+      const id = shareGetMatch[1]!;
+      const project = shareStore.get(id);
+      if (project === null) {
+        res.writeHead(404, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-store'
+        });
+        res.end(JSON.stringify({ error: 'Shared rack not found or expired.' }));
+        return;
+      }
+      const payloadBuffer = Buffer.from(
+        JSON.stringify({ id, project }),
+        'utf8'
+      );
+      sendBufferWithOptionalGzip(
+        req,
+        res,
+        200,
+        {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'public, max-age=300'
+        },
+        payloadBuffer,
+        { compressible: true }
+      );
+      return;
+    }
+
+    const shortRedirectMatch =
+      req.method === 'GET' ? /^\/s\/([a-z0-9]{8})$/.exec(pathname) : null;
+    if (shortRedirectMatch !== null) {
+      const id = shortRedirectMatch[1]!;
+      res.writeHead(302, {
+        Location: `/?s=${id}`,
+        'Cache-Control': 'no-store'
+      });
       res.end();
       return;
     }
@@ -1595,6 +1764,8 @@ export async function startRackSidecarServer(
     async close(): Promise<void> {
       unsubscribeLocal?.();
       rateLimiter?.close();
+      shareRateLimiter?.close();
+      shareStore.close();
       if (remoteRegistry !== undefined) {
         await remoteRegistry.closeAll();
       }

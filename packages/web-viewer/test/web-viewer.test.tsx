@@ -1,12 +1,14 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import {
   AppDashboard,
   STANDALONE_PRESET_OPTIONS,
   computeDeviceExplodeOffsetZMm,
   createStandalonePresetProjectInput,
   decodeRackProjectFromHash,
+  decodeRackProjectFromHashAsync,
+  encodeRackProjectToCompressedHash,
   encodeRackProjectToHash,
   evaluateStandaloneScene,
   generateClientCustomCoverPanelStl,
@@ -302,7 +304,7 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     expect(initNewRackSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('evaluates all 5 standalone presets with 0 validation errors, switches presets live, and encodes/decodes shareable #rack=v1. URLs', () => {
+  it('evaluates all 5 standalone presets with 0 validation errors, switches presets live, and encodes/decodes shareable #rack=v1. & compressed #rack=v2. URLs', async () => {
     for (const opt of STANDALONE_PRESET_OPTIONS) {
       const presetInput = createStandalonePresetProjectInput(opt.id);
       const evaluated = evaluateStandaloneScene(presetInput);
@@ -314,9 +316,19 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
       const decoded = decodeRackProjectFromHash(encodedHash);
       expect(decoded).not.toBeNull();
       expect(decoded!.project_name).toBe(presetInput.project_name);
+
+      const compressedHash = await encodeRackProjectToCompressedHash(presetInput);
+      if (typeof CompressionStream === 'function') {
+        expect(compressedHash.startsWith('#rack=v2.')).toBe(true);
+        expect(compressedHash.length).toBeLessThan(encodedHash.length);
+      }
+      const decodedCompressed = await decodeRackProjectFromHashAsync(compressedHash);
+      expect(decodedCompressed).not.toBeNull();
+      expect(decodedCompressed!.project_name).toBe(presetInput.project_name);
     }
 
     expect(decodeRackProjectFromHash('#rack=v1.not-valid-json!')).toBeNull();
+    expect(await decodeRackProjectFromHashAsync('#rack=v2.not-valid-deflate!')).toBeNull();
 
     render(<AppDashboard />);
 
@@ -343,11 +355,16 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
       '10 Visible Cable Tubes',
     );
 
-    // Click Share button -> updates window.location.hash and flashes Copied!
+    // Click Share button -> updates compressed window.location.hash and flashes Copied!
     const shareBtn = screen.getByTestId('btn-share-rack-link');
     fireEvent.click(shareBtn);
-    expect(shareBtn.textContent).toContain('Copied!');
-    expect(window.location.hash.startsWith('#rack=v1.')).toBe(true);
+    await waitFor(() => {
+      expect(shareBtn.textContent).toContain('Copied!');
+    });
+    expect(
+      window.location.hash.startsWith('#rack=v2.') ||
+        window.location.hash.startsWith('#rack=v1.'),
+    ).toBe(true);
   });
 
   it('supports direct 2-click 3D port-to-port cable patching and custom 3D-print cover-panel configuration', () => {
@@ -532,5 +549,28 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     expect(cardSvg).toContain('mcp.rackarchitect.dev');
     expect(cardSvg).toContain('R&amp;D &lt;Rack&gt; &quot;Prod&quot;');
     expect(cardSvg).not.toContain('<Rack>');
+  });
+
+  it('hydrates short ?s=<id> share URLs via /api/share/:id without clobbering state', async () => {
+    const sharedPreset = createStandalonePresetProjectInput('6inch-microlab');
+    const mockedFetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ id: 'ab23cd45', project: sharedPreset }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    vi.stubGlobal('fetch', mockedFetch);
+    try {
+      window.history.replaceState(null, '', '/?s=ab23cd45');
+      render(<AppDashboard />);
+      await waitFor(() => {
+        expect(mockedFetch).toHaveBeenCalledWith('/api/share/ab23cd45');
+        expect(screen.getByTestId('rack-3d-scene-summary').textContent).toContain(
+          '10 Visible Cable Tubes',
+        );
+      });
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
