@@ -38,6 +38,7 @@ jobs:
         run: |
           pnpm --filter @rack-mcp/core-domain build
           pnpm --filter @rack-mcp/hardware-catalog build
+          pnpm --filter @rack-mcp/exporters build
           pnpm --filter @rack-mcp/web-viewer build
           touch packages/web-viewer/dist/.nojekyll
 

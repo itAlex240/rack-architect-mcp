@@ -1,12 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.7`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.8`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.7`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.8`)
 
 ### 📊 `v0.7.x` Series — Privacy-First Remote MCP Observability & Visual Showcase
+
+- **[`v0.7.8`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.8) (2026-11-16) — CodeQL Full HTML/Markdown Sanitization & Grouped Dependabot Updates:**
+  - Resolved the GitHub CodeQL High Alert (`js/incomplete-sanitization`) in `bom-markdown.ts` by escaping all special characters (`&`, `<`, `>`, `"`, `'`) and table backslashes/pipes, consolidated Dependabot updates into 3 atomic groups (`production-dependencies`, `dev-dependencies`, `github-actions`), locked TypeScript to semver-minor to protect TS 5.9 compiler gates, and closed failing PRs.
 
 - **[`v0.7.7`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.7) (2026-11-11) — Dual Security Audit Hardening, 10x Faster 3D Cable Router & Read-Only Viewer Token Isolation:**
   - Separated public HMAC-SHA256 `viewerToken` URLs (`/?session=<viewerToken>`) from the write-capable `Mcp-Session-Id` header, enforced read-only remote viewer WebSockets (`60 commands/min` limit), confined local `export_deliverables` `output_dir` to the project workspace (with `fs.realpathSync` symlink checks), added local DNS-rebinding `Host` header guards (`421`), tightened proxy trust & IPv6 `/64` rate-limit bucketing, removed `saltHex` persistence from `telemetry.json`, and accelerated 3D Catmull-Rom cable routing via 3D AABB culling and collinear spline compaction.
@@ -104,9 +107,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.7`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.8`)
 
 ### 📊 Serie `v0.7.x` — DSGVO-konforme Remote-MCP-Telemetrie & Hero-Showcase
+
+- **[`v0.7.8`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.8) (2026-11-16) — CodeQL-HTML/Markdown-Vollmaskierung & gruppierte Dependabot-Updates:**
+  - Vollständige Behebung des CodeQL-High-Alerts (`js/incomplete-sanitization`) in `bom-markdown.ts` durch vollständiges Encoding (`&`, `<`, `>`, `"`, `'`) und Backslash-Escaping vor Tabellen-Pipes, Zusammenfassung von Dependabot-Updates in 3 logische Gruppen (`production-dependencies`, `dev-dependencies`, `github-actions`), Ausschluss von TypeScript-Major-Versionen zur Wahrung der TS 5.9 Compiler-Gates und Schließen fehlerhafter PRs.
 
 - **[`v0.7.7`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.7) (2026-11-11) — Security-Audit-Härtung, 10x schnelleres 3D-Kabel-Routing & Read-Only Viewer-Token:**
   - Getrennte HMAC-SHA256-`viewerToken` für geteilte Live-3D-Viewer-Links (`/?session=<viewerToken>`), Schreibschutz für unauthentifizierte Remote-Viewer-WebSockets (`60 Befehle/Min.`), strikte Projektverzeichnis-Prüfung inkl. Symlink-Schutz bei lokalem `export_deliverables`, DNS-Rebinding-Schutz (`421`) am lokalen Sidecar, verschärftes Proxy-Trust- & IPv6-`/64`-Rate-Limiting, keine Speicherung des Telemetrie-HMAC-Schlüssels auf der Festplatte sowie 10x schnelleres 3D-Spline-Routing durch 3D-AABB-Culling und Segment-Kompaktierung.

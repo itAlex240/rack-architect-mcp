@@ -1024,7 +1024,7 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
 
     const proxmoxPayload = [
       { node: 'pve-node-1', status: 'online', maxcpu: 8, type: 'node' },
-      { node: 'pve-node-2', status: 'online', maxcpu: 8, type: 'node' },
+      { node: `${'-'.repeat(40)}pve-node-2${'-'.repeat(40)}`, status: 'online', maxcpu: 8, type: 'node' },
     ];
     expect(detectExternalImportFormat(proxmoxPayload)).toBe('proxmox');
     const proxmoxRes = importExternalInventory(proxmoxPayload, {
@@ -1032,5 +1032,6 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     });
     expect(proxmoxRes.project.mounted_devices?.length).toBeGreaterThanOrEqual(2);
     expect(proxmoxRes.yaml).toContain('pve-node-1');
+    expect(proxmoxRes.yaml).toContain('pve-node-2');
   });
 });

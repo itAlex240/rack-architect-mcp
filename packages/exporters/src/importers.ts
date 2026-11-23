@@ -46,11 +46,21 @@ function asNumber(val: unknown): number | undefined {
 }
 
 function toSlugToken(raw: string): string {
-  return raw
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 64);
+  let out = '';
+  let prevHyphen = true;
+  const lower = raw.toLowerCase();
+  for (let i = 0; i < lower.length && out.length < 64; i++) {
+    const code = lower.charCodeAt(i);
+    const isAlnum = (code >= 97 && code <= 122) || (code >= 48 && code <= 57);
+    if (isAlnum) {
+      out += lower.charAt(i);
+      prevHyphen = false;
+    } else if (!prevHyphen) {
+      out += '-';
+      prevHyphen = true;
+    }
+  }
+  return out.endsWith('-') ? out.slice(0, -1) : out;
 }
 
 /**

@@ -5,6 +5,15 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2026-11-23
+
+### Security & CI Fixes
+- **CodeQL Polynomial ReDoS Remediation (`packages/exporters/src/importers.ts`):** Replaced `.replace(/^-+|-+$/g, '')` in `toSlugToken` with an $O(n)$ character scan loop, resolving CodeQL High Alert `#7` (`js/polynomial-redos`).
+- **GitHub Pages Build Order Fix (`.github/workflows/pages.yml`):** Added `pnpm --filter @rack-mcp/exporters build` prior to building `@rack-mcp/web-viewer` so standalone Pages builds resolve `@rack-mcp/exporters` declarations cleanly.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **CodeQL ReDoS-Fix (`packages/exporters/src/importers.ts`) & GitHub-Pages-Buildfix (`.github/workflows/pages.yml`):** Lineare Schleife statt `^-+|-+$`-Regex in `toSlugToken` (behebt CodeQL High Alert `#7`) sowie expliziter Build von `@rack-mcp/exporters` vor `@rack-mcp/web-viewer` im Pages-Deployment.
+
 ## [0.8.0] - 2026-11-23
 
 ### Added & Improved (A1–A3 & B4–B8 Product, Security & UX Release)
