@@ -58,6 +58,17 @@ export const EXPORT_DOWNLOAD_FORMATS = [
 
 export type ExportDownloadFormat = (typeof EXPORT_DOWNLOAD_FORMATS)[number];
 
+export const UI_EVENT_NAMES = [
+  'stl_download',
+  'bracket_stl_download',
+  'labels_download',
+  'file_import',
+  'share_card_export',
+  'custom_blueprint_register'
+] as const;
+
+export type UiEventName = (typeof UI_EVENT_NAMES)[number];
+
 export type McpTransportKind = 'streamable-http' | 'sse' | 'stdio';
 
 interface DailyTelemetryBucket {
@@ -94,6 +105,7 @@ interface PersistedTelemetryState {
   readonly bytesOutByChannel: Record<TrafficChannel, number>;
   readonly bytesInByChannel: Record<TrafficChannel, number>;
   readonly exportDownloadsByFormat: Record<ExportDownloadFormat, number>;
+  readonly uiEvents?: Partial<Record<UiEventName, number>> | undefined;
   readonly rateLimitedRequestsTotal: number;
   readonly dailyBuckets: Record<string, PersistedDailyBucket>;
 }
@@ -155,6 +167,7 @@ export interface RackTelemetrySummary {
     readonly exportDownloadsByFormat: Record<ExportDownloadFormat, number>;
     readonly rateLimitedRequestsTotal: number;
   };
+  readonly uiEvents: Record<UiEventName, number>;
   readonly homepage: {
     readonly active_sessions: number;
     readonly active_mcp_users_24h_30d: string;
@@ -425,6 +438,7 @@ export class RackTelemetryTracker {
   private readonly bytesOutByChannel = new Map<TrafficChannel, number>();
   private readonly bytesInByChannel = new Map<TrafficChannel, number>();
   private readonly exportDownloads = new Map<ExportDownloadFormat, number>();
+  private readonly uiEvents = new Map<UiEventName, number>();
   private rateLimitedRequestsTotal = 0;
 
   private readonly dailyBuckets = new Map<string, DailyTelemetryBucket>();
@@ -459,6 +473,9 @@ export class RackTelemetryTracker {
     }
     for (const fmt of EXPORT_DOWNLOAD_FORMATS) {
       this.exportDownloads.set(fmt, 0);
+    }
+    for (const evt of UI_EVENT_NAMES) {
+      this.uiEvents.set(evt, 0);
     }
 
     if (this.telemetryFilePath !== undefined) {
@@ -595,6 +612,11 @@ export class RackTelemetryTracker {
 
   public recordExportDownload(format: ExportDownloadFormat): void {
     this.exportDownloads.set(format, (this.exportDownloads.get(format) ?? 0) + 1);
+    this.dirty = true;
+  }
+
+  public recordUiEvent(name: UiEventName): void {
+    this.uiEvents.set(name, (this.uiEvents.get(name) ?? 0) + 1);
     this.dirty = true;
   }
 
@@ -761,6 +783,11 @@ export class RackTelemetryTracker {
       exportDownloadsByFormat[fmt] = this.exportDownloads.get(fmt) ?? 0;
     }
 
+    const uiEvents = {} as Record<UiEventName, number>;
+    for (const ev of UI_EVENT_NAMES) {
+      uiEvents[ev] = this.uiEvents.get(ev) ?? 0;
+    }
+
     const uniqueVisitors: Record<VisitorCategory, TelemetryWindowCounts> = {
       mcp_active: this.computeUniqueVisitorWindows('mcp_active', nowMs),
       mcp_connected: this.computeUniqueVisitorWindows('mcp_connected', nowMs),
@@ -822,6 +849,7 @@ export class RackTelemetryTracker {
         exportDownloadsByFormat,
         rateLimitedRequestsTotal: this.rateLimitedRequestsTotal
       },
+      uiEvents,
       homepage: {
         active_sessions: liveGauges.activeMcpSessions,
         active_mcp_users_24h_30d: `${uniqueVisitors.mcp_active.today} / ${uniqueVisitors.mcp_active.last30d}`,
@@ -931,6 +959,12 @@ export class RackTelemetryTracker {
       lines.push(`rack_mcp_export_downloads_total{format="${fmt}"} ${s.traffic.exportDownloadsByFormat[fmt]}`);
     }
 
+    lines.push('# HELP rack_mcp_ui_events_total Total anonymous UI interaction events reported by the web viewer.');
+    lines.push('# TYPE rack_mcp_ui_events_total counter');
+    for (const ev of UI_EVENT_NAMES) {
+      lines.push(`rack_mcp_ui_events_total{event="${ev}"} ${s.uiEvents[ev]}`);
+    }
+
     lines.push('# HELP rack_mcp_rate_limited_requests_total Total requests rejected by per-IP rate limiting (HTTP 429).');
     lines.push('# TYPE rack_mcp_rate_limited_requests_total counter');
     lines.push(`rack_mcp_rate_limited_requests_total ${s.traffic.rateLimitedRequestsTotal}`);
@@ -1009,6 +1043,12 @@ export class RackTelemetryTracker {
         const eVal = parsed.exportDownloadsByFormat?.[fmt];
         if (typeof eVal === 'number' && eVal >= 0) {
           this.exportDownloads.set(fmt, eVal);
+        }
+      }
+      for (const ev of UI_EVENT_NAMES) {
+        const uVal = parsed.uiEvents?.[ev];
+        if (typeof uVal === 'number' && uVal >= 0) {
+          this.uiEvents.set(ev, uVal);
         }
       }
       if (
@@ -1120,6 +1160,11 @@ export class RackTelemetryTracker {
         });
       }
 
+      const uiEvents = {} as Record<UiEventName, number>;
+      for (const ev of UI_EVENT_NAMES) {
+        uiEvents[ev] = this.uiEvents.get(ev) ?? 0;
+      }
+
       const payload: PersistedTelemetryState = {
         schemaVersion: 1,
         startedAtIso: this.startedAtIso,
@@ -1139,6 +1184,7 @@ export class RackTelemetryTracker {
         bytesOutByChannel,
         bytesInByChannel,
         exportDownloadsByFormat,
+        uiEvents,
         rateLimitedRequestsTotal: this.rateLimitedRequestsTotal,
         dailyBuckets: dailyBucketsObj
       };

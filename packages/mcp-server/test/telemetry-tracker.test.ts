@@ -104,6 +104,10 @@ describe('@rack-mcp/mcp-server Telemetry, AI-Client Classification & Protected P
       nowMs: baseNow
     });
 
+    tracker.recordUiEvent('bracket_stl_download');
+    tracker.recordUiEvent('bracket_stl_download');
+    tracker.recordUiEvent('share_card_export');
+
     tracker.close();
 
     // Ensure raw visitor IPs and the secret HMAC salt key NEVER appear anywhere in the persisted file
@@ -143,6 +147,9 @@ describe('@rack-mcp/mcp-server Telemetry, AI-Client Classification & Protected P
     expect(summary.aiClients.toolCallsByClient.cursor).toBe(1);
     expect(summary.aiClients.sessionsByClient['registry-probe']).toBe(1);
     expect(summary.homepage.active_mcp_users_24h_30d).toBe('1 / 2');
+    expect(summary.uiEvents.bracket_stl_download).toBe(2);
+    expect(summary.uiEvents.share_card_export).toBe(1);
+    expect(summary.uiEvents.stl_download).toBe(0);
   });
 
   it('classifies MCP AI clients, tracks live Remote MCP tool usage & traffic, and enforces Bearer token auth on /metrics and /api/telemetry', async () => {
@@ -234,6 +241,41 @@ describe('@rack-mcp/mcp-server Telemetry, AI-Client Classification & Protected P
     });
     expect(scanRes.status).toBe(404);
 
+    // 2b. Verify POST /api/ui-event endpoint validation, origin guard, and body cap
+    const validUiRes = await fetch(`${server.url}/api/ui-event`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: 'https://rack-mcp.example.test'
+      },
+      body: JSON.stringify({ event: 'share_card_export' })
+    });
+    expect(validUiRes.status).toBe(204);
+
+    const invalidUiRes = await fetch(`${server.url}/api/ui-event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'not_a_real_event' })
+    });
+    expect(invalidUiRes.status).toBe(400);
+
+    const forbiddenOriginUiRes = await fetch(`${server.url}/api/ui-event`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: 'https://evil.example.org'
+      },
+      body: JSON.stringify({ event: 'share_card_export' })
+    });
+    expect(forbiddenOriginUiRes.status).toBe(403);
+
+    const oversizedUiRes = await fetch(`${server.url}/api/ui-event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'share_card_export', pad: 'x'.repeat(600) })
+    });
+    expect(oversizedUiRes.status).toBe(413);
+
     // 3. Query /api/telemetry and /metrics with valid Bearer token
     const telemetryRes = await fetch(`${server.url}/api/telemetry`, {
       headers: { Authorization: `Bearer ${secretToken}` }
@@ -251,6 +293,7 @@ describe('@rack-mcp/mcp-server Telemetry, AI-Client Classification & Protected P
     expect(summary.mcpTools.byTool['search_catalog']?.valid).toBe(1);
     expect(summary.mcpTools.byTool['init_rack']?.valid).toBe(1);
     expect(summary.traffic.bytesOutTotal).toBeGreaterThan(500);
+    expect(summary.uiEvents.share_card_export).toBe(1);
 
     const promRes = await fetch(`${server.url}/metrics`, {
       headers: { Authorization: `Bearer ${secretToken}` }
@@ -267,6 +310,7 @@ describe('@rack-mcp/mcp-server Telemetry, AI-Client Classification & Protected P
     expect(
       promBody
     ).toContain('rack_mcp_tool_calls_total{tool="init_rack",status="VALID"} 1');
+    expect(promBody).toContain('rack_mcp_ui_events_total{event="share_card_export"} 1');
 
     await mcpClient.close();
   });

@@ -1,12 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.8`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.9`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.8`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.9`)
 
 ### 📊 `v0.7.x` Series — Privacy-First Remote MCP Observability & Visual Showcase
+
+- **[`v0.7.9`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.9) (2026-11-23) — Transitive Hono Security Patch, Vitest 5.1 & Toolchain Updates:**
+  - Resolved all 7 transitive runtime security advisories (`hono >= 4.13.16` -> `4.13.20` and `@hono/node-server >= 2.1.6` -> `2.1.11` beneath `@modelcontextprotocol/sdk`, `0` `pnpm audit` / `0` Dependabot alerts), merged grouped Dependabot updates (`ws 8.23.0`, `pnpm/action-setup v6`, `vite 8.3.8`, `@vitejs/plugin-react 6.3.0`, `jsdom 31.0.1`, `webmcp-types 0.1.11`), and removed stale `vitest 4.1.12` overrides so all test suites run natively on `vitest@5.1.1`.
 
 - **[`v0.7.8`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.8) (2026-11-16) — CodeQL Full HTML/Markdown Sanitization & Grouped Dependabot Updates:**
   - Resolved the GitHub CodeQL High Alert (`js/incomplete-sanitization`) in `bom-markdown.ts` by escaping all special characters (`&`, `<`, `>`, `"`, `'`) and table backslashes/pipes, consolidated Dependabot updates into 3 atomic groups (`production-dependencies`, `dev-dependencies`, `github-actions`), locked TypeScript to semver-minor to protect TS 5.9 compiler gates, and closed failing PRs.
@@ -107,9 +110,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.8`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.9`)
 
 ### 📊 Serie `v0.7.x` — DSGVO-konforme Remote-MCP-Telemetrie & Hero-Showcase
+
+- **[`v0.7.9`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.9) (2026-11-23) — Transitive Hono-Sicherheitsupdates, Vitest 5.1 & Dependency-Pflege:**
+  - Behebung aller 7 transitiven Runtime-Sicherheitswarnungen (`hono >= 4.13.16` → `4.13.20` und `@hono/node-server >= 2.1.6` → `2.1.11` unterhalb von `@modelcontextprotocol/sdk`, `0` `pnpm audit`- / `0` Dependabot-Alerts), Merge aller gruppierten Dependabot-Updates (`ws 8.23.0`, `pnpm/action-setup v6`, `vite 8.3.8`, `@vitejs/plugin-react 6.3.0`, `jsdom 31.0.1`, `webmcp-types 0.1.11`) und Entfernung veralteter `vitest 4.1.12`-Overrides für natives `vitest@5.1.1`.
 
 - **[`v0.7.8`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.8) (2026-11-16) — CodeQL-HTML/Markdown-Vollmaskierung & gruppierte Dependabot-Updates:**
   - Vollständige Behebung des CodeQL-High-Alerts (`js/incomplete-sanitization`) in `bom-markdown.ts` durch vollständiges Encoding (`&`, `<`, `>`, `"`, `'`) und Backslash-Escaping vor Tabellen-Pipes, Zusammenfassung von Dependabot-Updates in 3 logische Gruppen (`production-dependencies`, `dev-dependencies`, `github-actions`), Ausschluss von TypeScript-Major-Versionen zur Wahrung der TS 5.9 Compiler-Gates und Schließen fehlerhafter PRs.

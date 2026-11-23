@@ -13,6 +13,7 @@ import {
   InspectorSidebar,
   parseAsciiStlToBufferGeometry,
   renderClientSideElevationSvg,
+  renderRackShareCardSvg,
   TopNavBar,
 } from '../src/index.js';
 
@@ -488,5 +489,48 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     });
     const toast = await screen.findByTestId('import-status-toast');
     expect(toast.textContent).toContain('Imported NETBOX');
+  });
+
+  it('supports URL deep-links (?tab=bom&preset=19inch-enterprise), 19-inch 2-part STL split controls, 16:9 Share Card SVG/PNG generation, and GitHub catalog issue submission', () => {
+    window.history.replaceState(null, '', '/?tab=bom&preset=19inch-enterprise');
+    render(<AppDashboard />);
+
+    // Deep-linked directly into BOM view with the 19-inch Enterprise preset
+    expect(screen.getByTestId('bom-and-exports-view')).toBeDefined();
+    expect(screen.getByTestId('btn-export-share-card')).toBeDefined();
+    expect(screen.getByTestId('export-share-card-png')).toBeDefined();
+
+    // 19-inch 2-part split selector & quick Left/Right STL buttons appear
+    const splitSelect = screen.getByTestId(
+      'custom-bracket-split-half',
+    ) as HTMLSelectElement;
+    expect(splitSelect.value).toBe('full');
+    expect(screen.getByTestId('download-custom-bracket-stl-left')).toBeDefined();
+    expect(screen.getByTestId('download-custom-bracket-stl-right')).toBeDefined();
+
+    fireEvent.change(splitSelect, { target: { value: 'left' } });
+    expect(splitSelect.value).toBe('left');
+    fireEvent.click(screen.getByTestId('bracket-preview-mode-stl'));
+    const splitPreview = screen.getByTestId('custom-bracket-stl-preview');
+    expect(Number(splitPreview.getAttribute('data-triangles'))).toBeGreaterThan(50);
+
+    // Custom Blueprint Wizard includes pre-filled GitHub Catalog Issue button
+    fireEvent.click(screen.getByTestId('btn-toggle-catalog-drawer'));
+    fireEvent.click(screen.getByTestId('tab-custom-blueprint'));
+    const ghLink = screen.getByTestId('btn-submit-blueprint-github') as HTMLAnchorElement;
+    expect(ghLink.href).toContain('https://github.com/itAlex240/rack-architect-mcp/issues/new');
+    expect(ghLink.href).toContain('labels=hardware-catalog');
+
+    // Share card SVG embeds elevation cleanly and escapes XML characters
+    const scene = evaluateStandaloneScene({
+      ...createStandalonePresetProjectInput('19inch-enterprise'),
+      project_name: 'R&D <Rack> "Prod"',
+    });
+    const elevSvg = renderClientSideElevationSvg(scene);
+    const cardSvg = renderRackShareCardSvg(scene, elevSvg);
+    expect(cardSvg).toContain('width="1200" height="675"');
+    expect(cardSvg).toContain('mcp.rackarchitect.dev');
+    expect(cardSvg).toContain('R&amp;D &lt;Rack&gt; &quot;Prod&quot;');
+    expect(cardSvg).not.toContain('<Rack>');
   });
 });

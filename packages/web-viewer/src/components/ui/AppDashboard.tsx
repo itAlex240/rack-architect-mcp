@@ -1,4 +1,6 @@
 import { useEffect, useState, type DragEvent } from 'react';
+import { exportRackShareCardPng } from '../../state/share-card-renderer.js';
+import { trackUiEvent } from '../../state/ui-telemetry.js';
 import { useRackState, type ProjectImportResult } from '../../state/useRackState.js';
 import { RackSceneCanvas } from '../canvas/RackSceneCanvas.js';
 import { TopNavBar } from './TopNavBar.js';
@@ -36,8 +38,16 @@ export function AppDashboard() {
     filename?: string,
   ): ProjectImportResult => {
     const res = state.importProjectFile(rawText, filename);
+    if (res.ok) {
+      trackUiEvent('file_import');
+    }
     setImportToast({ ok: res.ok, text: res.summary });
     return res;
+  };
+
+  const handleExportShareCard = () => {
+    trackUiEvent('share_card_export');
+    void exportRackShareCardPng(state.scene, state.elevationSvg);
   };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -97,6 +107,7 @@ export function AppDashboard() {
         }
         onSelectPreset={state.selectPreset}
         onShareRackUrl={state.buildShareableRackUrl}
+        onExportShareCard={handleExportShareCard}
         onImportProjectJson={state.importProjectJson}
         onImportProjectFile={handleImportFileContent}
         onInitNewRack={state.initNewRack}
@@ -201,6 +212,7 @@ export function AppDashboard() {
               projectYaml={state.exportProjectYaml()}
               electricityPricePerKwhEur={state.electricityPricePerKwhEur}
               onChangeElectricityPricePerKwhEur={state.setElectricityPricePerKwhEur}
+              onExportShareCard={handleExportShareCard}
             />
           )}
         </main>

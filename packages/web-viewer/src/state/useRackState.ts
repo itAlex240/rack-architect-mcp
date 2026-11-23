@@ -37,6 +37,7 @@ import {
   decodeRackProjectFromHash,
   encodeRackProjectToHash,
 } from './rack-url-codec.js';
+import { trackUiEvent } from './ui-telemetry.js';
 
 export type WorkspaceTab = '3d' | 'elevation' | 'wiring' | 'bom';
 export type CableFilterMode = 'all' | 'network' | 'power' | 'poe' | 'none';
@@ -312,8 +313,31 @@ export function useRackState(): RackViewerState {
     typeof window !== 'undefined'
       ? decodeRackProjectFromHash(window.location.hash)
       : null;
+  const urlSearchParams =
+    typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search)
+      : null;
+  const rawPresetParam = urlSearchParams?.get('preset')?.trim() ?? '';
+  const initialPresetOption =
+    !sharedHashBootProject && rawPresetParam
+      ? (STANDALONE_PRESET_OPTIONS.find((opt) => opt.id === rawPresetParam) ??
+        null)
+      : null;
+  const initialPresetId: StandalonePresetId =
+    initialPresetOption?.id ?? '10inch-homelab';
+  const rawTabParam = urlSearchParams?.get('tab')?.trim() ?? '';
+  const initialTab: WorkspaceTab =
+    rawTabParam === '3d' ||
+    rawTabParam === 'elevation' ||
+    rawTabParam === 'wiring' ||
+    rawTabParam === 'bom'
+      ? rawTabParam
+      : '3d';
   const initialInputRef = useRef<RackProjectInput>(
-    sharedHashBootProject ?? createStandaloneHomelabProjectInput(),
+    sharedHashBootProject ??
+      (initialPresetOption
+        ? createStandalonePresetProjectInput(initialPresetOption.id)
+        : createStandaloneHomelabProjectInput()),
   );
   const undoStackRef = useRef<RackProjectInput[]>([]);
   const redoStackRef = useRef<RackProjectInput[]>([]);
@@ -323,7 +347,7 @@ export function useRackState(): RackViewerState {
   >('standalone-demo');
   const [projectPath, setProjectPath] = useState<string | null>(null);
   const [activePresetId, setActivePresetId] =
-    useState<StandalonePresetId>('10inch-homelab');
+    useState<StandalonePresetId>(initialPresetId);
   const [scene, setScene] = useState<SerializedRackScene>(() =>
     evaluateStandaloneScene(initialInputRef.current),
   );
@@ -361,7 +385,7 @@ export function useRackState(): RackViewerState {
   const electricityPriceRef = useRef<number>(0.32);
 
   // Workspace & 3D HUD state
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>('3d');
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>(initialTab);
   const [xrayMode, setXrayMode] = useState<boolean>(false);
   const [explodeZMm, setExplodeZMm] = useState<number>(0);
   const [cableFilter, setCableFilter] = useState<CableFilterMode>('all');
@@ -376,7 +400,9 @@ export function useRackState(): RackViewerState {
     () =>
       sharedHashBootProject
         ? (sharedHashBootProject.mounted_devices?.[0]?.instance_id ?? null)
-        : 'sw-u8',
+        : initialPresetOption
+          ? initialPresetOption.defaultSelectedDeviceId
+          : 'sw-u8',
   );
   const [selectedCableId, setSelectedCableId] = useState<string | null>(null);
   const [hoveredPort, setHoveredPort] = useState<HoveredPortInfo | null>(null);
@@ -1155,6 +1181,7 @@ export function useRackState(): RackViewerState {
         ...prev.slice(0, 19),
       ]);
 
+      trackUiEvent('custom_blueprint_register');
       return { ok: true, slug: normalized.slug };
     },
     [connectionMode, syncDerivedExports],
@@ -1288,10 +1315,17 @@ export function useRackState(): RackViewerState {
     if (typeof window === 'undefined' || typeof WebSocket === 'undefined') {
       return;
     }
-    const rawSessionParam =
-      new URLSearchParams(window.location.search).get('session')?.trim() ?? '';
+    const searchParams = new URLSearchParams(window.location.search);
+    const rawSessionParam = searchParams.get('session')?.trim() ?? '';
     const hasExplicitSession = /^[a-zA-Z0-9_-]{1,128}$/.test(rawSessionParam);
-    if (window.location.hash.includes('rack=v1.') && !hasExplicitSession) {
+    const rawDeepLinkPreset = searchParams.get('preset')?.trim() ?? '';
+    const hasDeepLinkPreset = STANDALONE_PRESET_OPTIONS.some(
+      (opt) => opt.id === rawDeepLinkPreset,
+    );
+    if (
+      (window.location.hash.includes('rack=v1.') || hasDeepLinkPreset) &&
+      !hasExplicitSession
+    ) {
       return;
     }
     // Skip automatic network connection inside JSDOM / HappyDOM unit tests

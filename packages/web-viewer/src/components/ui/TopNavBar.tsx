@@ -11,6 +11,7 @@ import type {
 } from '../../state/useRackState.js';
 import {
   BlueprintLayersIcon,
+  CameraCardIcon,
   Cube3DIcon,
   DownloadIcon,
   PackageBomIcon,
@@ -37,6 +38,7 @@ export interface TopNavBarProps {
   readonly onToggleCatalogDrawer: () => void;
   readonly onSelectPreset?: ((presetId: StandalonePresetId) => void) | undefined;
   readonly onShareRackUrl?: (() => string) | undefined;
+  readonly onExportShareCard?: (() => void) | undefined;
   readonly onImportProjectJson: (rawJson: string) => boolean;
   readonly onImportProjectFile?:
     | ((rawText: string, filename?: string) => ProjectImportResult)
@@ -79,6 +81,7 @@ export function TopNavBar({
   onToggleCatalogDrawer,
   onSelectPreset,
   onShareRackUrl,
+  onExportShareCard,
   onImportProjectJson,
   onImportProjectFile,
   onInitNewRack,
@@ -809,6 +812,30 @@ export function TopNavBar({
             >
               <ShareLinkIcon size={12} />
               <span>{shareCopiedFlash ? 'Copied!' : 'Share'}</span>
+            </button>
+          )}
+
+          {onExportShareCard && (
+            <button
+              type="button"
+              data-testid="btn-export-share-card"
+              title="Export 16:9 Share Card PNG"
+              onClick={onExportShareCard}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '5px 8px',
+                borderRadius: '6px',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                background: '#16161B',
+                color: '#D4D4D8',
+                fontSize: '11px',
+                cursor: 'pointer',
+              }}
+            >
+              <CameraCardIcon size={12} />
+              <span>Card</span>
             </button>
           )}
 

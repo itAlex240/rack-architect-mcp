@@ -1317,10 +1317,11 @@ function buildAndEmitGridStl(params: {
   readonly maxX: number;
   readonly maxY: number;
   readonly maxZ: number;
+  readonly xOffset?: number | undefined;
   readonly boxes: readonly Box3DMm[];
   readonly isSolidAt: (mx: number, my: number, mz: number) => boolean;
 }): string {
-  const { solidName, maxX, maxY, maxZ, boxes, isSolidAt } = params;
+  const { solidName, maxX, maxY, maxZ, xOffset = 0, boxes, isSolidAt } = params;
   const xs = collectUniqueSortedCoords(
     boxes.flatMap((b) => [b.x0, b.x1]).filter((x) => x >= 0 && x <= maxX)
   );
@@ -1372,9 +1373,9 @@ function buildAndEmitGridStl(params: {
   ) => {
     lines.push(`  facet normal ${normX} ${normY} ${normZ}`);
     lines.push(`    outer loop`);
-    lines.push(`      vertex ${v1[0]} ${v1[1]} ${v1[2]}`);
-    lines.push(`      vertex ${v2[0]} ${v2[1]} ${v2[2]}`);
-    lines.push(`      vertex ${v3[0]} ${v3[1]} ${v3[2]}`);
+    lines.push(`      vertex ${roundCentis(v1[0] + xOffset)} ${v1[1]} ${v1[2]}`);
+    lines.push(`      vertex ${roundCentis(v2[0] + xOffset)} ${v2[1]} ${v2[2]}`);
+    lines.push(`      vertex ${roundCentis(v3[0] + xOffset)} ${v3[1]} ${v3[2]}`);
     lines.push(`    endloop`);
     lines.push(`  endfacet`);
   };
@@ -1973,6 +1974,8 @@ export function renderCustomCoverPanelPreviewSvg(
   return parts.join('');
 }
 
+export type BracketSplitHalf = 'full' | 'left' | 'right';
+
 export interface CustomBracketOptions {
   readonly standard: RackStandard;
   readonly u_height: 1 | 2 | 3;
@@ -1985,6 +1988,8 @@ export interface CustomBracketOptions {
   readonly rear_retainer_lip?: boolean | undefined;
   readonly ventilation_slots?: boolean | undefined;
   readonly engraved_label?: string | undefined;
+  /** Optional 2-part bed-splitting for 19-inch racks (`<= 245 mm` per piece with M3 rear joiner lug). */
+  readonly split_half?: BracketSplitHalf | undefined;
 }
 
 export interface CustomBracketValidation {
@@ -2221,6 +2226,11 @@ export function generateCustomBracketOpenScad(
   options: CustomBracketOptions
 ): string {
   const layout = computeCustomBracketLayout(options);
+  const splitHalf: BracketSplitHalf =
+    options.split_half === 'left' || options.split_half === 'right'
+      ? options.split_half
+      : 'full';
+  const splitX = roundCentis(layout.panelWidthMm / 2);
   const lines: string[] = [];
 
   lines.push(`// ============================================================================`);
@@ -2228,6 +2238,9 @@ export function generateCustomBracketOpenScad(
   lines.push(`// Device:    ${layout.deviceName} (${options.device_width_mm} x ${options.device_height_mm} x ${options.device_depth_mm} mm)`);
   lines.push(`// Standard:  ${layout.standard.toUpperCase()} EIA-310 (${layout.panelWidthMm}mm Width, ${layout.uCount}U = ${layout.panelHeightMm}mm)`);
   lines.push(`// Keystones: ${layout.keystoneSlots.length} | Tray Depth: ${layout.trayDepthMm}mm | Est. Filament: ${layout.validation.estimated_filament_grams}g`);
+  if (splitHalf !== 'full') {
+    lines.push(`// Print Split: ${splitHalf.toUpperCase()} HALF (<= ${roundCentis(splitX)}mm Bed Width + Rear M3 Joiner Lug)`);
+  }
   lines.push(`// Material:  PETG / ASA (4 Perimeters, 25% Gyroid Infill, Print Face-Down)`);
   lines.push(`// ============================================================================`);
   lines.push(``);
@@ -2277,35 +2290,55 @@ export function generateCustomBracketOpenScad(
   }
   lines.push(`}`);
   lines.push(``);
-  lines.push(`union() {`);
-  lines.push(`  difference() {`);
-  lines.push(`    cube([panel_width_mm, panel_height_mm, faceplate_thickness_mm]);`);
-  lines.push(`    eia310_ear_holes();`);
-  lines.push(`    front_cutouts();`);
-  lines.push(`  }`);
-  lines.push(`  difference() {`);
-  lines.push(`    translate([${layout.earWidthMm}, 0, faceplate_thickness_mm])`);
-  lines.push(`      cube([aperture_width_mm, tray_floor_thickness_mm, tray_depth_mm - faceplate_thickness_mm]);`);
+  lines.push(`module full_custom_bracket() {`);
+  lines.push(`  union() {`);
+  lines.push(`    difference() {`);
+  lines.push(`      cube([panel_width_mm, panel_height_mm, faceplate_thickness_mm]);`);
+  lines.push(`      eia310_ear_holes();`);
+  lines.push(`      front_cutouts();`);
+  lines.push(`    }`);
+  lines.push(`    difference() {`);
+  lines.push(`      translate([${layout.earWidthMm}, 0, faceplate_thickness_mm])`);
+  lines.push(`        cube([aperture_width_mm, tray_floor_thickness_mm, tray_depth_mm - faceplate_thickness_mm]);`);
   if (layout.ventilationSlots) {
-    lines.push(`    for (z = [18 : 20 : tray_depth_mm - 16]) {`);
-    lines.push(`      for (x = [${roundCentis(layout.earWidthMm + 14)} : 22 : panel_width_mm - ${roundCentis(layout.earWidthMm + 14)}]) {`);
-    lines.push(`        translate([x, -1, z]) rotate([-90, 0, 0]) cylinder(d = 12, h = tray_floor_thickness_mm + 2, $fn = 6);`);
+    lines.push(`      for (z = [18 : 20 : tray_depth_mm - 16]) {`);
+    lines.push(`        for (x = [${roundCentis(layout.earWidthMm + 14)} : 22 : panel_width_mm - ${roundCentis(layout.earWidthMm + 14)}]) {`);
+    lines.push(`          translate([x, -1, z]) rotate([-90, 0, 0]) cylinder(d = 12, h = tray_floor_thickness_mm + 2, $fn = 6);`);
+    lines.push(`        }`);
     lines.push(`      }`);
+  }
+  lines.push(`    }`);
+  const gussetH = roundCentis(layout.panelHeightMm * 0.65);
+  lines.push(`    translate([${layout.earWidthMm}, 0, faceplate_thickness_mm]) cube([side_gusset_thickness_mm, ${gussetH}, tray_depth_mm - faceplate_thickness_mm]);`);
+  lines.push(`    translate([${roundCentis(layout.panelWidthMm - layout.earWidthMm - layout.sideGussetThicknessMm)}, 0, faceplate_thickness_mm]) cube([side_gusset_thickness_mm, ${gussetH}, tray_depth_mm - faceplate_thickness_mm]);`);
+  const railH = roundCentis(Math.min(layout.panelHeightMm, layout.devY0 + 14));
+  lines.push(`    translate([${roundCentis(layout.devX0 - 2.4)}, 0, faceplate_thickness_mm]) cube([2.4, ${railH}, tray_depth_mm - faceplate_thickness_mm]);`);
+  lines.push(`    translate([${layout.devX1}, 0, faceplate_thickness_mm]) cube([2.4, ${railH}, tray_depth_mm - faceplate_thickness_mm]);`);
+  if (layout.rearRetainerLip) {
+    lines.push(`    // Rear anti-slide retainer stopper lip`);
+    lines.push(`    translate([${layout.devX0}, 0, ${roundCentis(layout.trayDepthMm - 3.2)}]) cube([${roundCentis(layout.devX1 - layout.devX0)}, 9.5, 3.2]);`);
+  }
+  if (splitHalf !== 'full') {
+    lines.push(`    // Rear M3 bolt joiner lug for 2-part center seam`);
+    lines.push(`    difference() {`);
+    lines.push(`      translate([${roundCentis(splitX - 4.0)}, 0, ${roundCentis(layout.trayDepthMm - 3.2)}]) cube([8.0, 16.0, 13.2]);`);
+    lines.push(`      translate([${roundCentis(splitX - 5.0)}, 8.0, ${roundCentis(layout.trayDepthMm + 5.0)}]) rotate([0, 90, 0]) cylinder(d = 3.4, h = 10.0);`);
     lines.push(`    }`);
   }
   lines.push(`  }`);
-  const gussetH = roundCentis(layout.panelHeightMm * 0.65);
-  lines.push(`  translate([${layout.earWidthMm}, 0, faceplate_thickness_mm]) cube([side_gusset_thickness_mm, ${gussetH}, tray_depth_mm - faceplate_thickness_mm]);`);
-  lines.push(`  translate([${roundCentis(layout.panelWidthMm - layout.earWidthMm - layout.sideGussetThicknessMm)}, 0, faceplate_thickness_mm]) cube([side_gusset_thickness_mm, ${gussetH}, tray_depth_mm - faceplate_thickness_mm]);`);
-  // Guide rails flanking the device bay
-  const railH = roundCentis(Math.min(layout.panelHeightMm, layout.devY0 + 14));
-  lines.push(`  translate([${roundCentis(layout.devX0 - 2.4)}, 0, faceplate_thickness_mm]) cube([2.4, ${railH}, tray_depth_mm - faceplate_thickness_mm]);`);
-  lines.push(`  translate([${layout.devX1}, 0, faceplate_thickness_mm]) cube([2.4, ${railH}, tray_depth_mm - faceplate_thickness_mm]);`);
-  if (layout.rearRetainerLip) {
-    lines.push(`  // Rear anti-slide retainer stopper lip`);
-    lines.push(`  translate([${layout.devX0}, 0, ${roundCentis(layout.trayDepthMm - 3.2)}]) cube([${roundCentis(layout.devX1 - layout.devX0)}, 9.5, 3.2]);`);
-  }
   lines.push(`}`);
+  lines.push(``);
+
+  if (splitHalf === 'full') {
+    lines.push(`full_custom_bracket();`);
+  } else {
+    const clipX = splitHalf === 'left' ? 0 : splitX;
+    const shiftX = splitHalf === 'right' ? -splitX : 0;
+    lines.push(`translate([${shiftX}, 0, 0]) intersection() {`);
+    lines.push(`  full_custom_bracket();`);
+    lines.push(`  translate([${clipX}, -1, -1]) cube([${splitX}, panel_height_mm + 2, tray_depth_mm + 20]);`);
+    lines.push(`}`);
+  }
 
   return lines.join('\n');
 }
@@ -2453,15 +2486,63 @@ export function generateCustomBracketStl(
     }
   }
 
+  const splitHalf: BracketSplitHalf =
+    options.split_half === 'left' || options.split_half === 'right'
+      ? options.split_half
+      : 'full';
+  const splitX = roundCentis(layout.panelWidthMm / 2);
+
+  const joinerFlangeBox =
+    splitHalf !== 'full'
+      ? normalizeBox({
+          x0: roundCentis(splitX - 4.0),
+          y0: 0,
+          z0: roundCentis(layout.trayDepthMm - 3.2),
+          x1: roundCentis(splitX + 4.0),
+          y1: 16.0,
+          z1: roundCentis(layout.trayDepthMm + 10.0)
+        })
+      : null;
+  const joinerHoleBox =
+    splitHalf !== 'full'
+      ? normalizeBox({
+          x0: roundCentis(splitX - 5.0),
+          y0: 6.3,
+          z0: roundCentis(layout.trayDepthMm + 3.3),
+          x1: roundCentis(splitX + 5.0),
+          y1: 9.7,
+          z1: roundCentis(layout.trayDepthMm + 6.7)
+        })
+      : null;
+  const splitSeamBox =
+    splitHalf !== 'full'
+      ? normalizeBox({
+          x0: splitX,
+          y0: 0,
+          z0: 0,
+          x1: splitX,
+          y1: layout.panelHeightMm,
+          z1: roundCentis(layout.trayDepthMm + 10.0)
+        })
+      : null;
+
   const baseBoxes: Box3DMm[] = [
     faceplateBox,
     trayFloorBox,
     ...gussetBoxes,
     ...railBoxes,
     ...(retainerBox ? [retainerBox] : []),
+    ...(joinerFlangeBox ? [joinerFlangeBox] : []),
+    ...(joinerHoleBox ? [joinerHoleBox] : []),
+    ...(splitSeamBox ? [splitSeamBox] : []),
     ...earHoleBoxes,
     ...cutoutBoxes
   ];
+
+  const effectiveMaxZ =
+    splitHalf !== 'full'
+      ? roundCentis(layout.trayDepthMm + 10.0)
+      : layout.trayDepthMm;
 
   const checkGridCount = (boxes: readonly Box3DMm[]): number => {
     const gX = collectUniqueSortedCoords(
@@ -2471,7 +2552,7 @@ export function generateCustomBracketStl(
       boxes.flatMap((b) => [b.y0, b.y1]).filter((y) => y >= 0 && y <= layout.panelHeightMm)
     );
     const gZ = collectUniqueSortedCoords(
-      boxes.flatMap((b) => [b.z0, b.z1]).filter((z) => z >= 0 && z <= layout.trayDepthMm)
+      boxes.flatMap((b) => [b.z0, b.z1]).filter((z) => z >= 0 && z <= effectiveMaxZ)
     );
     return Math.max(1, gX.length - 1) * Math.max(1, gY.length - 1) * Math.max(1, gZ.length - 1);
   };
@@ -2481,15 +2562,24 @@ export function generateCustomBracketStl(
   }
 
   const allBoxes = [...baseBoxes, ...ventCutoutBoxes];
-  const solidName = `custom_bracket_${layout.standard}_${layout.uCount}u`;
+  const solidName =
+    splitHalf === 'full'
+      ? `custom_bracket_${layout.standard}_${layout.uCount}u`
+      : `custom_bracket_${layout.standard}_${layout.uCount}u_${splitHalf}`;
 
   return buildAndEmitGridStl({
     solidName,
     maxX: layout.panelWidthMm,
     maxY: layout.panelHeightMm,
-    maxZ: layout.trayDepthMm,
+    maxZ: effectiveMaxZ,
+    xOffset: splitHalf === 'right' ? -splitX : 0,
     boxes: allBoxes,
     isSolidAt: (mx, my, mz) => {
+      if (splitHalf === 'left' && mx > splitX) return false;
+      if (splitHalf === 'right' && mx < splitX) return false;
+      if (joinerHoleBox && isPointInsideBox(mx, my, mz, joinerHoleBox)) {
+        return false;
+      }
       const inFaceplate =
         isPointInsideBox(mx, my, mz, faceplateBox) &&
         !earHoleBoxes.some((b) => isPointInsideBox(mx, my, mz, b)) &&
@@ -2501,7 +2591,11 @@ export function generateCustomBracketStl(
       const inRail = railBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
       const inRetainer =
         retainerBox !== null && isPointInsideBox(mx, my, mz, retainerBox);
-      return inFaceplate || inTrayFloor || inGusset || inRail || inRetainer;
+      const inJoiner =
+        joinerFlangeBox !== null && isPointInsideBox(mx, my, mz, joinerFlangeBox);
+      return (
+        inFaceplate || inTrayFloor || inGusset || inRail || inRetainer || inJoiner
+      );
     }
   });
 }
@@ -2514,6 +2608,11 @@ export function renderCustomBracketPreviewSvg(
   options: CustomBracketOptions
 ): string {
   const layout = computeCustomBracketLayout(options);
+  const splitHalf: BracketSplitHalf =
+    options.split_half === 'left' || options.split_half === 'right'
+      ? options.split_half
+      : 'full';
+  const splitX = roundCentis(layout.panelWidthMm / 2);
   const pad = 14;
   const sideGap = 18;
   const sidePreviewW = Math.min(180, layout.trayDepthMm);
@@ -2538,6 +2637,15 @@ export function renderCustomBracketPreviewSvg(
   parts.push(
     `<rect x="${roundCentis(ox + layout.earWidthMm)}" y="${oy}" width="${layout.apertureWidthMm}" height="${layout.panelHeightMm}" fill="none" stroke="#27272A" stroke-dasharray="2 2" stroke-width="0.7" />`
   );
+  if (splitHalf !== 'full') {
+    const dimX = splitHalf === 'left' ? roundCentis(ox + splitX) : ox;
+    parts.push(
+      `<rect x="${dimX}" y="${oy}" width="${splitX}" height="${layout.panelHeightMm}" fill="#09090B" fill-opacity="0.58" />`
+    );
+    parts.push(
+      `<line x1="${roundCentis(ox + splitX)}" y1="${oy - 2}" x2="${roundCentis(ox + splitX)}" y2="${roundCentis(oy + layout.panelHeightMm + 2)}" stroke="#F59E0B" stroke-dasharray="3 2" stroke-width="1.1" />`
+    );
+  }
 
   // EIA-310 mounting holes
   const leftHoleX = roundCentis((layout.panelWidthMm - layout.holePitchXMm) / 2);

@@ -986,6 +986,100 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     }
   });
 
+  it('splits 19-inch custom bracket exports into <= 245mm left/right halves with M3 joiner lugs and 2-manifold STL', () => {
+    const base19Cfg = {
+      standard: '19inch' as const,
+      u_height: 2 as const,
+      device_name: 'Desktop-NVR',
+      device_width_mm: 210,
+      device_height_mm: 68,
+      device_depth_mm: 165,
+      clearance_tolerance_mm: 0.5,
+      keystone_count: 4,
+      rear_retainer_lip: true,
+      ventilation_slots: true,
+      engraved_label: 'NVR-SPLIT',
+    };
+
+    for (const splitHalf of ['left', 'right'] as const) {
+      const cfg = { ...base19Cfg, split_half: splitHalf };
+      const scad = generateCustomBracketOpenScad(cfg);
+      expect(scad).toContain(`Print Split: ${splitHalf.toUpperCase()} HALF`);
+      expect(scad).toContain('intersection()');
+      if (splitHalf === 'right') {
+        expect(scad).toContain('translate([-241.3, 0, 0])');
+      }
+
+      const svg = renderCustomBracketPreviewSvg(cfg);
+      expect(svg).toContain('#F59E0B');
+      expect(svg).toContain('stroke-dasharray="3 2"');
+
+      const stl = generateCustomBracketStl(cfg);
+      expect(stl.startsWith(`solid custom_bracket_19inch_2u_${splitHalf}`)).toBe(true);
+
+      const vertexMatches = [
+        ...stl.matchAll(/vertex\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/g),
+      ];
+      expect(vertexMatches.length % 3).toBe(0);
+      expect(vertexMatches.length).toBeGreaterThan(100);
+
+      let minX = Infinity;
+      let maxX = -Infinity;
+      const directedEdges = new Map<string, number>();
+      const undirectedEdges = new Map<string, number>();
+      let signedVolumeMm3 = 0;
+
+      for (let i = 0; i < vertexMatches.length; i += 3) {
+        const v0 = vertexMatches[i]!;
+        const v1 = vertexMatches[i + 1]!;
+        const v2 = vertexMatches[i + 2]!;
+        const p0: [number, number, number] = [Number(v0[1]), Number(v0[2]), Number(v0[3])];
+        const p1: [number, number, number] = [Number(v1[1]), Number(v1[2]), Number(v1[3])];
+        const p2: [number, number, number] = [Number(v2[1]), Number(v2[2]), Number(v2[3])];
+
+        for (const p of [p0, p1, p2]) {
+          if (p[0] < minX) minX = p[0];
+          if (p[0] > maxX) maxX = p[0];
+        }
+
+        for (const [a, b] of [
+          [p0, p1],
+          [p1, p2],
+          [p2, p0],
+        ] as const) {
+          const ka = `${a[0]},${a[1]},${a[2]}`;
+          const kb = `${b[0]},${b[1]},${b[2]}`;
+          const dk = `${ka}->${kb}`;
+          directedEdges.set(dk, (directedEdges.get(dk) ?? 0) + 1);
+          const uk = ka < kb ? `${ka}|${kb}` : `${kb}|${ka}`;
+          undirectedEdges.set(uk, (undirectedEdges.get(uk) ?? 0) + 1);
+        }
+
+        signedVolumeMm3 +=
+          (p0[0] * (p1[1] * p2[2] - p1[2] * p2[1]) -
+            p0[1] * (p1[0] * p2[2] - p1[2] * p2[0]) +
+            p0[2] * (p1[0] * p2[1] - p1[1] * p2[0])) /
+          6.0;
+      }
+
+      expect(minX).toBeGreaterThanOrEqual(-0.01);
+      expect(maxX).toBeLessThanOrEqual(245);
+      expect(maxX - minX).toBeLessThanOrEqual(245);
+
+      const nonManifoldCount = [...undirectedEdges.values()].filter((c) => c !== 2).length;
+      let unpairedDirected = 0;
+      for (const [dk, cnt] of directedEdges.entries()) {
+        const [a, b] = dk.split('->');
+        if (directedEdges.get(`${b}->${a}`) !== cnt) {
+          unpairedDirected++;
+        }
+      }
+      expect(nonManifoldCount).toBe(0);
+      expect(unpairedDirected).toBe(0);
+      expect(signedVolumeMm3).toBeGreaterThan(1000);
+    }
+  });
+
   it('auto-detects and imports NetBox, UniFi, and Proxmox inventory exports into schema-valid rack.yaml', () => {
     const netboxPayload = {
       rack: { name: 'NetBox Lab', u_height: 8, width: 10, mounting_depth: 240 },

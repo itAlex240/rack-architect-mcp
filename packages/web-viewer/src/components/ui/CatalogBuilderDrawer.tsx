@@ -774,6 +774,32 @@ function CustomBlueprintWizardForm({
         >
           Download .yaml
         </button>
+        <a
+          href={`https://github.com/itAlex240/rack-architect-mcp/issues/new?${new URLSearchParams({
+            title: `Catalog Request: ${manufacturer.trim() || 'Hardware'} ${model.trim() || slug.trim() || 'Custom Device'}`,
+            labels: 'hardware-catalog',
+            body: `### Hardware Blueprint Submission\n\nSlug: \`${slug.trim() || 'custom-hardware'}\`\n\n\`\`\`yaml\n${stringifyYaml(draftBlueprint, { indent: 2 }).slice(0, 1800)}\n\`\`\`\n\n_Submitted via RackArchitect MCP Custom Blueprint Wizard_`,
+          }).toString()}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="btn-submit-blueprint-github"
+          title="Open pre-filled GitHub Issue to contribute this hardware blueprint"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '8px 10px',
+            borderRadius: '6px',
+            border: '1px solid rgba(59, 130, 246, 0.3)',
+            background: 'rgba(59, 130, 246, 0.1)',
+            color: '#93C5FD',
+            fontSize: '11px',
+            fontWeight: 600,
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          GitHub Catalog
+        </a>
       </div>
     </form>
   );

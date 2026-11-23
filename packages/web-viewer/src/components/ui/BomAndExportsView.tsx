@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { stringify as stringifyYaml } from 'yaml';
 import {
   deserializeRackScene,
@@ -18,9 +18,11 @@ import {
   generateCustomBracketStl,
   renderCustomBracketPreviewSvg,
   validateCustomBracketOptions,
+  type BracketSplitHalf,
   type CustomBracketOptions,
 } from '@rack-mcp/exporters';
 import { defaultCatalogRegistry } from '@rack-mcp/hardware-catalog';
+import { exportRackShareCardPng } from '../../state/share-card-renderer.js';
 import {
   generateClientCustomCoverPanelOpenScad,
   generateClientCustomCoverPanelStl,
@@ -32,6 +34,7 @@ import {
   type CoverPanelUHeight,
   type CustomCoverPanelOptions,
 } from '../../state/standalone-homelab.js';
+import { trackUiEvent } from '../../state/ui-telemetry.js';
 import { StlPreview3D } from '../canvas/StlPreview3D.js';
 
 export interface BomAndExportsViewProps {
@@ -46,6 +49,7 @@ export interface BomAndExportsViewProps {
   readonly onChangeElectricityPricePerKwhEur?:
     | ((rateEur: number) => void)
     | undefined;
+  readonly onExportShareCard?: (() => void) | undefined;
 }
 
 function triggerBlobDownload(
@@ -91,7 +95,20 @@ export function BomAndExportsView({
   projectYaml,
   electricityPricePerKwhEur,
   onChangeElectricityPricePerKwhEur,
+  onExportShareCard,
 }: BomAndExportsViewProps) {
+  const customBracketRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (
+      typeof window !== 'undefined' &&
+      window.location.hash === '#custom-bracket'
+    ) {
+      customBracketRef.current?.scrollIntoView?.({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  }, []);
   const printableDevices = scene.geometry.devices.filter(
     (d) =>
       (d.blueprint.printable_metadata !== undefined &&
@@ -250,9 +267,13 @@ export function BomAndExportsView({
   const [bracketRetainerLip, setBracketRetainerLip] = useState<boolean>(true);
   const [bracketVentSlots, setBracketVentSlots] = useState<boolean>(true);
   const [bracketLabel, setBracketLabel] = useState<string>('NODE-01');
+  const [bracketSplitHalf, setBracketSplitHalf] =
+    useState<BracketSplitHalf>('full');
   const [bracketPreviewMode, setBracketPreviewMode] = useState<'svg' | 'stl'>(
     'svg',
   );
+  const effectiveBracketSplitHalf: BracketSplitHalf =
+    bracketStandard === '19inch' ? bracketSplitHalf : 'full';
 
   const bracketOpts = useMemo<CustomBracketOptions>(
     () => ({
@@ -269,6 +290,9 @@ export function BomAndExportsView({
       ...(bracketLabel.trim().length > 0
         ? { engraved_label: bracketLabel.trim() }
         : {}),
+      ...(effectiveBracketSplitHalf !== 'full'
+        ? { split_half: effectiveBracketSplitHalf }
+        : {}),
     }),
     [
       bracketDepthMm,
@@ -282,6 +306,7 @@ export function BomAndExportsView({
       bracketUHeight,
       bracketVentSlots,
       bracketWidthMm,
+      effectiveBracketSplitHalf,
     ],
   );
   const bracketValidation = useMemo(
@@ -301,7 +326,7 @@ export function BomAndExportsView({
   );
   const bracketFileStem = `custom-${bracketStandard}-bracket-${bracketUHeight}u-${
     toAsciiKebabSlug(bracketDeviceName) || 'device'
-  }`;
+  }${effectiveBracketSplitHalf !== 'full' ? `-${effectiveBracketSplitHalf}` : ''}`;
 
   const rawSessionParam =
     typeof window !== 'undefined'
@@ -473,13 +498,14 @@ export function BomAndExportsView({
           <button
             type="button"
             data-testid="export-labels-csv"
-            onClick={() =>
+            onClick={() => {
+              trackUiEvent('labels_download');
               triggerBlobDownload(
                 effectiveLabelsCsv,
                 'labels.csv',
                 'text/csv;charset=utf-8',
-              )
-            }
+              );
+            }}
             style={{
               padding: '7px 12px',
               borderRadius: '6px',
@@ -497,13 +523,14 @@ export function BomAndExportsView({
           <button
             type="button"
             data-testid="export-labels-svg"
-            onClick={() =>
+            onClick={() => {
+              trackUiEvent('labels_download');
               triggerBlobDownload(
                 effectiveLabelsSvg,
                 'labels.svg',
                 'image/svg+xml;charset=utf-8',
-              )
-            }
+              );
+            }}
             style={{
               padding: '7px 12px',
               borderRadius: '6px',
@@ -541,6 +568,31 @@ export function BomAndExportsView({
           >
             Download rack-scene.glb
           </a>
+
+          <button
+            type="button"
+            data-testid="export-share-card-png"
+            onClick={() => {
+              if (onExportShareCard) {
+                onExportShareCard();
+              } else {
+                trackUiEvent('share_card_export');
+                void exportRackShareCardPng(scene, elevationSvg);
+              }
+            }}
+            style={{
+              padding: '7px 12px',
+              borderRadius: '6px',
+              border: '1px solid rgba(59, 130, 246, 0.35)',
+              background: 'rgba(59, 130, 246, 0.12)',
+              color: '#93C5FD',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Export Share Card (PNG)
+          </button>
         </div>
       </div>
 
@@ -913,7 +965,8 @@ export function BomAndExportsView({
                       <button
                         type="button"
                         data-testid={`download-stl-${dev.instance_id}`}
-                        onClick={() =>
+                        onClick={() => {
+                          trackUiEvent('stl_download');
                           triggerBlobDownload(
                             generateClientSideCarrierStl(
                               dev.blueprint,
@@ -921,8 +974,8 @@ export function BomAndExportsView({
                             ),
                             `${dev.blueprint_slug}.stl`,
                             'model/stl;charset=utf-8',
-                          )
-                        }
+                          );
+                        }}
                         style={{
                           padding: '4px 8px',
                           borderRadius: '5px',
@@ -1177,13 +1230,14 @@ export function BomAndExportsView({
                   <button
                     type="button"
                     data-testid="download-custom-cover-stl"
-                    onClick={() =>
+                    onClick={() => {
+                      trackUiEvent('stl_download');
                       triggerBlobDownload(
                         generateClientCustomCoverPanelStl(customCoverOpts),
                         `${customFileStem}.stl`,
                         'model/stl;charset=utf-8',
-                      )
-                    }
+                      );
+                    }}
                     style={{
                       padding: '6px 10px',
                       borderRadius: '6px',
@@ -1292,6 +1346,7 @@ export function BomAndExportsView({
 
         {/* 2.2 Parametric Custom Device Bracket / Tray Configurator (B4) */}
         <div
+          ref={customBracketRef}
           data-testid="custom-bracket-configurator"
           style={{
             marginTop: '18px',
@@ -1620,6 +1675,49 @@ export function BomAndExportsView({
                 </div>
               </div>
 
+              {bracketStandard === '19inch' && (
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label
+                    htmlFor="custom-bracket-split-half"
+                    style={{
+                      display: 'block',
+                      fontSize: '10.5px',
+                      color: '#A1A1AA',
+                      marginBottom: '4px',
+                    }}
+                  >
+                    19&quot; Print-Bed Split (&le; 245 mm Bambu / Prusa · M3 Joiner Lug)
+                  </label>
+                  <select
+                    id="custom-bracket-split-half"
+                    data-testid="custom-bracket-split-half"
+                    value={bracketSplitHalf}
+                    onChange={(e) =>
+                      setBracketSplitHalf(e.target.value as BracketSplitHalf)
+                    }
+                    style={{
+                      width: '100%',
+                      padding: '6px 8px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      background: '#121216',
+                      color: '#F4F4F5',
+                      fontSize: '11.5px',
+                    }}
+                  >
+                    <option value="full">
+                      Full 19&quot; Panel (482.6 mm Single Piece)
+                    </option>
+                    <option value="left">
+                      Left Half (241.3 mm · Print Bed &le; 245 mm + M3 Lug)
+                    </option>
+                    <option value="right">
+                      Right Half (241.3 mm · Print Bed &le; 245 mm + M3 Lug)
+                    </option>
+                  </select>
+                </div>
+              )}
+
               <div
                 style={{
                   gridColumn: '1 / -1',
@@ -1662,8 +1760,11 @@ export function BomAndExportsView({
                 <span className="mono" style={{ fontSize: '11px', color: '#A1A1AA' }}>
                   {bracketValidation.panel_width_mm} × {bracketValidation.panel_height_mm} ×{' '}
                   {bracketValidation.tray_depth_mm} mm • ~{bracketValidation.estimated_filament_grams} g PETG
+                  {effectiveBracketSplitHalf !== 'full'
+                    ? ` • ${effectiveBracketSplitHalf.toUpperCase()} HALF (<= 241.3 mm)`
+                    : ''}
                 </span>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   <button
                     type="button"
                     data-testid="download-custom-bracket-scad"
@@ -1693,13 +1794,14 @@ export function BomAndExportsView({
                     type="button"
                     data-testid="download-custom-bracket-stl"
                     disabled={!bracketValidation.valid}
-                    onClick={() =>
+                    onClick={() => {
+                      trackUiEvent('bracket_stl_download');
                       triggerBlobDownload(
                         generateCustomBracketStl(bracketOpts),
                         `${bracketFileStem}.stl`,
                         'model/stl;charset=utf-8',
-                      )
-                    }
+                      );
+                    }}
                     style={{
                       padding: '6px 10px',
                       borderRadius: '6px',
@@ -1714,6 +1816,76 @@ export function BomAndExportsView({
                   >
                     Download Bracket .STL
                   </button>
+                  {bracketStandard === '19inch' && (
+                    <>
+                      <button
+                        type="button"
+                        data-testid="download-custom-bracket-stl-left"
+                        disabled={!bracketValidation.valid}
+                        onClick={() => {
+                          trackUiEvent('bracket_stl_download');
+                          triggerBlobDownload(
+                            generateCustomBracketStl({
+                              ...bracketOpts,
+                              split_half: 'left',
+                            }),
+                            `custom-${bracketStandard}-bracket-${bracketUHeight}u-${
+                              toAsciiKebabSlug(bracketDeviceName) || 'device'
+                            }-left.stl`,
+                            'model/stl;charset=utf-8',
+                          );
+                        }}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid rgba(245, 158, 11, 0.35)',
+                          background: 'rgba(245, 158, 11, 0.12)',
+                          color: '#FCD34D',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          cursor: bracketValidation.valid
+                            ? 'pointer'
+                            : 'not-allowed',
+                          opacity: bracketValidation.valid ? 1 : 0.45,
+                        }}
+                      >
+                        Left Half .STL
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="download-custom-bracket-stl-right"
+                        disabled={!bracketValidation.valid}
+                        onClick={() => {
+                          trackUiEvent('bracket_stl_download');
+                          triggerBlobDownload(
+                            generateCustomBracketStl({
+                              ...bracketOpts,
+                              split_half: 'right',
+                            }),
+                            `custom-${bracketStandard}-bracket-${bracketUHeight}u-${
+                              toAsciiKebabSlug(bracketDeviceName) || 'device'
+                            }-right.stl`,
+                            'model/stl;charset=utf-8',
+                          );
+                        }}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid rgba(245, 158, 11, 0.35)',
+                          background: 'rgba(245, 158, 11, 0.12)',
+                          color: '#FCD34D',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          cursor: bracketValidation.valid
+                            ? 'pointer'
+                            : 'not-allowed',
+                          opacity: bracketValidation.valid ? 1 : 0.45,
+                        }}
+                      >
+                        Right Half .STL
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -1942,13 +2114,14 @@ export function BomAndExportsView({
                         <button
                           type="button"
                           data-testid={`download-cover-stl-${bp.slug}`}
-                          onClick={() =>
+                          onClick={() => {
+                            trackUiEvent('stl_download');
                             triggerBlobDownload(
                               generateClientSideCarrierStl(bp, rackStd),
                               `${bp.slug}.stl`,
                               'model/stl;charset=utf-8',
-                            )
-                          }
+                            );
+                          }}
                           style={{
                             padding: '4px 8px',
                             borderRadius: '5px',

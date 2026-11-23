@@ -35,8 +35,10 @@ import type {
 import {
   isLikelyScannerRequest,
   RackTelemetryTracker,
+  UI_EVENT_NAMES,
   verifyMetricsBearerToken,
-  type TrafficChannel
+  type TrafficChannel,
+  type UiEventName
 } from '../telemetry/telemetry-tracker.js';
 
 export interface SidecarWsMessage {
@@ -927,6 +929,71 @@ export async function startRackSidecarServer(
         );
         return;
       }
+    }
+
+    if (req.method === 'POST' && pathname === '/api/ui-event') {
+      const originHeader = req.headers.origin;
+      if (
+        originHeader !== undefined &&
+        resolveAllowedViewerOrigin(originHeader, {
+          remoteMcp,
+          configuredPublicOrigin,
+          additionalPublicOrigins,
+          dynamicPublicOrigin: tryExtractOrigin(remoteRegistry?.getPublicBaseUrl()),
+          boundHost: host,
+          boundPort: activeBoundPort
+        }) === undefined
+      ) {
+        req.resume();
+        res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Forbidden origin for UI telemetry.' }));
+        return;
+      }
+
+      const chunks: Buffer[] = [];
+      let totalBytes = 0;
+      let tooLarge = false;
+      await new Promise<void>((resolve) => {
+        req.on('data', (chunk: Buffer) => {
+          totalBytes += chunk.byteLength;
+          if (totalBytes > 512) {
+            tooLarge = true;
+            req.resume();
+            return;
+          }
+          chunks.push(chunk);
+        });
+        req.on('end', resolve);
+        req.on('error', resolve);
+      });
+
+      if (tooLarge) {
+        res.writeHead(413, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Payload too large (max 512 bytes).' }));
+        return;
+      }
+
+      let rawEvt: unknown;
+      try {
+        rawEvt = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      } catch {
+        rawEvt = null;
+      }
+      const eventName =
+        rawEvt !== null &&
+        typeof rawEvt === 'object' &&
+        typeof (rawEvt as { readonly event?: unknown }).event === 'string'
+          ? (rawEvt as { readonly event: string }).event
+          : '';
+      if (!(UI_EVENT_NAMES as readonly string[]).includes(eventName)) {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Invalid UI event name.' }));
+        return;
+      }
+      telemetry.recordUiEvent(eventName as UiEventName);
+      res.writeHead(204);
+      res.end();
+      return;
     }
 
     if (req.method === 'GET' && pathname === '/api/state') {

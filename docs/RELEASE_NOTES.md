@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v0.8.1` — 3D/2D Rack Planner, Hosted Remote MCP (`mcp.rackarchitect.dev`), CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v0.9.0` — 3D/2D Rack Planner, Hosted Remote MCP (`mcp.rackarchitect.dev`), CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v0.8.1`!**  
+**Welcome to RackArchitect MCP `v0.9.0`!**  
 Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint (`https://mcp.rackarchitect.dev/mcp`)** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
 <p align="center">
@@ -11,15 +11,17 @@ Whether you are a **complete beginner with zero coding experience** who just wan
   </a>
 </p>
 
-> **✨ What's New in the Last 3 Releases (`v0.7.9` – `v0.8.1`):**
+> **✨ What's New in the Last 3 Releases (`v0.8.0` – `v0.9.0`):**
+> - **2-Part 19" Print-Bed STL Splitting (`<= 245 mm`), 16:9 Share Card PNG, URL Deep-Links, UI Event Telemetry & Launch Kit (`v0.9.0`):** Split `482.6 mm` 19-inch custom device brackets into `241.3 mm` left/right halves with rear **M3 bolt joiner lugs** for standard Bambu/Prusa print beds (`split_half` in `.STL`/`.SCAD`/SVG + quick UI buttons), added deterministic `1200×675` **Share Card PNG/SVG** exports (`TopNavBar` & BOM hub), `?preset=...&tab=...#custom-bracket` URL deep-linking, 1-click **GitHub Catalog** issue submission in `CatalogBuilderDrawer`, privacy-first same-origin `POST /api/ui-event` + `rack_mcp_ui_events_total` Prometheus counters, GitHub homepage/topics discovery optimization, and `docs/LAUNCH_KIT.md`.
 > - **CodeQL ReDoS Hardening & GitHub Pages Build Fix (`v0.8.1`):** Replaced the trailing-hyphen trimming regex in `packages/exporters/src/importers.ts` (`toSlugToken`) with a deterministic $O(n)$ loop to close CodeQL Alert `#7` (`js/polynomial-redos`), and added `@rack-mcp/exporters` to the `.github/workflows/pages.yml` build sequence prior to `@rack-mcp/web-viewer`.
 > - **Custom Device Bracket `.STL`/3D Preview, Thermal Cable Labels, UPS/Energy Telemetry, NetBox/UniFi/Proxmox Import, 3D U-Slot Drag & Custom Blueprint Wizard (`v0.8.0`):** Added parametric Custom Device Bracket OpenSCAD + watertight 2-manifold `.STL` generation & interactive `<StlPreview3D />` Three.js preview (`2D CAD` / `3D STL` toggle), Brother P-Touch / DYMO / Niimbot cable labels (`labels.csv` + `12/18/24mm` `labels.svg` across MCP, CLI & UI), UPS runtime (typical & peak @ 85% efficiency) + editable `€/kWh` annual cost & hardware budget KPIs, drag-and-drop / CLI import (`rack-mcp import`) for `rack.yaml`, NetBox, UniFi & Proxmox VE, interactive 3D `Shift+Drag` U-slot movement with collision ghost preview, Custom Hardware Blueprint Wizard (`rack-mcp new-blueprint` & UI tab), unified `@rack-mcp/web-viewer` exporters onto `@rack-mcp/exporters`, enabled Dependabot security updates + 7-day `--pull` image refreshes, and expanded the catalog from `67` to `73` blueprints (`Mac Mini M4` + 2U carrier, `Minisforum MS-01`, `Sipeed NanoKVM`, `DeskPi 4-Bay NVMe NAS`, `USW-Pro-XG-8-PoE`).
-> - **Transitive Hono Security Patch, Vitest 5.1 & Toolchain Updates (`v0.7.9`):** Resolved all 7 transitive runtime security advisories (`hono >= 4.13.16` -> `4.13.20` and `@hono/node-server >= 2.1.6` -> `2.1.11` beneath `@modelcontextprotocol/sdk`, `0` `pnpm audit` / `0` Dependabot alerts), merged grouped Dependabot updates (`ws 8.23.0`, `pnpm/action-setup v6`, `vite 8.3.8`, `@vitejs/plugin-react 6.3.0`, `jsdom 31.0.1`, `webmcp-types 0.1.11`), and removed stale `vitest 4.1.12` overrides so all 57 tests run natively on `vitest@5.1.1`.
 
 <details>
-<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.7.8) in the Release Archive</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.7.9) in the Release Archive</b></summary>
 
 <br />
+
+- **`v0.7.9`** — Resolved all 7 transitive Hono/Node-server security advisories (`0` `pnpm audit` / Dependabot alerts), merged grouped Dependabot updates (`ws`, `pnpm/action-setup`, `vite`, `@vitejs/plugin-react`, `jsdom`, `webmcp-types`), and removed stale `vitest` overrides so all suites run natively on `vitest@5.1.1`.
 
 - **`v0.7.8`** — Resolved the CodeQL High Alert (`js/incomplete-sanitization`) in `bom-markdown.ts` with full HTML & Markdown table backslash/pipe escaping, consolidated Dependabot updates into 3 atomic groups, and locked TypeScript semver-minor compiler gates.
 
@@ -133,18 +135,20 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v0.8.1` von RackArchitect MCP!**  
+**Willkommen beim Release `v0.9.0` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL (`https://mcp.rackarchitect.dev/mcp`)** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.7.9` – `v0.8.1`):**
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.8.0` – `v0.9.0`):**
+> - **Zweiteilige 19"-Druckbett-Teilung (`<= 245 mm`), 16:9 Share-Card (PNG), URL-Deep-Links, UI-Telemetrie & Launch-Kit (`v0.9.0`):** Breite `482,6 mm`-19-Zoll-Halterungen werden mit `split_half` in zwei `241,3 mm`-Hälften inklusive hinterem **M3-Schraubverbinder-Block** und 2-Manifold-`.STL` für Bambu/Prusa-Drucker geteilt (`Left Half .STL` / `Right Half .STL`), neuer **1200×675 Share Card PNG/SVG**-Export (`Card`-Button & BOM-Ansicht), direkte Start-Links `?preset=...&tab=...#custom-bracket`, 1-Klick-Button **GitHub Catalog** im Custom-Blueprint-Wizard, anonyme Zero-PII UI-Event-Telemetrie (`POST /api/ui-event` + `rack_mcp_ui_events_total`), optimierte GitHub-Topics + Homepage-Link sowie Community-Vorlagen in `docs/LAUNCH_KIT.md`.
 > - **CodeQL-ReDoS-Härtung & GitHub-Pages-Buildfix (`v0.8.1`):** Ersetzung der Regex zum Entfernen führender/abschließender Bindestriche in `packages/exporters/src/importers.ts` (`toSlugToken`) durch eine lineare $O(n)$-Schleife (schließt CodeQL High Alert `#7`, `js/polynomial-redos`) sowie Bau von `@rack-mcp/exporters` vor `@rack-mcp/web-viewer` in `.github/workflows/pages.yml`.
 > - **Custom-Device-Bracket `.STL` & 3D-Vorschau, Kabel-Etiketten (`CSV`/`SVG`), USV-/Stromkosten-Telemetrie, NetBox/UniFi/Proxmox-Import, 3D U-Slot Shift+Drag & Custom-Blueprint-Wizard (`v0.8.0`):** Neuer parametrischer Halterungs-Konfigurator (OpenSCAD + wasserdichtes 2-mannigfaltiges `.STL` + interaktive `<StlPreview3D />` Three.js-Ansicht), Kabel-Etiketten für Brother P-Touch / DYMO / Niimbot (`labels.csv` + `12/18/24mm` `labels.svg` in MCP, CLI & Web-UI), USV-Laufzeit (typisch/Peak bei 85 % Wirkungsgrad) + editierbarer Strompreis (`€/kWh`) & Hardware-Budget, Drag-and-Drop- und CLI-Import (`rack-mcp import`) für `rack.yaml`, NetBox, UniFi & Proxmox VE, vertikales 3D-Verschieben via `Shift+Drag` mit Kollisions-Ghost-Box, grafischer Custom-Blueprint-Wizard (`rack-mcp new-blueprint` & UI-Tab), deduplizierte Web-Viewer-Exporter (`@rack-mcp/exporters`), automatische Dependabot-Sicherheitsupdates + 7-Tage Alpine-`--pull`-Rebuilds sowie Ausbau des Katalogs von `67` auf `73` Blueprints (`Mac Mini M4` + 2U-Carrier, `Minisforum MS-01`, `Sipeed NanoKVM`, `DeskPi 4-Bay NVMe NAS`, `USW-Pro-XG-8-PoE`).
-> - **Transitive Hono-Sicherheitsupdates, Vitest 5.1 & Dependency-Pflege (`v0.7.9`):** Behebung aller 7 transitiven Runtime-Sicherheitswarnungen (`hono >= 4.13.16` → `4.13.20` und `@hono/node-server >= 2.1.6` → `2.1.11` unterhalb von `@modelcontextprotocol/sdk`, `0` `pnpm audit`- / `0` Dependabot-Alerts), Merge aller gruppierten Dependabot-Updates (`ws 8.23.0`, `pnpm/action-setup v6`, `vite 8.3.8`, `@vitejs/plugin-react 6.3.0`, `jsdom 31.0.1`, `webmcp-types 0.1.11`) und Entfernung veralteter `vitest 4.1.12`-Overrides für natives `vitest@5.1.1`.
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.7.8) auf Deutsch anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.7.9) auf Deutsch anzeigen</b></summary>
 
 <br />
+
+- **`v0.7.9`** — Behebung aller 7 transitiven Hono-/Node-Server-Sicherheitswarnungen (`0` `pnpm audit`- / Dependabot-Alerts), Merge gruppierter Dependabot-Updates (`ws`, `pnpm/action-setup`, `vite`, `@vitejs/plugin-react`, `jsdom`, `webmcp-types`) und natives `vitest@5.1.1` ohne veraltete Overrides.
 
 - **`v0.7.8`** — Behebung des CodeQL-High-Alerts (`js/incomplete-sanitization`) in `bom-markdown.ts` durch vollständiges HTML-/Markdown-Tabellen-Escaping, Konsolidierung der Dependabot-Gruppen sowie Fixierung auf TypeScript `~5.9`.
 

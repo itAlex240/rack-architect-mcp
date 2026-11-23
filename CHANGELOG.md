@@ -5,6 +5,20 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-11-24
+
+### Added & Improved (Growth, 19-Inch 2-Part STL Splitting, Share Card & Deep-Links)
+- **2-Part 19-Inch Print-Bed Bracket Splitting (`@rack-mcp/exporters` & `@rack-mcp/web-viewer`):** Added `split_half: 'full' | 'left' | 'right'` support to `CustomBracketOptions`, `generateCustomBracketOpenScad`, `generateCustomBracketStl`, and `renderCustomBracketPreviewSvg`, splitting `482.6 mm` 19-inch custom device brackets cleanly into `241.3 mm` (`<= 245 mm` Bambu/Prusa print-bed width) left/right halves with integrated rear **M3 bolt joiner lugs** and strict 2-manifold `.STL` geometry, plus interactive split controls and `Left Half .STL` / `Right Half .STL` download buttons in `BomAndExportsView`.
+- **16:9 Carbon/Zinc Rack Share Card PNG/SVG (`packages/web-viewer/src/state/share-card-renderer.ts`):** Added deterministic `renderRackShareCardSvg` and `exportRackShareCardPng` (`1200×675` card embedding 2D elevation, power/PoE/thermal/acoustic/BOM KPIs, top mounted stack, and `mcp.rackarchitect.dev` branding), accessible from `TopNavBar` (`Card`) and `BomAndExportsView` (`Export Share Card (PNG)`).
+- **URL Deep-Linking & GitHub Catalog Submission:** Extended `useRackState` with `?preset=<id>` + `?tab=3d|elevation|wiring|bom` startup deep-linking (without overriding requested presets by sidecar defaults) and `#custom-bracket` auto-scroll in `BomAndExportsView`, plus a 1-click pre-filled **Submit to GitHub Catalog** button in `CatalogBuilderDrawer`.
+- **Privacy-First Zero-PII UI Event Telemetry (`@rack-mcp/mcp-server` & `@rack-mcp/web-viewer`):** Added same-origin `POST /api/ui-event`, `recordUiEvent(...)`, disk persistence, and `rack_mcp_ui_events_total{event="..."}` Prometheus metrics (`stl_download`, `bracket_stl_download`, `labels_download`, `file_import`, `share_card_export`, `custom_blueprint_register`), strictly guarded by origin checks and `512`-byte body limits.
+- **GitHub Discoverability & Community Launch Kit (`docs/LAUNCH_KIT.md`):** Configured repository homepage URL (`https://mcp.rackarchitect.dev/`), added 20 curated GitHub repository topics, and authored copy-paste launch templates for `r/minilab`, `r/homelab`, Printables/MakerWorld, `Show HN`, and `awesome-mcp-servers`.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Zweiteilige 19-Zoll-Druckbett-Teilung (`<= 245 mm`) mit M3-Verbinder (`@rack-mcp/exporters` & `@rack-mcp/web-viewer`):** Breite `482,6 mm`-19-Zoll-Brackets lassen sich über `split_half: 'left' | 'right'` exakt mittig in zwei `241,3 mm`-Hälften inkl. hinterem **M3-Schraubverbinder-Block** und wasserdichter 2-Manifold-`.STL`-Geometrie für Standard-3D-Drucker (Bambu/Prusa) teilen — direkt wählbar inkl. `Left Half .STL` / `Right Half .STL`-Buttons in der BOM-Ansicht.
+- **16:9-Share-Card-Exporter (PNG/SVG), Deep-Links & GitHub-Katalog-Einreichung:** Neuer `1200×675`-Rack-Steckbrief-Export (`renderRackShareCardSvg` / `exportRackShareCardPng`) in `TopNavBar` und BOM-Ansicht, direkte URL-Parameter `?preset=...&tab=...#custom-bracket` sowie Ein-Klick-Button **GitHub Catalog** im Custom-Blueprint-Wizard.
+- **Datenschutzfreundliche UI-Event-Telemetrie & Launch-Kit:** Anonymer Same-Origin-Endpunkt `POST /api/ui-event` (Origin-Check + `512`-Byte-Limit) mit Prometheus-Zähler `rack_mcp_ui_events_total`, 20 optimierten GitHub-Topics, Repository-Homepage und fertigem Community-Launch-Kit in `docs/LAUNCH_KIT.md`.
+
 ## [0.8.1] - 2026-11-23
 
 ### Security & CI Fixes
