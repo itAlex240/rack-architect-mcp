@@ -5,6 +5,14 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] - 2026-11-24
+
+### Security Fix
+- **CodeQL Hostname Boundary Remediation (`packages/web-viewer/src/state/ui-telemetry.ts`):** Replaced `hostname.endsWith('github.io')` with exact domain boundary verification (`normalizedHost === 'github.io' || normalizedHost.endsWith('.github.io')`), resolving CodeQL High Alert `#8` (`js/incomplete-url-substring-sanitization`).
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **CodeQL Alert #8 Fix (`packages/web-viewer/src/state/ui-telemetry.ts`):** Ersetzung von `hostname.endsWith('github.io')` durch eine exakte Domain-Grenzwertprüfung (`normalizedHost === 'github.io' || normalizedHost.endsWith('.github.io')`, behebt CodeQL High Alert `#8`, `js/incomplete-url-substring-sanitization`).
+
 ## [0.9.0] - 2026-11-24
 
 ### Added & Improved (Growth, 19-Inch 2-Part STL Splitting, Share Card & Deep-Links)

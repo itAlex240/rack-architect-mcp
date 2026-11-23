@@ -21,7 +21,11 @@ export function trackUiEvent(event: UiEventName): void {
   if (protocol !== 'http:' && protocol !== 'https:') {
     return;
   }
-  if (hostname.endsWith('github.io')) {
+  const normalizedHost = hostname.toLowerCase();
+  if (
+    normalizedHost === 'github.io' ||
+    normalizedHost.endsWith('.github.io')
+  ) {
     return;
   }
   if (
