@@ -50,7 +50,7 @@ export interface RackMcpServerInstance {
   close(): Promise<void>;
 }
 
-export const RACK_MCP_SERVER_VERSION = '0.7.9';
+export const RACK_MCP_SERVER_VERSION = '0.8.0';
 
 export interface McpToolExecutionEvent {
   readonly toolName: string;

@@ -825,4 +825,37 @@ describe('@rack-mcp/mcp-server End-to-End Agentic Workflow & Sidecar Suite', () 
       await sidecar.close();
     }
   });
+
+  it('writes labels.csv and labels.svg via local export_deliverables and serves them via sidecar HTTP endpoints', async () => {
+    const tmpDir = createTempDir();
+    const projectPath = path.join(tmpDir, 'rack.yaml');
+    const outDir = path.join(tmpDir, 'deliverables');
+
+    const stateManager = new ProjectStateManager({ projectPath, watchFile: false });
+    const handlers = new RackMcpToolHandlers(stateManager);
+
+    const exp = handlers.exportDeliverables({
+      output_dir: outDir,
+      formats: ['labels-csv', 'labels-svg']
+    });
+    expect(exp.status).toBe('VALID');
+    expect(fs.existsSync(path.join(outDir, 'labels.csv'))).toBe(true);
+    expect(fs.existsSync(path.join(outDir, 'labels.svg'))).toBe(true);
+    expect(fs.readFileSync(path.join(outDir, 'labels.csv'), 'utf8')).toContain('CableID,WrapLabel');
+    expect(fs.readFileSync(path.join(outDir, 'labels.svg'), 'utf8')).toContain('<svg');
+
+    const sidecar = await startRackSidecarServer(stateManager, { port: 0, host: '127.0.0.1' });
+    try {
+      const [csvRes, svgRes] = await Promise.all([
+        fetch(`${sidecar.url}/api/export/labels.csv`),
+        fetch(`${sidecar.url}/api/export/labels.svg`)
+      ]);
+      expect(csvRes.status).toBe(200);
+      expect(svgRes.status).toBe(200);
+      expect(await csvRes.text()).toContain('CableID,WrapLabel');
+      expect(await svgRes.text()).toContain('<svg');
+    } finally {
+      await sidecar.close();
+    }
+  });
 });

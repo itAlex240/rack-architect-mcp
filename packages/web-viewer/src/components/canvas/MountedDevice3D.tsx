@@ -30,6 +30,9 @@ export interface MountedDevice3DProps {
   readonly onClickPort?:
     | ((port: PendingPortSelection, existingCableId?: string) => void)
     | undefined;
+  readonly onStartDragU?:
+    | ((device: ComputedDeviceGeometry, clientY: number) => void)
+    | undefined;
 }
 
 function getMaterialParams(preset: string): {
@@ -68,6 +71,7 @@ export function MountedDevice3D({
   onSelectDevice,
   onHoverPort,
   onClickPort,
+  onStartDragU,
 }: MountedDevice3DProps) {
   const spec = EIA_310_SPECS[rackStandard];
   const offsetZ = computeDeviceExplodeOffsetZMm(device, explodeZMm);
@@ -105,6 +109,18 @@ export function MountedDevice3D({
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     onSelectDevice(device.instance_id);
+  };
+
+  const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
+    if (
+      e.nativeEvent.shiftKey &&
+      e.nativeEvent.button === 0 &&
+      device.mount_target === 'rack-unit' &&
+      onStartDragU
+    ) {
+      e.stopPropagation();
+      onStartDragU(device, e.nativeEvent.clientY);
+    }
   };
 
   // Collect X positions of cables passing through this brush panel U slot
@@ -196,7 +212,7 @@ export function MountedDevice3D({
   }
 
   return (
-    <group>
+    <group onPointerDown={handlePointerDown}>
       {/* Main Device Chassis (or Open L-Shaped 3D-Printed Tray for Modular Carriers) */}
       {isModularCarrier ? (
         <group onClick={handleClick}>

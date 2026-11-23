@@ -18,6 +18,7 @@ power_and_thermal:
   idle_watts: 15
   max_system_watts: 35
   ups_capacity_watts: 1200
+  ups_battery_wh: 216
   airflow: "front-to-rear"
 port_groups:
   - id_prefix: "iec_out"
@@ -83,3 +84,4 @@ visuals:
   has_oled_display: true
   stl_mesh_path: null
 printable_metadata: null
+estimated_price_eur: 1190

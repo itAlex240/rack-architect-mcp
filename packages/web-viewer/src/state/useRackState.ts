@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import {
+  deserializeRackScene,
+  HardwareBlueprintSchema,
   MCP_TOOL_DEFINITIONS,
+  normalizeHardwareBlueprint,
   RackProjectSchema,
   type CableType,
   type ConnectorType,
@@ -9,11 +13,18 @@ import {
   type RackProjectInput,
   type SerializedRackScene,
 } from '@rack-mcp/core-domain';
+import {
+  detectExternalImportFormat,
+  generateBomMarkdown,
+  generateCableLabelsCsv,
+  generateCableLabelsSvg,
+  importExternalInventory,
+  type ExternalImportFormat,
+} from '@rack-mcp/exporters';
 import { defaultCatalogRegistry } from '@rack-mcp/hardware-catalog';
 import {
   createStandaloneHomelabProjectInput,
   evaluateStandaloneScene,
-  renderClientSideBomMarkdown,
   renderClientSideElevationSvg,
   renderClientSideWiringSvg,
 } from './standalone-homelab.js';
@@ -171,6 +182,30 @@ export function inferCableTypeForConnectors(
   return 'cat6a';
 }
 
+export interface ProjectImportResult {
+  readonly ok: boolean;
+  readonly format: 'rack-yaml' | 'rack-json' | ExternalImportFormat | null;
+  readonly summary: string;
+  readonly importedDevicesCount: number;
+  readonly unmatchedCount: number;
+}
+
+export interface CustomBlueprintRegisterResult {
+  readonly ok: boolean;
+  readonly slug?: string | undefined;
+  readonly error?: string | undefined;
+}
+
+function renderBomWithRate(
+  serialized: SerializedRackScene,
+  catalogRecord: Readonly<Record<string, HardwareBlueprint>>,
+  electricityPricePerKwhEur: number,
+): string {
+  return generateBomMarkdown(deserializeRackScene(serialized), catalogRecord, {
+    electricityPricePerKwhEur,
+  });
+}
+
 export interface RackViewerState {
   readonly connectionMode: 'sidecar-live' | 'standalone-demo';
   readonly projectPath: string | null;
@@ -183,6 +218,10 @@ export interface RackViewerState {
   readonly elevationSvg: string;
   readonly wiringSvg: string;
   readonly bomMarkdown: string;
+  readonly labelsCsv: string;
+  readonly labelsSvg: string;
+  readonly electricityPricePerKwhEur: number;
+  readonly setElectricityPricePerKwhEur: (rateEur: number) => void;
   readonly activeTab: WorkspaceTab;
   readonly xrayMode: boolean;
   readonly explodeZMm: number;
@@ -234,6 +273,9 @@ export interface RackViewerState {
   ): void;
   disconnectCable(cableId: string): void;
   importProjectJson(rawJsonText: string): boolean;
+  importProjectFile(rawText: string, filename?: string): ProjectImportResult;
+  exportProjectYaml(): string;
+  registerCustomBlueprint(rawBlueprint: unknown): CustomBlueprintRegisterResult;
   initNewRack(params: InitNewRackParams): void;
   exportDeliverablesToDisk(): void;
   clearMcpToolLog(): void;
@@ -301,8 +343,22 @@ export function useRackState(): RackViewerState {
     renderClientSideWiringSvg(scene),
   );
   const [bomMarkdown, setBomMarkdown] = useState<string>(() =>
-    renderClientSideBomMarkdown(scene),
+    renderBomWithRate(scene, defaultCatalogRegistry.toRecord(), 0.32),
   );
+  const [electricityPricePerKwhEur, setElectricityPricePerKwhEurState] =
+    useState<number>(0.32);
+  const [labelsCsv, setLabelsCsv] = useState<string>(() =>
+    generateCableLabelsCsv(deserializeRackScene(scene)),
+  );
+  const [labelsSvg, setLabelsSvg] = useState<string>(() =>
+    generateCableLabelsSvg(deserializeRackScene(scene)),
+  );
+  const catalogRecordRef = useRef<Record<string, HardwareBlueprint>>(
+    defaultCatalogRegistry.toRecord(),
+  );
+  const sceneRef = useRef<SerializedRackScene>(scene);
+  sceneRef.current = scene;
+  const electricityPriceRef = useRef<number>(0.32);
 
   // Workspace & 3D HUD state
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('3d');
@@ -331,22 +387,73 @@ export function useRackState(): RackViewerState {
   const wsRef = useRef<WebSocket | null>(null);
   const wsReadOnlyRef = useRef<boolean>(false);
 
+  const syncDerivedExports = useCallback(
+    (nextScene: SerializedRackScene, rateEur = electricityPriceRef.current) => {
+      const computed = deserializeRackScene(nextScene);
+      setElevationSvg(renderClientSideElevationSvg(nextScene));
+      setWiringSvg(renderClientSideWiringSvg(nextScene));
+      setBomMarkdown(
+        generateBomMarkdown(computed, catalogRecordRef.current, {
+          electricityPricePerKwhEur: rateEur,
+        }),
+      );
+      setLabelsCsv(generateCableLabelsCsv(computed));
+      setLabelsSvg(generateCableLabelsSvg(computed));
+    },
+    [],
+  );
+
+  const setElectricityPricePerKwhEur = useCallback(
+    (rateEur: number) => {
+      const clamped = Number.isFinite(rateEur)
+        ? Math.max(0, Math.min(5, Math.round(rateEur * 1000) / 1000))
+        : 0.32;
+      electricityPriceRef.current = clamped;
+      setElectricityPricePerKwhEurState(clamped);
+      setBomMarkdown(
+        renderBomWithRate(
+          sceneRef.current,
+          catalogRecordRef.current,
+          clamped,
+        ),
+      );
+    },
+    [],
+  );
+
   const refreshSidecarExports = useCallback(
     async (baseUrl: string, sessionQuery = '') => {
       try {
-        const [elevRes, wireRes, bomRes] = await Promise.all([
-          fetch(`${baseUrl}/api/export/elevation.svg${sessionQuery}`),
-          fetch(`${baseUrl}/api/export/wiring.svg${sessionQuery}`),
-          fetch(`${baseUrl}/api/export/bom.md${sessionQuery}`),
-        ]);
+        const [elevRes, wireRes, bomRes, labelsCsvRes, labelsSvgRes] =
+          await Promise.all([
+            fetch(`${baseUrl}/api/export/elevation.svg${sessionQuery}`),
+            fetch(`${baseUrl}/api/export/wiring.svg${sessionQuery}`),
+            fetch(`${baseUrl}/api/export/bom.md${sessionQuery}`),
+            fetch(`${baseUrl}/api/export/labels.csv${sessionQuery}`),
+            fetch(`${baseUrl}/api/export/labels.svg${sessionQuery}`),
+          ]);
         if (elevRes.ok) {
           setElevationSvg(await elevRes.text());
         }
         if (wireRes.ok) {
           setWiringSvg(await wireRes.text());
         }
-        if (bomRes.ok) {
+        if (bomRes.ok && Math.abs(electricityPriceRef.current - 0.32) < 1e-6) {
           setBomMarkdown(await bomRes.text());
+        } else if (Math.abs(electricityPriceRef.current - 0.32) >= 1e-6) {
+          setBomMarkdown(
+            renderBomWithRate(
+              sceneRef.current,
+              catalogRecordRef.current,
+              electricityPriceRef.current,
+            ),
+          );
+        }
+        if (labelsCsvRes.ok) {
+          setLabelsCsv(await labelsCsvRes.text());
+        }
+        if (labelsSvgRes.ok) {
+          setLabelsSvg(await labelsSvgRes.text());
         }
       } catch {
         // Keep client-side rendered SVG/BOM fallback
@@ -362,15 +469,17 @@ export function useRackState(): RackViewerState {
       redoStackRef.current = [];
       const nextInput = mutator(structuredClone(prev));
       initialInputRef.current = nextInput;
-      const nextScene = evaluateStandaloneScene(nextInput);
+      const nextScene = evaluateStandaloneScene(
+        nextInput,
+        catalogRecordRef.current,
+      );
+      sceneRef.current = nextScene;
       setScene(nextScene);
       setUndoAvailable(undoStackRef.current.length);
       setRedoAvailable(0);
-      setElevationSvg(renderClientSideElevationSvg(nextScene));
-      setWiringSvg(renderClientSideWiringSvg(nextScene));
-      setBomMarkdown(renderClientSideBomMarkdown(nextScene));
+      syncDerivedExports(nextScene);
     },
-    [],
+    [syncDerivedExports],
   );
 
   const moveDeviceU = useCallback(
@@ -432,14 +541,16 @@ export function useRackState(): RackViewerState {
     if (!previous) return;
     redoStackRef.current.push(structuredClone(initialInputRef.current));
     initialInputRef.current = previous;
-    const nextScene = evaluateStandaloneScene(previous);
+    const nextScene = evaluateStandaloneScene(
+      previous,
+      catalogRecordRef.current,
+    );
+    sceneRef.current = nextScene;
     setScene(nextScene);
     setUndoAvailable(undoStackRef.current.length);
     setRedoAvailable(redoStackRef.current.length);
-    setElevationSvg(renderClientSideElevationSvg(nextScene));
-    setWiringSvg(renderClientSideWiringSvg(nextScene));
-    setBomMarkdown(renderClientSideBomMarkdown(nextScene));
-  }, [connectionMode]);
+    syncDerivedExports(nextScene);
+  }, [connectionMode, syncDerivedExports]);
 
   const redo = useCallback(() => {
     if (
@@ -461,61 +572,68 @@ export function useRackState(): RackViewerState {
     if (!next) return;
     undoStackRef.current.push(structuredClone(initialInputRef.current));
     initialInputRef.current = next;
-    const nextScene = evaluateStandaloneScene(next);
+    const nextScene = evaluateStandaloneScene(next, catalogRecordRef.current);
+    sceneRef.current = nextScene;
     setScene(nextScene);
     setUndoAvailable(undoStackRef.current.length);
     setRedoAvailable(redoStackRef.current.length);
-    setElevationSvg(renderClientSideElevationSvg(nextScene));
-    setWiringSvg(renderClientSideWiringSvg(nextScene));
-    setBomMarkdown(renderClientSideBomMarkdown(nextScene));
-  }, [connectionMode]);
+    syncDerivedExports(nextScene);
+  }, [connectionMode, syncDerivedExports]);
 
-  const selectPreset = useCallback((presetId: StandalonePresetId) => {
-    undoStackRef.current = [];
-    redoStackRef.current = [];
-    const presetInput = createStandalonePresetProjectInput(presetId);
-    initialInputRef.current = presetInput;
-    const nextScene = evaluateStandaloneScene(presetInput);
-    const meta = STANDALONE_PRESET_OPTIONS.find((opt) => opt.id === presetId);
-    setActivePresetId(presetId);
-    setScene(nextScene);
-    setPendingPort(null);
-    setSelectedCableId(null);
-    setSelectedDeviceId(meta?.defaultSelectedDeviceId ?? null);
-    setUndoAvailable(0);
-    setRedoAvailable(0);
-    setElevationSvg(renderClientSideElevationSvg(nextScene));
-    setWiringSvg(renderClientSideWiringSvg(nextScene));
-    setBomMarkdown(renderClientSideBomMarkdown(nextScene));
-    setMcpToolLog([
-      {
-        id: `preset-${presetId}-${Date.now()}`,
-        timestamp: 'PRESET',
-        tool: 'validate_rack',
-        summary: `Loaded preset '${nextScene.project.project_name}' (${nextScene.project.rack.standard.toUpperCase()} · ${nextScene.project.rack.u_height}U · ${nextScene.validation.error_count} Errors).`,
-        status: nextScene.validation.is_valid ? 'VALID' : 'INVALID',
-        errorCount: nextScene.validation.error_count,
-        warningCount: nextScene.validation.warning_count,
-      },
-    ]);
-    if (
-      typeof window !== 'undefined' &&
-      window.location.hash.includes('rack=v1.')
-    ) {
-      window.history.replaceState(
-        null,
-        '',
-        `${window.location.pathname}${window.location.search}`,
+  const selectPreset = useCallback(
+    (presetId: StandalonePresetId) => {
+      undoStackRef.current = [];
+      redoStackRef.current = [];
+      const presetInput = createStandalonePresetProjectInput(presetId);
+      initialInputRef.current = presetInput;
+      const nextScene = evaluateStandaloneScene(
+        presetInput,
+        catalogRecordRef.current,
       );
-    }
-  }, []);
+      sceneRef.current = nextScene;
+      const meta = STANDALONE_PRESET_OPTIONS.find(
+        (opt) => opt.id === presetId,
+      );
+      setActivePresetId(presetId);
+      setScene(nextScene);
+      setPendingPort(null);
+      setSelectedCableId(null);
+      setSelectedDeviceId(meta?.defaultSelectedDeviceId ?? null);
+      setUndoAvailable(0);
+      setRedoAvailable(0);
+      syncDerivedExports(nextScene);
+      setMcpToolLog([
+        {
+          id: `preset-${presetId}-${Date.now()}`,
+          timestamp: 'PRESET',
+          tool: 'validate_rack',
+          summary: `Loaded preset '${nextScene.project.project_name}' (${nextScene.project.rack.standard.toUpperCase()} · ${nextScene.project.rack.u_height}U · ${nextScene.validation.error_count} Errors).`,
+          status: nextScene.validation.is_valid ? 'VALID' : 'INVALID',
+          errorCount: nextScene.validation.error_count,
+          warningCount: nextScene.validation.warning_count,
+        },
+      ]);
+      if (
+        typeof window !== 'undefined' &&
+        window.location.hash.includes('rack=v1.')
+      ) {
+        window.history.replaceState(
+          null,
+          '',
+          `${window.location.pathname}${window.location.search}`,
+        );
+      }
+    },
+    [syncDerivedExports],
+  );
 
   const resetDemoScene = useCallback(() => {
     undoStackRef.current = [];
     redoStackRef.current = [];
     const fresh = createStandalonePresetProjectInput(activePresetId);
     initialInputRef.current = fresh;
-    const nextScene = evaluateStandaloneScene(fresh);
+    const nextScene = evaluateStandaloneScene(fresh, catalogRecordRef.current);
+    sceneRef.current = nextScene;
     const meta = STANDALONE_PRESET_OPTIONS.find(
       (opt) => opt.id === activePresetId,
     );
@@ -528,68 +646,73 @@ export function useRackState(): RackViewerState {
     }
     setUndoAvailable(0);
     setRedoAvailable(0);
-    setElevationSvg(renderClientSideElevationSvg(nextScene));
-    setWiringSvg(renderClientSideWiringSvg(nextScene));
-    setBomMarkdown(renderClientSideBomMarkdown(nextScene));
-  }, [activePresetId]);
+    syncDerivedExports(nextScene);
+  }, [activePresetId, syncDerivedExports]);
 
-  const simulateAgentStep = useCallback((stage: 'collision' | 'resolved') => {
-    if (stage === 'collision') {
-      const base = createStandaloneHomelabProjectInput();
-      const collisionInput: RackProjectInput = {
-        ...base,
-        mounted_devices: (base.mounted_devices ?? []).map((dev) =>
-          dev.instance_id === 'pdu-u2-rear'
-            ? { ...dev, u_position: 1, face: 'rear' }
-            : dev,
-        ),
-      };
+  const simulateAgentStep = useCallback(
+    (stage: 'collision' | 'resolved') => {
+      if (stage === 'collision') {
+        const base = createStandaloneHomelabProjectInput();
+        const collisionInput: RackProjectInput = {
+          ...base,
+          mounted_devices: (base.mounted_devices ?? []).map((dev) =>
+            dev.instance_id === 'pdu-u2-rear'
+              ? { ...dev, u_position: 1, face: 'rear' }
+              : dev,
+          ),
+        };
+        undoStackRef.current.push(structuredClone(initialInputRef.current));
+        redoStackRef.current = [];
+        initialInputRef.current = collisionInput;
+        const nextScene = evaluateStandaloneScene(
+          collisionInput,
+          catalogRecordRef.current,
+        );
+        sceneRef.current = nextScene;
+        setScene(nextScene);
+        setUndoAvailable(undoStackRef.current.length);
+        setRedoAvailable(0);
+        syncDerivedExports(nextScene);
+        setActiveTab('3d');
+        setShowClearanceBoxes(true);
+        setCameraPreset('side-cutaway');
+        setSelectedDeviceId('ups-u1');
+        setMcpToolLog([
+          {
+            id: `sim-collision-${Date.now()}`,
+            timestamp: 'LIVE',
+            tool: 'connect_cables',
+            summary:
+              "PLUG_CLEARANCE_COLLISION on U1: 'ups-u1' rear Schuko/IEC plug (+45mm) collides with 'pdu-u2-rear' on U1 Rear.",
+            status: 'INVALID',
+            errorCount: nextScene.validation.error_count,
+            warningCount: nextScene.validation.warning_count,
+          },
+          ...DEFAULT_STANDALONE_TOOL_LOG.slice(-2),
+        ]);
+        return;
+      }
+
+      const resolvedInput = createStandaloneHomelabProjectInput();
       undoStackRef.current.push(structuredClone(initialInputRef.current));
       redoStackRef.current = [];
-      initialInputRef.current = collisionInput;
-      const nextScene = evaluateStandaloneScene(collisionInput);
+      initialInputRef.current = resolvedInput;
+      const nextScene = evaluateStandaloneScene(
+        resolvedInput,
+        catalogRecordRef.current,
+      );
+      sceneRef.current = nextScene;
       setScene(nextScene);
       setUndoAvailable(undoStackRef.current.length);
       setRedoAvailable(0);
-      setElevationSvg(renderClientSideElevationSvg(nextScene));
-      setWiringSvg(renderClientSideWiringSvg(nextScene));
-      setBomMarkdown(renderClientSideBomMarkdown(nextScene));
-      setActiveTab('3d');
-      setShowClearanceBoxes(true);
-      setCameraPreset('side-cutaway');
-      setSelectedDeviceId('ups-u1');
-      setMcpToolLog([
-        {
-          id: `sim-collision-${Date.now()}`,
-          timestamp: 'LIVE',
-          tool: 'connect_cables',
-          summary:
-            "PLUG_CLEARANCE_COLLISION on U1: 'ups-u1' rear Schuko/IEC plug (+45mm) collides with 'pdu-u2-rear' on U1 Rear.",
-          status: 'INVALID',
-          errorCount: nextScene.validation.error_count,
-          warningCount: nextScene.validation.warning_count,
-        },
-        ...DEFAULT_STANDALONE_TOOL_LOG.slice(-2),
-      ]);
-      return;
-    }
-
-    const resolvedInput = createStandaloneHomelabProjectInput();
-    undoStackRef.current.push(structuredClone(initialInputRef.current));
-    redoStackRef.current = [];
-    initialInputRef.current = resolvedInput;
-    const nextScene = evaluateStandaloneScene(resolvedInput);
-    setScene(nextScene);
-    setUndoAvailable(undoStackRef.current.length);
-    setRedoAvailable(0);
-    setElevationSvg(renderClientSideElevationSvg(nextScene));
-    setWiringSvg(renderClientSideWiringSvg(nextScene));
-    setBomMarkdown(renderClientSideBomMarkdown(nextScene));
-    setShowClearanceBoxes(false);
-    setCameraPreset('isometric');
-    setSelectedDeviceId('pdu-u2-rear');
-    setMcpToolLog(DEFAULT_STANDALONE_TOOL_LOG);
-  }, []);
+      syncDerivedExports(nextScene);
+      setShowClearanceBoxes(false);
+      setCameraPreset('isometric');
+      setSelectedDeviceId('pdu-u2-rear');
+      setMcpToolLog(DEFAULT_STANDALONE_TOOL_LOG);
+    },
+    [syncDerivedExports],
+  );
 
   const mountEquipmentFromCatalog = useCallback(
     (
@@ -856,18 +979,185 @@ export function useRackState(): RackViewerState {
     [applyStandaloneMutation, connectionMode, selectedCableId],
   );
 
-  const importProjectJson = useCallback(
-    (rawJsonText: string): boolean => {
-      try {
-        const parsedObj = JSON.parse(rawJsonText) as unknown;
-        const validated = RackProjectSchema.parse(parsedObj);
-        applyStandaloneMutation(() => validated);
-        return true;
-      } catch {
-        return false;
+  const exportProjectYaml = useCallback((): string => {
+    return stringifyYaml(sceneRef.current.project, {
+      indent: 2,
+      lineWidth: 120,
+    });
+  }, []);
+
+  const importProjectFile = useCallback(
+    (rawText: string, filename?: string): ProjectImportResult => {
+      const trimmed = rawText.trim();
+      if (!trimmed) {
+        return {
+          ok: false,
+          format: null,
+          summary: 'Empty file content.',
+          importedDevicesCount: 0,
+          unmatchedCount: 0,
+        };
       }
+
+      let parsed: unknown = null;
+      let wasJson = trimmed.startsWith('{') || trimmed.startsWith('[');
+      try {
+        parsed = wasJson ? JSON.parse(trimmed) : parseYaml(trimmed);
+      } catch {
+        try {
+          parsed = parseYaml(trimmed);
+          wasJson = false;
+        } catch {
+          parsed = null;
+        }
+      }
+
+      if (parsed !== null) {
+        const directProject = RackProjectSchema.safeParse(parsed);
+        if (directProject.success) {
+          applyStandaloneMutation(() => directProject.data);
+          setSelectedDeviceId(
+            directProject.data.mounted_devices?.[0]?.instance_id ?? null,
+          );
+          setSelectedCableId(null);
+          const fmt = wasJson ? 'rack-json' : 'rack-yaml';
+          const count = directProject.data.mounted_devices?.length ?? 0;
+          const summary = `Imported ${fmt === 'rack-json' ? 'rack.json' : 'rack.yaml'} '${directProject.data.project_name}' (${count} devices).`;
+          setMcpToolLog((prev) => [
+            {
+              id: `import-${fmt}-${Date.now()}`,
+              timestamp: 'IMPORT',
+              tool: 'validate_rack',
+              summary,
+              status: 'VALID',
+              errorCount: 0,
+              warningCount: 0,
+            },
+            ...prev.slice(0, 19),
+          ]);
+          return {
+            ok: true,
+            format: fmt,
+            summary,
+            importedDevicesCount: count,
+            unmatchedCount: 0,
+          };
+        }
+
+        const extFormat = detectExternalImportFormat(parsed);
+        if (extFormat !== null) {
+          const cleanName = filename
+            ?.replace(/\.(json|ya?ml)$/i, '')
+            .trim();
+          const imported = importExternalInventory(trimmed, {
+            format: extFormat,
+            ...(cleanName ? { projectName: cleanName } : {}),
+            catalog: catalogRecordRef.current,
+          });
+          applyStandaloneMutation(() => imported.project);
+          setSelectedDeviceId(
+            imported.project.mounted_devices?.[0]?.instance_id ?? null,
+          );
+          setSelectedCableId(null);
+          const totalCount =
+            imported.matchedDevices + imported.fallbackDevices;
+          const summary = `Imported ${extFormat.toUpperCase()} inventory: ${imported.matchedDevices} matched, ${imported.fallbackDevices} fallback placeholders.`;
+          setMcpToolLog((prev) => [
+            {
+              id: `import-${extFormat}-${Date.now()}`,
+              timestamp: 'IMPORT',
+              tool: 'validate_rack',
+              summary,
+              status: imported.fallbackDevices > 0 ? 'INVALID' : 'VALID',
+              errorCount: 0,
+              warningCount: imported.warnings.length,
+            },
+            ...prev.slice(0, 19),
+          ]);
+          return {
+            ok: true,
+            format: extFormat,
+            summary,
+            importedDevicesCount: totalCount,
+            unmatchedCount: imported.fallbackDevices,
+          };
+        }
+      }
+
+      return {
+        ok: false,
+        format: null,
+        summary:
+          'Unsupported file format. Expected rack.yaml, rack.json, NetBox, UniFi, or Proxmox inventory.',
+        importedDevicesCount: 0,
+        unmatchedCount: 0,
+      };
     },
     [applyStandaloneMutation],
+  );
+
+  const importProjectJson = useCallback(
+    (rawJsonText: string): boolean => {
+      return importProjectFile(rawJsonText).ok;
+    },
+    [importProjectFile],
+  );
+
+  const registerCustomBlueprint = useCallback(
+    (rawBlueprint: unknown): CustomBlueprintRegisterResult => {
+      const parsed = HardwareBlueprintSchema.safeParse(rawBlueprint);
+      if (!parsed.success) {
+        const msg = parsed.error.issues
+          .map((i) => `${i.path.join('.')}: ${i.message}`)
+          .join('; ');
+        return { ok: false, error: msg };
+      }
+      const normalized = normalizeHardwareBlueprint(parsed.data);
+      const nextRecord = {
+        ...catalogRecordRef.current,
+        [normalized.slug]: normalized,
+      };
+      catalogRecordRef.current = nextRecord;
+      setCatalog(Object.values(nextRecord));
+      const reEvaluated = evaluateStandaloneScene(
+        initialInputRef.current,
+        nextRecord,
+      );
+      sceneRef.current = reEvaluated;
+      setScene(reEvaluated);
+      syncDerivedExports(reEvaluated);
+
+      if (
+        connectionMode === 'sidecar-live' &&
+        !wsReadOnlyRef.current &&
+        wsRef.current &&
+        wsRef.current.readyState === WebSocket.OPEN
+      ) {
+        wsRef.current.send(
+          JSON.stringify({
+            type: 'COMMAND',
+            tool: 'define_custom_blueprint',
+            args: { blueprint: parsed.data },
+          }),
+        );
+      }
+
+      setMcpToolLog((prev) => [
+        {
+          id: `custom-bp-${normalized.slug}-${Date.now()}`,
+          timestamp: 'LIVE',
+          tool: 'define_custom_blueprint',
+          summary: `Registered custom blueprint '${normalized.slug}' (${normalized.geometry.width_mm}x${normalized.geometry.height_mm}x${normalized.geometry.depth_mm}mm, ${normalized.ports.length} ports).`,
+          status: 'VALID',
+          errorCount: 0,
+          warningCount: 0,
+        },
+        ...prev.slice(0, 19),
+      ]);
+
+      return { ok: true, slug: normalized.slug };
+    },
+    [connectionMode, syncDerivedExports],
   );
 
   const initNewRack = useCallback(
@@ -1038,6 +1328,7 @@ export function useRackState(): RackViewerState {
             redoAvailable: number;
             toolCallLog?: readonly McpToolCallItem[] | undefined;
           };
+          sceneRef.current = stateData.scene;
           setScene(stateData.scene);
           setProjectPath(stateData.projectPath ?? null);
           setUndoAvailable(stateData.undoAvailable);
@@ -1053,6 +1344,11 @@ export function useRackState(): RackViewerState {
             blueprints: HardwareBlueprint[];
           };
           if (Array.isArray(catData.blueprints)) {
+            const nextCat: Record<string, HardwareBlueprint> = {};
+            for (const bp of catData.blueprints) {
+              nextCat[bp.slug] = bp;
+            }
+            catalogRecordRef.current = nextCat;
             setCatalog(catData.blueprints);
           }
         }
@@ -1086,11 +1382,17 @@ export function useRackState(): RackViewerState {
               msg.scene
             ) {
               initialInputRef.current = structuredClone(msg.scene.project);
+              sceneRef.current = msg.scene;
               setScene(msg.scene);
               if (msg.projectPath !== undefined) {
                 setProjectPath(msg.projectPath ?? null);
               }
               if (Array.isArray(msg.blueprints)) {
+                const nextCat: Record<string, HardwareBlueprint> = {};
+                for (const bp of msg.blueprints) {
+                  nextCat[bp.slug] = bp;
+                }
+                catalogRecordRef.current = nextCat;
                 setCatalog(msg.blueprints);
               }
               setUndoAvailable(msg.undoAvailable ?? 0);
@@ -1098,9 +1400,7 @@ export function useRackState(): RackViewerState {
               if (Array.isArray(msg.toolCallLog)) {
                 setMcpToolLog(msg.toolCallLog);
               }
-              setElevationSvg(renderClientSideElevationSvg(msg.scene));
-              setWiringSvg(renderClientSideWiringSvg(msg.scene));
-              setBomMarkdown(renderClientSideBomMarkdown(msg.scene));
+              syncDerivedExports(msg.scene);
               void refreshSidecarExports(apiBase, sessionQuery);
             }
           } catch {
@@ -1259,6 +1559,10 @@ export function useRackState(): RackViewerState {
     elevationSvg,
     wiringSvg,
     bomMarkdown,
+    labelsCsv,
+    labelsSvg,
+    electricityPricePerKwhEur,
+    setElectricityPricePerKwhEur,
     activeTab,
     xrayMode,
     explodeZMm,
@@ -1292,6 +1596,9 @@ export function useRackState(): RackViewerState {
     connectInteractiveCable,
     disconnectCable,
     importProjectJson,
+    importProjectFile,
+    exportProjectYaml,
+    registerCustomBlueprint,
     initNewRack,
     exportDeliverablesToDisk,
     clearMcpToolLog,

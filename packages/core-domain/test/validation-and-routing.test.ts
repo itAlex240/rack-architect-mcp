@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vitest';
 import {
   computeHexagonalBundleOffset,
   computeMinSplineClearanceMm,
+  deserializeRackScene,
   evaluateRackScene,
   type HardwareBlueprint,
   normalizeHardwareBlueprint,
   type RackProject,
   RackProjectSchema,
   resolveCableEndpointPortGeometry,
+  serializeRackScene,
   vec3Distance
 } from '../src/index.js';
 
@@ -1369,6 +1371,140 @@ describe('10-Inch Mini-Rack (8U, 260mm Depth) End-to-End Validation & 3D Routing
     expect(directRoute.raw_arc_length_mm).toBeLessThan(rightDuctRoute.raw_arc_length_mm);
     expect(leftDuctRoute.assigned_ducts).toEqual(['FL']);
     expect(rightDuctRoute.assigned_ducts).toEqual(['FR']);
+  });
+
+  it('roundtrips SerializedRackScene via deserializeRackScene and computes UPS typical/peak runtime, energy kWh, and catalog budget', () => {
+    const upsBp = normalizeHardwareBlueprint({
+      slug: 'test-ups-200wh',
+      manufacturer: 'TestPower',
+      model: 'UPS-200',
+      category: 'ups',
+      mount_type: 'rackmount-10',
+      estimated_price_eur: 180,
+      geometry: {
+        u_height: 1,
+        width_mm: 216,
+        height_mm: 43.7,
+        depth_mm: 180,
+        ear_mount_style: 'included-10inch-ears',
+        front_protrusion_mm: 0,
+        rear_protrusion_mm: 0,
+        weight_grams: 3200
+      },
+      power_and_thermal: {
+        electrical_role: 'ups',
+        idle_watts: 6,
+        max_system_watts: 10,
+        ups_capacity_watts: 600,
+        ups_battery_wh: 200,
+        airflow: 'passive-convection'
+      },
+      ports: [
+        {
+          port_id: 'ac-out-1',
+          label: 'AC Out 1',
+          face: 'rear',
+          connector_type: 'iec-c13',
+          direction: 'output',
+          capabilities: ['ac-mains'],
+          coordinates: { x_mm: 40, y_mm: 22, orientation: 'upright' }
+        }
+      ],
+      visuals: {
+        chassis_color_hex: '#18181B',
+        material_preset: 'matte-black-steel',
+        has_oled_display: true,
+        stl_mesh_path: null
+      }
+    });
+
+    const swBp = normalizeHardwareBlueprint({
+      slug: 'test-load-switch',
+      manufacturer: 'TestNet',
+      model: 'SW-8',
+      category: 'switch',
+      mount_type: 'rackmount-10',
+      estimated_price_eur: 220,
+      geometry: {
+        u_height: 1,
+        width_mm: 212,
+        height_mm: 43.7,
+        depth_mm: 140,
+        ear_mount_style: 'included-10inch-ears',
+        front_protrusion_mm: 0,
+        rear_protrusion_mm: 0,
+        weight_grams: 1200
+      },
+      power_and_thermal: {
+        electrical_role: 'consumer',
+        idle_watts: 12,
+        max_system_watts: 48,
+        airflow: 'front-to-rear'
+      },
+      ports: [
+        {
+          port_id: 'pwr-in',
+          label: 'AC In',
+          face: 'rear',
+          connector_type: 'iec-c14',
+          direction: 'input',
+          capabilities: ['ac-mains'],
+          coordinates: { x_mm: 40, y_mm: 22, orientation: 'upright' }
+        }
+      ],
+      visuals: {
+        chassis_color_hex: '#E5E7EB',
+        material_preset: 'coated-aluminum',
+        has_oled_display: false,
+        stl_mesh_path: null
+      }
+    });
+
+    const testCatalog = {
+      [upsBp.slug]: upsBp,
+      [swBp.slug]: swBp
+    };
+    const project = RackProjectSchema.parse({
+      schema_version: '1.0',
+      project_name: 'UPS Runtime & Budget Check',
+      rack: {
+        standard: '10inch',
+        u_height: 6,
+        rail_depth_mm: 260,
+        enclosure_type: 'open-frame'
+      },
+      mounted_devices: [
+        { instance_id: 'ups-1', blueprint_slug: upsBp.slug, u_position: 1, face: 'front' },
+        { instance_id: 'sw-1', blueprint_slug: swBp.slug, u_position: 3, face: 'front' }
+      ],
+      cables: [
+        {
+          cable_id: 'pwr-1',
+          cable_type: 'power-c13-c14',
+          from: { instance_id: 'ups-1', port_id: 'ac-out-1', face: 'rear' },
+          to: { instance_id: 'sw-1', port_id: 'pwr-in', face: 'rear' }
+        }
+      ]
+    });
+
+    const computed = evaluateRackScene(project, testCatalog);
+    const roundtripped = deserializeRackScene(serializeRackScene(computed));
+
+    expect(roundtripped.geometry.devices).toHaveLength(2);
+    expect(roundtripped.geometry.devices_by_id.get('ups-1')?.blueprint.slug).toBe(upsBp.slug);
+    expect(roundtripped.cable_routes).toHaveLength(1);
+
+    const pwr = roundtripped.validation.power_summary;
+    expect(pwr.total_idle_watts).toBeGreaterThan(0);
+    expect(pwr.annual_energy_kwh_typical).toBeGreaterThan(0);
+    expect(pwr.estimated_hardware_budget_eur).toBe(400);
+    expect(pwr.estimated_ups_runtime_minutes).not.toBeNull();
+    expect(pwr.estimated_ups_runtime_minutes!).toBeGreaterThan(0);
+    const upsSummary = pwr.power_sources.find((s) => s.source_instance_id === 'ups-1')!;
+    expect(upsSummary.battery_wh).toBe(200);
+    expect(upsSummary.estimated_runtime_minutes_typical!).toBeGreaterThan(
+      upsSummary.estimated_runtime_minutes_peak!
+    );
   });
 });
 

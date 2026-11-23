@@ -6,6 +6,7 @@ import {
 } from '../../state/standalone-presets.js';
 import type {
   InitNewRackParams,
+  ProjectImportResult,
   WorkspaceTab,
 } from '../../state/useRackState.js';
 import {
@@ -37,6 +38,9 @@ export interface TopNavBarProps {
   readonly onSelectPreset?: ((presetId: StandalonePresetId) => void) | undefined;
   readonly onShareRackUrl?: (() => string) | undefined;
   readonly onImportProjectJson: (rawJson: string) => boolean;
+  readonly onImportProjectFile?:
+    | ((rawText: string, filename?: string) => ProjectImportResult)
+    | undefined;
   readonly onInitNewRack?: ((params: InitNewRackParams) => void) | undefined;
   readonly onExportDeliverablesToDisk?: (() => void) | undefined;
   readonly onUndo: () => void;
@@ -76,6 +80,7 @@ export function TopNavBar({
   onSelectPreset,
   onShareRackUrl,
   onImportProjectJson,
+  onImportProjectFile,
   onInitNewRack,
   onExportDeliverablesToDisk,
   onUndo,
@@ -729,21 +734,26 @@ export function TopNavBar({
           <input
             ref={fileInputRef}
             type="file"
-            accept=".json,application/json"
+            accept=".yaml,.yml,.json,application/json,text/yaml,text/x-yaml"
             data-testid="input-import-project-file"
             style={{ display: 'none' }}
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (!file) return;
               void file.text().then((txt) => {
-                onImportProjectJson(txt);
+                if (onImportProjectFile) {
+                  onImportProjectFile(txt, file.name);
+                } else {
+                  onImportProjectJson(txt);
+                }
               });
+              e.target.value = '';
             }}
           />
           <button
             type="button"
             data-testid="btn-import-project"
-            title="Import rack.json"
+            title="Import rack.yaml, rack.json, NetBox, UniFi or Proxmox export"
             onClick={() => fileInputRef.current?.click()}
             style={{
               display: 'inline-flex',

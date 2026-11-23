@@ -82,13 +82,13 @@ importers:
       '@rack-mcp/hardware-catalog':
         specifier: workspace:*
         version: link:../hardware-catalog
+      yaml:
+        specifier: ^2.9.1
+        version: 2.9.1
     devDependencies:
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
-      yaml:
-        specifier: ^2.9.1
-        version: 2.9.1
 
   packages/hardware-catalog:
     dependencies:
@@ -145,6 +145,9 @@ importers:
       '@rack-mcp/core-domain':
         specifier: workspace:*
         version: link:../core-domain
+      '@rack-mcp/exporters':
+        specifier: workspace:*
+        version: link:../exporters
       '@rack-mcp/hardware-catalog':
         specifier: workspace:*
         version: link:../hardware-catalog
@@ -163,6 +166,9 @@ importers:
       three:
         specifier: ^0.187.0
         version: 0.187.0
+      yaml:
+        specifier: ^2.9.1
+        version: 2.9.1
     devDependencies:
       '@testing-library/react':
         specifier: ^16.3.3

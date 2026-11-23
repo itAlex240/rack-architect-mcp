@@ -259,7 +259,7 @@ Whenever the user asks you to design, modify, or audit a rack, execute these **6
      - `3dprint-19inch-triple-mini-pc-carrier` (accepts 3× compact `mini-pc-1liter` up to `145 mm` max slot width — e.g. `zimaboard-832-2-5g-router-nas` — in `mini-pc-bay-1`..`3`; do **not** put `177–179 mm` wide TinyMiniMicro PCs here or Stage 1 will flag `SLOT_DIMENSION_OVERFLOW`)
      - `3dprint-6inch-rpi5-plus-keystone-carrier-1u` (accepts 1× `sbc-rpi5` in `rpi5-bay-1` + 2× `standard-keystone` in `keystone-1`..`2`)
    - Then mount the child `sub-module` into that carrier using `parent_carrier_id` and `slot_id`.
-3. If the user owns hardware that is not among the 67 built-in blueprints, call `define_custom_blueprint` with exact millimeter dimensions (`width_mm`, `height_mm`, `depth_mm`), weight (`weight_grams`), power draw (`max_system_watts`), and `ports` before mounting it.
+3. If the user owns hardware that is not among the 73 built-in blueprints, call `define_custom_blueprint` with exact millimeter dimensions (`width_mm`, `height_mm`, `depth_mm`), weight (`weight_grams`), power draw (`max_system_watts`), and `ports` before mounting it.
 
 ### Phase 2: Rack Initialization (`init_rack`)
 1. Call `init_rack` with the target `standard` (`"10inch"`, `"19inch"`, or `"6inch"`), `u_height`, `rail_depth_mm`, and `enclosure_type` (`"open-frame"`, `"closed-glass-front"`, or `"closed-vented-front"`).
@@ -387,7 +387,7 @@ This deterministically generates:
 
 ---
 
-## 7. Built-In Hardware Catalog Quick Reference (67 Blueprints)
+## 7. Built-In Hardware Catalog Quick Reference (73 Blueprints)
 
 | Blueprint Slug | Form Factor / Mount | Category | U / Size (`W×H×D mm`) | Key Ports, Carrier Slots & Practical Role |
 | :--- | :--- | :--- | :--- | :--- |
@@ -458,3 +458,9 @@ This deterministically generates:
 | `generic-6inch-patch-panel-6port` | `rackmount-6` (Included Ears) | `patch-panel` | `1U` (`120×44×30`) | `p1`..`p6` (6× Cat6A shielded passthrough couplers) · Top-of-Rack 6-inch patch panel |
 | `generic-6inch-usb-pd-pdu-4port` | `rackmount-6` (Included Ears) | `pdu` | `1U` (`120×44×52`) | `usb_pd1`..`usb_pd4` (`usb-c`, `200W`), `dc_out1` (`dc-5525`), `ac_in` (`iec-c14`), OLED · 6-inch USB-C GaN PD Micro-PDU |
 | `generic-6inch-brush-panel-1u` | `rackmount-6` (Included Ears) | `brush-panel` | `1U` (`120×44×15`) | 6-inch front-to-rear cable pass-through portal (`has_cable_pass_through: true`) |
+| `deskpi-10inch-4bay-nvme-nas-2u` | `rackmount-10` (Included Ears) | `nas` | `2U` (`222×88.1×165`) | `usb_front_1`, dual `2.5GbE` LAN · Flat 10-inch 2U 4-Bay M.2 NVMe All-Flash NAS |
+| `ubiquiti-usw-pro-xg-8-poe` | `rackmount-10` (Included Ears) | `switch` | `1U` (`210×43.7×185`) | `eth1`..`eth8` (10GbE PoE+++, `155W`), `sfp1`..`sfp2` (10G SFP+) · 10GbE Multi-Gig Switch |
+| `3dprint-10inch-mac-mini-m4-plus-2keystone-2u` | `rackmount-10` (3D-Printed) | `modular-carrier` | `2U` (`254×88.1×145`) | Slots: `mac-mini-bay` (`mac-mini-m4`), `keystone-1`, `keystone-2` |
+| `apple-mac-mini-m4` | `sub-module` (Needs Carrier) | `mini-pc` | `1.15U` (`127×50×127`) | Compat: `mac-mini-m4` · `usb_c_front_1`..`2`, `10GbE` LAN · Silent Apple Silicon M4/M4 Pro homelab node |
+| `minisforum-ms-01-workstation` | `sub-module` (Needs Carrier) | `mini-pc` | `1.1U` (`196×48×189`) | Compat: `mini-pc-workstation` · Dual 10G SFP+, Dual 2.5GbE · High-performance Proxmox / PCIe SFF node |
+| `sipeed-nanokvm-full` | `sub-module` (Needs Carrier) | `sbc` | `0.8U` (`40×36×23`) | Compat: `ip-kvm-compact` · `usb_c_hid`, Ethernet, OLED · Ultra-compact RISC-V OOB IP-KVM cube |

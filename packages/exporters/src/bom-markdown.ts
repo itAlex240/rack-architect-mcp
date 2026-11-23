@@ -13,6 +13,7 @@ interface HardwareBomGroup {
   readonly category: string;
   readonly unitMaxWatts: number;
   readonly unitWeightGrams: number;
+  readonly unitPriceEur: number | undefined;
   readonly instances: ComputedDeviceGeometry[];
 }
 
@@ -54,9 +55,14 @@ function sanitizeMarkdownCell(value: string): string {
     .replace(/\|/g, '\\|');
 }
 
+export interface BomMarkdownOptions {
+  /** Electricity price in EUR per kWh used to estimate annual running cost (default: 0.32 EUR/kWh). */
+  readonly electricityPricePerKwhEur?: number | undefined;
+}
+
 /**
  * Generates a structured 5-section Bill of Materials & Assembly Guide in GitHub-Flavored Markdown (`BOM.md`):
- * 1. Project & Validation Summary
+ * 1. Project & Validation Summary (including UPS runtime, annual energy/cost & budget estimate)
  * 2. Commercial Hardware BOM
  * 3. 3D Print Queue (Fabrication List)
  * 4. Aggregated Cable Shopping List
@@ -65,9 +71,22 @@ function sanitizeMarkdownCell(value: string): string {
 export function generateBomMarkdown(
   scene: ComputedRackScene,
   _catalog?: BlueprintCatalogMap,
+  options: BomMarkdownOptions = {},
 ): string {
   const { project, geometry, validation, cable_routes } = scene;
   const routesById = new Map(cable_routes.map((r) => [r.cable_id, r]));
+  const rawRate = options.electricityPricePerKwhEur;
+  const electricityRateEur =
+    rawRate !== undefined && Number.isFinite(rawRate) && rawRate >= 0
+      ? rawRate
+      : 0.32;
+  const annualKwh = validation.power_summary.annual_energy_kwh_typical ?? 0;
+  const annualElectricityCostEur = roundTenths(annualKwh * electricityRateEur);
+  const upsSources = validation.power_summary.power_sources.filter(
+    (s) => s.role === 'ups',
+  );
+  const hardwareBudgetEur =
+    validation.power_summary.estimated_hardware_budget_eur ?? 0;
 
   const lines: string[] = [];
 
@@ -88,8 +107,27 @@ export function generateBomMarkdown(
     `- **Total Mounted Devices:** ${geometry.devices.length} (${project.mounted_devices.length} rackmount units + ${geometry.devices.length - project.mounted_devices.length} sub-modules)`,
   );
   lines.push(
-    `- **Total Electrical Draw:** \`${roundTenths(validation.power_summary.total_system_watts)} W\` system + \`${roundTenths(validation.power_summary.total_poe_watts)} W\` PoE`,
+    `- **Total Electrical Draw:** \`${roundTenths(validation.power_summary.total_idle_watts ?? 0)} W\` idle / \`${roundTenths(validation.power_summary.total_system_watts)} W\` peak system + \`${roundTenths(validation.power_summary.total_poe_watts)} W\` PoE`,
   );
+  lines.push(
+    `- **Annual Energy & Running Cost:** \`~${roundTenths(annualKwh)} kWh/yr\` (\`~€${annualElectricityCostEur.toFixed(2)}/yr\` @ \`€${electricityRateEur.toFixed(2)}/kWh\`)`,
+  );
+  if (upsSources.length > 0) {
+    const upsSummaryText = upsSources
+      .map(
+        (u) =>
+          `\`${sanitizeMarkdownText(u.source_instance_id)}\` (${u.battery_wh ?? '—'} Wh: ~\`${u.estimated_runtime_minutes_typical ?? '—'} min\` typical / ~\`${u.estimated_runtime_minutes_peak ?? '—'} min\` peak)`,
+      )
+      .join(', ');
+    lines.push(`- **UPS Backup Runtime (85% Inverter Eff.):** ${upsSummaryText}`);
+  } else {
+    lines.push(`- **UPS Backup Runtime:** _No UPS mounted in rack_`);
+  }
+  if (hardwareBudgetEur > 0) {
+    lines.push(
+      `- **Estimated Catalog Hardware Budget:** \`~€${hardwareBudgetEur.toFixed(2)}\` (sum of listed commercial catalog street prices)`,
+    );
+  }
   lines.push(
     `- **Mechanical Mass & Stability:** \`${roundTenths(validation.mechanical_summary.total_weight_grams / 1000)} kg\` total weight | Center of Gravity $Y_{\\text{CoG}} = ${roundTenths(validation.mechanical_summary.center_of_gravity_y_mm)}\\text{ mm}$ (\`${roundTenths(validation.mechanical_summary.normalized_cog_y * 100)}%\` of rack height)`,
   );
@@ -111,10 +149,10 @@ export function generateBomMarkdown(
   lines.push(`## 2. Commercial Hardware BOM`);
   lines.push('');
   lines.push(
-    `| Slug | Manufacturer | Model | Category | Qty | Instances & Locations | Max Power (W) | Total Weight (g) |`,
+    `| Slug | Manufacturer | Model | Category | Qty | Instances & Locations | Max Power (W) | Total Weight (g) | Est. Price (EUR) |`,
   );
   lines.push(
-    `| :--- | :--- | :--- | :--- | :---: | :--- | :---: | :---: |`,
+    `| :--- | :--- | :--- | :--- | :---: | :--- | :---: | :---: | :---: |`,
   );
 
   const commercialGroups = new Map<string, HardwareBomGroup>();
@@ -152,6 +190,7 @@ export function generateBomMarkdown(
         category: bp.category,
         unitMaxWatts: bp.power_and_thermal.max_system_watts,
         unitWeightGrams: bp.geometry.weight_grams,
+        unitPriceEur: bp.estimated_price_eur,
         instances: [dev],
       });
     }
@@ -168,8 +207,12 @@ export function generateBomMarkdown(
       .join(', ');
     const totalWatts = roundTenths(qty * group.unitMaxWatts);
     const totalWeight = Math.round(qty * group.unitWeightGrams);
+    const priceCell =
+      group.unitPriceEur !== undefined
+        ? `€${(qty * group.unitPriceEur).toFixed(2)}`
+        : '—';
     lines.push(
-      `| \`${sanitizeMarkdownCell(group.slug)}\` | ${sanitizeMarkdownCell(group.manufacturer)} | ${sanitizeMarkdownCell(group.model)} | \`${group.category}\` | ${qty} | ${locations} | ${totalWatts} W | ${totalWeight} g |`,
+      `| \`${sanitizeMarkdownCell(group.slug)}\` | ${sanitizeMarkdownCell(group.manufacturer)} | ${sanitizeMarkdownCell(group.model)} | \`${group.category}\` | ${qty} | ${locations} | ${totalWatts} W | ${totalWeight} g | ${priceCell} |`,
     );
   }
   lines.push('');

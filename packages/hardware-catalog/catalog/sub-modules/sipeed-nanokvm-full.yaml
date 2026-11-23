@@ -1,0 +1,59 @@
+slug: "sipeed-nanokvm-full"
+manufacturer: "Sipeed"
+model: "NanoKVM Full (Cube) RISC-V IP-KVM"
+description: "Extrem kompaktes Open-Source RISC-V IP-KVM-Modul (40×36×23mm) im CNC-Aluminiumgehäuse mit kleinem OLED-Statusdisplay für BIOS- und Fernwartung über Ethernet und USB-C."
+category: "sbc"
+mount_type: "sub-module"
+slot_compatibility: "ip-kvm-compact"
+geometry:
+  u_height: 0.8
+  width_mm: 40.0
+  height_mm: 36.0
+  depth_mm: 23.0
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 1.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 45
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 1.5
+  max_system_watts: 3.0
+  airflow: "passive-convection"
+ports:
+  - port_id: "usb_c_hid"
+    label: "USB-C HID"
+    face: "front"
+    connector_type: "usb-c"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0"]
+    coordinates:
+      x_mm: 20.0
+      y_mm: 18.0
+      orientation: "upright"
+  - port_id: "eth0"
+    label: "100M Ethernet"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["100base-tx"]
+    coordinates:
+      x_mm: 12.0
+      y_mm: 18.0
+      orientation: "upright"
+  - port_id: "usb_c_pwr"
+    label: "5V USB-C Power"
+    face: "rear"
+    connector_type: "usb-c"
+    direction: "input"
+    capabilities: ["usb-pd", "dc-power"]
+    coordinates:
+      x_mm: 28.0
+      y_mm: 18.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "coated-aluminum"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 59

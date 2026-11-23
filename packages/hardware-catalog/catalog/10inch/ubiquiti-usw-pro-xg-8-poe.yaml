@@ -1,0 +1,77 @@
+slug: "ubiquiti-usw-pro-xg-8-poe"
+manufacturer: "Ubiquiti"
+model: "UniFi Pro XG 8 PoE (8x 10GbE PoE+++ + 2x 10G SFP+)"
+description: "Kompakter Layer-3 10GbE Multi-Gigabit PoE+++ Switch (210×43.7×185mm) mit 8x 10GbE RJ45 (155W Gesamtbudget) und 2x 10G SFP+ Uplinks. Passt mit 3D-gedruckter 10-Zoll-Aufnahme perfekt ins High-Speed-Mini-Rack."
+category: "switch"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 210.0
+  height_mm: 43.7
+  depth_mm: 185.0
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 1620
+power_and_thermal:
+  electrical_role: "pse-switch"
+  idle_watts: 16
+  max_system_watts: 35
+  poe_budget_watts: 155
+  airflow: "front-to-rear"
+  noise_db_a: 26.0
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "10G Port "
+    start_index: 1
+    count: 8
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t", "5gbase-t", "10gbase-t", "poe-out", "poe+", "poe-out-af", "poe-out-at", "poe-out-bt-type3", "poe-out-bt-type4"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 24.0
+      origin_y_mm: 21.5
+      columns: 8
+      rows: 1
+      pitch_x_mm: 15.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "sfp1"
+    label: "10G SFP+ 9"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 154.0
+      y_mm: 21.5
+      orientation: "upright"
+  - port_id: "sfp2"
+    label: "10G SFP+ 10"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 174.0
+      y_mm: 21.5
+      orientation: "upright"
+  - port_id: "pwr_in"
+    label: "AC Mains In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 176.0
+      y_mm: 21.5
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#E5E7EB"
+  material_preset: "coated-aluminum"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 479

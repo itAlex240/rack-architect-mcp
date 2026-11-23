@@ -229,9 +229,10 @@ Pre-generated reference files in [`examples/10inch-homelab/`](./examples/10inch-
 
 ## 🖥️ Live 3D Digital Twin & 2D CAD Web-Viewer (Hosted & Local `:3100`)
 
-- **Interactive Catalog & Cable Patch Builder (`+ Catalog & Cable Builder`):**
-  - Search all 67 hardware blueprints, filter by `10inch` / `19inch` / `6inch` / `sub-module`, select `Target U` + `FRONT/REAR`, and mount with 1 click.
-  - Patch 3D Catmull-Rom cables between any two ports with optional `VLAN ID` (`1..4094`) and `IP CIDR` (`10.10.20.0/24`) annotations.
+- **Interactive Catalog, Custom Blueprint Wizard & Cable Patch Builder (`+ Catalog & Cable Builder`):**
+  - Search all 73 hardware blueprints, filter by `10inch` / `19inch` / `6inch` / `sub-module`, select `Target U` + `FRONT/REAR`, and mount with 1 click — or define custom equipment live with the **Custom Blueprint Wizard**.
+  - Drag devices vertically between U-slots in 3D (`Shift + Drag`) with live green/red collision ghost boxes, and drag-and-drop `.yaml` / `.json` / NetBox / UniFi / Proxmox exports directly into the studio.
+  - Patch 3D Catmull-Rom cables between any two ports with optional `VLAN ID` (`1..4094`) and `IP CIDR` (`10.10.20.0/24`) annotations, inspect **UPS backup runtime**, **kWh energy cost (`€/kWh`)**, and **3D `.STL` bracket previews**, and download `labels.csv` / `labels.svg` sheets.
 - **3D Engineering HUD:**
   - Camera Presets: `Perspective`, `Front Ortho`, `Rear Ortho`, `Left Cutaway`
   - Toggles: `X-Ray Chassis` (inspect internal mini-PCs & PSU bricks), `Clearance Boxes` ($\Delta Z_{\text{plug}}$ wireframes), `Cable Splines`
@@ -257,11 +258,11 @@ Pre-generated reference files in [`examples/10inch-homelab/`](./examples/10inch-
 | Package | Description |
 | :--- | :--- |
 | [`@rack-mcp/core-domain`](./packages/core-domain) | Pure TypeScript/Zod schemas, 3D coordinate transformer, AABB collision solver, 5-stage validator, and clamped Catmull-Rom 3D spline router (zero Node/DOM dependencies). |
-| [`@rack-mcp/hardware-catalog`](./packages/hardware-catalog) | 67 YAML hardware blueprints (`10inch`, `19inch`, `6inch`, `carriers`, `sub-modules`), `port_groups` matrix expander, and catalog search/validator. |
-| [`@rack-mcp/exporters`](./packages/exporters) | `elevation.svg`, `wiring-schematic.svg`, `BOM.md`, headless binary `.glb`, and parametric `.scad` & `.stl` 3D-print generators. |
+| [`@rack-mcp/hardware-catalog`](./packages/hardware-catalog) | 73 YAML hardware blueprints (`10inch`, `19inch`, `6inch`, `carriers`, `sub-modules`), `port_groups` matrix expander, and catalog search/validator. |
+| [`@rack-mcp/exporters`](./packages/exporters) | `elevation.svg`, `wiring-schematic.svg`, `BOM.md` (UPS/energy/budget), `labels.csv` / `labels.svg`, NetBox/UniFi/Proxmox importers, binary `.glb`, and parametric OpenSCAD/STL carriers & custom brackets. |
 | [`@rack-mcp/mcp-server`](./packages/mcp-server) | Multi-tenant Remote MCP server (`Streamable HTTP /mcp` & `SSE /sse`) + local `stdio` MCP server, 12 tools, 4 resources, 2 prompts, 50-step Undo/Redo manager, and HTTP/WebSocket 3D sidecar (`:3100`). |
-| [`@rack-mcp/web-viewer`](./packages/web-viewer) | React 19 + Three.js (`@react-three/fiber`) live 3D/2D CAD studio, Catalog/Cable Builder Drawer, and W3C WebMCP integration. |
-| [`@rack-mcp/cli`](./packages/cli) | Unified `rack-mcp` CLI (`serve`, `validate`, `export`). |
+| [`@rack-mcp/web-viewer`](./packages/web-viewer) | React 19 + Three.js (`@react-three/fiber`) live 3D/2D CAD studio, drag-and-drop YAML/NetBox/UniFi/Proxmox import, 3D `.STL` preview, Catalog/Custom Blueprint Wizard, and W3C WebMCP integration. |
+| [`@rack-mcp/cli`](./packages/cli) | Unified `rack-mcp` CLI (`serve`, `validate`, `export`, `import`, `new-blueprint`). |
 
 ---
 

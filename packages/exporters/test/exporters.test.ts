@@ -7,17 +7,25 @@ import { stringify as stringifyYaml } from 'yaml';
 import { describe, expect, it } from 'vitest';
 import {
   create10InchHomelabProjectInput,
+  detectExternalImportFormat,
   evaluate10InchHomelabScene,
   generateBomMarkdown,
+  generateCableLabelsCsv,
+  generateCableLabelsSvg,
   generateCarrierOpenScad,
   generateCarrierStl,
+  generateCustomBracketOpenScad,
+  generateCustomBracketStl,
   generateCustomCoverPanelOpenScad,
   generateCustomCoverPanelStl,
   generateElevationSvg,
   generateGlbBinary,
   generateProjectPrintableCarriers,
   generateWiringSchematicSvg,
+  importExternalInventory,
+  renderCustomBracketPreviewSvg,
   sanitizeCoverPanelLabel,
+  validateCustomBracketOptions,
 } from '../src/index.js';
 
 describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgrade)', () => {
@@ -818,5 +826,211 @@ describe('@rack-mcp/exporters & 8U 10-Inch Homelab Reference Scenario (CAD Upgra
     expect(bomMd).not.toContain('<img');
     expect(bomMd).toContain('&lt;script&gt;');
     expect(bomMd).toContain('uplink-01 \\| &lt;img');
+  });
+
+  it('exports formula-safe cable labels (labels.csv & multi-tape labels.svg) and enriched energy/UPS/budget BOM', () => {
+    const baseProject = create10InchHomelabProjectInput();
+    const formulaProject = {
+      ...baseProject,
+      mounted_devices: (baseProject.mounted_devices ?? []).map((d, idx) =>
+        idx === 0 ? { ...d, hostname: '=CMD|calc!A0' } : d,
+      ),
+      cables: (baseProject.cables ?? []).map((c, idx) =>
+        idx === 0 ? { ...c, label: '+SUM(1,2)@evil' } : c,
+      ),
+    };
+    const scene = evaluateRackScene(
+      formulaProject,
+      defaultCatalogRegistry.toRecord(),
+    );
+
+    const csv = generateCableLabelsCsv(scene);
+    expect(csv.startsWith('CableID,WrapLabel,FromEndpoint,ToEndpoint')).toBe(true);
+    expect(csv).toContain("'=CMD|calc!A0");
+    expect(csv).toContain("'+SUM(1,2)@evil");
+
+    for (const width of [12, 18, 24] as const) {
+      const svg = generateCableLabelsSvg(scene, { tapeWidthMm: width });
+      expect(svg).toContain('<svg');
+      expect(svg).toContain(`${width}mm`);
+    }
+
+    const customBom = generateBomMarkdown(scene, undefined, {
+      electricityPricePerKwhEur: 0.4,
+    });
+    expect(customBom).toContain('€0.40/kWh');
+    expect(customBom).toContain('UPS Backup Runtime');
+    expect(customBom).toContain('Est. Price (EUR)');
+  });
+
+  it('generates parametric custom device bracket .SCAD, 2D SVG preview, and strict 2-manifold watertight .STL across 6/10/19-inch racks', () => {
+    const invalid = validateCustomBracketOptions({
+      standard: '10inch',
+      u_height: 1,
+      device_name: 'TooWideServer',
+      device_width_mm: 245,
+      device_height_mm: 38,
+      device_depth_mm: 140,
+      keystone_count: 0,
+    });
+    expect(invalid.valid).toBe(false);
+    expect(invalid.errors.length).toBeGreaterThan(0);
+
+    const configs = [
+      {
+        standard: '6inch' as const,
+        u_height: 1 as const,
+        device_name: 'Micro-Gateway',
+        device_width_mm: 68,
+        device_height_mm: 28,
+        device_depth_mm: 90,
+        clearance_tolerance_mm: 0.4,
+        keystone_count: 1,
+        rear_retainer_lip: true,
+        ventilation_slots: false,
+        engraved_label: 'GW-6IN',
+      },
+      {
+        standard: '10inch' as const,
+        u_height: 1 as const,
+        device_name: 'NanoKVM-Node',
+        device_width_mm: 110,
+        device_height_mm: 34,
+        device_depth_mm: 115,
+        clearance_tolerance_mm: 0.4,
+        keystone_count: 2,
+        rear_retainer_lip: true,
+        ventilation_slots: true,
+        engraved_label: 'KVM-01',
+      },
+      {
+        standard: '19inch' as const,
+        u_height: 2 as const,
+        device_name: 'Desktop-NVR',
+        device_width_mm: 210,
+        device_height_mm: 68,
+        device_depth_mm: 165,
+        clearance_tolerance_mm: 0.5,
+        keystone_count: 4,
+        rear_retainer_lip: true,
+        ventilation_slots: false,
+        engraved_label: 'NVR-BAY',
+      },
+    ];
+
+    for (const cfg of configs) {
+      const check = validateCustomBracketOptions(cfg);
+      expect(check.valid).toBe(true);
+
+      const scad = generateCustomBracketOpenScad(cfg);
+      expect(scad).toContain('RackArchitect MCP — Custom Parametric Device Rack Bracket');
+      expect(scad).toContain('linear_extrude');
+      expect(scad).toContain(cfg.engraved_label);
+
+      const svg = renderCustomBracketPreviewSvg(cfg);
+      expect(svg).toContain('<svg');
+      expect(svg).toContain(cfg.engraved_label);
+
+      const stl = generateCustomBracketStl(cfg);
+      expect(stl.startsWith('solid ')).toBe(true);
+
+      const vertexMatches = [
+        ...stl.matchAll(/vertex\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/g),
+      ];
+      expect(vertexMatches.length % 3).toBe(0);
+      expect(vertexMatches.length).toBeGreaterThan(100);
+
+      const directedEdges = new Map<string, number>();
+      const undirectedEdges = new Map<string, number>();
+      let signedVolumeMm3 = 0;
+
+      for (let i = 0; i < vertexMatches.length; i += 3) {
+        const v0 = vertexMatches[i]!;
+        const v1 = vertexMatches[i + 1]!;
+        const v2 = vertexMatches[i + 2]!;
+        const p0: [number, number, number] = [Number(v0[1]), Number(v0[2]), Number(v0[3])];
+        const p1: [number, number, number] = [Number(v1[1]), Number(v1[2]), Number(v1[3])];
+        const p2: [number, number, number] = [Number(v2[1]), Number(v2[2]), Number(v2[3])];
+
+        for (const [a, b] of [
+          [p0, p1],
+          [p1, p2],
+          [p2, p0],
+        ] as const) {
+          const ka = `${a[0]},${a[1]},${a[2]}`;
+          const kb = `${b[0]},${b[1]},${b[2]}`;
+          const dk = `${ka}->${kb}`;
+          directedEdges.set(dk, (directedEdges.get(dk) ?? 0) + 1);
+          const uk = ka < kb ? `${ka}|${kb}` : `${kb}|${ka}`;
+          undirectedEdges.set(uk, (undirectedEdges.get(uk) ?? 0) + 1);
+        }
+
+        signedVolumeMm3 +=
+          (p0[0] * (p1[1] * p2[2] - p1[2] * p2[1]) -
+            p0[1] * (p1[0] * p2[2] - p1[2] * p2[0]) +
+            p0[2] * (p1[0] * p2[1] - p1[1] * p2[0])) /
+          6.0;
+      }
+
+      const nonManifoldCount = [...undirectedEdges.values()].filter((c) => c !== 2).length;
+      let unpairedDirected = 0;
+      for (const [dk, cnt] of directedEdges.entries()) {
+        const [a, b] = dk.split('->');
+        if (directedEdges.get(`${b}->${a}`) !== cnt) {
+          unpairedDirected++;
+        }
+      }
+      expect(nonManifoldCount).toBe(0);
+      expect(unpairedDirected).toBe(0);
+      expect(signedVolumeMm3).toBeGreaterThan(1000);
+    }
+  });
+
+  it('auto-detects and imports NetBox, UniFi, and Proxmox inventory exports into schema-valid rack.yaml', () => {
+    const netboxPayload = {
+      rack: { name: 'NetBox Lab', u_height: 8, width: 10, mounting_depth: 240 },
+      devices: [
+        {
+          name: 'sw-core',
+          position: 8,
+          face: 'front',
+          device_type: { manufacturer: { name: 'Ubiquiti' }, model: 'USW-Flex-2.5G-8-PoE' },
+        },
+        {
+          name: 'gw-edge',
+          position: 7,
+          face: 'front',
+          device_type: { manufacturer: { name: 'Ubiquiti' }, model: 'UCG-Max' },
+        },
+      ],
+    };
+    expect(detectExternalImportFormat(netboxPayload)).toBe('netbox');
+    const netboxRes = importExternalInventory(JSON.stringify(netboxPayload), {
+      format: 'netbox',
+    });
+    expect(netboxRes.matchedDevices).toBeGreaterThanOrEqual(1);
+    expect(netboxRes.yaml).toContain('project_name: NetBox Lab');
+
+    const unifiPayload = {
+      data: [
+        { name: 'unifi-gw', model: 'UCGMAX', mac: 'aa:bb:cc:dd:ee:01' },
+        { name: 'unifi-sw', model: 'USWFLEX25G8P', mac: 'aa:bb:cc:dd:ee:02', uplink: { uplink_mac: 'aa:bb:cc:dd:ee:01' } },
+      ],
+    };
+    expect(detectExternalImportFormat(unifiPayload)).toBe('unifi');
+    const unifiRes = importExternalInventory(unifiPayload, { format: 'unifi' });
+    expect(unifiRes.matchedDevices).toBe(2);
+    expect(unifiRes.project.mounted_devices?.length).toBeGreaterThanOrEqual(2);
+
+    const proxmoxPayload = [
+      { node: 'pve-node-1', status: 'online', maxcpu: 8, type: 'node' },
+      { node: 'pve-node-2', status: 'online', maxcpu: 8, type: 'node' },
+    ];
+    expect(detectExternalImportFormat(proxmoxPayload)).toBe('proxmox');
+    const proxmoxRes = importExternalInventory(proxmoxPayload, {
+      format: 'proxmox',
+    });
+    expect(proxmoxRes.project.mounted_devices?.length).toBeGreaterThanOrEqual(2);
+    expect(proxmoxRes.yaml).toContain('pve-node-1');
   });
 });

@@ -73,6 +73,43 @@ export function serializeRackScene(scene: ComputedRackScene): SerializedRackScen
   };
 }
 
+/**
+ * Reconstructs a `ComputedRackScene` (with a `ReadonlyMap` `devices_by_id`)
+ * from a JSON-serialized `SerializedRackScene` so exporters and domain helpers
+ * work identically in the browser and on the server.
+ */
+export function deserializeRackScene(
+  serialized: SerializedRackScene
+): ComputedRackScene {
+  const devicesById = new Map<string, ComputedDeviceGeometry>();
+  for (const [id, dev] of Object.entries(serialized.geometry.devices_by_id)) {
+    if (id === '__proto__' || id === 'constructor' || id === 'prototype') {
+      continue;
+    }
+    devicesById.set(id, dev);
+  }
+  for (const dev of serialized.geometry.devices) {
+    if (!devicesById.has(dev.instance_id)) {
+      devicesById.set(dev.instance_id, dev);
+    }
+  }
+
+  return {
+    project: serialized.project,
+    geometry: {
+      rack: serialized.geometry.rack,
+      panel_width_mm: serialized.geometry.panel_width_mm,
+      aperture_width_mm: serialized.geometry.aperture_width_mm,
+      total_height_mm: serialized.geometry.total_height_mm,
+      rail_depth_mm: serialized.geometry.rail_depth_mm,
+      devices: serialized.geometry.devices,
+      devices_by_id: devicesById
+    },
+    validation: serialized.validation,
+    cable_routes: serialized.cable_routes
+  };
+}
+
 function canReuseCableRoutes(
   prev: RackProject,
   next: RackProject

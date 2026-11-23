@@ -1,0 +1,90 @@
+slug: "apple-mac-mini-m4"
+manufacturer: "Apple"
+model: "Mac mini M4 / M4 Pro (10GbE Homelab Node)"
+description: "Ultrakompakter Apple Mac mini M4 (127×50×127mm) aus eloxiertem Aluminium mit internem Netzteil, frontseitigen USB-C-Ports und 10GbE Ethernet — beliebt als leiser 24/7 AI-, Build- oder Docker-Node im 10-Zoll-2U-Carrier."
+category: "mini-pc"
+mount_type: "sub-module"
+slot_compatibility: "mac-mini-m4"
+geometry:
+  u_height: 1.15
+  width_mm: 127.0
+  height_mm: 50.0
+  depth_mm: 127.0
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 1.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 670
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 5
+  max_system_watts: 65
+  airflow: "front-to-rear"
+  noise_db_a: 18.0
+ports:
+  - port_id: "usb_c_front_1"
+    label: "Front USB-C 1"
+    face: "front"
+    connector_type: "usb-c"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 44.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "usb_c_front_2"
+    label: "Front USB-C 2"
+    face: "front"
+    connector_type: "usb-c"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 58.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "audio_front"
+    label: "3.5mm Audio"
+    face: "front"
+    connector_type: "audio-35mm"
+    direction: "bidirectional"
+    capabilities: ["audio-analog"]
+    coordinates:
+      x_mm: 74.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "eth0"
+    label: "10GbE RJ45"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t", "10gbase-t"]
+    coordinates:
+      x_mm: 28.0
+      y_mm: 18.0
+      orientation: "upright"
+  - port_id: "tb4_1"
+    label: "Thunderbolt USB-C"
+    face: "rear"
+    connector_type: "usb-c"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 52.0
+      y_mm: 18.0
+      orientation: "upright"
+  - port_id: "ac_in"
+    label: "AC Mains In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 98.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#E5E7EB"
+  material_preset: "coated-aluminum"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 699

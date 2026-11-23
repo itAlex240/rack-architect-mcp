@@ -14,7 +14,7 @@
 5. [Datenmodelle & Strikte Zod-Schemas (`rack.yaml` & Blueprints)](#5-datenmodelle--strikte-zod-schemas-rackyaml--blueprints)
 6. [Die 5-stufige Deterministische Validierungs-Engine (`validateRackProject`)](#6-die-5-stufige-deterministische-validierungs-engine-validaterackproject)
 7. [Die 3D-Kabel-Routing- & Längenberechnungs-Engine (`catmull-rom-router.ts`)](#7-die-3d-kabel-routing---längenberechnungs-engine-catmull-rom-routerts)
-8. [Der Hardware-Katalog (`@rack-mcp/hardware-catalog`) — Alle 67 Blueprints](#8-der-hardware-katalog-rack-mcphardware-catalog--alle-67-blueprints)
+8. [Der Hardware-Katalog (`@rack-mcp/hardware-catalog`) — Alle 73 Blueprints](#8-der-hardware-katalog-rack-mcphardware-catalog--alle-73-blueprints)
 9. [Der MCP-Server, State-Manager & Sidecar-Server (`@rack-mcp/mcp-server`)](#9-der-mcp-server-state-manager--sidecar-server-rack-mcpmcp-server)
 10. [Das Dashboard & 3D/2D Web-Viewer UI — Jede Schaltfläche im Detail (`@rack-mcp/web-viewer`)](#10-das-dashboard--3d2d-web-viewer-ui--jede-schaltfläche-im-detail-rack-mcpweb-viewer)
 11. [Die 4 CAD- & Dokumentations-Exporter (`@rack-mcp/exporters`)](#11-die-4-cad---dokumentations-exporter-rack-mcpexporters)
@@ -107,11 +107,11 @@ flowchart TD
 | Paket | Pfad | Erlaubte interne Abhängigkeiten | Hauptaufgabe |
 | :--- | :--- | :--- | :--- |
 | **`@rack-mcp/core-domain`** | [`packages/core-domain`](../packages/core-domain/src/index.ts) | **KEINE** (`"types": []` in `tsconfig.json`) | Reine Mathematik, Konstanten, Zod-Schemas, Port-Matrix-Expander, 3D-Koordinaten-Transformer, 5-Stufen-Validierungs-Engine, 3D-Catmull-Rom-Kabelrouter. Läuft identisch in Node.js und im Browser. |
-| **`@rack-mcp/hardware-catalog`** | [`packages/hardware-catalog`](../packages/hardware-catalog/src/index.ts) | `@rack-mcp/core-domain` | 67 kuratierte YAML-Hardware-Blueprints (`catalog/10inch`, `catalog/19inch`, `catalog/6inch`, `catalog/carriers`, `catalog/sub-modules`), eingebettetes TS-Bundle (`embedded-catalog.ts`), Geometrie-Integritäts-Validator und Such-/Filter-Registry (`CatalogRegistry`). |
-| **`@rack-mcp/exporters`** | [`packages/exporters`](../packages/exporters/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` | Deterministische Generatoren für `elevation.svg` (2D-Ansichten + Z-Y-Tiefenschnitt), `wiring-schematic.svg` (Strom-DAG + orthogonales Pin-zu-Pin-Schaltbild), `BOM.md` (Stückliste + 3D-Druck-Queue + Patch-Checkliste) und `rack-scene.glb` (binäres 3D glTF 2.0 Modell). |
+| **`@rack-mcp/hardware-catalog`** | [`packages/hardware-catalog`](../packages/hardware-catalog/src/index.ts) | `@rack-mcp/core-domain` | 73 kuratierte YAML-Hardware-Blueprints (`catalog/10inch`, `catalog/19inch`, `catalog/6inch`, `catalog/carriers`, `catalog/sub-modules`), eingebettetes TS-Bundle (`embedded-catalog.ts`), Geometrie-Integritäts-Validator und Such-/Filter-Registry (`CatalogRegistry`). |
+| **`@rack-mcp/exporters`** | [`packages/exporters`](../packages/exporters/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` | Deterministische Generatoren für `elevation.svg`, `wiring-schematic.svg`, `BOM.md` (inkl. USV/Strom/Budget), `labels.csv` / `labels.svg`, NetBox/UniFi/Proxmox-Importer, binäres `.glb` sowie parametrische `.scad`/`.stl`-Träger & Custom Device Brackets. |
 | **`@rack-mcp/mcp-server`** | [`packages/mcp-server`](../packages/mcp-server/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters` | `ProjectStateManager` (Undo/Redo, File-Watcher, Atomic-Save), `RemoteSessionRegistry` (Multi-Tenant `Streamable HTTP` `/mcp` & `SSE` `/sse`), `RackMcpToolHandlers` (12 Tools), `createRackMcpServer` (4 Resources, 2 Prompts), `generateAsciiElevation` und `startRackSidecarServer` (`HTTP + WebSocket`). |
-| **`@rack-mcp/web-viewer`** | [`packages/web-viewer`](../packages/web-viewer/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` | Interaktives React 19 + Three.js (`@react-three/fiber`) CAD-Dashboard mit Dual-Mode (`sidecar-live` per WebSocket oder `standalone-demo` direkt im Browser) und Client-Side WebMCP (`document.modelContext`). |
-| **`@rack-mcp/cli`** | [`packages/cli`](../packages/cli/src/index.ts) | `@rack-mcp/mcp-server` (und transitiv alle Pakete) | Kommandozeilen-Einstiegspunkt (`rack-mcp`) mit den Befehlen `serve`, `validate` und `export`. |
+| **`@rack-mcp/web-viewer`** | [`packages/web-viewer`](../packages/web-viewer/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters` | Interaktives React 19 + Three.js (`@react-three/fiber`) CAD-Dashboard mit Drag-and-Drop-YAML/NetBox/UniFi/Proxmox-Import, 3D-`.STL`-Vorschau, `Shift+Drag` U-Slot-Verschiebung, Custom-Blueprint-Wizard und Client-Side WebMCP. |
+| **`@rack-mcp/cli`** | [`packages/cli`](../packages/cli/src/index.ts) | `@rack-mcp/mcp-server` (und transitiv alle Pakete) | Kommandozeilen-Einstiegspunkt (`rack-mcp`) mit den Befehlen `serve`, `validate`, `export`, `import` und `new-blueprint`. |
 
 ### 3.2 Vollständiger Dateibaum des Projekts
 
@@ -375,9 +375,9 @@ Laufen mehrere Kabel durch denselben Schacht, erhält das $k$-te Kabel ($k = 0, 
 
 ---
 
-## 8. Der Hardware-Katalog (`@rack-mcp/hardware-catalog`) — Alle 67 Blueprints
+## 8. Der Hardware-Katalog (`@rack-mcp/hardware-catalog`) — Alle 73 Blueprints
 
-Der Katalog liegt sowohl als Einzeldateien unter [`packages/hardware-catalog/catalog/`](../packages/hardware-catalog/catalog/) als auch als vorab eingebettetes TypeScript-Array in [`embedded-catalog.ts`](../packages/hardware-catalog/src/embedded-catalog.ts) vor. Das Skript `pnpm validate:catalog` ([`validate-cli.ts`](../packages/hardware-catalog/src/validate-cli.ts)) stellt sicher, dass alle 67 YAML-Dateien auf der Festplatte und das eingebettete Bundle zu 100 % synchron sind, keine Ports außerhalb der Gehäusemaße liegen und der Mindestabstand zwischen zwei Ports auf derselben Seite `MIN_PORT_CENTER_DISTANCE_MM = 8.0 mm` beträgt. Detailtabellen aller 67 Blueprints (21× `10inch`, 21× `19inch`, 6× `6inch`, 9× `carriers`, 10× `sub-modules`) befinden sich in [`packages/hardware-catalog/README.md`](../packages/hardware-catalog/README.md).
+Der Katalog liegt sowohl als Einzeldateien unter [`packages/hardware-catalog/catalog/`](../packages/hardware-catalog/catalog/) als auch als vorab eingebettetes TypeScript-Array in [`embedded-catalog.ts`](../packages/hardware-catalog/src/embedded-catalog.ts) vor. Das Skript `pnpm validate:catalog` ([`validate-cli.ts`](../packages/hardware-catalog/src/validate-cli.ts)) stellt sicher, dass alle 73 YAML-Dateien auf der Festplatte und das eingebettete Bundle zu 100 % synchron sind, keine Ports außerhalb der Gehäusemaße liegen und der Mindestabstand zwischen zwei Ports auf derselben Seite `MIN_PORT_CENTER_DISTANCE_MM = 8.0 mm` beträgt. Detailtabellen aller 73 Blueprints (24× `10inch`, 20× `19inch`, 6× `6inch`, 10× `carriers`, 13× `sub-modules`) befinden sich in [`packages/hardware-catalog/README.md`](../packages/hardware-catalog/README.md).
 
 ### 8.1 10-Zoll Rackmount-Geräte (`catalog/10inch/*.yaml`)
 | Slug | Hersteller & Modell | Kategorie | HE (`U`) | Maße `B × H × T` (`mm`) | Leistung / Kapazität | Ports |

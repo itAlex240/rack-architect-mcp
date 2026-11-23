@@ -1,12 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.6`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.7`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.6`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.7`)
 
 ### 📊 `v0.7.x` Series — Privacy-First Remote MCP Observability & Visual Showcase
+
+- **[`v0.7.7`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.7) (2026-11-11) — Dual Security Audit Hardening, 10x Faster 3D Cable Router & Read-Only Viewer Token Isolation:**
+  - Separated public HMAC-SHA256 `viewerToken` URLs (`/?session=<viewerToken>`) from the write-capable `Mcp-Session-Id` header, enforced read-only remote viewer WebSockets (`60 commands/min` limit), confined local `export_deliverables` `output_dir` to the project workspace (with `fs.realpathSync` symlink checks), added local DNS-rebinding `Host` header guards (`421`), tightened proxy trust & IPv6 `/64` rate-limit bucketing, removed `saltHex` persistence from `telemetry.json`, and accelerated 3D Catmull-Rom cable routing via 3D AABB culling and collinear spline compaction.
 
 - **[`v0.7.6`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.6) (2026-11-02) — Accurate Remote MCP Crawler Telemetry, Idle Probe Session Cleanup & Resilient Registry Publishing:**
   - Classified automated MCP directory crawlers and liveness monitors (`mcpbeat`, `AgentRankProbe`, `SealKeeperBot`, `EveryMCP-Probe`, `mcptry.com`, `MCPWatch`, `GolemreachTrustBot`, …) as `registry-probe` instead of `other-mcp`, reduced idle TTL for never-used crawler sessions to `10 min` (`unusedSessionTtlMs`), and added a 5-attempt retry loop to the MCP Registry publish step in `release.yml`.
@@ -101,9 +104,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.6`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.7`)
 
 ### 📊 Serie `v0.7.x` — DSGVO-konforme Remote-MCP-Telemetrie & Hero-Showcase
+
+- **[`v0.7.7`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.7) (2026-11-11) — Security-Audit-Härtung, 10x schnelleres 3D-Kabel-Routing & Read-Only Viewer-Token:**
+  - Getrennte HMAC-SHA256-`viewerToken` für geteilte Live-3D-Viewer-Links (`/?session=<viewerToken>`), Schreibschutz für unauthentifizierte Remote-Viewer-WebSockets (`60 Befehle/Min.`), strikte Projektverzeichnis-Prüfung inkl. Symlink-Schutz bei lokalem `export_deliverables`, DNS-Rebinding-Schutz (`421`) am lokalen Sidecar, verschärftes Proxy-Trust- & IPv6-`/64`-Rate-Limiting, keine Speicherung des Telemetrie-HMAC-Schlüssels auf der Festplatte sowie 10x schnelleres 3D-Spline-Routing durch 3D-AABB-Culling und Segment-Kompaktierung.
 
 - **[`v0.7.6`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.6) (2026-11-02) — Korrekte Crawler-Statistik, schnellere Bereinigung ungenutzter Sessions & robuster Registry-Upload:**
   - Automatische MCP-Verzeichnis-Crawler und Erreichbarkeits-Checker (`mcpbeat`, `AgentRankProbe`, `SealKeeperBot`, `EveryMCP-Probe`, `mcptry.com` u. a.) werden als `registry-probe` statt `other-mcp` gezählt, ungenutzte Probe-Sessions laufen nach `10 Min.` statt `2 Std.` ab und der MCP-Registry-Upload im Release-Workflow versucht es bis zu 5-mal erneut.

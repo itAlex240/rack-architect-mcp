@@ -314,6 +314,12 @@ export const PowerAndThermalSchema = z
       .max(100000)
       .optional()
       .describe('Maximum output load capacity in watts for UPS units.'),
+    ups_battery_wh: z
+      .number()
+      .positive()
+      .max(100000)
+      .optional()
+      .describe('Usable battery energy capacity in Watt-hours (Wh) for UPS runtime estimation.'),
     pdu_capacity_watts: z
       .number()
       .positive()
@@ -478,7 +484,13 @@ export const HardwareBlueprintSchema = z
       has_oled_display: false,
       stl_mesh_path: null
     }),
-    printable_metadata: PrintableMetadataSchema
+    printable_metadata: PrintableMetadataSchema,
+    estimated_price_eur: z
+      .number()
+      .nonnegative()
+      .max(1000000)
+      .optional()
+      .describe('Optional indicative street price in EUR for BOM hardware budget estimation.')
   })
   .describe('Complete hardware catalog blueprint specification.');
 

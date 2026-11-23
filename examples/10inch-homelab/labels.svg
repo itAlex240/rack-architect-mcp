@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 624 1002" width="624" height="1002">
+<rect x="0" y="0" width="624" height="1002" fill="#09090B" />
+<text x="24" y="28" fill="#F4F4F5" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="700">8U 10-Inch Proxmox &amp; UniFi Homelab — Wrap-Around Cable Labels (18mm Tape)</text>
+<text x="24" y="46" fill="#A1A1AA" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5">Total Labels: 26 · Print 1:1 on Brother P-Touch / DYMO / Niimbot or A4 sticker sheet and fold along center dashed line</text>
+<rect x="24" y="64" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="26" y="66" width="8" height="54" rx="2" fill="#EF4444" />
+<line x1="38" y1="93" x2="296" y2="93" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="42" y="81.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">ups-core-01:iec_out1 ↔ pdu-rear-01:mains</text>
+<text x="42" y="108.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">pwr-ups-to-pdu · 0.25m Schuko-C13 · —</text>
+<rect x="320" y="64" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="322" y="66" width="8" height="54" rx="2" fill="#EF4444" />
+<line x1="334" y1="93" x2="592" y2="93" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="338" y="81.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">ups-core-01:iec_out2 ↔ sw-core-flex25g:p</text>
+<text x="338" y="108.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">pwr-ups-to-sw · 1.00m IEC C13-C14 · —</text>
+<rect x="24" y="134" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="26" y="136" width="8" height="54" rx="2" fill="#F97316" />
+<line x1="38" y1="163" x2="296" y2="163" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="42" y="151.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">pdu-rear-01:outlet1 ↔ gw-unifi-max:usbc_</text>
+<text x="42" y="178.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">pwr-pdu-to-ucg · 0.50m USB-C PD · —</text>
+<rect x="320" y="134" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="322" y="136" width="8" height="54" rx="2" fill="#F59E0B" />
+<line x1="334" y1="163" x2="592" y2="163" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="338" y="151.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">pdu-rear-01:outlet2 ↔ pve-node-01:dc_in</text>
+<text x="338" y="178.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">pwr-pdu-to-pve1 · 0.50m DC Barrel · —</text>
+<rect x="24" y="204" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="26" y="206" width="8" height="54" rx="2" fill="#F59E0B" />
+<line x1="38" y1="233" x2="296" y2="233" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="42" y="221.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">pdu-rear-01:outlet3 ↔ pve-node-02:dc_in</text>
+<text x="42" y="248.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">pwr-pdu-to-pve2 · 0.50m DC Barrel · —</text>
+<rect x="320" y="204" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="322" y="206" width="8" height="54" rx="2" fill="#3B82F6" />
+<line x1="334" y1="233" x2="592" y2="233" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="338" y="221.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">gw-unifi-max:lan1 ↔ patch-panel-u7:p1</text>
+<text x="338" y="248.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">trunk-ucg-lan1-to-patch1 · 0.75m Cat6A · VLAN </text>
+<rect x="24" y="274" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="26" y="276" width="8" height="54" rx="2" fill="#10B981" />
+<line x1="38" y1="303" x2="296" y2="303" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="42" y="291.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">pve-node-01:eth1 ↔ patch-panel-u7:p2</text>
+<text x="42" y="318.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">trunk-pve1-eth1-to-patch2 · 0.75m Cat6A · —</text>
+<rect x="320" y="274" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="322" y="276" width="8" height="54" rx="2" fill="#10B981" />
+<line x1="334" y1="303" x2="592" y2="303" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="338" y="291.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">pve-node-02:eth1 ↔ patch-panel-u7:p3</text>
+<text x="338" y="318.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">trunk-pve2-eth1-to-patch3 · 0.50m Cat6A · —</text>
+<rect x="24" y="344" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="26" y="346" width="8" height="54" rx="2" fill="#6366F1" />
+<line x1="38" y1="373" x2="296" y2="373" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="42" y="361.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">pve-node-01:eth0 ↔ patch-panel-u7:p4</text>
+<text x="42" y="388.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">trunk-pve1-eth0-to-patch4 · 0.50m Cat6A · —</text>
+<rect x="320" y="344" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="322" y="346" width="8" height="54" rx="2" fill="#6366F1" />
+<line x1="334" y1="373" x2="592" y2="373" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="338" y="361.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">pve-node-02:eth0 ↔ patch-panel-u7:p5</text>
+<text x="338" y="388.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">trunk-pve2-eth0-to-patch5 · 0.50m Cat6A · —</text>
+<rect x="24" y="414" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="26" y="416" width="8" height="54" rx="2" fill="#EC4899" />
+<line x1="38" y1="443" x2="296" y2="443" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="42" y="431.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">gw-unifi-max:wan ↔ WAN-ISP:coupler</text>
+<text x="42" y="458.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">trunk-ucg-wan-to-ks · 0.30m Cat6A · —</text>
+<rect x="320" y="414" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="322" y="416" width="8" height="54" rx="2" fill="#A855F7" />
+<line x1="334" y1="443" x2="592" y2="443" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="338" y="431.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">pve-node-01:eth2 ↔ pve-node-02:eth2</text>
+<text x="338" y="458.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">trunk-pve-ceph-direct · 0.15m Cat6A · VLAN 50</text>
+<rect x="24" y="484" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="26" y="486" width="8" height="54" rx="2" fill="#3B82F6" />
+<line x1="38" y1="513" x2="296" y2="513" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="42" y="501.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">patch-panel-u7:p1 ↔ sw-core-flex25g:eth1</text>
+<text x="42" y="528.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">patch-front-p1-sw1 · 0.15m Cat6A · —</text>
+<rect x="320" y="484" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="322" y="486" width="8" height="54" rx="2" fill="#10B981" />
+<line x1="334" y1="513" x2="592" y2="513" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="338" y="501.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">patch-panel-u7:p2 ↔ sw-core-flex25g:eth2</text>
+<text x="338" y="528.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">patch-front-p2-sw2 · 0.15m Cat6A · —</text>
+<rect x="24" y="554" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="26" y="556" width="8" height="54" rx="2" fill="#10B981" />
+<line x1="38" y1="583" x2="296" y2="583" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="42" y="571.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">patch-panel-u7:p3 ↔ sw-core-flex25g:eth3</text>
+<text x="42" y="598.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">patch-front-p3-sw3 · 0.15m Cat6A · —</text>
+<rect x="320" y="554" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="322" y="556" width="8" height="54" rx="2" fill="#6366F1" />
+<line x1="334" y1="583" x2="592" y2="583" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="338" y="571.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">patch-panel-u7:p4 ↔ sw-core-flex25g:eth4</text>
+<text x="338" y="598.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">patch-front-p4-sw4 · 0.15m Cat6A · —</text>
+<rect x="24" y="624" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="26" y="626" width="8" height="54" rx="2" fill="#6366F1" />
+<line x1="38" y1="653" x2="296" y2="653" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="42" y="641.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">patch-panel-u7:p5 ↔ sw-core-flex25g:eth5</text>
+<text x="42" y="668.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">patch-front-p5-sw5 · 0.15m Cat6A · —</text>
+<rect x="320" y="624" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="322" y="626" width="8" height="54" rx="2" fill="#EC4899" />
+<line x1="334" y1="653" x2="592" y2="653" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="338" y="641.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">patch-panel-u7:p6 ↔ WAN-ISP:coupler</text>
+<text x="338" y="668.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">patch-front-p6-wan · 0.50m Cat6A · VLAN 900</text>
+<rect x="24" y="694" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="26" y="696" width="8" height="54" rx="2" fill="#0EA5E9" />
+<line x1="38" y1="723" x2="296" y2="723" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="42" y="711.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">patch-panel-u7:p7 ↔ sw-core-flex25g:eth7</text>
+<text x="42" y="738.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">patch-front-p7-sw7 · 0.15m Cat6A · VLAN 20</text>
+<rect x="320" y="694" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="322" y="696" width="8" height="54" rx="2" fill="#F59E0B" />
+<line x1="334" y1="723" x2="592" y2="723" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="338" y="711.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">patch-panel-u7:p8 ↔ sw-core-flex25g:eth8</text>
+<text x="338" y="738.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">patch-front-p8-sw8 · 0.15m Cat6A · VLAN 30</text>
+<rect x="24" y="764" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="26" y="766" width="8" height="54" rx="2" fill="#14B8A6" />
+<line x1="38" y1="793" x2="296" y2="793" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="42" y="781.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">patch-panel-u7:p9 ↔ sw-core-flex25g:eth9</text>
+<text x="42" y="808.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">patch-front-p9-sw9 · 0.15m Cat6A · VLAN 10</text>
+<rect x="320" y="764" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="322" y="766" width="8" height="54" rx="2" fill="#06B6D4" />
+<line x1="334" y1="793" x2="592" y2="793" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="338" y="781.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">sw-core-flex25g:eth6 ↔ gw-unifi-max:lan2</text>
+<text x="338" y="808.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">cross-sw6-to-ucg-lan2 · 0.75m Cat6A · —</text>
+<rect x="24" y="834" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="26" y="836" width="8" height="54" rx="2" fill="#EC4899" />
+<line x1="38" y1="863" x2="296" y2="863" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="42" y="851.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">ISP Glasfaser-ONT (2.5G WAN-Uplink) [Hau</text>
+<text x="42" y="878.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">ext-isp-wan · Drop (2.5GBE) · LAN/WAN</text>
+<rect x="320" y="834" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="322" y="836" width="8" height="54" rx="2" fill="#0EA5E9" />
+<line x1="334" y1="863" x2="592" y2="863" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="338" y="851.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">UniFi U7-Pro Wi-Fi 7 Decken-AP [Erdgesch</text>
+<text x="338" y="878.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">ext-ap-eg · Drop (2.5GBE) · PoE 21W</text>
+<rect x="24" y="904" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="26" y="906" width="8" height="54" rx="2" fill="#F59E0B" />
+<line x1="38" y1="933" x2="296" y2="933" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="42" y="921.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">4K PoE+ Überwachungskamera Einfahrt &amp; Ha</text>
+<text x="42" y="948.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">ext-cam-einfahrt · Drop (1GBE) · PoE 12.5W</text>
+<rect x="320" y="904" width="280" height="58" rx="4" fill="#FAFAFA" stroke="#52525B" stroke-width="1" stroke-dasharray="4 2" />
+<rect x="322" y="906" width="8" height="54" rx="2" fill="#14B8A6" />
+<line x1="334" y1="933" x2="592" y2="933" stroke="#D4D4D8" stroke-width="0.9" stroke-dasharray="3 3" />
+<text x="338" y="921.4" fill="#09090B" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700">Home-Office 2.5G Workstation-Dose [Oberg</text>
+<text x="338" y="948.66" fill="#3F3F46" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.2">ext-office-lan · Drop (2.5GBE) · LAN/WAN</text>
+</svg>

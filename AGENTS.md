@@ -20,7 +20,7 @@ This repository uses a strict layered monorepo architecture (TypeScript / Node.j
 | **`@rack-mcp/hardware-catalog`** | `packages/hardware-catalog` | YAML hardware blueprints (racks, switches, mini-PCs, 3D-printed carriers, PDUs) + catalog loader & validator. | `@rack-mcp/core-domain` |
 | **`@rack-mcp/exporters`** | `packages/exporters` | Deterministic 2D SVG elevation/wiring generator, Markdown/CSV BOM generator, and headless GLTF/GLB exporter. | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` |
 | **`@rack-mcp/mcp-server`** | `packages/mcp-server` | MCP server (`stdio` & `sse`), tool handlers, state manager, file watcher, and local WebSocket sidecar server. | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters` |
-| **`@rack-mcp/web-viewer`** | `packages/web-viewer` | React + Three.js (`@react-three/fiber`) live 3D/2D inspection UI connected via WebSocket. | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` |
+| **`@rack-mcp/web-viewer`** | `packages/web-viewer` | React + Three.js (`@react-three/fiber`) live 3D/2D inspection UI connected via WebSocket. | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters` |
 | **`@rack-mcp/cli`** | `packages/cli` | Unified CLI entry point (`npx rack-mcp`) launching the MCP server and serving the built web viewer. | All packages |
 
 ### Critical Boundary Enforcement
@@ -185,6 +185,6 @@ A live, multi-tenant Hosted Remote MCP + 3D Studio instance is deployed in produ
 4. **Automated GitHub `main` Pull-Deployment, Trivy Gate & Monitoring:**
    * Pushing to `origin/main` automatically triggers **both** GitHub Pages (`deploy-demo.yml`) and the production server's pull-based Zero-Downtime Auto-Updater (`rack-mcp-autoupdate.timer` -> `/usr/local/sbin/update-rack-architect-mcp.sh` every 15 minutes):
      1. Polls `git ls-remote` on `refs/heads/main` against `/opt/rack-architect-mcp/.deployed_commit` and verifies/heals the `br-rackmcp` Zero-Egress `iptables` rules on every tick.
-     2. Builds a candidate image (`rack-architect-mcp:candidate`), blocks deployment if Trivy finds any fixable `CRITICAL` CVE, swaps atomically with `rack-architect-mcp:rollback` fallback, and verifies `/health` over both `127.0.0.1:3100` and public HTTPS (`https://mcp.rackarchitect.dev/health`).
+     2. Builds a candidate image (`rack-architect-mcp:candidate`) automatically on new commits **or** whenever the active `rack-architect-mcp:local` image is $\ge 7$ days old (weekly `--pull` Alpine security refresh), blocks deployment if Trivy finds any fixable `CRITICAL` CVE, swaps atomically with `rack-architect-mcp:rollback` fallback, and verifies `/health` over both `127.0.0.1:3100` and public HTTPS (`https://mcp.rackarchitect.dev/health`).
    * Daily automated server monitoring (`08:00 CET` `server_security_briefing.sh`) verifies HTTPS `/health`, GitHub commit sync, `br-rackmcp` Zero-Egress firewall state, `rack-mcp-autoupdate.timer`, and Trivy container CVEs.
    * For server-admin tasks with SSH access, read `/root/SERVER_DOKUMENTATION.md` and `/opt/gemini-workflows/AGENTS.md` on the host first (and the user's Obsidian Ideaverse `Hetzner Server (PapierkramKiller)` project notes if available locally).

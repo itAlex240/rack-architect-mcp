@@ -1,4 +1,5 @@
-import { useRackState } from '../../state/useRackState.js';
+import { useEffect, useState, type DragEvent } from 'react';
+import { useRackState, type ProjectImportResult } from '../../state/useRackState.js';
 import { RackSceneCanvas } from '../canvas/RackSceneCanvas.js';
 import { TopNavBar } from './TopNavBar.js';
 import { FloatingHudToolbar } from './FloatingHudToolbar.js';
@@ -12,11 +13,65 @@ import { CatalogBuilderDrawer } from './CatalogBuilderDrawer.js';
  */
 export function AppDashboard() {
   const state = useRackState();
+  const [dragActive, setDragActive] = useState<boolean>(false);
+  const [importToast, setImportToast] = useState<{
+    readonly ok: boolean;
+    readonly text: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!importToast || typeof window === 'undefined') {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setImportToast(null);
+    }, 6500);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [importToast]);
+
+  const handleImportFileContent = (
+    rawText: string,
+    filename?: string,
+  ): ProjectImportResult => {
+    const res = state.importProjectFile(rawText, filename);
+    setImportToast({ ok: res.ok, text: res.summary });
+    return res;
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    if (e.dataTransfer.types.includes('Files')) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      if (!dragActive) setDragActive(true);
+    }
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    if (e.currentTarget === e.target) {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    void file.text().then((txt) => {
+      handleImportFileContent(txt, file.name);
+    });
+  };
 
   return (
     <div
       data-testid="app-dashboard"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
       style={{
+        position: 'relative',
         width: '100%',
         height: '100%',
         display: 'flex',
@@ -43,6 +98,7 @@ export function AppDashboard() {
         onSelectPreset={state.selectPreset}
         onShareRackUrl={state.buildShareableRackUrl}
         onImportProjectJson={state.importProjectJson}
+        onImportProjectFile={handleImportFileContent}
         onInitNewRack={state.initNewRack}
         onExportDeliverablesToDisk={state.exportDeliverablesToDisk}
         onUndo={state.undo}
@@ -67,6 +123,7 @@ export function AppDashboard() {
           onClose={() => state.setCatalogDrawerOpen(false)}
           onMountEquipment={state.mountEquipmentFromCatalog}
           onConnectCable={state.connectInteractiveCable}
+          onRegisterCustomBlueprint={state.registerCustomBlueprint}
         />
 
         {/* Center Active View */}
@@ -112,6 +169,7 @@ export function AppDashboard() {
                 onHoverPort={state.setHoveredPort}
                 onClickPort={state.handlePortClick3D}
                 onCancelPendingPort={() => state.setPendingPort(null)}
+                onMoveDeviceU={state.moveDeviceU}
               />
             </>
           )}
@@ -138,6 +196,11 @@ export function AppDashboard() {
               elevationSvg={state.elevationSvg}
               wiringSvg={state.wiringSvg}
               bomMarkdown={state.bomMarkdown}
+              labelsCsv={state.labelsCsv}
+              labelsSvg={state.labelsSvg}
+              projectYaml={state.exportProjectYaml()}
+              electricityPricePerKwhEur={state.electricityPricePerKwhEur}
+              onChangeElectricityPricePerKwhEur={state.setElectricityPricePerKwhEur}
             />
           )}
         </main>
@@ -155,10 +218,96 @@ export function AppDashboard() {
           onMoveDeviceU={state.moveDeviceU}
           onRemoveDevice={state.removeEquipment}
           onDisconnectCable={state.disconnectCable}
+          electricityPricePerKwhEur={state.electricityPricePerKwhEur}
           onClearToolLog={state.clearMcpToolLog}
           onSimulateAgentStep={state.simulateAgentStep}
         />
       </div>
+
+      {/* Drag-and-Drop File Import Overlay (A3 + B7) */}
+      {dragActive && (
+        <div
+          data-testid="yaml-drop-overlay"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 60,
+            background: 'rgba(9, 9, 11, 0.82)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+          }}
+        >
+          <div
+            style={{
+              padding: '28px 36px',
+              borderRadius: '12px',
+              background: '#121216',
+              border: '1px dashed rgba(59, 130, 246, 0.55)',
+              textAlign: 'center',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7)',
+            }}
+          >
+            <div style={{ fontSize: '15px', fontWeight: 600, color: '#F4F4F5' }}>
+              Drop Rack or Infrastructure Export File
+            </div>
+            <div style={{ fontSize: '12px', color: '#A1A1AA', marginTop: '6px' }}>
+              Supports <code className="mono">rack.yaml</code>, <code className="mono">rack.json</code>, NetBox, UniFi &amp; Proxmox VE
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Non-blocking Import Feedback Toast */}
+      {importToast && (
+        <div
+          data-testid="import-status-toast"
+          style={{
+            position: 'absolute',
+            bottom: '20px',
+            right: '20px',
+            zIndex: 70,
+            maxWidth: '420px',
+            padding: '10px 14px',
+            borderRadius: '8px',
+            background: 'rgba(18, 18, 22, 0.94)',
+            backdropFilter: 'blur(14px)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderLeft: `2.5px solid ${importToast.ok ? '#10B981' : '#EF4444'}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.65)',
+          }}
+        >
+          <span
+            style={{
+              fontSize: '12px',
+              color: importToast.ok ? '#E4E4E7' : '#FCA5A5',
+            }}
+          >
+            {importToast.text}
+          </span>
+          <button
+            type="button"
+            data-testid="btn-dismiss-import-toast"
+            onClick={() => setImportToast(null)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#A1A1AA',
+              fontSize: '12px',
+              cursor: 'pointer',
+              padding: '2px 4px',
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 }

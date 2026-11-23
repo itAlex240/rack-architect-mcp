@@ -13,6 +13,8 @@ import {
 } from '@rack-mcp/core-domain';
 import {
   generateBomMarkdown,
+  generateCableLabelsCsv,
+  generateCableLabelsSvg,
   generateElevationSvg,
   generateGlbBinary,
   generateProjectPrintableCarriers,
@@ -1089,6 +1091,47 @@ export async function startRackSidecarServer(
             'Content-Disposition': 'attachment; filename="rack.yaml"'
           },
           yamlBuffer,
+          { compressible: true }
+        );
+        return;
+      }
+
+      if (pathname === '/api/export/labels.csv') {
+        telemetry.recordExportDownload('labels-csv');
+        const csvBuffer = Buffer.from(
+          generateCableLabelsCsv(targetStateManager.getScene()),
+          'utf8'
+        );
+        sendBufferWithOptionalGzip(
+          req,
+          res,
+          200,
+          {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': 'attachment; filename="labels.csv"'
+          },
+          csvBuffer,
+          { compressible: true }
+        );
+        return;
+      }
+
+      if (pathname === '/api/export/labels.svg') {
+        telemetry.recordExportDownload('labels-svg');
+        const svgBuffer = Buffer.from(
+          generateCableLabelsSvg(targetStateManager.getScene()),
+          'utf8'
+        );
+        sendBufferWithOptionalGzip(
+          req,
+          res,
+          200,
+          {
+            'Content-Type': 'image/svg+xml; charset=utf-8',
+            'Content-Disposition': 'inline; filename="labels.svg"',
+            'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'"
+          },
+          svgBuffer,
           { compressible: true }
         );
         return;

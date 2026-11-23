@@ -145,7 +145,22 @@ export const PowerSourceSummarySchema = z
       .describe('Cumulative downstream system and PoE load in watts.'),
     utilization_percent: z
       .number()
-      .describe('Percentage of rated watt capacity consumed (0..100+).')
+      .describe('Percentage of rated watt capacity consumed (0..100+).'),
+    battery_wh: z
+      .number()
+      .positive()
+      .optional()
+      .describe('Usable UPS battery energy capacity in Watt-hours (Wh).'),
+    estimated_runtime_minutes_peak: z
+      .number()
+      .nonnegative()
+      .optional()
+      .describe('Estimated UPS backup runtime in minutes at peak connected load (85% inverter efficiency).'),
+    estimated_runtime_minutes_typical: z
+      .number()
+      .nonnegative()
+      .optional()
+      .describe('Estimated UPS backup runtime in minutes at typical continuous load (85% inverter efficiency).')
   })
   .describe('Load and capacity summary for a mounted PDU or UPS unit.');
 export type PowerSourceSummary = z.infer<typeof PowerSourceSummarySchema>;
@@ -176,9 +191,30 @@ export const ValidationResultSchema = z
         total_system_watts: z
           .number()
           .describe('Total peak system power draw across all mounted equipment in watts.'),
+        total_idle_watts: z
+          .number()
+          .nonnegative()
+          .default(0)
+          .describe('Total baseline idle system power draw across all mounted equipment in watts.'),
         total_poe_watts: z
           .number()
           .describe('Total PoE power draw across all connected PoE devices and external drops in watts.'),
+        annual_energy_kwh_typical: z
+          .number()
+          .nonnegative()
+          .default(0)
+          .describe('Estimated annual energy consumption in kWh/year at typical continuous load (8760h/yr).'),
+        estimated_ups_runtime_minutes: z
+          .number()
+          .nonnegative()
+          .nullable()
+          .default(null)
+          .describe('Minimum estimated UPS backup runtime in minutes at typical load across mounted UPS units, or null if no UPS is mounted.'),
+        estimated_hardware_budget_eur: z
+          .number()
+          .nonnegative()
+          .default(0)
+          .describe('Sum of indicative hardware street prices in EUR across mounted devices with pricing metadata.'),
         pse_budgets: z
           .array(PseBudgetSummarySchema)
           .describe('Per-switch PoE budget utilization breakdown.'),

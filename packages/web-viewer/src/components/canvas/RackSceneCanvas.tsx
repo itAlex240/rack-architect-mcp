@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import {
+  AABB_INTERSECTION_EPSILON_MM,
   EIA_310_SPECS,
   MM_PER_U,
   evaluateCentripetalCatmullRomSpline,
@@ -41,6 +42,52 @@ export interface RackSceneCanvasProps {
     | ((port: PendingPortSelection, existingCableId?: string) => void)
     | undefined;
   readonly onCancelPendingPort?: (() => void) | undefined;
+  readonly onMoveDeviceU?:
+    | ((instanceId: string, newUPosition: number) => void)
+    | undefined;
+}
+
+interface DragUState {
+  readonly instanceId: string;
+  readonly label: string;
+  readonly originalU: number;
+  readonly targetU: number;
+  readonly spanU: number;
+  readonly startClientY: number;
+  readonly chassisBox: ComputedDeviceGeometry['chassis_box'];
+  readonly collides: boolean;
+}
+
+function doesMovedDeviceCollide(
+  movedDev: ComputedDeviceGeometry,
+  candidateU: number,
+  allDevices: readonly ComputedDeviceGeometry[],
+): boolean {
+  const deltaY = (candidateU - movedDev.u_position) * MM_PER_U;
+  const minY = movedDev.chassis_box.min.y + deltaY;
+  const maxY = movedDev.chassis_box.max.y + deltaY;
+  const eps = AABB_INTERSECTION_EPSILON_MM;
+  for (const other of allDevices) {
+    if (
+      other.instance_id === movedDev.instance_id ||
+      other.mount_target !== 'rack-unit'
+    ) {
+      continue;
+    }
+    const ox =
+      movedDev.chassis_box.min.x < other.chassis_box.max.x - eps &&
+      movedDev.chassis_box.max.x > other.chassis_box.min.x + eps;
+    const oy =
+      minY < other.chassis_box.max.y - eps &&
+      maxY > other.chassis_box.min.y + eps;
+    const oz =
+      movedDev.chassis_box.min.z < other.chassis_box.max.z - eps &&
+      movedDev.chassis_box.max.z > other.chassis_box.min.z + eps;
+    if (ox && oy && oz) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function isWebGlSupported(): boolean {
@@ -69,6 +116,7 @@ interface CameraPresetControllerProps {
   readonly panelWidthMm: number;
   readonly totalHeightMm: number;
   readonly railDepthMm: number;
+  readonly controlsEnabled?: boolean | undefined;
 }
 
 function CameraPresetController({
@@ -77,6 +125,7 @@ function CameraPresetController({
   panelWidthMm,
   totalHeightMm,
   railDepthMm,
+  controlsEnabled = true,
 }: CameraPresetControllerProps) {
   const { camera } = useThree();
   const [cx, cy, cz] = center;
@@ -108,7 +157,15 @@ function CameraPresetController({
     camera.updateProjectionMatrix();
   }, [camera, cx, cy, cz, panelWidthMm, preset, railDepthMm, totalHeightMm]);
 
-  return <OrbitControls target={[cx, cy, cz]} makeDefault enableDamping dampingFactor={0.08} />;
+  return (
+    <OrbitControls
+      target={[cx, cy, cz]}
+      makeDefault
+      enableDamping
+      dampingFactor={0.08}
+      enabled={controlsEnabled}
+    />
+  );
 }
 
 interface ExternalBuildingDrops3DProps {
@@ -327,12 +384,92 @@ export function RackSceneCanvas({
   onHoverPort,
   onClickPort,
   onCancelPendingPort,
+  onMoveDeviceU,
 }: RackSceneCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [pixelSize, setPixelSize] = useState<{
     readonly width: number;
     readonly height: number;
   }>({ width: 1280, height: 800 });
+  const [dragState, setDragState] = useState<DragUState | null>(null);
+
+  useEffect(() => {
+    if (!dragState || typeof window === 'undefined') {
+      return;
+    }
+
+    const computeCandidateU = (clientY: number): number => {
+      const dpr = window.devicePixelRatio || 1;
+      const cssH = pixelSize.height / Math.max(dpr, 1);
+      const pxPerU = Math.max(
+        18,
+        cssH / Math.max(scene.project.rack.u_height + 2, 6),
+      );
+      const deltaU = Math.round((dragState.startClientY - clientY) / pxPerU);
+      const maxStartU = Math.max(
+        1,
+        scene.project.rack.u_height - dragState.spanU + 1,
+      );
+      return Math.max(1, Math.min(maxStartU, dragState.originalU + deltaU));
+    };
+
+    const handleMove = (ev: PointerEvent) => {
+      const movedDev = scene.geometry.devices.find(
+        (d) => d.instance_id === dragState.instanceId,
+      );
+      if (!movedDev) return;
+      const candidateU = computeCandidateU(ev.clientY);
+      const collides = doesMovedDeviceCollide(
+        movedDev,
+        candidateU,
+        scene.geometry.devices,
+      );
+      setDragState((prev) =>
+        prev &&
+        (prev.targetU !== candidateU || prev.collides !== collides)
+          ? { ...prev, targetU: candidateU, collides }
+          : prev,
+      );
+    };
+
+    const handleUp = (ev: PointerEvent) => {
+      const finalU = computeCandidateU(ev.clientY);
+      if (finalU !== dragState.originalU && onMoveDeviceU) {
+        onMoveDeviceU(dragState.instanceId, finalU);
+      }
+      setDragState(null);
+    };
+
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleUp);
+    window.addEventListener('pointercancel', handleUp);
+    return () => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+      window.removeEventListener('pointercancel', handleUp);
+    };
+  }, [
+    dragState,
+    onMoveDeviceU,
+    pixelSize.height,
+    scene.geometry.devices,
+    scene.project.rack.u_height,
+  ]);
+
+  const handleStartDragU = (dev: ComputedDeviceGeometry, clientY: number) => {
+    if (!onMoveDeviceU) return;
+    const spanU = Math.max(1, Math.ceil(dev.blueprint.geometry.u_height || 1));
+    setDragState({
+      instanceId: dev.instance_id,
+      label: dev.hostname ?? dev.instance_id,
+      originalU: dev.u_position,
+      targetU: dev.u_position,
+      spanU,
+      startClientY: clientY,
+      chassisBox: dev.chassis_box,
+      collides: false,
+    });
+  };
 
   useEffect(() => {
     if (!pendingPort || !onCancelPendingPort || typeof window === 'undefined') {
@@ -479,6 +616,7 @@ export function RackSceneCanvas({
             panelWidthMm={panelWidthMm}
             totalHeightMm={totalHeightMm}
             railDepthMm={railDepthMm}
+            controlsEnabled={dragState === null}
           />
 
           {/* Reference Floor Grid in Millimeters */}
@@ -493,6 +631,43 @@ export function RackSceneCanvas({
             xrayMode={xrayMode}
             doorOpen={doorOpen}
           />
+
+          {/* 3D Target U-Slot Ghost Box during Shift+Drag */}
+          {dragState !== null &&
+            (() => {
+              const deltaY =
+                (dragState.targetU - dragState.originalU) * MM_PER_U;
+              const box = dragState.chassisBox;
+              const w = box.max.x - box.min.x;
+              const h = box.max.y - box.min.y;
+              const d = box.max.z - box.min.z;
+              const gx = (box.min.x + box.max.x) / 2;
+              const gy = (box.min.y + box.max.y) / 2 + deltaY;
+              const gz = (box.min.z + box.max.z) / 2;
+              const color = dragState.collides ? '#EF4444' : '#10B981';
+              return (
+                <group position={[gx, gy, gz]}>
+                  <mesh>
+                    <boxGeometry args={[w, h, d]} />
+                    <meshBasicMaterial
+                      color={color}
+                      transparent
+                      opacity={0.28}
+                      depthWrite={false}
+                    />
+                  </mesh>
+                  <mesh>
+                    <boxGeometry args={[w + 1.5, h + 1.5, d + 1.5]} />
+                    <meshBasicMaterial
+                      color={color}
+                      wireframe
+                      transparent
+                      opacity={0.9}
+                    />
+                  </mesh>
+                </group>
+              );
+            })()}
 
           {/* All Rackmount Devices, Carriers & Sub-Modules */}
           {scene.geometry.devices.map((dev) => (
@@ -511,6 +686,7 @@ export function RackSceneCanvas({
               onSelectDevice={(id) => onSelectDevice(id)}
               onHoverPort={onHoverPort}
               onClickPort={onClickPort}
+              onStartDragU={handleStartDragU}
             />
           ))}
 
@@ -699,6 +875,53 @@ export function RackSceneCanvas({
         </div>
       )}
 
+      {/* Active 3D Vertical U-Slot Shift+Drag HUD */}
+      {dragState !== null && (
+        <div
+          data-testid="drag-u-hud"
+          style={{
+            position: 'absolute',
+            top: '16px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '8px 14px',
+            background: 'rgba(18, 18, 22, 0.94)',
+            backdropFilter: 'blur(14px)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.09)',
+            borderRight: '1px solid rgba(255, 255, 255, 0.09)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.09)',
+            borderLeft: `2.5px solid ${dragState.collides ? '#EF4444' : '#10B981'}`,
+            borderRadius: '8px',
+            boxShadow: '0 10px 28px rgba(0, 0, 0, 0.65)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            zIndex: 28,
+          }}
+        >
+          <span
+            style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: dragState.collides ? '#EF4444' : '#10B981',
+              flexShrink: 0,
+            }}
+          />
+          <span className="mono" style={{ fontSize: '11.5px', color: '#F4F4F5' }}>
+            Moving {dragState.label}: U{dragState.originalU} → U{dragState.targetU}{' '}
+            <span
+              style={{
+                color: dragState.collides ? '#FCA5A5' : '#6EE7B7',
+                fontWeight: 600,
+              }}
+            >
+              {dragState.collides ? '(Collision Warning)' : '(Clear Slot)'}
+            </span>
+          </span>
+        </div>
+      )}
+
       {/* Active 2-Click 3D Port-to-Port Patching Banner */}
       {pendingPort && (
         <div
@@ -862,6 +1085,17 @@ export function RackSceneCanvas({
                   }}
                 >
                   {selDev.blueprint.description}
+                </div>
+              )}
+              {selDev.mount_target === 'rack-unit' && onMoveDeviceU && (
+                <div
+                  style={{
+                    marginTop: '6px',
+                    fontSize: '10px',
+                    color: '#71717A',
+                  }}
+                >
+                  Tip: Hold <code className="mono">Shift</code> + drag vertically in 3D to move U-slot
                 </div>
               )}
             </div>

@@ -808,4 +808,57 @@ describe('@rack-mcp/mcp-server Hosted Multi-Session Remote MCP (Streamable HTTP 
     await transport.terminateSession();
     await client.close();
   });
+
+  it('exports labels-csv and labels-svg remotely without host writes and serves /api/export/labels.*', async () => {
+    const baseState = new ProjectStateManager({ watchFile: false });
+    const server = await startRackSidecarServer(baseState, {
+      port: 0,
+      host: '127.0.0.1',
+      remoteMcp: true,
+      publicBaseUrl: 'https://rack-mcp.example.test'
+    });
+    activeServers.push(server);
+
+    const client = new Client({ name: 'labels-test-client', version: '1.0.0' });
+    const transport = new StreamableHTTPClientTransport(new URL(`${server.url}/mcp`));
+    await client.connect(transport);
+
+    const expRes = await client.callTool({
+      name: 'export_deliverables',
+      arguments: {
+        formats: ['labels-csv', 'labels-svg']
+      }
+    });
+    const env = expRes.structuredContent as {
+      readonly status: string;
+      readonly data: {
+        readonly exported_files: ReadonlyArray<{
+          readonly format: string;
+          readonly download_url: string;
+        }>;
+      };
+    };
+    expect(env.status).toBe('VALID');
+    expect(env.data.exported_files).toHaveLength(2);
+
+    const csvEntry = env.data.exported_files.find((f) => f.format === 'labels-csv')!;
+    const svgEntry = env.data.exported_files.find((f) => f.format === 'labels-svg')!;
+    const csvRes = await fetch(
+      csvEntry.download_url.replace('https://rack-mcp.example.test', server.url)
+    );
+    expect(csvRes.status).toBe(200);
+    expect(csvRes.headers.get('content-type')).toContain('text/csv');
+    const csvBody = await csvRes.text();
+    expect(csvBody).toContain('CableID,WrapLabel,FromEndpoint,ToEndpoint');
+
+    const svgRes = await fetch(
+      svgEntry.download_url.replace('https://rack-mcp.example.test', server.url)
+    );
+    expect(svgRes.status).toBe(200);
+    expect(svgRes.headers.get('content-type')).toContain('image/svg+xml');
+    expect(await svgRes.text()).toContain('<svg');
+
+    await transport.terminateSession();
+    await client.close();
+  });
 });

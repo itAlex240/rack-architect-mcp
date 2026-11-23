@@ -1,0 +1,27 @@
+CableID,WrapLabel,FromEndpoint,ToEndpoint,CableType,VLAN,CommercialLengthMm,ColorHex,Notes
+pwr-ups-to-pdu,ups-core-01:iec_out1 ↔ pdu-rear-01:mains_in,ups-core-01:iec_out1,pdu-rear-01:mains_in,0.25m Schuko-C13,—,250,#EF4444,UPS C13-1 -> Rear PDU Input
+pwr-ups-to-sw,ups-core-01:iec_out2 ↔ sw-core-flex25g:pwr_in,ups-core-01:iec_out2,sw-core-flex25g:pwr_in,1.00m IEC C13-C14,—,1000,#EF4444,UPS C13-2 -> USW-Flex-2.5G
+pwr-pdu-to-ucg,pdu-rear-01:outlet1 ↔ gw-unifi-max:usbc_pwr,pdu-rear-01:outlet1,gw-unifi-max:usbc_pwr,0.50m USB-C PD,—,500,#F97316,PDU Schuko 1 -> UCG-Max USB-C PD
+pwr-pdu-to-pve1,pdu-rear-01:outlet2 ↔ pve-node-01:dc_in,pdu-rear-01:outlet2,pve-node-01:dc_in,0.50m DC Barrel,—,500,#F59E0B,PDU Schuko 2 -> PVE-01 20V DC Brick
+pwr-pdu-to-pve2,pdu-rear-01:outlet3 ↔ pve-node-02:dc_in,pdu-rear-01:outlet3,pve-node-02:dc_in,0.50m DC Barrel,—,500,#F59E0B,PDU Schuko 3 -> PVE-02 20V DC Brick
+trunk-ucg-lan1-to-patch1,gw-unifi-max:lan1 ↔ patch-panel-u7:p1 · VLAN 1,gw-unifi-max:lan1,patch-panel-u7:p1,0.75m Cat6A,VLAN 1,750,#3B82F6,UCG-Max LAN1 -> Patch P1 (Rear)
+trunk-pve1-eth1-to-patch2,pve-node-01:eth1 ↔ patch-panel-u7:p2,pve-node-01:eth1,patch-panel-u7:p2,0.75m Cat6A,—,750,#10B981,PVE-01 2.5G ETH1 -> Patch P2 (Rear)
+trunk-pve2-eth1-to-patch3,pve-node-02:eth1 ↔ patch-panel-u7:p3,pve-node-02:eth1,patch-panel-u7:p3,0.50m Cat6A,—,500,#10B981,PVE-02 2.5G ETH1 -> Patch P3 (Rear)
+trunk-pve1-eth0-to-patch4,pve-node-01:eth0 ↔ patch-panel-u7:p4,pve-node-01:eth0,patch-panel-u7:p4,0.50m Cat6A,—,500,#6366F1,PVE-01 Mgmt ETH0 -> Patch P4 (Rear)
+trunk-pve2-eth0-to-patch5,pve-node-02:eth0 ↔ patch-panel-u7:p5,pve-node-02:eth0,patch-panel-u7:p5,0.50m Cat6A,—,500,#6366F1,PVE-02 Mgmt ETH0 -> Patch P5 (Rear)
+trunk-ucg-wan-to-ks,gw-unifi-max:wan ↔ WAN-ISP:coupler,gw-unifi-max:wan,WAN-ISP:coupler,0.30m Cat6A,—,300,#EC4899,UCG-Max WAN -> U3 Keystone 1 (Rear)
+trunk-pve-ceph-direct,pve-node-01:eth2 ↔ pve-node-02:eth2 · VLAN 50,pve-node-01:eth2,pve-node-02:eth2,0.15m Cat6A,VLAN 50,150,#A855F7,PVE-01 ETH2 <-> PVE-02 ETH2 (2.5G Ceph Cluster)
+patch-front-p1-sw1,patch-panel-u7:p1 ↔ sw-core-flex25g:eth1,patch-panel-u7:p1,sw-core-flex25g:eth1,0.15m Cat6A,—,150,#3B82F6,Patch P1 -> Switch Port 1 (Gateway Uplink)
+patch-front-p2-sw2,patch-panel-u7:p2 ↔ sw-core-flex25g:eth2,patch-panel-u7:p2,sw-core-flex25g:eth2,0.15m Cat6A,—,150,#10B981,Patch P2 -> Switch Port 2 (PVE-01 2.5G)
+patch-front-p3-sw3,patch-panel-u7:p3 ↔ sw-core-flex25g:eth3,patch-panel-u7:p3,sw-core-flex25g:eth3,0.15m Cat6A,—,150,#10B981,Patch P3 -> Switch Port 3 (PVE-02 2.5G)
+patch-front-p4-sw4,patch-panel-u7:p4 ↔ sw-core-flex25g:eth4,patch-panel-u7:p4,sw-core-flex25g:eth4,0.15m Cat6A,—,150,#6366F1,Patch P4 -> Switch Port 4 (PVE-01 Mgmt)
+patch-front-p5-sw5,patch-panel-u7:p5 ↔ sw-core-flex25g:eth5,patch-panel-u7:p5,sw-core-flex25g:eth5,0.15m Cat6A,—,150,#6366F1,Patch P5 -> Switch Port 5 (PVE-02 Mgmt)
+patch-front-p6-wan,patch-panel-u7:p6 ↔ WAN-ISP:coupler · VLAN 900,patch-panel-u7:p6,WAN-ISP:coupler,0.50m Cat6A,VLAN 900,500,#EC4899,Patch P6 -> U3 WAN Keystone (ISP Glasfaser-ONT 2.5G)
+patch-front-p7-sw7,patch-panel-u7:p7 ↔ sw-core-flex25g:eth7 · VLAN 20,patch-panel-u7:p7,sw-core-flex25g:eth7,0.15m Cat6A,VLAN 20,150,#0EA5E9,"Patch P7 -> Switch Port 7 (PoE+ Wi-Fi 7 AP EG, 21W)"
+patch-front-p8-sw8,patch-panel-u7:p8 ↔ sw-core-flex25g:eth8 · VLAN 30,patch-panel-u7:p8,sw-core-flex25g:eth8,0.15m Cat6A,VLAN 30,150,#F59E0B,"Patch P8 -> Switch Port 8 (PoE+ 4K Kamera Einfahrt, 12.5W)"
+patch-front-p9-sw9,patch-panel-u7:p9 ↔ sw-core-flex25g:eth9 · VLAN 10,patch-panel-u7:p9,sw-core-flex25g:eth9,0.15m Cat6A,VLAN 10,150,#14B8A6,Patch P9 -> Switch Port 9 (Home-Office 2.5G LAN)
+cross-sw6-to-ucg-lan2,sw-core-flex25g:eth6 ↔ gw-unifi-max:lan2,sw-core-flex25g:eth6,gw-unifi-max:lan2,0.75m Cat6A,—,750,#06B6D4,Switch Port 6 (Front) -> U6 Brush Portal -> UCG-Max LAN2 (Rear)
+ext-isp-wan,ISP Glasfaser-ONT (2.5G WAN-Uplink) → patch-panel-u7:p6,ISP Glasfaser-ONT (2.5G WAN-Uplink) [Hausanschluss / Keller (Glasfaser-Übergabepunkt)],patch-panel-u7:p6 (REAR),Drop (2.5GBE),LAN/WAN,Building-Drop,#EC4899,top-rear · isp-wan-uplink
+ext-ap-eg,UniFi U7-Pro Wi-Fi 7 Decken-AP → patch-panel-u7:p7,UniFi U7-Pro Wi-Fi 7 Decken-AP [Erdgeschoss Flur / Wohnbereich],patch-panel-u7:p7 (REAR),Drop (2.5GBE),PoE 21W,Building-Drop,#0EA5E9,top-rear · wifi-ap
+ext-cam-einfahrt,4K PoE+ Überwachungskamera Einfahrt & Haustür → patch-panel-u7:p8,4K PoE+ Überwachungskamera Einfahrt & Haustür [Außenbereich Nord / Einfahrt],patch-panel-u7:p8 (REAR),Drop (1GBE),PoE 12.5W,Building-Drop,#F59E0B,top-rear · poe-camera
+ext-office-lan,Home-Office 2.5G Workstation-Dose → patch-panel-u7:p9,Home-Office 2.5G Workstation-Dose [Obergeschoss Arbeitszimmer],patch-panel-u7:p9 (REAR),Drop (2.5GBE),LAN/WAN,Building-Drop,#14B8A6,top-rear · workstation-dock

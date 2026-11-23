@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  roundCentis,
   roundTenths,
   type SerializedRackScene,
 } from '@rack-mcp/core-domain';
@@ -18,6 +19,7 @@ export interface InspectorSidebarProps {
   readonly onMoveDeviceU: (instanceId: string, newU: number) => void;
   readonly onRemoveDevice?: (instanceId: string) => void;
   readonly onDisconnectCable?: (cableId: string) => void;
+  readonly electricityPricePerKwhEur?: number | undefined;
   readonly onClearToolLog?: (() => void) | undefined;
   readonly onSimulateAgentStep?:
     | ((stage: 'collision' | 'resolved') => void)
@@ -38,6 +40,7 @@ export function InspectorSidebar({
   onMoveDeviceU,
   onRemoveDevice,
   onDisconnectCable,
+  electricityPricePerKwhEur = 0.32,
   onClearToolLog,
   onSimulateAgentStep,
 }: InspectorSidebarProps) {
@@ -335,6 +338,99 @@ export function InspectorSidebar({
               }}
             >
               {roundTenths(mech.combined_noise_db_a)} dB(A)
+            </div>
+          </div>
+          <div
+            data-testid="kpi-ups-runtime"
+            style={{
+              minWidth: 0,
+              overflow: 'hidden',
+              padding: '7px 8px',
+              borderRadius: '6px',
+              background: '#16161B',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+            }}
+          >
+            <div style={{ fontSize: '9px', color: '#71717A' }}>
+              UPS RUNTIME
+            </div>
+            {(() => {
+              const upsSources = pwr.power_sources.filter(
+                (s) => (s.battery_wh ?? 0) > 0,
+              );
+              const totalWh = upsSources.reduce(
+                (sum, s) => sum + (s.battery_wh ?? 0),
+                0,
+              );
+              const runtimeMin = pwr.estimated_ups_runtime_minutes;
+              const peakMin = upsSources[0]?.estimated_runtime_minutes_peak;
+              const hasUps = upsSources.length > 0 && runtimeMin !== null;
+              return (
+                <>
+                  <div
+                    className="mono"
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color:
+                        runtimeMin === null || upsSources.length === 0
+                          ? '#71717A'
+                          : runtimeMin < 15
+                            ? '#F59E0B'
+                            : '#10B981',
+                      marginTop: '2px',
+                    }}
+                  >
+                    {runtimeMin !== null && hasUps
+                      ? `~${roundTenths(runtimeMin)} min`
+                      : 'No UPS'}
+                  </div>
+                  <div
+                    className="mono"
+                    style={{ fontSize: '9.5px', color: '#71717A' }}
+                  >
+                    {hasUps
+                      ? `${roundTenths(totalWh)} Wh${peakMin !== undefined ? ` • ${roundTenths(peakMin)}m peak` : ''}`
+                      : 'Add battery backup'}
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+          <div
+            data-testid="kpi-energy-cost"
+            style={{
+              minWidth: 0,
+              overflow: 'hidden',
+              padding: '7px 8px',
+              borderRadius: '6px',
+              background: '#16161B',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+            }}
+          >
+            <div style={{ fontSize: '9px', color: '#71717A' }}>
+              ENERGY &amp; COST
+            </div>
+            <div
+              className="mono"
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#F4F4F5',
+                marginTop: '2px',
+              }}
+            >
+              {roundTenths(pwr.annual_energy_kwh_typical)} kWh/yr
+            </div>
+            <div
+              className="mono"
+              style={{ fontSize: '9.5px', color: '#71717A' }}
+            >
+              ~€
+              {roundCentis(
+                pwr.annual_energy_kwh_typical * electricityPricePerKwhEur,
+              ).toFixed(2)}
+              /yr @ €{electricityPricePerKwhEur.toFixed(2)}
             </div>
           </div>
           <div

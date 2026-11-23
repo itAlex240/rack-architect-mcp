@@ -11,6 +11,7 @@ import {
   evaluateStandaloneScene,
   generateClientCustomCoverPanelStl,
   InspectorSidebar,
+  parseAsciiStlToBufferGeometry,
   renderClientSideElevationSvg,
   TopNavBar,
 } from '../src/index.js';
@@ -403,5 +404,89 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     expect(stl.startsWith('solid custom_cover_10inch_0p5u_vented-slots')).toBe(
       true,
     );
+  });
+
+  it('supports drag-and-drop YAML/NetBox import, custom bracket 3D STL preview, cable label tape options, electricity rate KPIs, and Custom Blueprint Wizard', async () => {
+    render(<AppDashboard />);
+
+    // 1. Inspector KPIs render UPS runtime & energy cost with default €0.32/kWh
+    expect(screen.getByTestId('kpi-ups-runtime').textContent).toContain('min');
+    expect(screen.getByTestId('kpi-energy-cost').textContent).toContain('@ €0.32');
+
+    // 2. BOM view exposes UPS, energy rate, hardware budget, Custom Bracket, and Cable Labels
+    fireEvent.click(screen.getByTestId('nav-tab-bom'));
+    expect(screen.getByTestId('bom-ups-runtime-card')).toBeDefined();
+    expect(screen.getByTestId('bom-hardware-budget-card')).toBeDefined();
+    expect(screen.getByTestId('export-rack-yaml')).toBeDefined();
+    expect(screen.getByTestId('export-labels-csv')).toBeDefined();
+    expect(screen.getByTestId('export-labels-svg')).toBeDefined();
+
+    fireEvent.change(screen.getByTestId('input-electricity-rate'), {
+      target: { value: '0.45' },
+    });
+    expect(screen.getByTestId('kpi-energy-cost').textContent).toContain('@ €0.45');
+
+    // Custom Device Bracket Configurator + 3D STL Preview toggle
+    expect(screen.getByTestId('custom-bracket-configurator')).toBeDefined();
+    expect(
+      screen.getByTestId('custom-bracket-validation-badge').textContent,
+    ).toContain('Fit OK');
+    fireEvent.click(screen.getByTestId('bracket-preview-mode-stl'));
+    const stlPreview = screen.getByTestId('custom-bracket-stl-preview');
+    expect(Number(stlPreview.getAttribute('data-triangles'))).toBeGreaterThan(50);
+
+    const parsedGeo = parseAsciiStlToBufferGeometry(
+      generateClientCustomCoverPanelStl({
+        standard: '10inch',
+        u_height: 1,
+        pattern: 'hex',
+      }),
+    );
+    expect(parsedGeo.getAttribute('position').count).toBeGreaterThan(30);
+    parsedGeo.dispose();
+
+    // Cable Labels tape width selector
+    const tapeSel = screen.getByTestId(
+      'select-label-tape-width',
+    ) as HTMLSelectElement;
+    fireEvent.change(tapeSel, { target: { value: '24' } });
+    expect(tapeSel.value).toBe('24');
+
+    // 3. Visual Custom Blueprint Wizard registration & live catalog availability
+    fireEvent.click(screen.getByTestId('btn-toggle-catalog-drawer'));
+    fireEvent.click(screen.getByTestId('tab-custom-blueprint'));
+    expect(screen.getByTestId('custom-blueprint-wizard')).toBeDefined();
+    fireEvent.change(screen.getByTestId('custom-bp-slug'), {
+      target: { value: 'my-edge-box-1u' },
+    });
+    fireEvent.click(screen.getByTestId('btn-register-custom-blueprint'));
+    expect(screen.getByTestId('custom-bp-feedback').textContent).toContain(
+      "Registered 'my-edge-box-1u'",
+    );
+    fireEvent.click(screen.getByTestId('tab-catalog-patcher'));
+    expect(screen.getByTestId('catalog-card-my-edge-box-1u')).toBeDefined();
+    expect(screen.getByTestId('mount-blueprint-my-edge-box-1u')).toBeDefined();
+
+    // 4. Drag-and-drop NetBox inventory import updates the scene and shows toast feedback
+    const netboxJson = JSON.stringify({
+      rack: { name: 'Dropped NetBox Rack', u_height: 8, width: 10, mounting_depth: 240 },
+      devices: [
+        {
+          name: 'edge-sw',
+          position: 8,
+          face: 'front',
+          device_type: { manufacturer: { name: 'Ubiquiti' }, model: 'USW-Flex-2.5G-8-PoE' },
+        },
+      ],
+    });
+    const fakeFile = {
+      name: 'netbox-export.json',
+      text: async () => netboxJson,
+    } as unknown as File;
+    fireEvent.drop(screen.getByTestId('app-dashboard'), {
+      dataTransfer: { files: [fakeFile], types: ['Files'] },
+    });
+    const toast = await screen.findByTestId('import-status-toast');
+    expect(toast.textContent).toContain('Imported NETBOX');
   });
 });

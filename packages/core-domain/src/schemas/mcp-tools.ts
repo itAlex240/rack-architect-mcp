@@ -295,10 +295,12 @@ export const ExportDeliverablesInputSchema = z.object({
         'bom-md',
         'scene-glb',
         'carrier-scad',
-        'carrier-stl'
+        'carrier-stl',
+        'labels-csv',
+        'labels-svg'
       ])
     )
-    .max(6)
+    .max(8)
     .default([
       'elevation-svg',
       'wiring-svg',
@@ -308,7 +310,7 @@ export const ExportDeliverablesInputSchema = z.object({
       'carrier-stl'
     ])
     .describe(
-      'Deliverable formats to generate and write to disk (defaults to all 6 formats; carrier-scad and carrier-stl emit files when modular carriers are mounted).'
+      'Deliverable formats to generate and write to disk (defaults to the 6 standard CAD/BOM formats; optionally include "labels-csv" or "labels-svg" for printable cable labels, and carrier-scad/carrier-stl emit files when modular carriers are mounted).'
     ),
   output_dir: z
     .string()
@@ -1080,9 +1082,9 @@ export const MCP_TOOL_DEFINITIONS = {
   },
   export_deliverables: {
     name: 'export_deliverables',
-    title: 'Export 2D SVG, BOM, 3D GLB, and 3D-Print Deliverables',
+    title: 'Export 2D SVG, BOM, 3D GLB, Labels, and 3D-Print Deliverables',
     description:
-      "Generate 2D elevation and wiring SVGs, a Markdown BOM, a binary 3D GLB scene, and parametric OpenSCAD or watertight STL 3D-print models for the active rack project. Omitting 'formats' exports all six types; 'carrier-scad' and 'carrier-stl' emit one file per mounted modular carrier, switch cradle, or printable cover panel and emit zero files when none are mounted, while 'output_dir' resolves relative paths within the project directory and creates missing folders. Local stdio execution writes deterministic filenames—elevation.svg, wiring-schematic.svg, BOM.md, rack-scene.glb, and <slug>.scad or <slug>.stl—overwriting same-named files in place, whereas hosted remote sessions stream in-memory HTTPS download URLs; neither mode mutates rack state or undo history. Use after validate_rack confirms a valid layout; use validate_rack instead for read-only validation and ASCII elevation inspection without generating export files.",
+      "Generate 2D elevation and wiring SVGs, a Markdown BOM, a binary 3D GLB scene, parametric OpenSCAD or watertight STL 3D-print models, and optional printable cable-label sheets for the active rack project. Omitting 'formats' exports the six standard deliverables whereas adding 'labels-csv' or 'labels-svg' generates Brother/DYMO wrap-around cable labels; 'carrier-scad' and 'carrier-stl' emit one file per mounted modular carrier, switch cradle, or printable cover panel, and 'output_dir' resolves relative paths within the project directory. Local stdio execution writes deterministic filenames—elevation.svg, wiring-schematic.svg, BOM.md, rack-scene.glb, labels.csv, labels.svg, and <slug>.scad or <slug>.stl—overwriting same-named files in place, whereas hosted remote sessions stream in-memory HTTPS download URLs; neither mode mutates rack state or undo history. Use after validate_rack confirms a valid layout; use validate_rack instead for read-only validation and ASCII elevation inspection without generating export files.",
     inputSchema: ExportDeliverablesInputSchema,
     outputSchema: ExportDeliverablesOutputSchema,
     annotations: {

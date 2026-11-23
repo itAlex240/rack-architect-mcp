@@ -9,16 +9,29 @@ import {
 import { validateCatalogDirectory } from '../src/validate-cli.js';
 
 describe('@rack-mcp/hardware-catalog', () => {
-  it('validates all 67 YAML hardware blueprints on disk with zero schema, port, or slot errors', () => {
+  it('validates all 73 YAML hardware blueprints on disk with zero schema, port, or slot errors', () => {
     const report = validateCatalogDirectory();
-    expect(report.totalFiles).toBe(67);
+    expect(report.totalFiles).toBe(73);
     expect(report.issues).toEqual([]);
-    expect(report.validFiles).toBe(67);
+    expect(report.validFiles).toBe(73);
   });
 
-  it('loads all 67 blueprints in CatalogRegistry with expanded port_groups', () => {
+  it('loads all 73 blueprints in CatalogRegistry with expanded port_groups', () => {
     const all = getAllBlueprints();
-    expect(all.length).toBe(67);
+    expect(all.length).toBe(73);
+
+    for (const slug of [
+      'minisforum-ms-01-workstation',
+      'sipeed-nanokvm-full',
+      'apple-mac-mini-m4',
+      'deskpi-10inch-4bay-nvme-nas-2u',
+      'ubiquiti-usw-pro-xg-8-poe',
+      '3dprint-10inch-mac-mini-m4-plus-2keystone-2u',
+    ]) {
+      expect(getBlueprintBySlug(slug)).toBeDefined();
+    }
+    const ups10 = getBlueprintBySlug('cyberpower-10inch-ups-1u');
+    expect(ups10?.power_and_thermal.ups_battery_wh).toBe(72);
 
     const flex25g = getBlueprintBySlug('ubiquiti-usw-flex-2-5g-8-poe');
     expect(flex25g).toBeDefined();

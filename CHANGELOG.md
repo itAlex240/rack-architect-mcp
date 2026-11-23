@@ -5,6 +5,35 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-11-23
+
+### Added & Improved (A1–A3 & B4–B8 Product, Security & UX Release)
+- **Unified Web-Viewer Exporter Engine (`A1`):** Consolidated all client-side 2D Elevation/Wiring SVG, Markdown BOM, OpenSCAD, and ASCII STL generators in `@rack-mcp/web-viewer` directly onto `@rack-mcp/exporters` via `deserializeRackScene()`, removing ~3,700 lines of duplicated code.
+- **Automated Security & 7-Day Base Image Refresh (`A2`):** Enabled GitHub Dependabot automated security updates and configured Hetzner's `/usr/local/sbin/update-rack-architect-mcp.sh` auto-updater for weekly `--pull --no-cache` Alpine base image rebuilds with Trivy gate enforcement.
+- **Full Drag-and-Drop `rack.yaml` / JSON / Infrastructure Import (`A3` & `B7`):**
+  - Added `@rack-mcp/exporters/src/importers.ts` (`detectExternalImportFormat`, `importExternalInventory`) supporting NetBox DCIM, Ubiquiti UniFi Network API, and Proxmox VE (`/nodes`) exports alongside native `rack.yaml` and `rack.json`.
+  - Added `rack-mcp import <file> --format netbox|unifi|proxmox --out <rack.yaml>` CLI command and full-window browser drag-and-drop (`AppDashboard`) + file picker (`TopNavBar`) with toast feedback.
+- **Parametric Custom Device Bracket Generator & 3D `.STL` Preview (`B4`):**
+  - Added `CustomBracket*` APIs (`validateCustomBracketOptions`, `generateCustomBracketOpenScad`, `generateCustomBracketStl`, `renderCustomBracketPreviewSvg`) in `@rack-mcp/exporters` producing 1U–3U 2-manifold watertight 3D-printable cradles for any custom box width/height/depth + optional keystones & engraved label.
+  - Added `<StlPreview3D />` (`parseAsciiStlToBufferGeometry` + interactive Three.js OrbitControls preview) and interactive `2D CAD` / `3D STL` toggles in `BomAndExportsView`.
+- **Cable & Port Wrap-Around Label Exporter (`B5`):**
+  - Added `labels-exporter.ts` (`extractCableLabelEntries`, `generateCableLabelsCsv` with spreadsheet formula-injection neutralization, and `generateCableLabelsSvg` for `12 mm`, `18 mm`, and `24 mm` Brother P-Touch / DYMO / Niimbot tapes).
+  - Exposed `'labels-csv'` and `'labels-svg'` across `MCP_TOOL_DEFINITIONS` (`export_deliverables`), remote `/api/export/labels.*` HTTP routes, CLI `export`, and `BomAndExportsView`.
+- **UPS Autonomy Runtime, Energy Cost (€/kWh) & Budget Telemetry (`B6`):**
+  - Extended `@rack-mcp/core-domain` with `ups_battery_wh`, `estimated_price_eur`, typical & peak UPS runtime calculation (at 85% inverter efficiency), `total_idle_watts`, `annual_energy_kwh_typical`, and `estimated_hardware_budget_eur`, plus editable `€/kWh` electricity pricing in `BOM.md`, `InspectorSidebar`, and `BomAndExportsView`.
+- **Interactive 3D U-Slot Shift+Drag, Custom Blueprint Wizard & 6 New Blueprints (`B8`):**
+  - Added `Shift + PointerDown` vertical 3D U-slot repositioning (`MountedDevice3D` + `RackSceneCanvas`) with live AABB collision ghost preview (`#10B981`/`#EF4444`) and `drag-u-hud`.
+  - Added `Custom Blueprint` wizard tab in `CatalogBuilderDrawer` and `rack-mcp new-blueprint` CLI command.
+  - Added 6 curated YAML blueprints (`67 -> 73`): `minisforum-ms-01-workstation`, `sipeed-nanokvm-full`, `apple-mac-mini-m4`, `3dprint-10inch-mac-mini-m4-plus-2keystone-2u`, `deskpi-10inch-4bay-nvme-nas-2u`, and `ubiquiti-usw-pro-xg-8-poe`.
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Deduplizierte Web-Viewer-Exporter (`A1`) & Auto-Security (`A2`):** Vollständige Umstellung von `@rack-mcp/web-viewer` auf die Shared-Exporter (`deserializeRackScene`) sowie Aktivierung von GitHub Dependabot Security Updates und automatischen 7-Tage Alpine `--pull`-Rebuilds auf dem Server.
+- **Drag-and-Drop YAML- & NetBox/UniFi/Proxmox-Import (`A3` & `B7`):** Direkter Browser-Datei-Upload/Drag-and-Drop sowie neuer CLI-Befehl `rack-mcp import` inkl. automatischer Erkennung von NetBox-, UniFi- und Proxmox-VE-Exporten.
+- **Parametrischer Custom-Device-Bracket-Generator & 3D-`.STL`-Vorschau (`B4`):** Neuer Konfigurator für individuelle 1U–3U-Gerätehalterungen mit Live-Passformprüfung, OpenSCAD-/2-Mannigfaltig-STL-Export und interaktiver Three.js-3D-Vorschau (`<StlPreview3D />`).
+- **Kabel-Etiketten-Export (`B5`):** Neue `labels.csv`- (mit Formel-Injektionsschutz) & `labels.svg`-Generatoren (`12 / 18 / 24 mm`) für Brother P-Touch, DYMO und Niimbot inkl. MCP-Tool- und Web-UI-Integration.
+- **USV-Laufzeit, jährliche Stromkosten (€/kWh) & Hardware-Budget (`B6`):** Typische/Peak-Autonomieberechnung (85 % Wirkungsgrad), editierbarer Strompreis (`€/kWh`) in UI und `BOM.md` sowie Richtpreis-Kalkulation.
+- **3D U-Slot Shift+Drag, Custom-Blueprint-Wizard & +6 Blueprints (`67 → 73`, `B8`):** Direktes vertikales Verschieben im 3D-Rack mit Kollisionsvorschau, grafischer Blueprint-Wizard in Web-UI & CLI (`rack-mcp new-blueprint`) sowie 6 neue Community-Blueprints (Mac Mini M4, Minisforum MS-01, NanoKVM, DeskPi 4-Bay NVMe NAS, USW-Pro-XG-8-PoE).
+
 ## [0.7.9] - 2026-11-23
 
 ### Security & Dependencies — Transitive Hono CVE Remediation, Vitest 5.1 & Toolchain Updates (`pnpm-workspace.yaml`, `.github`)

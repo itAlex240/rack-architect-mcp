@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { stringify as stringifyYaml } from 'yaml';
 import {
+  deserializeRackScene,
   EIA_310_SPECS,
   MM_PER_U,
   roundCentis,
@@ -7,6 +9,17 @@ import {
   type RackStandard,
   type SerializedRackScene,
 } from '@rack-mcp/core-domain';
+import {
+  extractCableLabelEntries,
+  generateBomMarkdown,
+  generateCableLabelsCsv,
+  generateCableLabelsSvg,
+  generateCustomBracketOpenScad,
+  generateCustomBracketStl,
+  renderCustomBracketPreviewSvg,
+  validateCustomBracketOptions,
+  type CustomBracketOptions,
+} from '@rack-mcp/exporters';
 import { defaultCatalogRegistry } from '@rack-mcp/hardware-catalog';
 import {
   generateClientCustomCoverPanelOpenScad,
@@ -19,12 +32,20 @@ import {
   type CoverPanelUHeight,
   type CustomCoverPanelOptions,
 } from '../../state/standalone-homelab.js';
+import { StlPreview3D } from '../canvas/StlPreview3D.js';
 
 export interface BomAndExportsViewProps {
   readonly scene: SerializedRackScene;
   readonly elevationSvg: string;
   readonly wiringSvg: string;
   readonly bomMarkdown: string;
+  readonly labelsCsv?: string | undefined;
+  readonly labelsSvg?: string | undefined;
+  readonly projectYaml?: string | undefined;
+  readonly electricityPricePerKwhEur?: number | undefined;
+  readonly onChangeElectricityPricePerKwhEur?:
+    | ((rateEur: number) => void)
+    | undefined;
 }
 
 function triggerBlobDownload(
@@ -65,6 +86,11 @@ export function BomAndExportsView({
   elevationSvg,
   wiringSvg,
   bomMarkdown,
+  labelsCsv,
+  labelsSvg,
+  projectYaml,
+  electricityPricePerKwhEur,
+  onChangeElectricityPricePerKwhEur,
 }: BomAndExportsViewProps) {
   const printableDevices = scene.geometry.devices.filter(
     (d) =>
@@ -90,6 +116,62 @@ export function BomAndExportsView({
     );
 
   const routesById = new Map(scene.cable_routes.map((r) => [r.cable_id, r]));
+  const pwr = scene.validation.power_summary;
+  const computedScene = useMemo(() => deserializeRackScene(scene), [scene]);
+
+  const [localRateEur, setLocalRateEur] = useState<number>(
+    electricityPricePerKwhEur ?? 0.32,
+  );
+  useEffect(() => {
+    if (electricityPricePerKwhEur !== undefined) {
+      setLocalRateEur(electricityPricePerKwhEur);
+    }
+  }, [electricityPricePerKwhEur]);
+
+  const activeRateEur = electricityPricePerKwhEur ?? localRateEur;
+  const handleRateChange = (nextRate: number) => {
+    const clamped = Number.isFinite(nextRate)
+      ? Math.max(0, Math.min(5, roundCentis(nextRate)))
+      : 0.32;
+    setLocalRateEur(clamped);
+    onChangeElectricityPricePerKwhEur?.(clamped);
+  };
+
+  const effectiveProjectYaml = useMemo(
+    () =>
+      projectYaml ??
+      stringifyYaml(scene.project, { indent: 2, lineWidth: 120 }),
+    [projectYaml, scene.project],
+  );
+  const effectiveBomMarkdown = useMemo(
+    () =>
+      onChangeElectricityPricePerKwhEur
+        ? bomMarkdown
+        : generateBomMarkdown(computedScene, undefined, {
+            electricityPricePerKwhEur: activeRateEur,
+          }),
+    [activeRateEur, bomMarkdown, computedScene, onChangeElectricityPricePerKwhEur],
+  );
+
+  const [labelTapeWidthMm, setLabelTapeWidthMm] = useState<12 | 18 | 24>(18);
+  const [labelsSectionOpen, setLabelsSectionOpen] = useState<boolean>(true);
+  const effectiveLabelsCsv = useMemo(
+    () => labelsCsv ?? generateCableLabelsCsv(computedScene),
+    [computedScene, labelsCsv],
+  );
+  const effectiveLabelsSvg = useMemo(
+    () =>
+      labelsSvg && labelTapeWidthMm === 18
+        ? labelsSvg
+        : generateCableLabelsSvg(computedScene, {
+            tapeWidthMm: labelTapeWidthMm,
+          }),
+    [computedScene, labelTapeWidthMm, labelsSvg],
+  );
+  const labelEntries = useMemo(
+    () => extractCableLabelEntries(computedScene),
+    [computedScene],
+  );
 
   const [customStandard, setCustomStandard] = useState<RackStandard>(
     scene.project.rack.standard,
@@ -98,6 +180,9 @@ export function BomAndExportsView({
   const [customPattern, setCustomPattern] =
     useState<CoverPanelPatternType>('hex');
   const [customLabel, setCustomLabel] = useState<string>('');
+  const [coverPreviewMode, setCoverPreviewMode] = useState<'svg' | 'stl'>(
+    'svg',
+  );
 
   useEffect(() => {
     setCustomStandard(scene.project.rack.standard);
@@ -117,6 +202,13 @@ export function BomAndExportsView({
     () => renderClientCustomCoverPanelPreviewSvg(customCoverOpts),
     [customCoverOpts],
   );
+  const customCoverStl = useMemo(
+    () =>
+      coverPreviewMode === 'stl'
+        ? generateClientCustomCoverPanelStl(customCoverOpts)
+        : '',
+    [coverPreviewMode, customCoverOpts],
+  );
 
   const customSpec = EIA_310_SPECS[customStandard];
   const customWidthMm = roundCentis(customSpec.W_panel);
@@ -125,7 +217,10 @@ export function BomAndExportsView({
   const customEstimatedGrams = roundTenths(
     Math.max(
       12,
-      (customWidthMm * customHeightMm * 4.2 * 0.00115) *
+      customWidthMm *
+        customHeightMm *
+        4.2 *
+        0.00115 *
         (customPattern === 'vented-slots' ? 0.78 : 0.94),
     ),
   );
@@ -136,6 +231,78 @@ export function BomAndExportsView({
   const customFileStem = `custom-${customStandard}-cover-${String(customUHeight).replaceAll('.', 'p')}u-${customPattern}${
     customLabelSlug ? `-${customLabelSlug}` : ''
   }`;
+
+  // Parametric Custom Device Bracket state (B4)
+  const [bracketStandard, setBracketStandard] = useState<RackStandard>(
+    scene.project.rack.standard,
+  );
+  useEffect(() => {
+    setBracketStandard(scene.project.rack.standard);
+  }, [scene.project.rack.standard]);
+  const [bracketUHeight, setBracketUHeight] = useState<1 | 2 | 3>(1);
+  const [bracketDeviceName, setBracketDeviceName] =
+    useState<string>('Custom Mini-PC');
+  const [bracketWidthMm, setBracketWidthMm] = useState<number>(127);
+  const [bracketHeightMm, setBracketHeightMm] = useState<number>(30);
+  const [bracketDepthMm, setBracketDepthMm] = useState<number>(127);
+  const [bracketTolMm, setBracketTolMm] = useState<number>(0.4);
+  const [bracketKeystones, setBracketKeystones] = useState<number>(2);
+  const [bracketRetainerLip, setBracketRetainerLip] = useState<boolean>(true);
+  const [bracketVentSlots, setBracketVentSlots] = useState<boolean>(true);
+  const [bracketLabel, setBracketLabel] = useState<string>('NODE-01');
+  const [bracketPreviewMode, setBracketPreviewMode] = useState<'svg' | 'stl'>(
+    'svg',
+  );
+
+  const bracketOpts = useMemo<CustomBracketOptions>(
+    () => ({
+      standard: bracketStandard,
+      u_height: bracketUHeight,
+      device_name: bracketDeviceName.trim() || 'Custom Device',
+      device_width_mm: bracketWidthMm,
+      device_height_mm: bracketHeightMm,
+      device_depth_mm: bracketDepthMm,
+      clearance_tolerance_mm: bracketTolMm,
+      keystone_count: bracketKeystones,
+      rear_retainer_lip: bracketRetainerLip,
+      ventilation_slots: bracketVentSlots,
+      ...(bracketLabel.trim().length > 0
+        ? { engraved_label: bracketLabel.trim() }
+        : {}),
+    }),
+    [
+      bracketDepthMm,
+      bracketDeviceName,
+      bracketHeightMm,
+      bracketKeystones,
+      bracketLabel,
+      bracketRetainerLip,
+      bracketStandard,
+      bracketTolMm,
+      bracketUHeight,
+      bracketVentSlots,
+      bracketWidthMm,
+    ],
+  );
+  const bracketValidation = useMemo(
+    () => validateCustomBracketOptions(bracketOpts),
+    [bracketOpts],
+  );
+  const bracketPreviewSvg = useMemo(
+    () => renderCustomBracketPreviewSvg(bracketOpts),
+    [bracketOpts],
+  );
+  const bracketStl = useMemo(
+    () =>
+      bracketValidation.valid && bracketPreviewMode === 'stl'
+        ? generateCustomBracketStl(bracketOpts)
+        : '',
+    [bracketOpts, bracketPreviewMode, bracketValidation.valid],
+  );
+  const bracketFileStem = `custom-${bracketStandard}-bracket-${bracketUHeight}u-${
+    toAsciiKebabSlug(bracketDeviceName) || 'device'
+  }`;
+
   const rawSessionParam =
     typeof window !== 'undefined'
       ? new URLSearchParams(window.location.search).get('session')?.trim() ?? ''
@@ -236,7 +403,7 @@ export function BomAndExportsView({
             data-testid="export-bom-md"
             onClick={() =>
               triggerBlobDownload(
-                bomMarkdown,
+                effectiveBomMarkdown,
                 'BOM.md',
                 'text/markdown;charset=utf-8',
               )
@@ -253,6 +420,30 @@ export function BomAndExportsView({
             }}
           >
             Download BOM.md
+          </button>
+
+          <button
+            type="button"
+            data-testid="export-rack-yaml"
+            onClick={() =>
+              triggerBlobDownload(
+                effectiveProjectYaml,
+                'rack.yaml',
+                'text/yaml;charset=utf-8',
+              )
+            }
+            style={{
+              padding: '7px 12px',
+              borderRadius: '6px',
+              border: '1px solid rgba(59, 130, 246, 0.35)',
+              background: 'rgba(59, 130, 246, 0.12)',
+              color: '#93C5FD',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Download rack.yaml
           </button>
 
           <button
@@ -279,6 +470,54 @@ export function BomAndExportsView({
             Download rack.json
           </button>
 
+          <button
+            type="button"
+            data-testid="export-labels-csv"
+            onClick={() =>
+              triggerBlobDownload(
+                effectiveLabelsCsv,
+                'labels.csv',
+                'text/csv;charset=utf-8',
+              )
+            }
+            style={{
+              padding: '7px 12px',
+              borderRadius: '6px',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              background: '#18181d',
+              color: '#E4E4E7',
+              fontSize: '12px',
+              fontWeight: 500,
+              cursor: 'pointer',
+            }}
+          >
+            Download labels.csv
+          </button>
+
+          <button
+            type="button"
+            data-testid="export-labels-svg"
+            onClick={() =>
+              triggerBlobDownload(
+                effectiveLabelsSvg,
+                'labels.svg',
+                'image/svg+xml;charset=utf-8',
+              )
+            }
+            style={{
+              padding: '7px 12px',
+              borderRadius: '6px',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              background: '#18181d',
+              color: '#E4E4E7',
+              fontSize: '12px',
+              fontWeight: 500,
+              cursor: 'pointer',
+            }}
+          >
+            Download labels.svg
+          </button>
+
           <a
             href={
               safeSessionId
@@ -302,6 +541,168 @@ export function BomAndExportsView({
           >
             Download rack-scene.glb
           </a>
+        </div>
+      </div>
+
+      {/* Power, UPS Runtime, Energy Cost & Indicative Budget Summary Bar (B6) */}
+      <div
+        data-testid="bom-energy-budget-bar"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(195px, 1fr))',
+          gap: '12px',
+        }}
+      >
+        <div
+          style={{
+            padding: '12px 14px',
+            borderRadius: '8px',
+            background: '#121216',
+            border: '1px solid rgba(255, 255, 255, 0.07)',
+          }}
+        >
+          <div style={{ fontSize: '10px', color: '#71717A', textTransform: 'uppercase' }}>
+            Power Draw (Idle / Peak)
+          </div>
+          <div
+            className="mono"
+            style={{ fontSize: '16px', fontWeight: 600, color: '#F4F4F5', marginTop: '4px' }}
+          >
+            {roundTenths(pwr.total_idle_watts)} W / {roundTenths(pwr.total_system_watts)} W
+          </div>
+          <div className="mono" style={{ fontSize: '11px', color: '#A1A1AA', marginTop: '2px' }}>
+            PoE Load: {roundTenths(pwr.total_poe_watts)} W ({pwr.power_sources.length} sources)
+          </div>
+        </div>
+
+        <div
+          data-testid="bom-ups-runtime-card"
+          style={{
+            padding: '12px 14px',
+            borderRadius: '8px',
+            background: '#121216',
+            border: '1px solid rgba(255, 255, 255, 0.07)',
+          }}
+        >
+          <div style={{ fontSize: '10px', color: '#71717A', textTransform: 'uppercase' }}>
+            UPS Backup Runtime (85% eff.)
+          </div>
+          {(() => {
+            const upsSources = pwr.power_sources.filter(
+              (s) => (s.battery_wh ?? 0) > 0,
+            );
+            const totalWh = upsSources.reduce(
+              (sum, s) => sum + (s.battery_wh ?? 0),
+              0,
+            );
+            const peakMin = upsSources[0]?.estimated_runtime_minutes_peak ?? 0;
+            const runtimeMin = pwr.estimated_ups_runtime_minutes;
+            return (
+              <>
+                <div
+                  className="mono"
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    color:
+                      runtimeMin === null || upsSources.length === 0
+                        ? '#71717A'
+                        : runtimeMin < 15
+                          ? '#F59E0B'
+                          : '#10B981',
+                    marginTop: '4px',
+                  }}
+                >
+                  {runtimeMin !== null && upsSources.length > 0
+                    ? `~${roundTenths(runtimeMin)} min typical`
+                    : 'No UPS Detected'}
+                </div>
+                <div className="mono" style={{ fontSize: '11px', color: '#A1A1AA', marginTop: '2px' }}>
+                  {upsSources.length > 0
+                    ? `${roundTenths(totalWh)} Wh • ~${roundTenths(peakMin)} min @ peak`
+                    : 'Mount a UPS to compute outage autonomy'}
+                </div>
+              </>
+            );
+          })()}
+        </div>
+
+        <div
+          style={{
+            padding: '12px 14px',
+            borderRadius: '8px',
+            background: '#121216',
+            border: '1px solid rgba(255, 255, 255, 0.07)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+          }}
+        >
+          <div style={{ fontSize: '10px', color: '#71717A', textTransform: 'uppercase' }}>
+            Annual Energy &amp; Cost (24/7)
+          </div>
+          <div
+            className="mono"
+            data-testid="bom-annual-energy-cost"
+            style={{ fontSize: '16px', fontWeight: 600, color: '#93C5FD' }}
+          >
+            {roundTenths(pwr.annual_energy_kwh_typical)} kWh/yr • ~€
+            {roundCentis(pwr.annual_energy_kwh_typical * activeRateEur).toFixed(2)}
+          </div>
+          <label
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '11px',
+              color: '#A1A1AA',
+            }}
+          >
+            <span>Electricity Rate (€/kWh):</span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              max="5"
+              data-testid="input-electricity-rate"
+              aria-label="Electricity Rate (€/kWh)"
+              value={activeRateEur}
+              onChange={(e) => handleRateChange(Number(e.target.value))}
+              className="mono"
+              style={{
+                width: '72px',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                background: '#0E0E11',
+                color: '#F4F4F5',
+                fontSize: '11px',
+              }}
+            />
+          </label>
+        </div>
+
+        <div
+          data-testid="bom-hardware-budget-card"
+          style={{
+            padding: '12px 14px',
+            borderRadius: '8px',
+            background: '#121216',
+            border: '1px solid rgba(255, 255, 255, 0.07)',
+          }}
+        >
+          <div style={{ fontSize: '10px', color: '#71717A', textTransform: 'uppercase' }}>
+            Indicative Hardware Budget
+          </div>
+          <div
+            className="mono"
+            style={{ fontSize: '16px', fontWeight: 600, color: '#F4F4F5', marginTop: '4px' }}
+          >
+            €{roundCentis(pwr.estimated_hardware_budget_eur).toFixed(2)}
+          </div>
+          <div style={{ fontSize: '11px', color: '#A1A1AA', marginTop: '2px' }}>
+            Catalog EUR street-price estimate
+          </div>
         </div>
       </div>
 
@@ -348,6 +749,7 @@ export function BomAndExportsView({
               <th style={{ padding: '8px', fontWeight: 500 }}>Manufacturer &amp; Model</th>
               <th style={{ padding: '8px', fontWeight: 500 }}>Dimensions (mm)</th>
               <th style={{ padding: '8px', fontWeight: 500 }}>Max Draw</th>
+              <th style={{ padding: '8px', fontWeight: 500 }}>Est. Price</th>
             </tr>
           </thead>
           <tbody>
@@ -393,6 +795,11 @@ export function BomAndExportsView({
                 </td>
                 <td className="mono" style={{ padding: '8px', color: '#F4F4F5' }}>
                   {dev.blueprint.power_and_thermal.max_system_watts} W
+                </td>
+                <td className="mono" style={{ padding: '8px', color: '#D4D4D8' }}>
+                  {dev.blueprint.estimated_price_eur !== undefined
+                    ? `€${dev.blueprint.estimated_price_eur.toFixed(0)}`
+                    : '—'}
                 </td>
               </tr>
             ))}
@@ -794,7 +1201,7 @@ export function BomAndExportsView({
               </div>
             </div>
 
-            {/* Live 2D CAD Front-Elevation Preview */}
+            {/* Live 2D CAD / 3D STL Preview */}
             <div
               data-testid="custom-cover-svg-preview"
               style={{
@@ -806,25 +1213,602 @@ export function BomAndExportsView({
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
+                gap: '8px',
                 minHeight: '116px',
               }}
             >
-              <img
-                src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(customPreviewSvg)}`}
-                alt="Live 2D CAD Front-Elevation Preview"
-                draggable={false}
+              <div
                 style={{
                   width: '100%',
-                  maxHeight: '132px',
-                  display: 'block',
-                  userSelect: 'none',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: '4px',
                 }}
-              />
+              >
+                <button
+                  type="button"
+                  data-testid="cover-preview-mode-svg"
+                  onClick={() => setCoverPreviewMode('svg')}
+                  style={{
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background:
+                      coverPreviewMode === 'svg'
+                        ? 'rgba(59, 130, 246, 0.18)'
+                        : '#16161B',
+                    color: coverPreviewMode === 'svg' ? '#93C5FD' : '#A1A1AA',
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  2D CAD
+                </button>
+                <button
+                  type="button"
+                  data-testid="cover-preview-mode-stl"
+                  onClick={() => setCoverPreviewMode('stl')}
+                  style={{
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background:
+                      coverPreviewMode === 'stl'
+                        ? 'rgba(16, 185, 129, 0.18)'
+                        : '#16161B',
+                    color: coverPreviewMode === 'stl' ? '#6EE7B7' : '#A1A1AA',
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  3D STL
+                </button>
+              </div>
+              {coverPreviewMode === 'stl' ? (
+                <StlPreview3D
+                  stlAscii={customCoverStl}
+                  fallbackSvg={customPreviewSvg}
+                  dataTestId="custom-cover-stl-preview"
+                  heightPx={132}
+                />
+              ) : (
+                <img
+                  src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(customPreviewSvg)}`}
+                  alt="Live 2D CAD Front-Elevation Preview"
+                  draggable={false}
+                  style={{
+                    width: '100%',
+                    maxHeight: '132px',
+                    display: 'block',
+                    userSelect: 'none',
+                  }}
+                />
+              )}
             </div>
           </form>
         </div>
 
-        {/* 2.2 Printable Slot Cover Panels Library (1U & 2U • Lines / Hex / Tech-Ribs) */}
+        {/* 2.2 Parametric Custom Device Bracket / Tray Configurator (B4) */}
+        <div
+          data-testid="custom-bracket-configurator"
+          style={{
+            marginTop: '18px',
+            paddingTop: '14px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.07)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '8px',
+              marginBottom: '10px',
+            }}
+          >
+            <h4
+              style={{
+                margin: 0,
+                fontSize: '11.5px',
+                fontWeight: 600,
+                letterSpacing: '0.03em',
+                textTransform: 'uppercase',
+                color: '#A1A1AA',
+              }}
+            >
+              2.2 Parametric Custom Device Bracket Generator (Any Non-Catalog Box • OpenSCAD + Watertight .STL)
+            </h4>
+            <span
+              data-testid="custom-bracket-validation-badge"
+              className="mono"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '3px 8px',
+                borderRadius: '999px',
+                fontSize: '10.5px',
+                fontWeight: 600,
+                background: bracketValidation.valid
+                  ? 'rgba(16, 185, 129, 0.12)'
+                  : 'rgba(239, 68, 68, 0.12)',
+                color: bracketValidation.valid ? '#6EE7B7' : '#FCA5A5',
+              }}
+            >
+              <span
+                style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: bracketValidation.valid ? '#10B981' : '#EF4444',
+                }}
+              />
+              {bracketValidation.valid
+                ? `Fit OK (Max Aperture ${bracketValidation.max_device_width_mm.toFixed(1)}×${bracketValidation.max_device_height_mm.toFixed(1)}mm)`
+                : bracketValidation.errors[0] ?? 'Dimension error'}
+            </span>
+          </div>
+
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            style={{
+              padding: '14px 16px',
+              borderRadius: '8px',
+              background: '#16161B',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '16px',
+              alignItems: 'center',
+            }}
+          >
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                gap: '10px',
+              }}
+            >
+              <div>
+                <label
+                  htmlFor="custom-bracket-standard"
+                  style={{ display: 'block', fontSize: '10.5px', color: '#A1A1AA', marginBottom: '4px' }}
+                >
+                  Rack Standard
+                </label>
+                <select
+                  id="custom-bracket-standard"
+                  data-testid="custom-bracket-standard"
+                  value={bracketStandard}
+                  onChange={(e) => setBracketStandard(e.target.value as RackStandard)}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#121216',
+                    color: '#F4F4F5',
+                    fontSize: '11.5px',
+                  }}
+                >
+                  <option value="10inch">10-Inch Mini-Rack</option>
+                  <option value="19inch">19-Inch Enterprise</option>
+                  <option value="6inch">6-Inch Micro-Lab</option>
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="custom-bracket-u-height"
+                  style={{ display: 'block', fontSize: '10.5px', color: '#A1A1AA', marginBottom: '4px' }}
+                >
+                  Slot Height (U)
+                </label>
+                <select
+                  id="custom-bracket-u-height"
+                  data-testid="custom-bracket-u-height"
+                  value={String(bracketUHeight)}
+                  onChange={(e) => setBracketUHeight(Number(e.target.value) as 1 | 2 | 3)}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#121216',
+                    color: '#F4F4F5',
+                    fontSize: '11.5px',
+                  }}
+                >
+                  <option value="1">1U (43.7 mm)</option>
+                  <option value="2">2U (88.1 mm)</option>
+                  <option value="3">3U (132.6 mm)</option>
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="custom-bracket-name"
+                  style={{ display: 'block', fontSize: '10.5px', color: '#A1A1AA', marginBottom: '4px' }}
+                >
+                  Device Name
+                </label>
+                <input
+                  id="custom-bracket-name"
+                  data-testid="custom-bracket-name"
+                  type="text"
+                  maxLength={40}
+                  value={bracketDeviceName}
+                  onChange={(e) => setBracketDeviceName(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#121216',
+                    color: '#F4F4F5',
+                    fontSize: '11.5px',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="custom-bracket-label"
+                  style={{ display: 'block', fontSize: '10.5px', color: '#A1A1AA', marginBottom: '4px' }}
+                >
+                  Engraved Faceplate Label
+                </label>
+                <input
+                  id="custom-bracket-label"
+                  data-testid="custom-bracket-label"
+                  type="text"
+                  maxLength={24}
+                  value={bracketLabel}
+                  onChange={(e) => setBracketLabel(e.target.value)}
+                  className="mono"
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#121216',
+                    color: '#F4F4F5',
+                    fontSize: '11.5px',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="custom-bracket-width"
+                  style={{ display: 'block', fontSize: '10.5px', color: '#A1A1AA', marginBottom: '4px' }}
+                >
+                  Device Width (mm)
+                </label>
+                <input
+                  id="custom-bracket-width"
+                  data-testid="custom-bracket-width"
+                  type="number"
+                  step="0.5"
+                  min={15}
+                  max={480}
+                  value={bracketWidthMm}
+                  onChange={(e) => setBracketWidthMm(Number(e.target.value))}
+                  className="mono"
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#121216',
+                    color: '#F4F4F5',
+                    fontSize: '11.5px',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="custom-bracket-height"
+                  style={{ display: 'block', fontSize: '10.5px', color: '#A1A1AA', marginBottom: '4px' }}
+                >
+                  Device Height (mm)
+                </label>
+                <input
+                  id="custom-bracket-height"
+                  data-testid="custom-bracket-height"
+                  type="number"
+                  step="0.5"
+                  min={8}
+                  max={140}
+                  value={bracketHeightMm}
+                  onChange={(e) => setBracketHeightMm(Number(e.target.value))}
+                  className="mono"
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#121216',
+                    color: '#F4F4F5',
+                    fontSize: '11.5px',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="custom-bracket-depth"
+                  style={{ display: 'block', fontSize: '10.5px', color: '#A1A1AA', marginBottom: '4px' }}
+                >
+                  Device Depth (mm)
+                </label>
+                <input
+                  id="custom-bracket-depth"
+                  data-testid="custom-bracket-depth"
+                  type="number"
+                  step="1"
+                  min={20}
+                  max={450}
+                  value={bracketDepthMm}
+                  onChange={(e) => setBracketDepthMm(Number(e.target.value))}
+                  className="mono"
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#121216',
+                    color: '#F4F4F5',
+                    fontSize: '11.5px',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="custom-bracket-tolerance"
+                  style={{ display: 'block', fontSize: '10.5px', color: '#A1A1AA', marginBottom: '4px' }}
+                >
+                  Fit Tolerance (mm) · Keystones
+                </label>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <input
+                    id="custom-bracket-tolerance"
+                    data-testid="custom-bracket-tolerance"
+                    type="number"
+                    step="0.1"
+                    min={0.1}
+                    max={2}
+                    value={bracketTolMm}
+                    onChange={(e) => setBracketTolMm(Number(e.target.value))}
+                    className="mono"
+                    style={{
+                      width: '50%',
+                      padding: '6px 8px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      background: '#121216',
+                      color: '#F4F4F5',
+                      fontSize: '11.5px',
+                    }}
+                  />
+                  <input
+                    id="custom-bracket-keystones"
+                    data-testid="custom-bracket-keystones"
+                    aria-label="Keystone Count"
+                    type="number"
+                    step="1"
+                    min={0}
+                    max={Math.max(0, bracketValidation.max_keystones)}
+                    value={bracketKeystones}
+                    onChange={(e) => setBracketKeystones(Number(e.target.value))}
+                    className="mono"
+                    style={{
+                      width: '50%',
+                      padding: '6px 8px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      background: '#121216',
+                      color: '#F4F4F5',
+                      fontSize: '11.5px',
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div
+                style={{
+                  gridColumn: '1 / -1',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '14px',
+                  fontSize: '11px',
+                  color: '#D4D4D8',
+                }}
+              >
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={bracketRetainerLip}
+                    onChange={(e) => setBracketRetainerLip(e.target.checked)}
+                  />
+                  Rear Retention Lip
+                </label>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={bracketVentSlots}
+                    onChange={(e) => setBracketVentSlots(e.target.checked)}
+                  />
+                  Ventilation Side Slots
+                </label>
+              </div>
+
+              <div
+                style={{
+                  gridColumn: '1 / -1',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '8px',
+                  paddingTop: '4px',
+                }}
+              >
+                <span className="mono" style={{ fontSize: '11px', color: '#A1A1AA' }}>
+                  {bracketValidation.panel_width_mm} × {bracketValidation.panel_height_mm} ×{' '}
+                  {bracketValidation.tray_depth_mm} mm • ~{bracketValidation.estimated_filament_grams} g PETG
+                </span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    data-testid="download-custom-bracket-scad"
+                    disabled={!bracketValidation.valid}
+                    onClick={() =>
+                      triggerBlobDownload(
+                        generateCustomBracketOpenScad(bracketOpts),
+                        `${bracketFileStem}.scad`,
+                        'text/plain;charset=utf-8',
+                      )
+                    }
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(59, 130, 246, 0.35)',
+                      background: 'rgba(59, 130, 246, 0.12)',
+                      color: '#93C5FD',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      cursor: bracketValidation.valid ? 'pointer' : 'not-allowed',
+                      opacity: bracketValidation.valid ? 1 : 0.45,
+                    }}
+                  >
+                    Download Bracket .SCAD
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="download-custom-bracket-stl"
+                    disabled={!bracketValidation.valid}
+                    onClick={() =>
+                      triggerBlobDownload(
+                        generateCustomBracketStl(bracketOpts),
+                        `${bracketFileStem}.stl`,
+                        'model/stl;charset=utf-8',
+                      )
+                    }
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(16, 185, 129, 0.35)',
+                      background: 'rgba(16, 185, 129, 0.12)',
+                      color: '#6EE7B7',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      cursor: bracketValidation.valid ? 'pointer' : 'not-allowed',
+                      opacity: bracketValidation.valid ? 1 : 0.45,
+                    }}
+                  >
+                    Download Bracket .STL
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Live 2D CAD / 3D STL Preview */}
+            <div
+              data-testid="custom-bracket-preview"
+              style={{
+                padding: '10px',
+                borderRadius: '8px',
+                background: '#0E0E11',
+                border: '1px solid rgba(255, 255, 255, 0.07)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                minHeight: '156px',
+              }}
+            >
+              <div
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: '4px',
+                }}
+              >
+                <button
+                  type="button"
+                  data-testid="bracket-preview-mode-svg"
+                  onClick={() => setBracketPreviewMode('svg')}
+                  style={{
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background:
+                      bracketPreviewMode === 'svg'
+                        ? 'rgba(59, 130, 246, 0.18)'
+                        : '#16161B',
+                    color: bracketPreviewMode === 'svg' ? '#93C5FD' : '#A1A1AA',
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  2D CAD
+                </button>
+                <button
+                  type="button"
+                  data-testid="bracket-preview-mode-stl"
+                  onClick={() => setBracketPreviewMode('stl')}
+                  style={{
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background:
+                      bracketPreviewMode === 'stl'
+                        ? 'rgba(16, 185, 129, 0.18)'
+                        : '#16161B',
+                    color: bracketPreviewMode === 'stl' ? '#6EE7B7' : '#A1A1AA',
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  3D STL
+                </button>
+              </div>
+              {bracketPreviewMode === 'stl' && bracketValidation.valid ? (
+                <StlPreview3D
+                  stlAscii={bracketStl}
+                  fallbackSvg={bracketPreviewSvg}
+                  alt="Custom Device Bracket 3D STL Preview"
+                  dataTestId="custom-bracket-stl-preview"
+                  heightPx={156}
+                />
+              ) : (
+                <img
+                  src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(bracketPreviewSvg)}`}
+                  alt="Custom Device Bracket 2D CAD Preview"
+                  draggable={false}
+                  style={{
+                    width: '100%',
+                    maxHeight: '156px',
+                    display: 'block',
+                    userSelect: 'none',
+                  }}
+                />
+              )}
+            </div>
+          </form>
+        </div>
+
+        {/* 2.3 Printable Slot Cover Panels Library (1U & 2U • Lines / Hex / Tech-Ribs) */}
         <div
           style={{
             marginTop: '18px',
@@ -842,7 +1826,7 @@ export function BomAndExportsView({
               color: '#A1A1AA',
             }}
           >
-            2.2 3D-Printable Slot Cover Panels Library (
+            2.3 3D-Printable Slot Cover Panels Library (
             {printableCoverPanelBlueprints.length} Variants • 1U &amp; 2U •
             Lines / Hex / Tech-Ribs)
           </h4>
@@ -1208,6 +2192,196 @@ export function BomAndExportsView({
           </table>
         </section>
       )}
+
+      {/* Section 5: Printable Cable & Port Wrap-Around Labels (B5: Brother P-Touch / DYMO / Niimbot) */}
+      <section
+        data-testid="cable-labels-section"
+        style={{
+          padding: '18px 20px',
+          borderRadius: '10px',
+          background: '#121216',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '10px',
+          }}
+        >
+          <button
+            type="button"
+            data-testid="toggle-cable-labels-section"
+            onClick={() => setLabelsSectionOpen((prev) => !prev)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: '#F4F4F5',
+              fontSize: '12.5px',
+              fontWeight: 600,
+              letterSpacing: '0.03em',
+              textTransform: 'uppercase',
+            }}
+          >
+            <span>{labelsSectionOpen ? '▾' : '▸'}</span>
+            <span>
+              5. Cable &amp; Port Labels — Brother P-Touch / DYMO / Niimbot ({labelEntries.length} Labels)
+            </span>
+          </button>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+            <label
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '11px',
+                color: '#A1A1AA',
+              }}
+            >
+              <span>Tape Width:</span>
+              <select
+                data-testid="select-label-tape-width"
+                aria-label="Tape Width (mm)"
+                value={String(labelTapeWidthMm)}
+                onChange={(e) =>
+                  setLabelTapeWidthMm(Number(e.target.value) as 12 | 18 | 24)
+                }
+                className="mono"
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '5px',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  background: '#0E0E11',
+                  color: '#F4F4F5',
+                  fontSize: '11px',
+                }}
+              >
+                <option value="12">12 mm Tape</option>
+                <option value="18">18 mm Tape</option>
+                <option value="24">24 mm Tape</option>
+              </select>
+            </label>
+
+            <button
+              type="button"
+              data-testid="section-download-labels-csv"
+              onClick={() =>
+                triggerBlobDownload(
+                  effectiveLabelsCsv,
+                  'labels.csv',
+                  'text/csv;charset=utf-8',
+                )
+              }
+              style={{
+                padding: '5px 10px',
+                borderRadius: '5px',
+                border: '1px solid rgba(59, 130, 246, 0.35)',
+                background: 'rgba(59, 130, 246, 0.12)',
+                color: '#93C5FD',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              CSV (P-Touch / DYMO)
+            </button>
+
+            <button
+              type="button"
+              data-testid="section-download-labels-svg"
+              onClick={() =>
+                triggerBlobDownload(
+                  effectiveLabelsSvg,
+                  `labels-${labelTapeWidthMm}mm.svg`,
+                  'image/svg+xml;charset=utf-8',
+                )
+              }
+              style={{
+                padding: '5px 10px',
+                borderRadius: '5px',
+                border: '1px solid rgba(16, 185, 129, 0.35)',
+                background: 'rgba(16, 185, 129, 0.12)',
+                color: '#6EE7B7',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              SVG Label Sheet ({labelTapeWidthMm}mm)
+            </button>
+          </div>
+        </div>
+
+        {labelsSectionOpen && (
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: '11.5px',
+            }}
+          >
+            <thead>
+              <tr
+                style={{
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.09)',
+                  color: '#71717A',
+                  textAlign: 'left',
+                }}
+              >
+                <th style={{ padding: '7px 8px', fontWeight: 500 }}>#</th>
+                <th style={{ padding: '7px 8px', fontWeight: 500 }}>Cable ID</th>
+                <th style={{ padding: '7px 8px', fontWeight: 500 }}>Wrap-Around Flag Text</th>
+                <th style={{ padding: '7px 8px', fontWeight: 500 }}>From</th>
+                <th style={{ padding: '7px 8px', fontWeight: 500 }}>To</th>
+                <th style={{ padding: '7px 8px', fontWeight: 500 }}>Type / Bin</th>
+              </tr>
+            </thead>
+            <tbody>
+              {labelEntries.map((entry, idx) => (
+                <tr
+                  key={`${entry.cableId}-${idx}`}
+                  style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}
+                >
+                  <td className="mono" style={{ padding: '7px 8px', color: '#71717A' }}>
+                    {idx + 1}
+                  </td>
+                  <td className="mono" style={{ padding: '7px 8px', color: entry.colorHex, fontWeight: 600 }}>
+                    {entry.cableId}
+                  </td>
+                  <td className="mono" style={{ padding: '7px 8px', color: '#F4F4F5', fontWeight: 600 }}>
+                    {entry.wrapLabel}
+                  </td>
+                  <td className="mono" style={{ padding: '7px 8px', color: '#E4E4E7' }}>
+                    {entry.fromEndpoint}
+                  </td>
+                  <td className="mono" style={{ padding: '7px 8px', color: '#E4E4E7' }}>
+                    {entry.toEndpoint}
+                  </td>
+                  <td className="mono" style={{ padding: '7px 8px', color: '#A1A1AA' }}>
+                    {entry.cableTypeLabel}
+                    {entry.vlanTag ? ` • ${entry.vlanTag}` : ''}
+                    {entry.commercialLengthMm > 0
+                      ? ` • ${(entry.commercialLengthMm / 1000).toFixed(2)}m`
+                      : ''}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
     </div>
   );
 }

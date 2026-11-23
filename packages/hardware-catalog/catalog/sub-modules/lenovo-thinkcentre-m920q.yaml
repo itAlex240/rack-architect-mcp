@@ -96,3 +96,4 @@ visuals:
   has_oled_display: false
   stl_mesh_path: null
 printable_metadata: null
+estimated_price_eur: 185

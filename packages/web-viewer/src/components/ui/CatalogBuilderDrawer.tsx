@@ -1,10 +1,19 @@
-import { useState } from 'react';
-import type {
-  CableType,
-  HardwareBlueprint,
-  RackFace,
-  SerializedRackScene,
+import { useMemo, useState } from 'react';
+import { stringify as stringifyYaml } from 'yaml';
+import {
+  HardwareBlueprintSchema,
+  type CableType,
+  type ConnectorType,
+  type ElectricalRole,
+  type HardwareBlueprint,
+  type HardwareCategory,
+  type MountType,
+  type PortDefinition,
+  type PortDirection,
+  type RackFace,
+  type SerializedRackScene,
 } from '@rack-mcp/core-domain';
+import type { CustomBlueprintRegisterResult } from '../../state/useRackState.js';
 
 export interface CatalogBuilderDrawerProps {
   readonly open: boolean;
@@ -26,6 +35,748 @@ export interface CatalogBuilderDrawerProps {
     vlanId?: number,
     ipCidr?: string,
   ) => void;
+  readonly onRegisterCustomBlueprint?:
+    | ((rawBlueprint: unknown) => CustomBlueprintRegisterResult)
+    | undefined;
+}
+
+const CUSTOM_CATEGORY_OPTIONS: readonly HardwareCategory[] = [
+  'switch',
+  'router',
+  'mini-pc',
+  'compute-node',
+  'nas',
+  'patch-panel',
+  'pdu',
+  'ups',
+  'modular-carrier',
+  'shelf',
+];
+
+const CUSTOM_MOUNT_OPTIONS: readonly MountType[] = [
+  'rackmount-10',
+  'rackmount-19',
+  'rackmount-6',
+  'sub-module',
+  'shelf-standing',
+];
+
+const CUSTOM_ROLE_OPTIONS: readonly ElectricalRole[] = [
+  'consumer',
+  'pse-switch',
+  'pdu',
+  'ups',
+  'passive',
+];
+
+const CUSTOM_CONNECTOR_OPTIONS: readonly ConnectorType[] = [
+  'rj45',
+  'sfp-plus',
+  'iec-c14',
+  'iec-c13',
+  'schuko-cee7',
+  'dc-5525',
+  'usb-c',
+  'rj45-serial-console',
+];
+
+function triggerYamlDownload(content: string, filename: string): void {
+  const blob = new Blob([content], { type: 'text/yaml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+interface WizardPortDraft {
+  readonly port_id: string;
+  readonly label: string;
+  readonly face: RackFace;
+  readonly connector_type: ConnectorType;
+  readonly direction: PortDirection;
+}
+
+const WIZARD_INPUT_STYLE = {
+  width: '100%',
+  padding: '6px 8px',
+  borderRadius: '6px',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+  background: '#18181d',
+  color: '#F4F4F5',
+  fontSize: '11.5px',
+} as const;
+
+function CustomBlueprintWizardForm({
+  onRegisterCustomBlueprint,
+  onMountEquipment,
+  targetU,
+  targetFace,
+}: {
+  readonly onRegisterCustomBlueprint?:
+    | ((rawBlueprint: unknown) => CustomBlueprintRegisterResult)
+    | undefined;
+  readonly onMountEquipment: (
+    blueprintSlug: string,
+    targetU: number,
+    face: RackFace,
+    hostname?: string,
+  ) => void;
+  readonly targetU: number;
+  readonly targetFace: RackFace;
+}) {
+  const [slug, setSlug] = useState<string>('custom-lab-appliance-1u');
+  const [manufacturer, setManufacturer] = useState<string>('Custom Lab');
+  const [model, setModel] = useState<string>('Edge Appliance 1U');
+  const [category, setCategory] = useState<HardwareCategory>('mini-pc');
+  const [mountType, setMountType] = useState<MountType>('rackmount-10');
+  const [uHeight, setUHeight] = useState<number>(1);
+  const [widthMm, setWidthMm] = useState<number>(220);
+  const [heightMm, setHeightMm] = useState<number>(43.7);
+  const [depthMm, setDepthMm] = useState<number>(145);
+  const [weightGrams, setWeightGrams] = useState<number>(1150);
+  const [electricalRole, setElectricalRole] =
+    useState<ElectricalRole>('consumer');
+  const [maxWatts, setMaxWatts] = useState<number>(35);
+  const [priceEur, setPriceEur] = useState<string>('249');
+  const [chassisColorHex, setChassisColorHex] = useState<string>('#27272A');
+  const [ports, setPorts] = useState<readonly WizardPortDraft[]>([
+    {
+      port_id: 'eth0',
+      label: 'LAN1',
+      face: 'front',
+      connector_type: 'rj45',
+      direction: 'bidirectional',
+    },
+    {
+      port_id: 'pwr-in',
+      label: 'DC-IN',
+      face: 'rear',
+      connector_type: 'dc-5525',
+      direction: 'input',
+    },
+  ]);
+  const [statusFeedback, setStatusFeedback] = useState<{
+    readonly ok: boolean;
+    readonly text: string;
+    readonly registeredSlug?: string | undefined;
+  } | null>(null);
+
+  const draftBlueprint = useMemo(() => {
+    const parsedPrice = Number(priceEur);
+    const expandedPorts: PortDefinition[] = ports.map((p, idx) => ({
+      port_id: p.port_id.trim() || `port-${idx + 1}`,
+      label: p.label.trim() || `P${idx + 1}`,
+      face: p.face,
+      connector_type: p.connector_type,
+      direction: p.direction,
+      capabilities:
+        p.connector_type === 'rj45'
+          ? ['2500base-t', '1000base-t']
+          : p.connector_type === 'sfp-plus'
+            ? ['10gbase-sr', '10gbase-dac']
+            : p.connector_type === 'dc-5525'
+              ? ['dc-power']
+              : p.connector_type === 'usb-c'
+                ? ['usb-pd']
+                : p.connector_type === 'iec-c13' ||
+                    p.connector_type === 'iec-c14' ||
+                    p.connector_type === 'schuko-cee7'
+                  ? ['ac-mains']
+                  : ['serial-rs232'],
+      coordinates: {
+        x_mm: Math.min(Math.max(12, widthMm - 14), 16 + idx * 24),
+        y_mm: Math.max(8, Math.min(heightMm - 8, heightMm * 0.5)),
+        orientation: 'upright',
+      },
+    }));
+
+    return {
+      slug: slug.trim(),
+      manufacturer: manufacturer.trim(),
+      model: model.trim(),
+      category,
+      mount_type: mountType,
+      ...(mountType === 'sub-module'
+        ? { slot_compatibility: 'mini-pc-1liter' }
+        : {}),
+      geometry: {
+        u_height: mountType === 'sub-module' ? 0 : uHeight,
+        width_mm: widthMm,
+        height_mm: heightMm,
+        depth_mm: depthMm,
+        ear_mount_style:
+          mountType === 'rackmount-19'
+            ? 'included-19inch-ears'
+            : mountType === 'rackmount-10'
+              ? 'included-10inch-ears'
+              : mountType === 'rackmount-6'
+                ? 'included-6inch-ears'
+                : mountType === 'sub-module'
+                  ? 'sub-module-clip'
+                  : 'none',
+        weight_grams: weightGrams,
+      },
+      power_and_thermal: {
+        electrical_role: electricalRole,
+        idle_watts: Math.round(maxWatts * 0.35),
+        max_system_watts: maxWatts,
+        ...(electricalRole === 'pse-switch'
+          ? { poe_budget_watts: Math.max(30, maxWatts) }
+          : {}),
+        airflow: 'front-to-rear',
+      },
+      ports: expandedPorts,
+      visuals: {
+        chassis_color_hex: /^#[0-9A-Fa-f]{6}$/.test(chassisColorHex)
+          ? chassisColorHex
+          : '#27272A',
+        material_preset: 'matte-black-steel',
+        has_oled_display: false,
+      },
+      ...(Number.isFinite(parsedPrice) && parsedPrice >= 0 && priceEur.trim() !== ''
+        ? { estimated_price_eur: parsedPrice }
+        : {}),
+    };
+  }, [
+    category,
+    chassisColorHex,
+    depthMm,
+    electricalRole,
+    heightMm,
+    manufacturer,
+    maxWatts,
+    model,
+    mountType,
+    ports,
+    priceEur,
+    slug,
+    uHeight,
+    weightGrams,
+    widthMm,
+  ]);
+
+  const schemaCheck = useMemo(
+    () => HardwareBlueprintSchema.safeParse(draftBlueprint),
+    [draftBlueprint],
+  );
+
+  const handleRegister = () => {
+    if (!schemaCheck.success) {
+      setStatusFeedback({
+        ok: false,
+        text: schemaCheck.error.issues
+          .map((i) => `${i.path.join('.')}: ${i.message}`)
+          .join('; '),
+      });
+      return;
+    }
+    if (!onRegisterCustomBlueprint) {
+      setStatusFeedback({
+        ok: false,
+        text: 'Blueprint registration callback is not connected.',
+      });
+      return;
+    }
+    const res = onRegisterCustomBlueprint(draftBlueprint);
+    if (res.ok && res.slug) {
+      setStatusFeedback({
+        ok: true,
+        text: `Registered '${res.slug}' in live catalog.`,
+        registeredSlug: res.slug,
+      });
+    } else {
+      setStatusFeedback({
+        ok: false,
+        text: res.error ?? 'Failed to register custom blueprint.',
+      });
+    }
+  };
+
+  return (
+    <form
+      data-testid="custom-blueprint-wizard"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleRegister();
+      }}
+      style={{
+        padding: '14px 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '8px',
+        }}
+      >
+        <span
+          style={{
+            fontSize: '11px',
+            fontWeight: 600,
+            letterSpacing: '0.03em',
+            textTransform: 'uppercase',
+            color: '#93C5FD',
+          }}
+        >
+          Custom Hardware Blueprint Wizard
+        </span>
+        <span
+          data-testid="custom-bp-validation-status"
+          className="mono"
+          style={{
+            fontSize: '10px',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            background: schemaCheck.success
+              ? 'rgba(16, 185, 129, 0.14)'
+              : 'rgba(239, 68, 68, 0.14)',
+            color: schemaCheck.success ? '#6EE7B7' : '#FCA5A5',
+          }}
+        >
+          {schemaCheck.success ? 'Zod Valid' : 'Schema Error'}
+        </span>
+      </div>
+
+      <div>
+        <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+          Catalog Slug (kebab-case)
+        </label>
+        <input
+          data-testid="custom-bp-slug"
+          type="text"
+          value={slug}
+          onChange={(e) => setSlug(e.target.value)}
+          className="mono"
+          style={WIZARD_INPUT_STYLE}
+        />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+            Manufacturer
+          </label>
+          <input
+            data-testid="custom-bp-manufacturer"
+            type="text"
+            value={manufacturer}
+            onChange={(e) => setManufacturer(e.target.value)}
+            style={WIZARD_INPUT_STYLE}
+          />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+            Model
+          </label>
+          <input
+            data-testid="custom-bp-model"
+            type="text"
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            style={WIZARD_INPUT_STYLE}
+          />
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+            Category
+          </label>
+          <select
+            data-testid="custom-bp-category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value as HardwareCategory)}
+            style={WIZARD_INPUT_STYLE}
+          >
+            {CUSTOM_CATEGORY_OPTIONS.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+            Mount Form Factor
+          </label>
+          <select
+            data-testid="custom-bp-mount-type"
+            value={mountType}
+            onChange={(e) => setMountType(e.target.value as MountType)}
+            style={WIZARD_INPUT_STYLE}
+          >
+            {CUSTOM_MOUNT_OPTIONS.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+            Width (mm)
+          </label>
+          <input
+            data-testid="custom-bp-width"
+            type="number"
+            step="0.5"
+            min={10}
+            max={999}
+            value={widthMm}
+            onChange={(e) => setWidthMm(Number(e.target.value))}
+            className="mono"
+            style={WIZARD_INPUT_STYLE}
+          />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+            Height (mm)
+          </label>
+          <input
+            data-testid="custom-bp-height"
+            type="number"
+            step="0.1"
+            min={5}
+            max={1000}
+            value={heightMm}
+            onChange={(e) => setHeightMm(Number(e.target.value))}
+            className="mono"
+            style={WIZARD_INPUT_STYLE}
+          />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+            Depth (mm)
+          </label>
+          <input
+            data-testid="custom-bp-depth"
+            type="number"
+            step="1"
+            min={5}
+            max={1500}
+            value={depthMm}
+            onChange={(e) => setDepthMm(Number(e.target.value))}
+            className="mono"
+            style={WIZARD_INPUT_STYLE}
+          />
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+            U-Span
+          </label>
+          <input
+            type="number"
+            step="0.5"
+            min={0}
+            max={12}
+            value={uHeight}
+            onChange={(e) => setUHeight(Number(e.target.value))}
+            className="mono"
+            style={WIZARD_INPUT_STYLE}
+          />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+            Watts
+          </label>
+          <input
+            data-testid="custom-bp-watts"
+            type="number"
+            min={0}
+            max={10000}
+            value={maxWatts}
+            onChange={(e) => setMaxWatts(Number(e.target.value))}
+            className="mono"
+            style={WIZARD_INPUT_STYLE}
+          />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+            Mass (g)
+          </label>
+          <input
+            type="number"
+            min={0}
+            max={100000}
+            value={weightGrams}
+            onChange={(e) => setWeightGrams(Number(e.target.value))}
+            className="mono"
+            style={WIZARD_INPUT_STYLE}
+          />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+            Est. €
+          </label>
+          <input
+            type="number"
+            min={0}
+            value={priceEur}
+            onChange={(e) => setPriceEur(e.target.value)}
+            className="mono"
+            style={WIZARD_INPUT_STYLE}
+          />
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'end' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+            Electrical Role
+          </label>
+          <select
+            value={electricalRole}
+            onChange={(e) => setElectricalRole(e.target.value as ElectricalRole)}
+            style={WIZARD_INPUT_STYLE}
+          >
+            {CUSTOM_ROLE_OPTIONS.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', color: '#A1A1AA', marginBottom: '3px' }}>
+            Color
+          </label>
+          <input
+            type="color"
+            value={chassisColorHex}
+            onChange={(e) => setChassisColorHex(e.target.value)}
+            style={{
+              width: '42px',
+              height: '29px',
+              padding: '2px',
+              borderRadius: '6px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: '#18181d',
+            }}
+          />
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '4px', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '10.5px', fontWeight: 600, color: '#D4D4D8' }}>
+            Ports ({ports.length})
+          </span>
+          <button
+            type="button"
+            data-testid="btn-wizard-add-port"
+            onClick={() =>
+              setPorts((prev) => [
+                ...prev,
+                {
+                  port_id: `port-${prev.length + 1}`,
+                  label: `P${prev.length + 1}`,
+                  face: 'front',
+                  connector_type: 'rj45',
+                  direction: 'bidirectional',
+                },
+              ])
+            }
+            style={{
+              padding: '3px 8px',
+              borderRadius: '5px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: '#18181d',
+              color: '#93C5FD',
+              fontSize: '10px',
+              cursor: 'pointer',
+            }}
+          >
+            + Add Port
+          </button>
+        </div>
+
+        {ports.map((p, idx) => (
+          <div
+            key={`wiz-port-${idx}`}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr 68px auto',
+              gap: '4px',
+              alignItems: 'center',
+            }}
+          >
+            <input
+              type="text"
+              value={p.port_id}
+              onChange={(e) =>
+                setPorts((prev) =>
+                  prev.map((item, i) =>
+                    i === idx ? { ...item, port_id: e.target.value } : item,
+                  ),
+                )
+              }
+              className="mono"
+              style={WIZARD_INPUT_STYLE}
+              aria-label={`Port ${idx + 1} ID`}
+            />
+            <select
+              value={p.connector_type}
+              onChange={(e) =>
+                setPorts((prev) =>
+                  prev.map((item, i) =>
+                    i === idx
+                      ? {
+                          ...item,
+                          connector_type: e.target.value as ConnectorType,
+                        }
+                      : item,
+                  ),
+                )
+              }
+              style={WIZARD_INPUT_STYLE}
+              aria-label={`Port ${idx + 1} Connector`}
+            >
+              {CUSTOM_CONNECTOR_OPTIONS.map((ct) => (
+                <option key={ct} value={ct}>
+                  {ct}
+                </option>
+              ))}
+            </select>
+            <select
+              value={p.face}
+              onChange={(e) =>
+                setPorts((prev) =>
+                  prev.map((item, i) =>
+                    i === idx ? { ...item, face: e.target.value as RackFace } : item,
+                  ),
+                )
+              }
+              style={WIZARD_INPUT_STYLE}
+              aria-label={`Port ${idx + 1} Face`}
+            >
+              <option value="front">front</option>
+              <option value="rear">rear</option>
+            </select>
+            <button
+              type="button"
+              onClick={() =>
+                setPorts((prev) => prev.filter((_, i) => i !== idx))
+              }
+              style={{
+                padding: '4px 6px',
+                borderRadius: '4px',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                background: '#18181d',
+                color: '#A1A1AA',
+                fontSize: '10px',
+                cursor: 'pointer',
+              }}
+              aria-label={`Remove port ${idx + 1}`}
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {statusFeedback && (
+        <div
+          data-testid="custom-bp-feedback"
+          style={{
+            padding: '7px 9px',
+            borderRadius: '6px',
+            fontSize: '11px',
+            background: '#18181d',
+            border: '1px solid rgba(255, 255, 255, 0.07)',
+            borderLeft: `2.5px solid ${statusFeedback.ok ? '#10B981' : '#EF4444'}`,
+            color: statusFeedback.ok ? '#6EE7B7' : '#FCA5A5',
+          }}
+        >
+          <div>{statusFeedback.text}</div>
+          {statusFeedback.ok &&
+            statusFeedback.registeredSlug &&
+            mountType !== 'sub-module' && (
+              <button
+                type="button"
+                data-testid="btn-mount-registered-custom-bp"
+                onClick={() =>
+                  onMountEquipment(
+                    statusFeedback.registeredSlug as string,
+                    targetU,
+                    targetFace,
+                  )
+                }
+                style={{
+                  marginTop: '6px',
+                  padding: '4px 8px',
+                  borderRadius: '5px',
+                  border: '1px solid rgba(59, 130, 246, 0.35)',
+                  background: 'rgba(59, 130, 246, 0.14)',
+                  color: '#93C5FD',
+                  fontSize: '10.5px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                + Mount on U{targetU}
+              </button>
+            )}
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: '8px', paddingTop: '4px' }}>
+        <button
+          type="button"
+          data-testid="btn-register-custom-blueprint"
+          onClick={handleRegister}
+          style={{
+            flex: 1,
+            padding: '8px 10px',
+            borderRadius: '6px',
+            border: '1px solid rgba(16, 185, 129, 0.35)',
+            background: 'rgba(16, 185, 129, 0.14)',
+            color: '#6EE7B7',
+            fontSize: '11.5px',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          Register &amp; Add to Catalog
+        </button>
+        <button
+          type="button"
+          data-testid="btn-download-custom-blueprint-yaml"
+          onClick={() =>
+            triggerYamlDownload(
+              stringifyYaml(draftBlueprint, { indent: 2 }),
+              `${slug.trim() || 'custom-hardware'}.yaml`,
+            )
+          }
+          style={{
+            padding: '8px 10px',
+            borderRadius: '6px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: '#18181d',
+            color: '#E4E4E7',
+            fontSize: '11.5px',
+            fontWeight: 500,
+            cursor: 'pointer',
+          }}
+        >
+          Download .yaml
+        </button>
+      </div>
+    </form>
+  );
 }
 
 const CABLE_TYPE_OPTIONS: ReadonlyArray<{
@@ -49,7 +800,11 @@ export function CatalogBuilderDrawer({
   onClose,
   onMountEquipment,
   onConnectCable,
+  onRegisterCustomBlueprint,
 }: CatalogBuilderDrawerProps) {
+  const [activeDrawerTab, setActiveDrawerTab] = useState<'catalog' | 'custom'>(
+    'catalog',
+  );
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [targetU, setTargetU] = useState<number>(6);
@@ -154,7 +909,69 @@ export function CatalogBuilderDrawer({
         </button>
       </div>
 
-      {/* Section 1: Interactive Point-to-Point Cable Patcher */}
+      {/* Mode Switcher: Hardware Catalog & Patcher vs. Custom Blueprint Wizard */}
+      <div
+        style={{
+          padding: '8px 16px',
+          background: '#0e0e11',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '4px',
+        }}
+      >
+        <button
+          type="button"
+          data-testid="tab-catalog-patcher"
+          onClick={() => setActiveDrawerTab('catalog')}
+          style={{
+            padding: '5px 8px',
+            borderRadius: '6px',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            background:
+              activeDrawerTab === 'catalog'
+                ? 'rgba(59, 130, 246, 0.16)'
+                : '#15151a',
+            color: activeDrawerTab === 'catalog' ? '#93C5FD' : '#A1A1AA',
+            fontSize: '11px',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          Devices &amp; Cables
+        </button>
+        <button
+          type="button"
+          data-testid="tab-custom-blueprint"
+          onClick={() => setActiveDrawerTab('custom')}
+          style={{
+            padding: '5px 8px',
+            borderRadius: '6px',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            background:
+              activeDrawerTab === 'custom'
+                ? 'rgba(16, 185, 129, 0.16)'
+                : '#15151a',
+            color: activeDrawerTab === 'custom' ? '#6EE7B7' : '#A1A1AA',
+            fontSize: '11px',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          Custom Blueprint
+        </button>
+      </div>
+
+      {activeDrawerTab === 'custom' ? (
+        <CustomBlueprintWizardForm
+          onRegisterCustomBlueprint={onRegisterCustomBlueprint}
+          onMountEquipment={onMountEquipment}
+          targetU={targetU}
+          targetFace={targetFace}
+        />
+      ) : (
+        <>
+          {/* Section 1: Interactive Point-to-Point Cable Patcher */}
       <section
         data-testid="interactive-cable-patcher"
         style={{
@@ -567,6 +1384,8 @@ export function CatalogBuilderDrawer({
           })}
         </div>
       </section>
+        </>
+      )}
     </aside>
   );
 }

@@ -82,5 +82,76 @@ describe('@rack-mcp/cli Subcommands & Argument Parser', () => {
         path.join(outDir, '3dprint-10inch-ucg-ultra-plus-3keystone.stl')
       )
     ).toBe(true);
+    expect(fs.existsSync(path.join(outDir, 'labels.csv'))).toBe(true);
+    expect(fs.existsSync(path.join(outDir, 'labels.svg'))).toBe(true);
+  });
+
+  it('imports NetBox, UniFi and Proxmox exports via rack-mcp import and generates valid custom blueprints via new-blueprint', async () => {
+    const tmpDir = createTempDir();
+
+    const netboxPath = path.join(tmpDir, 'netbox.json');
+    fs.writeFileSync(
+      netboxPath,
+      JSON.stringify({
+        rack: { name: 'CLI NetBox Import', u_height: 10, width: 10, mounting_depth: 240 },
+        devices: [
+          {
+            name: 'sw-edge',
+            position: 8,
+            face: 'front',
+            device_type: { manufacturer: { name: 'Ubiquiti' }, model: 'USW-Flex-2.5G-8-PoE' }
+          }
+        ]
+      }),
+      'utf8'
+    );
+    const outRackYaml = path.join(tmpDir, 'imported-rack.yaml');
+    const impRes = await runCli(['import', netboxPath, '--out', outRackYaml]);
+    expect(impRes.exitCode).toBe(0);
+    expect(impRes.output).toContain('Imported NETBOX inventory');
+    expect(fs.existsSync(outRackYaml)).toBe(true);
+
+    const valRes = await runCli(['validate', outRackYaml]);
+    expect(valRes.exitCode).toBe(0);
+
+    const proxmoxPath = path.join(tmpDir, 'pve.json');
+    fs.writeFileSync(
+      proxmoxPath,
+      JSON.stringify([{ node: 'pve-01', status: 'online', maxcpu: 16 }]),
+      'utf8'
+    );
+    const pveRes = await runCli(['import', proxmoxPath]);
+    expect(pveRes.exitCode).toBe(0);
+    expect(pveRes.output).toContain('pve-01');
+
+    const bpOutPath = path.join(tmpDir, 'custom-edge.yaml');
+    const bpRes = await runCli([
+      'new-blueprint',
+      '--slug',
+      'custom-cli-appliance',
+      '--manufacturer',
+      'EdgeCorp',
+      '--model',
+      'Box 1U',
+      '--category',
+      'compute-node',
+      '--mount-type',
+      'rackmount-10',
+      '--watts',
+      '28',
+      '--rj45',
+      '4',
+      '--sfp',
+      '1',
+      '--power',
+      'dc-5525',
+      '--out',
+      bpOutPath
+    ]);
+    expect(bpRes.exitCode).toBe(0);
+    expect(fs.existsSync(bpOutPath)).toBe(true);
+    const bpYaml = fs.readFileSync(bpOutPath, 'utf8');
+    expect(bpYaml).toContain('slug: custom-cli-appliance');
+    expect(bpYaml).toContain('sfp1');
   });
 });

@@ -5,21 +5,24 @@
 - **Validation Status:** `VALID` (0 Errors, 0 Warnings)
 - **Rack Enclosure:** 8U `10inch` (Rail Depth: `240 mm`, Rear Clearance: `60 mm`)
 - **Total Mounted Devices:** 19 (9 rackmount units + 10 sub-modules)
-- **Total Electrical Draw:** `175.1 W` system + `33.5 W` PoE
+- **Total Electrical Draw:** `52.5 W` idle / `175.1 W` peak system + `33.5 W` PoE
+- **Annual Energy & Running Cost:** `~1216.8 kWh/yr` (`~€389.40/yr` @ `€0.32/kWh`)
+- **UPS Backup Runtime (85% Inverter Eff.):** `ups-u1` (72 Wh: ~`26.4 min` typical / ~`17.6 min` peak)
+- **Estimated Catalog Hardware Budget:** `~€1037.00` (sum of listed commercial catalog street prices)
 - **Mechanical Mass & Stability:** `8.6 kg` total weight | Center of Gravity $Y_{\text{CoG}} = 121.1\text{ mm}$ (`34.1%` of rack height)
 
 ## 2. Commercial Hardware BOM
 
-| Slug | Manufacturer | Model | Category | Qty | Instances & Locations | Max Power (W) | Total Weight (g) |
-| :--- | :--- | :--- | :--- | :---: | :--- | :---: | :---: |
-| `cyberpower-10inch-ups-1u` | CyberPower | 10-Inch Compact Lithium UPS 500VA/300W 1U | `ups` | 1 | `ups-u1` (U1 front) | 15 W | 3200 g |
-| `digitus-10inch-pdu-4way-schuko` | Digitus | 10-Inch 1U 4-Way Socket Strip (DN-95411) | `pdu` | 1 | `pdu-u2-rear` (U2 rear) | 0 W | 480 g |
-| `ubiquiti-ucg-max` | Ubiquiti | Cloud Gateway Max (UCG-Max) | `router` | 1 | `ucg-max` (U3 `carrier-u3:gateway-bay`) | 16.1 W | 519 g |
-| `keystone-rj45-cat6a-coupler` | Generic | Shielded RJ45 Cat6A Passthrough Keystone Coupler | `keystone-module` | 7 | `ks-u3-wan` (U3 `carrier-u3:keystone-1`), `ks-u3-uplink` (U3 `carrier-u3:keystone-2`), `ks-u3-aux` (U3 `carrier-u3:keystone-3`), `ks-u4-eth1` (U4 `carrier-u4:keystone-1`), `ks-u4-ceph` (U4 `carrier-u4:keystone-2`), `ks-u5-eth1` (U5 `carrier-u5:keystone-1`), `ks-u5-ceph` (U5 `carrier-u5:keystone-2`) | 0 W | 126 g |
-| `lenovo-thinkcentre-m920q` | Lenovo | ThinkCentre M920q Tiny (with Dual-Port PCIe NIC) | `mini-pc` | 2 | `pve-node-01` (U4 `carrier-u4:left-mini-pc-bay`), `pve-node-02` (U5 `carrier-u5:left-mini-pc-bay`) | 130 W | 2640 g |
-| `generic-10inch-brush-panel-1u` | Generic | 10-Inch 1U Cable Management Brush Strip Panel | `brush-panel` | 1 | `brush-u6` (U6 front) | 0 W | 160 g |
-| `deskpi-10inch-patch-panel-12port` | DeskPi | RackMate 10-Inch 12-Port Cat6A Passthrough Patch Panel | `patch-panel` | 1 | `patch-u7` (U7 front) | 0 W | 310 g |
-| `ubiquiti-usw-flex-2-5g-8-poe` | Ubiquiti | UniFi Flex 2.5G PoE (USW-Flex-2.5G-8-PoE) | `switch` | 1 | `sw-u8` (U8 front) | 14 W | 567 g |
+| Slug | Manufacturer | Model | Category | Qty | Instances & Locations | Max Power (W) | Total Weight (g) | Est. Price (EUR) |
+| :--- | :--- | :--- | :--- | :---: | :--- | :---: | :---: | :---: |
+| `cyberpower-10inch-ups-1u` | CyberPower | 10-Inch Compact Lithium UPS 500VA/300W 1U | `ups` | 1 | `ups-u1` (U1 front) | 15 W | 3200 g | €169.00 |
+| `digitus-10inch-pdu-4way-schuko` | Digitus | 10-Inch 1U 4-Way Socket Strip (DN-95411) | `pdu` | 1 | `pdu-u2-rear` (U2 rear) | 0 W | 480 g | €29.00 |
+| `ubiquiti-ucg-max` | Ubiquiti | Cloud Gateway Max (UCG-Max) | `router` | 1 | `ucg-max` (U3 `carrier-u3:gateway-bay`) | 16.1 W | 519 g | €219.00 |
+| `keystone-rj45-cat6a-coupler` | Generic | Shielded RJ45 Cat6A Passthrough Keystone Coupler | `keystone-module` | 7 | `ks-u3-wan` (U3 `carrier-u3:keystone-1`), `ks-u3-uplink` (U3 `carrier-u3:keystone-2`), `ks-u3-aux` (U3 `carrier-u3:keystone-3`), `ks-u4-eth1` (U4 `carrier-u4:keystone-1`), `ks-u4-ceph` (U4 `carrier-u4:keystone-2`), `ks-u5-eth1` (U5 `carrier-u5:keystone-1`), `ks-u5-ceph` (U5 `carrier-u5:keystone-2`) | 0 W | 126 g | — |
+| `lenovo-thinkcentre-m920q` | Lenovo | ThinkCentre M920q Tiny (with Dual-Port PCIe NIC) | `mini-pc` | 2 | `pve-node-01` (U4 `carrier-u4:left-mini-pc-bay`), `pve-node-02` (U5 `carrier-u5:left-mini-pc-bay`) | 130 W | 2640 g | €370.00 |
+| `generic-10inch-brush-panel-1u` | Generic | 10-Inch 1U Cable Management Brush Strip Panel | `brush-panel` | 1 | `brush-u6` (U6 front) | 0 W | 160 g | €16.00 |
+| `deskpi-10inch-patch-panel-12port` | DeskPi | RackMate 10-Inch 12-Port Cat6A Passthrough Patch Panel | `patch-panel` | 1 | `patch-u7` (U7 front) | 0 W | 310 g | €35.00 |
+| `ubiquiti-usw-flex-2-5g-8-poe` | Ubiquiti | UniFi Flex 2.5G PoE (USW-Flex-2.5G-8-PoE) | `switch` | 1 | `sw-u8` (U8 front) | 14 W | 567 g | €199.00 |
 
 ### 2.1 Geräte-Erklärungen & Montage-Hinweise
 

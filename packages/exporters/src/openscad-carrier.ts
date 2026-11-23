@@ -7,6 +7,7 @@ import {
   type RackStandard,
   type SerializedRackScene
 } from '@rack-mcp/core-domain';
+import { escapeXml } from './elevation-svg.js';
 
 export interface PrintableCarrierArtifact {
   readonly slug: string;
@@ -1311,6 +1312,116 @@ export function generateCustomCoverPanelOpenScad(
   return lines.join('\n');
 }
 
+function buildAndEmitGridStl(params: {
+  readonly solidName: string;
+  readonly maxX: number;
+  readonly maxY: number;
+  readonly maxZ: number;
+  readonly boxes: readonly Box3DMm[];
+  readonly isSolidAt: (mx: number, my: number, mz: number) => boolean;
+}): string {
+  const { solidName, maxX, maxY, maxZ, boxes, isSolidAt } = params;
+  const xs = collectUniqueSortedCoords(
+    boxes.flatMap((b) => [b.x0, b.x1]).filter((x) => x >= 0 && x <= maxX)
+  );
+  const ys = collectUniqueSortedCoords(
+    boxes.flatMap((b) => [b.y0, b.y1]).filter((y) => y >= 0 && y <= maxY)
+  );
+  const zs = collectUniqueSortedCoords(
+    boxes.flatMap((b) => [b.z0, b.z1]).filter((z) => z >= 0 && z <= maxZ)
+  );
+
+  const nx = xs.length - 1;
+  const ny = ys.length - 1;
+  const nz = zs.length - 1;
+
+  const solidGrid: boolean[][][] = [];
+  for (let ix = 0; ix < nx; ix++) {
+    const x0 = xs[ix]!;
+    const x1 = xs[ix + 1]!;
+    const mx = 0.5 * (x0 + x1);
+    const ySlice: boolean[][] = [];
+    for (let iy = 0; iy < ny; iy++) {
+      const y0 = ys[iy]!;
+      const y1 = ys[iy + 1]!;
+      const my = 0.5 * (y0 + y1);
+      const zRow: boolean[] = [];
+      for (let iz = 0; iz < nz; iz++) {
+        const z0 = zs[iz]!;
+        const z1 = zs[iz + 1]!;
+        const mz = 0.5 * (z0 + z1);
+        zRow.push(isSolidAt(mx, my, mz));
+      }
+      ySlice.push(zRow);
+    }
+    solidGrid.push(ySlice);
+  }
+
+  const getSolid = (ix: number, iy: number, iz: number): boolean =>
+    solidGrid[ix]?.[iy]?.[iz] ?? false;
+
+  const lines: string[] = [`solid ${solidName}`];
+
+  const emitTri = (
+    normX: number,
+    normY: number,
+    normZ: number,
+    v1: readonly [number, number, number],
+    v2: readonly [number, number, number],
+    v3: readonly [number, number, number]
+  ) => {
+    lines.push(`  facet normal ${normX} ${normY} ${normZ}`);
+    lines.push(`    outer loop`);
+    lines.push(`      vertex ${v1[0]} ${v1[1]} ${v1[2]}`);
+    lines.push(`      vertex ${v2[0]} ${v2[1]} ${v2[2]}`);
+    lines.push(`      vertex ${v3[0]} ${v3[1]} ${v3[2]}`);
+    lines.push(`    endloop`);
+    lines.push(`  endfacet`);
+  };
+
+  for (let ix = 0; ix < nx; ix++) {
+    const x0 = xs[ix]!;
+    const x1 = xs[ix + 1]!;
+    for (let iy = 0; iy < ny; iy++) {
+      const y0 = ys[iy]!;
+      const y1 = ys[iy + 1]!;
+      for (let iz = 0; iz < nz; iz++) {
+        if (!getSolid(ix, iy, iz)) continue;
+        const z0 = zs[iz]!;
+        const z1 = zs[iz + 1]!;
+
+        if (!getSolid(ix, iy, iz - 1)) {
+          emitTri(0, 0, -1, [x0, y0, z0], [x0, y1, z0], [x1, y1, z0]);
+          emitTri(0, 0, -1, [x0, y0, z0], [x1, y1, z0], [x1, y0, z0]);
+        }
+        if (!getSolid(ix, iy, iz + 1)) {
+          emitTri(0, 0, 1, [x0, y0, z1], [x1, y0, z1], [x1, y1, z1]);
+          emitTri(0, 0, 1, [x0, y0, z1], [x1, y1, z1], [x0, y1, z1]);
+        }
+        if (!getSolid(ix, iy - 1, iz)) {
+          emitTri(0, -1, 0, [x0, y0, z0], [x1, y0, z0], [x1, y0, z1]);
+          emitTri(0, -1, 0, [x0, y0, z0], [x1, y0, z1], [x0, y0, z1]);
+        }
+        if (!getSolid(ix, iy + 1, iz)) {
+          emitTri(0, 1, 0, [x0, y1, z0], [x0, y1, z1], [x1, y1, z1]);
+          emitTri(0, 1, 0, [x0, y1, z0], [x1, y1, z1], [x1, y1, z0]);
+        }
+        if (!getSolid(ix - 1, iy, iz)) {
+          emitTri(-1, 0, 0, [x0, y0, z0], [x0, y0, z1], [x0, y1, z1]);
+          emitTri(-1, 0, 0, [x0, y0, z0], [x0, y1, z1], [x0, y1, z0]);
+        }
+        if (!getSolid(ix + 1, iy, iz)) {
+          emitTri(1, 0, 0, [x1, y0, z0], [x1, y1, z0], [x1, y1, z1]);
+          emitTri(1, 0, 0, [x1, y0, z0], [x1, y1, z1], [x1, y0, z1]);
+        }
+      }
+    }
+  }
+
+  lines.push(`endsolid ${solidName}`);
+  return lines.join('\n');
+}
+
 /**
  * Generates a 100% watertight, 2-manifold ASCII `.stl` mesh for a custom 3D-printable slot cover panel
  * (`0.5U` / `1U` / `2U` / `3U`, `lines` / `hex` / `ribs` / `vented-slots` / `solid`, optional engraved 5x7 dot-matrix text).
@@ -1623,121 +1734,886 @@ export function generateCustomCoverPanelStl(
     ...featureCutoutBoxes
   ];
 
-  const xs = collectUniqueSortedCoords(
-    allBoxes
-      .flatMap((b) => [b.x0, b.x1])
-      .filter((x) => x >= 0 && x <= panelWidthMm)
-  );
-  const ys = collectUniqueSortedCoords(
-    allBoxes
-      .flatMap((b) => [b.y0, b.y1])
-      .filter((y) => y >= 0 && y <= panelHeightMm)
-  );
-  const zs = collectUniqueSortedCoords(
-    allBoxes
-      .flatMap((b) => [b.z0, b.z1])
-      .filter((z) => z >= 0 && z <= totalDepthMm)
-  );
-
-  const nx = xs.length - 1;
-  const ny = ys.length - 1;
-  const nz = zs.length - 1;
-
-  const isCellSolid = (ix: number, iy: number, iz: number): boolean => {
-    if (ix < 0 || ix >= nx || iy < 0 || iy >= ny || iz < 0 || iz >= nz) {
-      return false;
-    }
-    const mx = 0.5 * (xs[ix]! + xs[ix + 1]!);
-    const my = 0.5 * (ys[iy]! + ys[iy + 1]!);
-    const mz = 0.5 * (zs[iz]! + zs[iz + 1]!);
-
-    const inFaceplate =
-      isPointInsideBox(mx, my, mz, faceplateBox) &&
-      !earHoleBoxes.some((b) => isPointInsideBox(mx, my, mz, b)) &&
-      !featureCutoutBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
-
-    const inBottomStiffener = isPointInsideBox(mx, my, mz, bottomStiffenerBox);
-    const inTopStiffener = isPointInsideBox(mx, my, mz, topStiffenerBox);
-    const inGusset = gussetBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
-
-    return inFaceplate || inBottomStiffener || inTopStiffener || inGusset;
-  };
-
-  const solidGrid: boolean[][][] = [];
-  for (let ix = 0; ix < nx; ix++) {
-    const ySlice: boolean[][] = [];
-    for (let iy = 0; iy < ny; iy++) {
-      const zRow: boolean[] = [];
-      for (let iz = 0; iz < nz; iz++) {
-        zRow.push(isCellSolid(ix, iy, iz));
-      }
-      ySlice.push(zRow);
-    }
-    solidGrid.push(ySlice);
-  }
-
-  const getSolid = (ix: number, iy: number, iz: number): boolean =>
-    solidGrid[ix]?.[iy]?.[iz] ?? false;
-
   const solidName = `custom_cover_${options.standard}_${String(options.u_height).replaceAll('.', 'p')}u_${options.pattern}`;
-  const lines: string[] = [`solid ${solidName}`];
+  return buildAndEmitGridStl({
+    solidName,
+    maxX: panelWidthMm,
+    maxY: panelHeightMm,
+    maxZ: totalDepthMm,
+    boxes: allBoxes,
+    isSolidAt: (mx, my, mz) => {
+      const inFaceplate =
+        isPointInsideBox(mx, my, mz, faceplateBox) &&
+        !earHoleBoxes.some((b) => isPointInsideBox(mx, my, mz, b)) &&
+        !featureCutoutBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
+      const inBottomStiffener = isPointInsideBox(mx, my, mz, bottomStiffenerBox);
+      const inTopStiffener = isPointInsideBox(mx, my, mz, topStiffenerBox);
+      const inGusset = gussetBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
+      return inFaceplate || inBottomStiffener || inTopStiffener || inGusset;
+    }
+  });
+}
 
-  const emitTri = (
-    normX: number,
-    normY: number,
-    normZ: number,
-    v1: readonly [number, number, number],
-    v2: readonly [number, number, number],
-    v3: readonly [number, number, number]
-  ) => {
-    lines.push(`  facet normal ${normX} ${normY} ${normZ}`);
-    lines.push(`    outer loop`);
-    lines.push(`      vertex ${v1[0]} ${v1[1]} ${v1[2]}`);
-    lines.push(`      vertex ${v2[0]} ${v2[1]} ${v2[2]}`);
-    lines.push(`      vertex ${v3[0]} ${v3[1]} ${v3[2]}`);
-    lines.push(`    endloop`);
-    lines.push(`  endfacet`);
-  };
+/**
+ * Renders a live 2D CAD technical front-elevation SVG preview of the configured custom cover panel.
+ */
+export function renderCustomCoverPanelPreviewSvg(
+  options: CustomCoverPanelOptions
+): string {
+  const spec = EIA_310_SPECS[options.standard];
+  const panelWidthMm = roundCentis(spec.W_panel);
+  const apertureWidthMm = roundCentis(spec.W_aperture);
+  const holePitchXMm = roundCentis(spec.W_holes);
+  const panelHeightMm = roundCentis(options.u_height * MM_PER_U - 0.75);
+  const earWidthMm = roundCentis((panelWidthMm - apertureWidthMm) / 2);
+  const leftHoleX = roundCentis((panelWidthMm - holePitchXMm) / 2);
+  const rightHoleX = roundCentis(panelWidthMm - leftHoleX);
+  const patX0 = roundCentis(earWidthMm + 10.0);
+  const patX1 = roundCentis(panelWidthMm - earWidthMm - 10.0);
+  const patW = roundCentis(patX1 - patX0);
+  const label = sanitizeCoverPanelLabel(options.label_text);
 
-  for (let ix = 0; ix < nx; ix++) {
-    const x0 = xs[ix]!;
-    const x1 = xs[ix + 1]!;
-    for (let iy = 0; iy < ny; iy++) {
-      const y0 = ys[iy]!;
-      const y1 = ys[iy + 1]!;
-      for (let iz = 0; iz < nz; iz++) {
-        if (!getSolid(ix, iy, iz)) continue;
-        const z0 = zs[iz]!;
-        const z1 = zs[iz + 1]!;
+  const pad = 12;
+  const vbW = roundCentis(panelWidthMm + pad * 2);
+  const vbH = roundCentis(panelHeightMm + pad * 2);
+  const ox = pad;
+  const oy = pad;
 
-        if (!getSolid(ix, iy, iz - 1)) {
-          emitTri(0, 0, -1, [x0, y0, z0], [x0, y1, z0], [x1, y1, z0]);
-          emitTri(0, 0, -1, [x0, y0, z0], [x1, y1, z0], [x1, y0, z0]);
+  const parts: string[] = [];
+  parts.push(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vbW} ${vbH}" width="100%" height="100%" style="max-height:132px;display:block">`
+  );
+  parts.push(
+    `<rect x="0" y="0" width="${vbW}" height="${vbH}" rx="4" fill="#0E0E11" />`
+  );
+  parts.push(
+    `<rect x="${ox}" y="${oy}" width="${panelWidthMm}" height="${panelHeightMm}" rx="1.8" fill="#18181D" stroke="#52525B" stroke-width="0.9" />`
+  );
+  parts.push(
+    `<rect x="${roundCentis(ox + earWidthMm + 2)}" y="${roundCentis(oy + 2.5)}" width="${roundCentis(apertureWidthMm - 4)}" height="${roundCentis(panelHeightMm - 5)}" rx="1.2" fill="#121216" stroke="#27272A" stroke-width="0.7" />`
+  );
+
+  const holeYs: number[] = [];
+  if (options.u_height < 1) {
+    holeYs.push(roundCentis(panelHeightMm / 2));
+  } else {
+    const fullUs = Math.round(options.u_height);
+    for (let u = 0; u < fullUs; u++) {
+      for (const off of [6.35, 22.225, 38.1]) {
+        const yMm = roundCentis(u * MM_PER_U + off);
+        if (yMm + 3.25 < panelHeightMm - 1.5 && yMm - 3.25 > 1.5) {
+          holeYs.push(panelHeightMm - yMm);
         }
-        if (!getSolid(ix, iy, iz + 1)) {
-          emitTri(0, 0, 1, [x0, y0, z1], [x1, y0, z1], [x1, y1, z1]);
-          emitTri(0, 0, 1, [x0, y0, z1], [x1, y1, z1], [x0, y1, z1]);
+      }
+    }
+  }
+  for (const hy of holeYs) {
+    for (const hx of [leftHoleX, rightHoleX]) {
+      parts.push(
+        `<rect x="${roundCentis(ox + hx - 4.5)}" y="${roundCentis(oy + hy - 3.0)}" width="9.0" height="6.0" rx="3.0" fill="#09090B" stroke="#71717A" stroke-width="0.7" />`
+      );
+    }
+  }
+
+  const hasLabel = label.length > 0;
+  const totalCols = hasLabel ? label.length * 6 - 1 : 0;
+  const dotPitch = hasLabel
+    ? roundCentis(Math.max(1.0, Math.min(1.55, Math.max(24, patW - 10) / Math.max(1, totalCols))))
+    : 0;
+  const dotSize = hasLabel ? roundCentis(Math.max(0.68, dotPitch * 0.7)) : 0;
+  const textSpanW = hasLabel ? (totalCols - 1) * dotPitch + dotSize : 0;
+  const textSpanH = hasLabel ? 6 * dotPitch + dotSize : 0;
+  const plateX0 = roundCentis(panelWidthMm / 2 - textSpanW / 2 - 2.6);
+  const plateX1 = roundCentis(panelWidthMm / 2 + textSpanW / 2 + 2.6);
+  const plateY0 = roundCentis(panelHeightMm / 2 - textSpanH / 2 - 2.2);
+  const plateY1 = roundCentis(panelHeightMm / 2 + textSpanH / 2 + 2.2);
+
+  if (options.pattern === 'lines') {
+    const lineCount = Math.max(2, Math.round(options.u_height * 3));
+    const marginY = options.u_height < 1 ? 5.2 : 8.0;
+    const stepY = lineCount > 1 ? (panelHeightMm - 2 * marginY) / (lineCount - 1) : 0;
+    for (let i = 0; i < lineCount; i++) {
+      const gy0 = roundCentis(marginY + i * stepY - 1.1);
+      const gy1 = roundCentis(gy0 + 2.2);
+      if (
+        hasLabel &&
+        boxesOverlap2D(patX0, gy0, patX1, gy1, plateX0, plateY0, plateX1, plateY1)
+      ) {
+        if (plateX0 - patX0 >= 6.0) {
+          parts.push(
+            `<rect x="${roundCentis(ox + patX0)}" y="${roundCentis(oy + gy0)}" width="${roundCentis(plateX0 - patX0)}" height="2.2" rx="0.8" fill="#3F3F46" />`
+          );
         }
-        if (!getSolid(ix, iy - 1, iz)) {
-          emitTri(0, -1, 0, [x0, y0, z0], [x1, y0, z0], [x1, y0, z1]);
-          emitTri(0, -1, 0, [x0, y0, z0], [x1, y0, z1], [x0, y0, z1]);
+        if (patX1 - plateX1 >= 6.0) {
+          parts.push(
+            `<rect x="${roundCentis(ox + plateX1)}" y="${roundCentis(oy + gy0)}" width="${roundCentis(patX1 - plateX1)}" height="2.2" rx="0.8" fill="#3F3F46" />`
+          );
         }
-        if (!getSolid(ix, iy + 1, iz)) {
-          emitTri(0, 1, 0, [x0, y1, z0], [x0, y1, z1], [x1, y1, z1]);
-          emitTri(0, 1, 0, [x0, y1, z0], [x1, y1, z1], [x1, y1, z0]);
+      } else {
+        parts.push(
+          `<rect x="${roundCentis(ox + patX0)}" y="${roundCentis(oy + gy0)}" width="${patW}" height="2.2" rx="0.8" fill="#3F3F46" />`
+        );
+      }
+    }
+  } else if (options.pattern === 'hex') {
+    const rows = Math.max(1, Math.round(options.u_height * 2));
+    const cols = Math.max(5, Math.min(10, Math.floor(patW / 24)));
+    const pitchX = patW / cols;
+    const marginY = options.u_height < 1 ? 4.5 : 6.0;
+    const pitchY = (panelHeightMm - 2 * marginY) / rows;
+    const rad = roundCentis(Math.min(pitchX, pitchY) * 0.3);
+    for (let r = 0; r < rows; r++) {
+      const cy = roundCentis(marginY + (r + 0.5) * pitchY);
+      const shiftX = r % 2 === 1 ? pitchX * 0.16 : -pitchX * 0.16;
+      for (let c = 0; c < cols; c++) {
+        const cx = roundCentis(patX0 + (c + 0.5) * pitchX + shiftX);
+        if (
+          hasLabel &&
+          boxesOverlap2D(
+            cx - rad,
+            cy - rad,
+            cx + rad,
+            cy + rad,
+            plateX0,
+            plateY0,
+            plateX1,
+            plateY1
+          )
+        ) {
+          continue;
         }
-        if (!getSolid(ix - 1, iy, iz)) {
-          emitTri(-1, 0, 0, [x0, y0, z0], [x0, y0, z1], [x0, y1, z1]);
-          emitTri(-1, 0, 0, [x0, y0, z0], [x0, y1, z1], [x0, y1, z0]);
+        parts.push(
+          `<circle cx="${roundCentis(ox + cx)}" cy="${roundCentis(oy + cy)}" r="${rad}" fill="#09090B" stroke="#52525B" stroke-width="0.8" />`
+        );
+      }
+    }
+  } else if (options.pattern === 'ribs') {
+    const ribCount = Math.max(8, Math.min(14, Math.floor(patW / 16)));
+    const pitchX = patW / ribCount;
+    const grooveW = roundCentis(Math.max(2.8, pitchX * 0.44));
+    const marginY = options.u_height < 1 ? 4.5 : 6.0;
+    const grooveH = roundCentis(panelHeightMm - 2 * marginY);
+    for (let i = 0; i < ribCount; i++) {
+      const gx0 = roundCentis(patX0 + (i + 0.5) * pitchX - grooveW / 2);
+      if (
+        hasLabel &&
+        boxesOverlap2D(
+          gx0,
+          marginY,
+          gx0 + grooveW,
+          marginY + grooveH,
+          plateX0,
+          plateY0,
+          plateX1,
+          plateY1
+        )
+      ) {
+        continue;
+      }
+      parts.push(
+        `<rect x="${roundCentis(ox + gx0)}" y="${roundCentis(oy + marginY)}" width="${grooveW}" height="${grooveH}" rx="0.8" fill="#09090B" stroke="#3F3F46" stroke-width="0.7" />`
+      );
+    }
+  } else if (options.pattern === 'vented-slots') {
+    const colCount = options.standard === '19inch' ? 3 : 2;
+    const bridgeMm = 6.0;
+    const slotW = roundCentis((patW - (colCount - 1) * bridgeMm) / colCount);
+    const slotH = 2.4;
+    const pitchY = 5.6;
+    const marginY = 5.2;
+    for (let y = marginY; y + slotH <= panelHeightMm - marginY; y += pitchY) {
+      for (let col = 0; col < colCount; col++) {
+        const sx0 = roundCentis(patX0 + col * (slotW + bridgeMm));
+        if (
+          hasLabel &&
+          boxesOverlap2D(
+            sx0,
+            y,
+            sx0 + slotW,
+            y + slotH,
+            plateX0,
+            plateY0,
+            plateX1,
+            plateY1
+          )
+        ) {
+          continue;
         }
-        if (!getSolid(ix + 1, iy, iz)) {
-          emitTri(1, 0, 0, [x1, y0, z0], [x1, y1, z0], [x1, y1, z1]);
-          emitTri(1, 0, 0, [x1, y0, z0], [x1, y1, z1], [x1, y0, z1]);
+        parts.push(
+          `<rect x="${roundCentis(ox + sx0)}" y="${roundCentis(oy + y)}" width="${slotW}" height="${slotH}" rx="1.0" fill="#09090B" stroke="#3B82F6" stroke-opacity="0.45" stroke-width="0.6" />`
+        );
+      }
+    }
+  }
+
+  if (hasLabel) {
+    parts.push(
+      `<rect x="${roundCentis(ox + plateX0)}" y="${roundCentis(oy + plateY0)}" width="${roundCentis(plateX1 - plateX0)}" height="${roundCentis(plateY1 - plateY0)}" rx="1.4" fill="#141418" stroke="#3F3F46" stroke-width="0.6" />`
+    );
+    const startX = panelWidthMm / 2 - ((totalCols - 1) * dotPitch) / 2;
+    const startY = panelHeightMm / 2 - (6 * dotPitch) / 2;
+    for (let ci = 0; ci < label.length; ci++) {
+      const ch = label[ci] ?? ' ';
+      const glyph = FONT_5X7_GLYPHS[ch] ?? FONT_5X7_GLYPHS[' ']!;
+      for (let r = 0; r < 7; r++) {
+        const rowStr = glyph[r] ?? '.....';
+        for (let c = 0; c < 5; c++) {
+          if (rowStr[c] !== '#') continue;
+          const dx = roundCentis(ox + startX + (ci * 6 + c) * dotPitch - dotSize / 2);
+          const dy = roundCentis(oy + startY + r * dotPitch - dotSize / 2);
+          parts.push(
+            `<rect x="${dx}" y="${dy}" width="${dotSize}" height="${dotSize}" rx="0.2" fill="#E4E4E7" />`
+          );
         }
       }
     }
   }
 
-  lines.push(`endsolid ${solidName}`);
+  parts.push(`</svg>`);
+  return parts.join('');
+}
+
+export interface CustomBracketOptions {
+  readonly standard: RackStandard;
+  readonly u_height: 1 | 2 | 3;
+  readonly device_name: string;
+  readonly device_width_mm: number;
+  readonly device_height_mm: number;
+  readonly device_depth_mm: number;
+  readonly clearance_tolerance_mm?: number | undefined;
+  readonly keystone_count: number;
+  readonly rear_retainer_lip?: boolean | undefined;
+  readonly ventilation_slots?: boolean | undefined;
+  readonly engraved_label?: string | undefined;
+}
+
+export interface CustomBracketValidation {
+  readonly valid: boolean;
+  readonly errors: readonly string[];
+  readonly panel_width_mm: number;
+  readonly panel_height_mm: number;
+  readonly aperture_width_mm: number;
+  readonly max_device_width_mm: number;
+  readonly max_device_height_mm: number;
+  readonly max_keystones: number;
+  readonly tray_depth_mm: number;
+  readonly estimated_filament_grams: number;
+}
+
+interface CustomBracketLayout {
+  readonly validation: CustomBracketValidation;
+  readonly standard: RackStandard;
+  readonly uCount: 1 | 2 | 3;
+  readonly deviceName: string;
+  readonly panelWidthMm: number;
+  readonly apertureWidthMm: number;
+  readonly holePitchXMm: number;
+  readonly earWidthMm: number;
+  readonly panelHeightMm: number;
+  readonly faceplateThicknessMm: number;
+  readonly trayFloorThicknessMm: number;
+  readonly sideGussetThicknessMm: number;
+  readonly tolMm: number;
+  readonly trayDepthMm: number;
+  readonly devX0: number;
+  readonly devX1: number;
+  readonly devY0: number;
+  readonly devY1: number;
+  readonly keystoneSlots: ReadonlyArray<{
+    readonly x0: number;
+    readonly y0: number;
+    readonly w: number;
+    readonly h: number;
+  }>;
+  readonly rearRetainerLip: boolean;
+  readonly ventilationSlots: boolean;
+  readonly engravedLabel: string;
+}
+
+function computeCustomBracketLayout(
+  options: CustomBracketOptions
+): CustomBracketLayout {
+  const spec = EIA_310_SPECS[options.standard];
+  const uCount: 1 | 2 | 3 =
+    options.u_height === 3 ? 3 : options.u_height === 2 ? 2 : 1;
+  const panelWidthMm = roundCentis(spec.W_panel);
+  const apertureWidthMm = roundCentis(spec.W_aperture);
+  const holePitchXMm = roundCentis(spec.W_holes);
+  const earWidthMm = roundCentis((panelWidthMm - apertureWidthMm) / 2);
+  const panelHeightMm = roundCentis(uCount * MM_PER_U - 0.75);
+  const faceplateThicknessMm = 4.2;
+  const trayFloorThicknessMm = 3.2;
+  const sideGussetThicknessMm = 3.5;
+  const tolMm = roundCentis(
+    Math.max(0.1, Math.min(2.0, options.clearance_tolerance_mm ?? 0.6))
+  );
+  const requestedKeystones = Math.max(
+    0,
+    Math.min(6, Math.round(options.keystone_count))
+  );
+  const keystoneSlotW = 16.5;
+  const keystoneSlotH = 22.0;
+  const keystonePitchX = 21.0;
+  const innerMarginX = sideGussetThicknessMm + 3.5;
+
+  const devW = Number.isFinite(options.device_width_mm)
+    ? options.device_width_mm
+    : 100;
+  const devH = Number.isFinite(options.device_height_mm)
+    ? options.device_height_mm
+    : 30;
+  const devD = Number.isFinite(options.device_depth_mm)
+    ? options.device_depth_mm
+    : 100;
+
+  const keystoneReserveW =
+    requestedKeystones > 0 ? requestedKeystones * keystonePitchX + 4.0 : 0;
+  const maxDeviceWidthMm = roundCentis(
+    Math.max(10, apertureWidthMm - innerMarginX * 2 - keystoneReserveW - 2 * tolMm)
+  );
+  const maxDeviceHeightMm = roundCentis(
+    Math.max(8, panelHeightMm - trayFloorThicknessMm - 3.0 - 2 * tolMm)
+  );
+  const maxKeystones = Math.min(
+    6,
+    Math.max(
+      0,
+      Math.floor(
+        (apertureWidthMm - innerMarginX * 2 - (devW + 2 * tolMm) - 4.0) /
+          keystonePitchX
+      )
+    )
+  );
+
+  const rearRetainerLip = options.rear_retainer_lip !== false;
+  const ventilationSlots = options.ventilation_slots !== false;
+  const trayDepthMm = roundCentis(
+    Math.max(
+      40,
+      Math.min(500, devD + faceplateThicknessMm + (rearRetainerLip ? 4.5 : 1.5))
+    )
+  );
+
+  const errors: string[] = [];
+  if (devW <= 0 || devW + 2 * tolMm > maxDeviceWidthMm + 0.01) {
+    errors.push(
+      `Device width ${devW}mm (+${roundCentis(2 * tolMm)}mm tol) exceeds available ${options.standard} bay width ${maxDeviceWidthMm}mm.`
+    );
+  }
+  if (devH <= 0 || devH + 2 * tolMm > maxDeviceHeightMm + 0.01) {
+    errors.push(
+      `Device height ${devH}mm (+${roundCentis(2 * tolMm)}mm tol) exceeds ${uCount}U vertical opening ${maxDeviceHeightMm}mm.`
+    );
+  }
+  if (devD < 15 || devD > 500) {
+    errors.push(`Device depth ${devD}mm must be between 15mm and 500mm.`);
+  }
+  if (requestedKeystones > maxKeystones) {
+    errors.push(
+      `${requestedKeystones} Keystones requested, but only ${maxKeystones} fit alongside ${devW}mm device in ${options.standard} (${apertureWidthMm}mm aperture).`
+    );
+  }
+
+  const clampedCutoutW = roundCentis(
+    Math.max(
+      12,
+      Math.min(apertureWidthMm - innerMarginX * 2, devW + 2 * tolMm)
+    )
+  );
+  const clampedCutoutH = roundCentis(
+    Math.max(
+      10,
+      Math.min(panelHeightMm - trayFloorThicknessMm - 2.4, devH + 2 * tolMm)
+    )
+  );
+
+  const devX0 = roundCentis(
+    requestedKeystones > 0
+      ? earWidthMm + innerMarginX
+      : (panelWidthMm - clampedCutoutW) / 2
+  );
+  const devX1 = roundCentis(devX0 + clampedCutoutW);
+  const devY0 = roundCentis(trayFloorThicknessMm);
+  const devY1 = roundCentis(devY0 + clampedCutoutH);
+
+  const keystoneSlots: Array<{
+    readonly x0: number;
+    readonly y0: number;
+    readonly w: number;
+    readonly h: number;
+  }> = [];
+  const ksStartX = roundCentis(devX1 + 6.0);
+  const ksMaxX = roundCentis(panelWidthMm - earWidthMm - innerMarginX);
+  const ksY0 = roundCentis(
+    Math.max(trayFloorThicknessMm + 2.0, (panelHeightMm - keystoneSlotH) / 2)
+  );
+  for (let k = 0; k < requestedKeystones; k++) {
+    const x0 = roundCentis(ksStartX + k * keystonePitchX);
+    if (x0 + keystoneSlotW <= ksMaxX + 0.01) {
+      keystoneSlots.push({ x0, y0: ksY0, w: keystoneSlotW, h: keystoneSlotH });
+    }
+  }
+
+  const faceplateArea =
+    panelWidthMm * panelHeightMm - clampedCutoutW * clampedCutoutH - keystoneSlots.length * keystoneSlotW * keystoneSlotH;
+  const faceplateVolMm3 = Math.max(0, faceplateArea * faceplateThicknessMm);
+  const trayVolMm3 =
+    apertureWidthMm * (trayDepthMm - faceplateThicknessMm) * trayFloorThicknessMm * (ventilationSlots ? 0.8 : 1.0);
+  const gussetVolMm3 =
+    2 * sideGussetThicknessMm * (panelHeightMm * 0.65) * (trayDepthMm - faceplateThicknessMm);
+  const estimatedGrams = roundCentis(
+    Math.max(25, ((faceplateVolMm3 + trayVolMm3 + gussetVolMm3) / 1000) * 1.15 * 0.62)
+  );
+
+  return {
+    validation: {
+      valid: errors.length === 0,
+      errors,
+      panel_width_mm: panelWidthMm,
+      panel_height_mm: panelHeightMm,
+      aperture_width_mm: apertureWidthMm,
+      max_device_width_mm: maxDeviceWidthMm,
+      max_device_height_mm: maxDeviceHeightMm,
+      max_keystones: maxKeystones,
+      tray_depth_mm: trayDepthMm,
+      estimated_filament_grams: estimatedGrams
+    },
+    standard: options.standard,
+    uCount,
+    deviceName: sanitizeScadCommentText(options.device_name || 'Custom Device'),
+    panelWidthMm,
+    apertureWidthMm,
+    holePitchXMm,
+    earWidthMm,
+    panelHeightMm,
+    faceplateThicknessMm,
+    trayFloorThicknessMm,
+    sideGussetThicknessMm,
+    tolMm,
+    trayDepthMm,
+    devX0,
+    devX1,
+    devY0,
+    devY1,
+    keystoneSlots,
+    rearRetainerLip,
+    ventilationSlots,
+    engravedLabel: sanitizeCoverPanelLabel(options.engraved_label)
+  };
+}
+
+/**
+ * Validates whether a user-supplied device's physical dimensions + Keystone bays fit
+ * inside the target EIA-310 standard (`19inch`, `10inch`, `6inch`) and U-height.
+ */
+export function validateCustomBracketOptions(
+  options: CustomBracketOptions
+): CustomBracketValidation {
+  return computeCustomBracketLayout(options).validation;
+}
+
+/**
+ * Generates a parametric OpenSCAD (`.scad`) script for a custom user-sized device rack bracket
+ * with EIA-310 mounting ears, tolerance-compensated front bay, Keystone cutouts, ventilated
+ * L-shaped support tray, and optional rear retention lip.
+ */
+export function generateCustomBracketOpenScad(
+  options: CustomBracketOptions
+): string {
+  const layout = computeCustomBracketLayout(options);
+  const lines: string[] = [];
+
+  lines.push(`// ============================================================================`);
+  lines.push(`// RackArchitect MCP — Custom Parametric Device Rack Bracket (.scad)`);
+  lines.push(`// Device:    ${layout.deviceName} (${options.device_width_mm} x ${options.device_height_mm} x ${options.device_depth_mm} mm)`);
+  lines.push(`// Standard:  ${layout.standard.toUpperCase()} EIA-310 (${layout.panelWidthMm}mm Width, ${layout.uCount}U = ${layout.panelHeightMm}mm)`);
+  lines.push(`// Keystones: ${layout.keystoneSlots.length} | Tray Depth: ${layout.trayDepthMm}mm | Est. Filament: ${layout.validation.estimated_filament_grams}g`);
+  lines.push(`// Material:  PETG / ASA (4 Perimeters, 25% Gyroid Infill, Print Face-Down)`);
+  lines.push(`// ============================================================================`);
+  lines.push(``);
+  lines.push(`panel_width_mm = ${layout.panelWidthMm};`);
+  lines.push(`aperture_width_mm = ${layout.apertureWidthMm};`);
+  lines.push(`hole_center_pitch_x_mm = ${layout.holePitchXMm};`);
+  lines.push(`panel_height_mm = ${layout.panelHeightMm};`);
+  lines.push(`faceplate_thickness_mm = ${layout.faceplateThicknessMm};`);
+  lines.push(`tray_floor_thickness_mm = ${layout.trayFloorThicknessMm};`);
+  lines.push(`side_gusset_thickness_mm = ${layout.sideGussetThicknessMm};`);
+  lines.push(`tray_depth_mm = ${layout.trayDepthMm};`);
+  lines.push(`$fn = 36;`);
+  lines.push(``);
+  lines.push(`module oval_mounting_slot(slot_w = 10.0, slot_h = 6.5, thickness = 10.0) {`);
+  lines.push(`  hull() {`);
+  lines.push(`    translate([-(slot_w - slot_h) / 2, 0, -1]) cylinder(d = slot_h, h = thickness);`);
+  lines.push(`    translate([ (slot_w - slot_h) / 2, 0, -1]) cylinder(d = slot_h, h = thickness);`);
+  lines.push(`  }`);
+  lines.push(`}`);
+  lines.push(``);
+  lines.push(`module eia310_ear_holes() {`);
+  lines.push(`  left_hole_x = (panel_width_mm - hole_center_pitch_x_mm) / 2;`);
+  lines.push(`  right_hole_x = panel_width_mm - left_hole_x;`);
+  lines.push(`  for (u = [0 : ${layout.uCount - 1}]) {`);
+  lines.push(`    base_y = u * 44.45;`);
+  lines.push(`    for (offset_y = [6.35, 22.225, 38.10]) {`);
+  lines.push(`      if (base_y + offset_y < panel_height_mm - 2.0) {`);
+  lines.push(`        translate([left_hole_x, base_y + offset_y, 0]) oval_mounting_slot();`);
+  lines.push(`        translate([right_hole_x, base_y + offset_y, 0]) oval_mounting_slot();`);
+  lines.push(`      }`);
+  lines.push(`    }`);
+  lines.push(`  }`);
+  lines.push(`}`);
+  lines.push(``);
+  lines.push(`module front_cutouts() {`);
+  lines.push(`  // Custom device bay cutout (+${layout.tolMm}mm tolerance per side)`);
+  lines.push(`  translate([${layout.devX0}, ${layout.devY0}, -0.5])`);
+  lines.push(`    cube([${roundCentis(layout.devX1 - layout.devX0)}, ${roundCentis(layout.devY1 - layout.devY0)}, faceplate_thickness_mm + 1.0]);`);
+  layout.keystoneSlots.forEach((ks, i) => {
+    lines.push(`  // Keystone slot #${i + 1}`);
+    lines.push(`  translate([${ks.x0}, ${ks.y0}, -0.5]) cube([${ks.w}, ${ks.h}, faceplate_thickness_mm + 1.0]);`);
+  });
+  if (layout.engravedLabel.length > 0) {
+    const labelX = roundCentis(layout.panelWidthMm / 2);
+    const labelY = roundCentis(layout.panelHeightMm - 3.6);
+    lines.push(`  translate([${labelX}, ${labelY}, -0.4]) linear_extrude(height = 1.6) mirror([1, 0, 0]) text("${layout.engravedLabel}", size = 4.0, font = "Liberation Mono:style=Bold", halign = "center", valign = "center");`);
+  }
+  lines.push(`}`);
+  lines.push(``);
+  lines.push(`union() {`);
+  lines.push(`  difference() {`);
+  lines.push(`    cube([panel_width_mm, panel_height_mm, faceplate_thickness_mm]);`);
+  lines.push(`    eia310_ear_holes();`);
+  lines.push(`    front_cutouts();`);
+  lines.push(`  }`);
+  lines.push(`  difference() {`);
+  lines.push(`    translate([${layout.earWidthMm}, 0, faceplate_thickness_mm])`);
+  lines.push(`      cube([aperture_width_mm, tray_floor_thickness_mm, tray_depth_mm - faceplate_thickness_mm]);`);
+  if (layout.ventilationSlots) {
+    lines.push(`    for (z = [18 : 20 : tray_depth_mm - 16]) {`);
+    lines.push(`      for (x = [${roundCentis(layout.earWidthMm + 14)} : 22 : panel_width_mm - ${roundCentis(layout.earWidthMm + 14)}]) {`);
+    lines.push(`        translate([x, -1, z]) rotate([-90, 0, 0]) cylinder(d = 12, h = tray_floor_thickness_mm + 2, $fn = 6);`);
+    lines.push(`      }`);
+    lines.push(`    }`);
+  }
+  lines.push(`  }`);
+  const gussetH = roundCentis(layout.panelHeightMm * 0.65);
+  lines.push(`  translate([${layout.earWidthMm}, 0, faceplate_thickness_mm]) cube([side_gusset_thickness_mm, ${gussetH}, tray_depth_mm - faceplate_thickness_mm]);`);
+  lines.push(`  translate([${roundCentis(layout.panelWidthMm - layout.earWidthMm - layout.sideGussetThicknessMm)}, 0, faceplate_thickness_mm]) cube([side_gusset_thickness_mm, ${gussetH}, tray_depth_mm - faceplate_thickness_mm]);`);
+  // Guide rails flanking the device bay
+  const railH = roundCentis(Math.min(layout.panelHeightMm, layout.devY0 + 14));
+  lines.push(`  translate([${roundCentis(layout.devX0 - 2.4)}, 0, faceplate_thickness_mm]) cube([2.4, ${railH}, tray_depth_mm - faceplate_thickness_mm]);`);
+  lines.push(`  translate([${layout.devX1}, 0, faceplate_thickness_mm]) cube([2.4, ${railH}, tray_depth_mm - faceplate_thickness_mm]);`);
+  if (layout.rearRetainerLip) {
+    lines.push(`  // Rear anti-slide retainer stopper lip`);
+    lines.push(`  translate([${layout.devX0}, 0, ${roundCentis(layout.trayDepthMm - 3.2)}]) cube([${roundCentis(layout.devX1 - layout.devX0)}, 9.5, 3.2]);`);
+  }
+  lines.push(`}`);
+
   return lines.join('\n');
+}
+
+/**
+ * Generates a 100% watertight, 2-manifold ASCII `.stl` mesh for a custom parametric device bracket.
+ */
+export function generateCustomBracketStl(
+  options: CustomBracketOptions
+): string {
+  const layout = computeCustomBracketLayout(options);
+  const faceplateBox = normalizeBox({
+    x0: 0,
+    y0: 0,
+    z0: 0,
+    x1: layout.panelWidthMm,
+    y1: layout.panelHeightMm,
+    z1: layout.faceplateThicknessMm
+  });
+  const trayFloorBox = normalizeBox({
+    x0: layout.earWidthMm,
+    y0: 0,
+    z0: layout.faceplateThicknessMm,
+    x1: layout.panelWidthMm - layout.earWidthMm,
+    y1: layout.trayFloorThicknessMm,
+    z1: layout.trayDepthMm
+  });
+  const gussetH = roundCentis(layout.panelHeightMm * 0.65);
+  const gussetBoxes: Box3DMm[] = [
+    normalizeBox({
+      x0: layout.earWidthMm,
+      y0: 0,
+      z0: layout.faceplateThicknessMm,
+      x1: layout.earWidthMm + layout.sideGussetThicknessMm,
+      y1: gussetH,
+      z1: layout.trayDepthMm
+    }),
+    normalizeBox({
+      x0: layout.panelWidthMm - layout.earWidthMm - layout.sideGussetThicknessMm,
+      y0: 0,
+      z0: layout.faceplateThicknessMm,
+      x1: layout.panelWidthMm - layout.earWidthMm,
+      y1: gussetH,
+      z1: layout.trayDepthMm
+    })
+  ];
+  const railH = roundCentis(Math.min(layout.panelHeightMm, layout.devY0 + 14));
+  const railBoxes: Box3DMm[] = [
+    normalizeBox({
+      x0: Math.max(layout.earWidthMm + layout.sideGussetThicknessMm, layout.devX0 - 2.4),
+      y0: 0,
+      z0: layout.faceplateThicknessMm,
+      x1: layout.devX0,
+      y1: railH,
+      z1: layout.trayDepthMm
+    }),
+    normalizeBox({
+      x0: layout.devX1,
+      y0: 0,
+      z0: layout.faceplateThicknessMm,
+      x1: Math.min(layout.panelWidthMm - layout.earWidthMm - layout.sideGussetThicknessMm, layout.devX1 + 2.4),
+      y1: railH,
+      z1: layout.trayDepthMm
+    })
+  ];
+  const retainerBox = layout.rearRetainerLip
+    ? normalizeBox({
+        x0: layout.devX0,
+        y0: 0,
+        z0: roundCentis(layout.trayDepthMm - 3.2),
+        x1: layout.devX1,
+        y1: 9.5,
+        z1: layout.trayDepthMm
+      })
+    : null;
+
+  const leftHoleX = roundCentis((layout.panelWidthMm - layout.holePitchXMm) / 2);
+  const rightHoleX = roundCentis(layout.panelWidthMm - leftHoleX);
+  const earHoleBoxes: Box3DMm[] = [];
+  for (let u = 0; u < layout.uCount; u++) {
+    const baseY = u * MM_PER_U;
+    for (const offsetY of [6.35, 22.225, 38.1]) {
+      const cy = roundCentis(baseY + offsetY);
+      if (cy + 3.25 < layout.panelHeightMm - 1.5 && cy - 3.25 > 1.5) {
+        earHoleBoxes.push(
+          normalizeBox({
+            x0: Math.max(1.2, leftHoleX - 5.0),
+            y0: cy - 3.25,
+            z0: -1,
+            x1: Math.min(layout.earWidthMm - 1.2, leftHoleX + 5.0),
+            y1: cy + 3.25,
+            z1: layout.faceplateThicknessMm + 1
+          }),
+          normalizeBox({
+            x0: Math.max(layout.panelWidthMm - layout.earWidthMm + 1.2, rightHoleX - 5.0),
+            y0: cy - 3.25,
+            z0: -1,
+            x1: Math.min(layout.panelWidthMm - 1.2, rightHoleX + 5.0),
+            y1: cy + 3.25,
+            z1: layout.faceplateThicknessMm + 1
+          })
+        );
+      }
+    }
+  }
+
+  const cutoutBoxes: Box3DMm[] = [
+    normalizeBox({
+      x0: layout.devX0,
+      y0: layout.devY0,
+      z0: -1,
+      x1: layout.devX1,
+      y1: layout.devY1,
+      z1: layout.faceplateThicknessMm + 1
+    }),
+    ...layout.keystoneSlots.map((ks) =>
+      normalizeBox({
+        x0: ks.x0,
+        y0: ks.y0,
+        z0: -1,
+        x1: ks.x0 + ks.w,
+        y1: ks.y0 + ks.h,
+        z1: layout.faceplateThicknessMm + 1
+      })
+    )
+  ];
+
+  let ventCutoutBoxes: Box3DMm[] = [];
+  if (layout.ventilationSlots) {
+    const ventXMin = roundCentis(layout.devX0 + 8);
+    const ventXMax = roundCentis(layout.devX1 - 8);
+    for (let z = 18; z + 12 <= layout.trayDepthMm - 14; z += 22) {
+      for (let x = ventXMin; x + 12 <= ventXMax; x += 22) {
+        ventCutoutBoxes.push(
+          normalizeBox({
+            x0: x,
+            y0: -1,
+            z0: z,
+            x1: x + 12,
+            y1: layout.trayFloorThicknessMm + 1,
+            z1: z + 12
+          })
+        );
+      }
+    }
+  }
+
+  const baseBoxes: Box3DMm[] = [
+    faceplateBox,
+    trayFloorBox,
+    ...gussetBoxes,
+    ...railBoxes,
+    ...(retainerBox ? [retainerBox] : []),
+    ...earHoleBoxes,
+    ...cutoutBoxes
+  ];
+
+  const checkGridCount = (boxes: readonly Box3DMm[]): number => {
+    const gX = collectUniqueSortedCoords(
+      boxes.flatMap((b) => [b.x0, b.x1]).filter((x) => x >= 0 && x <= layout.panelWidthMm)
+    );
+    const gY = collectUniqueSortedCoords(
+      boxes.flatMap((b) => [b.y0, b.y1]).filter((y) => y >= 0 && y <= layout.panelHeightMm)
+    );
+    const gZ = collectUniqueSortedCoords(
+      boxes.flatMap((b) => [b.z0, b.z1]).filter((z) => z >= 0 && z <= layout.trayDepthMm)
+    );
+    return Math.max(1, gX.length - 1) * Math.max(1, gY.length - 1) * Math.max(1, gZ.length - 1);
+  };
+
+  if (checkGridCount([...baseBoxes, ...ventCutoutBoxes]) > MAX_STL_GRID_CELLS) {
+    ventCutoutBoxes = [];
+  }
+
+  const allBoxes = [...baseBoxes, ...ventCutoutBoxes];
+  const solidName = `custom_bracket_${layout.standard}_${layout.uCount}u`;
+
+  return buildAndEmitGridStl({
+    solidName,
+    maxX: layout.panelWidthMm,
+    maxY: layout.panelHeightMm,
+    maxZ: layout.trayDepthMm,
+    boxes: allBoxes,
+    isSolidAt: (mx, my, mz) => {
+      const inFaceplate =
+        isPointInsideBox(mx, my, mz, faceplateBox) &&
+        !earHoleBoxes.some((b) => isPointInsideBox(mx, my, mz, b)) &&
+        !cutoutBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
+      const inTrayFloor =
+        isPointInsideBox(mx, my, mz, trayFloorBox) &&
+        !ventCutoutBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
+      const inGusset = gussetBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
+      const inRail = railBoxes.some((b) => isPointInsideBox(mx, my, mz, b));
+      const inRetainer =
+        retainerBox !== null && isPointInsideBox(mx, my, mz, retainerBox);
+      return inFaceplate || inTrayFloor || inGusset || inRail || inRetainer;
+    }
+  });
+}
+
+/**
+ * Renders a 2-view 2D CAD technical SVG preview (Front Elevation + Right Side Profile)
+ * for a custom parametric device bracket with exact mm callouts.
+ */
+export function renderCustomBracketPreviewSvg(
+  options: CustomBracketOptions
+): string {
+  const layout = computeCustomBracketLayout(options);
+  const pad = 14;
+  const sideGap = 18;
+  const sidePreviewW = Math.min(180, layout.trayDepthMm);
+  const vbW = roundCentis(layout.panelWidthMm + sideGap + sidePreviewW + pad * 2);
+  const vbH = roundCentis(layout.panelHeightMm + pad * 2 + 14);
+  const ox = pad;
+  const oy = pad;
+  const sx = roundCentis(ox + layout.panelWidthMm + sideGap);
+
+  const parts: string[] = [];
+  parts.push(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vbW} ${vbH}" width="100%" height="100%" style="max-height:190px;display:block">`
+  );
+  parts.push(
+    `<rect x="0" y="0" width="${vbW}" height="${vbH}" rx="4" fill="#0E0E11" />`
+  );
+  // Front faceplate body
+  parts.push(
+    `<rect x="${ox}" y="${oy}" width="${layout.panelWidthMm}" height="${layout.panelHeightMm}" rx="1.8" fill="#18181D" stroke="#52525B" stroke-width="0.9" />`
+  );
+  // Inner aperture boundary
+  parts.push(
+    `<rect x="${roundCentis(ox + layout.earWidthMm)}" y="${oy}" width="${layout.apertureWidthMm}" height="${layout.panelHeightMm}" fill="none" stroke="#27272A" stroke-dasharray="2 2" stroke-width="0.7" />`
+  );
+
+  // EIA-310 mounting holes
+  const leftHoleX = roundCentis((layout.panelWidthMm - layout.holePitchXMm) / 2);
+  const rightHoleX = roundCentis(layout.panelWidthMm - leftHoleX);
+  for (let u = 0; u < layout.uCount; u++) {
+    for (const off of [6.35, 22.225, 38.1]) {
+      const yMm = roundCentis(u * MM_PER_U + off);
+      if (yMm + 3.25 < layout.panelHeightMm - 1.5 && yMm - 3.25 > 1.5) {
+        const svgY = oy + (layout.panelHeightMm - yMm);
+        for (const hx of [leftHoleX, rightHoleX]) {
+          parts.push(
+            `<rect x="${roundCentis(ox + hx - 4.5)}" y="${roundCentis(svgY - 3.0)}" width="9.0" height="6.0" rx="3.0" fill="#09090B" stroke="#71717A" stroke-width="0.7" />`
+          );
+        }
+      }
+    }
+  }
+
+  // Device cutout bay (SVG Y is top-down while physical Y is bottom-up)
+  const cutSvgY = roundCentis(oy + (layout.panelHeightMm - layout.devY1));
+  const cutW = roundCentis(layout.devX1 - layout.devX0);
+  const cutH = roundCentis(layout.devY1 - layout.devY0);
+  parts.push(
+    `<rect x="${roundCentis(ox + layout.devX0)}" y="${cutSvgY}" width="${cutW}" height="${cutH}" rx="1.2" fill="#09090B" stroke="${layout.validation.valid ? '#3B82F6' : '#EF4444'}" stroke-width="1.0" />`
+  );
+  parts.push(
+    `<text x="${roundCentis(ox + layout.devX0 + cutW / 2)}" y="${roundCentis(cutSvgY + cutH / 2 + 2.2)}" fill="#E4E4E7" font-family="ui-monospace, monospace" font-size="6.2" text-anchor="middle">${escapeXml(layout.deviceName.slice(0, 22))}</text>`
+  );
+
+  // Keystone cutouts
+  layout.keystoneSlots.forEach((ks, i) => {
+    const kSvgY = roundCentis(oy + (layout.panelHeightMm - (ks.y0 + ks.h)));
+    parts.push(
+      `<rect x="${roundCentis(ox + ks.x0)}" y="${kSvgY}" width="${ks.w}" height="${ks.h}" rx="0.8" fill="#09090B" stroke="#10B981" stroke-width="0.8" />`
+    );
+    parts.push(
+      `<text x="${roundCentis(ox + ks.x0 + ks.w / 2)}" y="${roundCentis(kSvgY + ks.h / 2 + 1.8)}" fill="#6EE7B7" font-family="ui-monospace, monospace" font-size="4.6" text-anchor="middle">K${i + 1}</text>`
+    );
+  });
+
+  if (layout.engravedLabel.length > 0) {
+    parts.push(
+      `<text x="${roundCentis(ox + layout.panelWidthMm / 2)}" y="${roundCentis(oy + 5.2)}" fill="#A1A1AA" font-family="ui-monospace, monospace" font-size="4.8" font-weight="700" text-anchor="middle">${escapeXml(layout.engravedLabel)}</text>`
+    );
+  }
+
+  // Right Side Profile (Z-Y Cutaway)
+  const scaleZ = sidePreviewW / layout.trayDepthMm;
+  const sideFaceW = roundCentis(layout.faceplateThicknessMm * scaleZ);
+  const sideTrayW = roundCentis((layout.trayDepthMm - layout.faceplateThicknessMm) * scaleZ);
+  const sideTrayH = roundCentis(layout.trayFloorThicknessMm);
+  const sideGussetH = roundCentis(layout.panelHeightMm * 0.65);
+
+  parts.push(
+    `<rect x="${sx}" y="${oy}" width="${Math.max(3, sideFaceW)}" height="${layout.panelHeightMm}" fill="#27272A" stroke="#71717A" stroke-width="0.8" />`
+  );
+  parts.push(
+    `<rect x="${roundCentis(sx + Math.max(3, sideFaceW))}" y="${roundCentis(oy + layout.panelHeightMm - sideGussetH)}" width="${sideTrayW}" height="${sideGussetH}" fill="#18181D" fill-opacity="0.7" stroke="#52525B" stroke-width="0.7" />`
+  );
+  parts.push(
+    `<rect x="${roundCentis(sx + Math.max(3, sideFaceW))}" y="${roundCentis(oy + layout.panelHeightMm - sideTrayH)}" width="${sideTrayW}" height="${sideTrayH}" fill="#3F3F46" />`
+  );
+  if (layout.rearRetainerLip) {
+    parts.push(
+      `<rect x="${roundCentis(sx + Math.max(3, sideFaceW) + sideTrayW - 3)}" y="${roundCentis(oy + layout.panelHeightMm - 9.5)}" width="3" height="9.5" fill="#3B82F6" />`
+    );
+  }
+
+  // Footer Dimension Callouts
+  parts.push(
+    `<text x="${roundCentis(ox + layout.panelWidthMm / 2)}" y="${roundCentis(vbH - 5)}" fill="#A1A1AA" font-family="ui-monospace, monospace" font-size="6.4" text-anchor="middle">FRONT: ${layout.panelWidthMm} x ${layout.panelHeightMm} mm (${layout.uCount}U ${layout.standard})</text>`
+  );
+  parts.push(
+    `<text x="${roundCentis(sx + sidePreviewW / 2)}" y="${roundCentis(vbH - 5)}" fill="#A1A1AA" font-family="ui-monospace, monospace" font-size="6.4" text-anchor="middle">DEPTH: ${layout.trayDepthMm} mm</text>`
+  );
+
+  parts.push(`</svg>`);
+  return parts.join('');
 }

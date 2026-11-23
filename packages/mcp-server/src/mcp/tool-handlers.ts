@@ -24,6 +24,8 @@ import {
 } from '@rack-mcp/core-domain';
 import {
   generateBomMarkdown,
+  generateCableLabelsCsv,
+  generateCableLabelsSvg,
   generateElevationSvg,
   generateGlbBinary,
   generateProjectPrintableCarriers,
@@ -1274,6 +1276,26 @@ export class RackMcpToolHandlers {
               size_bytes: Buffer.byteLength(item.stl_ascii, 'utf8')
             });
           }
+        } else if (fmt === 'labels-csv') {
+          const csv = generateCableLabelsCsv(scene);
+          const url = `${baseUrl}/api/export/labels.csv?session=${sid}`;
+          remoteFiles.push({
+            format: fmt,
+            path: url,
+            download_url: url,
+            filename: 'labels.csv',
+            size_bytes: Buffer.byteLength(csv, 'utf8')
+          });
+        } else if (fmt === 'labels-svg') {
+          const svg = generateCableLabelsSvg(scene);
+          const url = `${baseUrl}/api/export/labels.svg?session=${sid}`;
+          remoteFiles.push({
+            format: fmt,
+            path: url,
+            download_url: url,
+            filename: 'labels.svg',
+            size_bytes: Buffer.byteLength(svg, 'utf8')
+          });
         }
       }
 
@@ -1409,6 +1431,24 @@ export class RackMcpToolHandlers {
             });
           }
         }
+      } else if (fmt === 'labels-csv') {
+        const csv = generateCableLabelsCsv(scene);
+        const filePath = path.join(outDir, 'labels.csv');
+        fs.writeFileSync(filePath, csv, 'utf8');
+        exportedFiles.push({
+          format: fmt,
+          path: filePath,
+          size_bytes: Buffer.byteLength(csv, 'utf8')
+        });
+      } else if (fmt === 'labels-svg') {
+        const svg = generateCableLabelsSvg(scene);
+        const filePath = path.join(outDir, 'labels.svg');
+        fs.writeFileSync(filePath, svg, 'utf8');
+        exportedFiles.push({
+          format: fmt,
+          path: filePath,
+          size_bytes: Buffer.byteLength(svg, 'utf8')
+        });
       }
     }
 

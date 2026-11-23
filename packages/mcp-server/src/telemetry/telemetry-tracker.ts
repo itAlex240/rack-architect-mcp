@@ -51,7 +51,9 @@ export const EXPORT_DOWNLOAD_FORMATS = [
   'scene-glb',
   'carrier-stl',
   'carrier-scad',
-  'rack-yaml'
+  'rack-yaml',
+  'labels-csv',
+  'labels-svg'
 ] as const;
 
 export type ExportDownloadFormat = (typeof EXPORT_DOWNLOAD_FORMATS)[number];

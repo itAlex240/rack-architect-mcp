@@ -6,7 +6,12 @@ async function main(): Promise<void> {
   const parsed = parseCliArgs(argv);
   const res = await runCli(argv);
 
-  if (parsed.command === 'validate' || parsed.command === 'export') {
+  if (
+    parsed.command === 'validate' ||
+    parsed.command === 'export' ||
+    parsed.command === 'import' ||
+    parsed.command === 'new-blueprint'
+  ) {
     if (res.exitCode === 0) {
       process.stdout.write(`${res.output}\n`);
     } else {

@@ -1420,7 +1420,34 @@ export function validateRackProject(
     return roundCentis(ownWatts + poeWatts + downstreamWatts);
   };
 
+  const computeDeviceTypicalDrawWatts = (
+    instanceId: string,
+    visited = new Set<string>()
+  ): number => {
+    if (visited.has(instanceId)) {
+      return 0;
+    }
+    visited.add(instanceId);
+
+    const dev = geometry.devices_by_id.get(instanceId);
+    if (!dev) {
+      return 0;
+    }
+
+    const pt = dev.blueprint.power_and_thermal;
+    const ownTypicalWatts = (pt.idle_watts + pt.max_system_watts) / 2;
+    const poeWatts = (pseBudgetsMap.get(instanceId)?.consumedWatts ?? 0) * 0.75;
+    const downstreamIds = powerSourceToDownstream.get(instanceId) ?? [];
+    const downstreamWatts = downstreamIds.reduce(
+      (sum, childId) => sum + computeDeviceTypicalDrawWatts(childId, visited),
+      0
+    );
+
+    return roundCentis(ownTypicalWatts + poeWatts + downstreamWatts);
+  };
+
   const powerSourceSummaries: PowerSourceSummary[] = [];
+  let minUpsRuntimeTypicalMinutes: number | null = null;
   for (const dev of allDevices) {
     const role = dev.blueprint.power_and_thermal.electrical_role;
     if (role !== 'ups' && role !== 'pdu') {
@@ -1444,13 +1471,52 @@ export function validateRackProject(
       (totalLoadWatts / capacityWatts) * 100
     );
 
-    powerSourceSummaries.push({
-      source_instance_id: dev.instance_id,
-      role,
-      capacity_watts: capacityWatts,
-      total_load_watts: totalLoadWatts,
-      utilization_percent: utilizationPercent
-    });
+    if (role === 'ups') {
+      const batteryWh =
+        dev.blueprint.power_and_thermal.ups_battery_wh ??
+        Math.max(36, Math.round(capacityWatts * 0.24));
+      const downstreamTypicalLoad = downstreamIds.reduce(
+        (sum, id) => sum + computeDeviceTypicalDrawWatts(id),
+        0
+      );
+      const typicalUpsLoadWatts = Math.max(
+        1,
+        (dev.blueprint.power_and_thermal.idle_watts +
+          dev.blueprint.power_and_thermal.max_system_watts) /
+          2 +
+          downstreamTypicalLoad
+      );
+      const peakUpsLoadWatts = Math.max(1, totalLoadWatts);
+      const runtimePeakMin = roundTenths(
+        ((batteryWh * 0.85) / peakUpsLoadWatts) * 60
+      );
+      const runtimeTypicalMin = roundTenths(
+        ((batteryWh * 0.85) / typicalUpsLoadWatts) * 60
+      );
+      minUpsRuntimeTypicalMinutes =
+        minUpsRuntimeTypicalMinutes === null
+          ? runtimeTypicalMin
+          : Math.min(minUpsRuntimeTypicalMinutes, runtimeTypicalMin);
+
+      powerSourceSummaries.push({
+        source_instance_id: dev.instance_id,
+        role,
+        capacity_watts: capacityWatts,
+        total_load_watts: totalLoadWatts,
+        utilization_percent: utilizationPercent,
+        battery_wh: batteryWh,
+        estimated_runtime_minutes_peak: runtimePeakMin,
+        estimated_runtime_minutes_typical: runtimeTypicalMin
+      });
+    } else {
+      powerSourceSummaries.push({
+        source_instance_id: dev.instance_id,
+        role,
+        capacity_watts: capacityWatts,
+        total_load_watts: totalLoadWatts,
+        utilization_percent: utilizationPercent
+      });
+    }
 
     if (totalLoadWatts > capacityWatts) {
       const excessWatts = roundTenths(totalLoadWatts - capacityWatts);
@@ -1637,6 +1703,24 @@ export function validateRackProject(
       0
     )
   );
+  const totalIdleWatts = roundTenths(
+    allDevices.reduce(
+      (sum, d) => sum + d.blueprint.power_and_thermal.idle_watts,
+      0
+    )
+  );
+  const typicalContinuousWatts = roundTenths(
+    (totalIdleWatts + totalSystemWatts) / 2 + totalPoeWatts * 0.75
+  );
+  const annualEnergyKwhTypical = roundTenths(
+    (typicalContinuousWatts * 8760) / 1000
+  );
+  const estimatedHardwareBudgetEur = roundCentis(
+    allDevices.reduce(
+      (sum, d) => sum + (d.blueprint.estimated_price_eur ?? 0),
+      0
+    )
+  );
 
   // =========================================================================
   // STAGE 5: Thermal Hotspots, Airflow Regime & Acoustic dB(A) Analysis
@@ -1772,7 +1856,11 @@ export function validateRackProject(
     issues,
     power_summary: {
       total_system_watts: totalSystemWatts,
+      total_idle_watts: totalIdleWatts,
       total_poe_watts: totalPoeWatts,
+      annual_energy_kwh_typical: annualEnergyKwhTypical,
+      estimated_ups_runtime_minutes: minUpsRuntimeTypicalMinutes,
+      estimated_hardware_budget_eur: estimatedHardwareBudgetEur,
       pse_budgets: pseBudgetSummaries,
       power_sources: powerSourceSummaries,
       unpowered_active_instances: unpoweredActiveInstances
