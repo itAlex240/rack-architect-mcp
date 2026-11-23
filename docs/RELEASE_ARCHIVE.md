@@ -1,12 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.5`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.7.6`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.5`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.7.6`)
 
 ### 📊 `v0.7.x` Series — Privacy-First Remote MCP Observability & Visual Showcase
+
+- **[`v0.7.6`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.6) (2026-11-02) — Accurate Remote MCP Crawler Telemetry, Idle Probe Session Cleanup & Resilient Registry Publishing:**
+  - Classified automated MCP directory crawlers and liveness monitors (`mcpbeat`, `AgentRankProbe`, `SealKeeperBot`, `EveryMCP-Probe`, `mcptry.com`, `MCPWatch`, `GolemreachTrustBot`, …) as `registry-probe` instead of `other-mcp`, reduced idle TTL for never-used crawler sessions to `10 min` (`unusedSessionTtlMs`), and added a 5-attempt retry loop to the MCP Registry publish step in `release.yml`.
 
 - **[`v0.7.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.5) (2026-11-02) — Precision 5/5 TDQS MCP Tool Contracts Across All 12 Tools:**
   - Refined all 12 `MCP_TOOL_DEFINITIONS` descriptions in `@rack-mcp/core-domain` into crisp, parenthetical-free 4-sentence contracts with explicit catalog ordering/bounds (`search_catalog`, `get_device_blueprint`), deterministic export filenames and overwrite vs. zero-disk remote URL behavior (`export_deliverables`), top-level `blueprint` wrapper and cross-field constraints (`define_custom_blueprint`, `init_rack`, `mount_equipment`, `modify_equipment`, `plan_external_endpoints`), and undo/redo history exclusions (`undo_redo`).
@@ -98,9 +101,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.5`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.7.6`)
 
 ### 📊 Serie `v0.7.x` — DSGVO-konforme Remote-MCP-Telemetrie & Hero-Showcase
+
+- **[`v0.7.6`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.6) (2026-11-02) — Korrekte Crawler-Statistik, schnellere Bereinigung ungenutzter Sessions & robuster Registry-Upload:**
+  - Automatische MCP-Verzeichnis-Crawler und Erreichbarkeits-Checker (`mcpbeat`, `AgentRankProbe`, `SealKeeperBot`, `EveryMCP-Probe`, `mcptry.com` u. a.) werden als `registry-probe` statt `other-mcp` gezählt, ungenutzte Probe-Sessions laufen nach `10 Min.` statt `2 Std.` ab und der MCP-Registry-Upload im Release-Workflow versucht es bis zu 5-mal erneut.
 
 - **[`v0.7.5`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.7.5) (2026-11-02) — TDQS Tier-A-Feinschliff aller 12 MCP-Tool-Beschreibungen:**
   - Alle 12 MCP-Tool-Definitionen (`MCP_TOOL_DEFINITIONS`) in prägnante 4-Satz-Verträge ohne verschachtelte Klammern oder Schema-Doppelungen optimiert — inklusive deterministischer Katalog-Sortierung (`search_catalog`, `get_device_blueprint`), exakten Export-Dateinamen (`elevation.svg`, `wiring-schematic.svg`, `BOM.md`, `rack-scene.glb`, `<slug>.scad/.stl`) und Überschreib-Verhalten (`export_deliverables`), Top-Level-`blueprint`-Wrapper (`define_custom_blueprint`), `rail_depth_mm + rear_clearance_mm`-Tiefengrenzen (`init_rack`) sowie Undo-/Redo-Stack-Regeln (`undo_redo`).

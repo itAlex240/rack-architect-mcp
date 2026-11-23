@@ -5,6 +5,21 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.9] - 2026-11-23
+
+### Security & Dependencies — Transitive Hono CVE Remediation, Vitest 5.1 & Toolchain Updates (`pnpm-workspace.yaml`, `.github`)
+- **Resolved All 7 Transitive Runtime Security Advisories (`hono` & `@hono/node-server`):**
+  - Pinned minimum patched runtime overrides (`hono >= 4.13.16` -> `4.13.20` and `@hono/node-server >= 2.1.6` -> `2.1.11`) in `pnpm-workspace.yaml` beneath `@modelcontextprotocol/sdk@1.32.2`, closing all 7 GitHub Dependabot & Trivy alerts (`CVE-2026-126210`, `CVE-2026-126343`, `CVE-2026-126355`, `CVE-2026-126356`, `CVE-2026-126357`, `CVE-2026-126358`, `CVE-2026-126359`) with `0` `pnpm audit` vulnerabilities.
+- **Production, Dev & GitHub Actions Dependency Updates (`#15`, `#17`, `#18`):**
+  - Merged grouped Dependabot updates: `ws` `8.22.1 -> 8.23.0`, `pnpm/action-setup` `v5 -> v6`, `vite` `8.3.5 -> 8.3.8`, `@vitejs/plugin-react` `6.1.2 -> 6.3.0`, `jsdom` `30.1.3 -> 31.0.1`, `webmcp-types` `0.1.10 -> 0.1.11`, and `vitest` `^5.0.5 -> ^5.1.0`.
+  - Removed the obsolete `vitest: "^4.1.12"` and `"@vitest/mocker": "^4.1.12"` workspace overrides so `vitest@5.1.1` runs cleanly across all 10 unit & integration suites (57 tests).
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Behebung aller 7 transitiven Sicherheitswarnungen (`hono` & `@hono/node-server`):**
+  - Gepatchte Mindestversionen (`hono >= 4.13.16` → `4.13.20` und `@hono/node-server >= 2.1.6` → `2.1.11`) in `pnpm-workspace.yaml` unterhalb von `@modelcontextprotocol/sdk@1.32.2` festgeschrieben — schließt alle 7 GitHub-Dependabot- und Node.js-Trivy-Alerts (`CVE-2026-126210`, `126343`, `126355`–`126359`) mit `0` `pnpm audit`-Befunden.
+- **Abhängigkeits-, CI- & Vitest-5.1-Updates (`#15`, `#17`, `#18`):**
+  - Alle drei gruppierten Dependabot-PRs gemergt (`ws 8.23.0`, `pnpm/action-setup v6`, `vite 8.3.8`, `@vitejs/plugin-react 6.3.0`, `jsdom 31.0.1`, `webmcp-types 0.1.11`, `vitest ^5.1.0`) und die veralteten `vitest ^4.1.12`-Overrides entfernt, sodass alle 10 Test-Suites (57 Tests) nativ auf `vitest@5.1.1` laufen.
+
 ## [0.7.8] - 2026-11-03
 
 ### Security & CI — CodeQL Full HTML/Markdown Sanitization & Grouped Dependabot (`@rack-mcp/exporters`, `.github`)
