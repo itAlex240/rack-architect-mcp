@@ -31,11 +31,11 @@ This skill equips you with the complete engineering runbook, real-world ANSI/TIA
 - **Option A — Zero-Install Hosted Remote MCP (`https://mcp.rackarchitect.dev/mcp`, Recommended when no local server is running):**
   - Any MCP client (Claude, Claude Code, Cursor, VS Code Copilot, Windsurf, Google Antigravity) connects directly via **`https://mcp.rackarchitect.dev/mcp`** (`Streamable HTTP`) or **`https://mcp.rackarchitect.dev/sse`** (`SSE`).
   - **Mandatory Live 3D Viewer Link Sharing (`data.live_viewer_url`):** In Remote MCP mode, every tool response includes **`data.live_viewer_url`** (`https://mcp.rackarchitect.dev/?session=<uuid>`). **Share this clickable URL with the user right after `init_rack` (and again in your final summary)** so they can watch and inspect the 3D Digital Twin, `X-Ray` / `Explode Z` clearances, 2D Elevation, and 2-Section Wiring Plan live in their browser as you build!
-  - **Zero-Disk HTTPS Exports & Session Persistence (`2h` Idle TTL):** Remote sessions run 100% in-memory (`2h` idle TTL). Calling `export_deliverables` in Remote MCP mode returns direct clickable HTTPS download links in **`data.exported_files[].download_url`** (for `elevation.svg`, `wiring-schematic.svg`, `BOM.md`, `rack-scene.glb`, and all `.scad` / `.stl` 3D-print files) plus **`data.rack_yaml_url`** (`https://mcp.rackarchitect.dev/api/export/rack.yaml?session=<uuid>`). Always include these download links in your final answer and remind the user they can also click **`Share`** in the top bar of the 3D Studio to generate a permanent, zero-backend `#rack=v1.<base64url>` link.
+  - **Zero-Disk HTTPS Exports & Session Persistence (`2h` Idle TTL):** Remote sessions run 100% in-memory (`2h` idle TTL). Calling `export_deliverables` in Remote MCP mode returns direct clickable HTTPS download links in **`data.exported_files[].download_url`** (for `elevation.svg`, `wiring-schematic.svg`, `BOM.md`, `rack-scene.glb`, and all `.scad` / `.stl` 3D-print files), **`data.rack_yaml_url`** (`https://mcp.rackarchitect.dev/api/export/rack.yaml?session=<uuid>`), plus the printable A4/Letter **`/api/export/build-book.html?session=<uuid>`** Build Book endpoint. Always include these download links in your final answer and remind the user they can also click **`Share`** in the top bar of the 3D Studio to generate a permanent shareable link.
 - **Option B — Native Local MCP (`stdio`) + Local 3D Workbench (`http://127.0.0.1:3100`):**
   - When running locally (`npx @rack-mcp/cli serve`), mutations write `rack.yaml` atomically to disk, sync live to `http://127.0.0.1:3100`, and `export_deliverables` writes files directly to `output_dir` (defaulting to the `rack.yaml` directory).
 - **Option C — Local Sidecar WebSocket Fallback (`ws://127.0.0.1:3100/ws`):**
-  - If running locally without native MCP registration, you can execute all 12 tools over `ws://127.0.0.1:3100/ws` (sending `{ "type": "COMMAND", "tool": "<tool_name>", "args": { ... } }` and reading `{ "type": "COMMAND_RESULT", "tool": "<tool_name>", "result": { ... } }`).
+  - If running locally without native MCP registration, you can execute all 13 tools (including `optimize_rack`) over `ws://127.0.0.1:3100/ws` (sending `{ "type": "COMMAND", "tool": "<tool_name>", "args": { ... } }` and reading `{ "type": "COMMAND_RESULT", "tool": "<tool_name>", "result": { ... } }`).
 - **Built-In MCP Resources & Guided Prompts:**
   - **4 Live MCP Resources:** `rack://current/summary` (ASCII Front/Rear elevation + Power/PoE KPIs), `rack://current/bom` (live Markdown BOM), `rack://current/diagnostics` (structured JSON `ValidationResult`), and `rack://current/yaml` (raw `rack.yaml`).
   - **5 Guided MCP Prompts:** `plan-homelab-from-scratch`, `optimize-and-fix-rack`, `design-19inch-enterprise-rack`, `design-3d-printed-carrier-bay`, and `audit-poe-and-thermals`.
@@ -259,7 +259,7 @@ Whenever the user asks you to design, modify, or audit a rack, execute these **6
      - `3dprint-19inch-triple-mini-pc-carrier` (accepts 3× compact `mini-pc-1liter` up to `145 mm` max slot width — e.g. `zimaboard-832-2-5g-router-nas` — in `mini-pc-bay-1`..`3`; do **not** put `177–179 mm` wide TinyMiniMicro PCs here or Stage 1 will flag `SLOT_DIMENSION_OVERFLOW`)
      - `3dprint-6inch-rpi5-plus-keystone-carrier-1u` (accepts 1× `sbc-rpi5` in `rpi5-bay-1` + 2× `standard-keystone` in `keystone-1`..`2`)
    - Then mount the child `sub-module` into that carrier using `parent_carrier_id` and `slot_id`.
-3. If the user owns hardware that is not among the 73 built-in blueprints, call `define_custom_blueprint` with exact millimeter dimensions (`width_mm`, `height_mm`, `depth_mm`), weight (`weight_grams`), power draw (`max_system_watts`), and `ports` before mounting it.
+3. If the user owns hardware that is not among the 101 built-in blueprints, call `define_custom_blueprint` with exact millimeter dimensions (`width_mm`, `height_mm`, `depth_mm`), weight (`weight_grams`), power draw (`max_system_watts`), and `ports` before mounting it.
 
 ### Phase 2: Rack Initialization (`init_rack`)
 1. Call `init_rack` with the target `standard` (`"10inch"`, `"19inch"`, or `"6inch"`), `u_height`, `rail_depth_mm`, and `enclosure_type` (`"open-frame"`, `"closed-glass-front"`, or `"closed-vented-front"`).
@@ -338,8 +338,8 @@ Whenever the user asks you to design, modify, or audit a rack, execute these **6
    - **Power Completeness:**
      Connect every non-passive device's `power-input` port (or `poe-in` port via a PoE-capable switch port) to a `power-outlet` on a PDU or UPS so zero `UNPOWERED_DEVICE` warnings remain. *(Note: `color_hex` on dark power cords such as `#18181B` is automatically lifted to high-contrast metallic graphite in 3D and 2D SVGs.)*
 
-### Phase 5: 5-Stage Validation & Autonomous Remediation (`validate_rack`)
-Call `validate_rack` and inspect `validation.issues`. Every issue carries a deterministic `DiagnosticCode` across **Stages 1–5** and structured `remediation_suggestions`:
+### Phase 5: 5-Stage Validation & Autonomous Optimization (`validate_rack`, `optimize_rack`)
+Call `validate_rack` and inspect `validation.issues`. You can also invoke `optimize_rack` (or pass `pin_instance_ids` for locked devices) to deterministically optimize top-level equipment U-positions and rear PDU placement to eliminate collisions, keep Center of Gravity `< 0.50`, preserve a mid-height front-to-rear cable portal, and shorten 3D cable runs. Every issue carries a deterministic `DiagnosticCode` across **Stages 1–5** and structured `remediation_suggestions`:
 
 | Diagnostic Code (`DiagnosticCodeSchema`) | Stage | Immediate Autonomous Fix |
 | :--- | :---: | :--- |
@@ -380,14 +380,17 @@ This deterministically generates:
 - `wiring-schematic.svg` — **2-Section Pin-to-Pin Technical Wiring & Power Schematic** (Section 1: 3-Tier UPS $\rightarrow$ PDU/PoE $\rightarrow$ Device Electrical Power DAG; Section 2: Grouped Device Cards with Multi-Track Orthogonal Channel Routing & VLAN/CIDR badges)
 - `BOM.md` — Commercial Hardware BOM (with device descriptions & mounting notes), 3D-Print Filament Queue (`g`), Commercial Cable Length Schedule (`mm` $\rightarrow$ standard retail bins), and Fastener Checklist (`M6` cage nuts, `M3` inserts)
 - `rack-scene.glb` — Binary glTF 2.0 3D scene in meter scale (`1.0 = 1000 mm`) with solid PTF cable tubes, raised ports, and glass/vented doors
-- `<printable-slug>.scad` & `<printable-slug>.stl` — Parametric OpenSCAD scripts and **100% watertight 2-manifold `.stl` files** generated automatically for every mounted **modular sub-U carrier**, **3D-printed desktop switch/gateway adapter cradle**, and **3D-printable designer cover panel**, ready for Bambu Studio, OrcaSlicer, or PrusaSlicer.
+- `<printable-slug>.scad` & `<printable-slug>.stl` — Parametric OpenSCAD scripts and **100% watertight 2-manifold `.stl` files** generated automatically for every mounted **modular sub-U carrier**, **3D-printed desktop switch/gateway adapter cradle**, and **3D-printable designer cover panel**, ready for Bambu Studio, OrcaSlicer, or PrusaSlicer (with interactive **3D print-bed overlay** presets in the Web Studio's `StlPreview3D` inspector).
+- **Printable Build Book (`Build Book (PDF / Print)` / `GET /api/export/build-book.html`) & CI/Schema CLI:**
+  - Export a self-contained A4/Letter engineering Build Book (`rack-build-book.html`) combining title block, 2D elevation, wiring schematic, BOM/energy budget, PoE/thermal/UPS diagnostics, and 3D-print queue.
+  - Validate in CI via `rack-mcp validate <rack.yaml> --ci` and export Draft 2020-12 JSON Schema via `rack-mcp schema`.
 - **Final User Handover Rule:**
   - On **Hosted Remote MCP (`https://mcp.rackarchitect.dev/mcp`)**, present the clickable **`data.live_viewer_url`** (`https://mcp.rackarchitect.dev/?session=<uuid>`), **`data.rack_yaml_url`**, and every **`data.exported_files[].download_url`** directly in Markdown so the user can view the 3D Digital Twin and download `.STL` / `.SVG` / `.GLB` / `BOM.md` with 1 click!
   - On **Local MCP / CLI**, report the local `data.output_dir` file paths and `http://127.0.0.1:3100` Workbench URL.
 
 ---
 
-## 7. Built-In Hardware Catalog Quick Reference (73 Blueprints)
+## 7. Built-In Hardware Catalog Quick Reference (101 Blueprints)
 
 | Blueprint Slug | Form Factor / Mount | Category | U / Size (`W×H×D mm`) | Key Ports, Carrier Slots & Practical Role |
 | :--- | :--- | :--- | :--- | :--- |
@@ -464,3 +467,31 @@ This deterministically generates:
 | `apple-mac-mini-m4` | `sub-module` (Needs Carrier) | `mini-pc` | `1.15U` (`127×50×127`) | Compat: `mac-mini-m4` · `usb_c_front_1`..`2`, `10GbE` LAN · Silent Apple Silicon M4/M4 Pro homelab node |
 | `minisforum-ms-01-workstation` | `sub-module` (Needs Carrier) | `mini-pc` | `1.1U` (`196×48×189`) | Compat: `mini-pc-workstation` · Dual 10G SFP+, Dual 2.5GbE · High-performance Proxmox / PCIe SFF node |
 | `sipeed-nanokvm-full` | `sub-module` (Needs Carrier) | `sbc` | `0.8U` (`40×36×23`) | Compat: `ip-kvm-compact` · `usb_c_hid`, Ethernet, OLED · Ultra-compact RISC-V OOB IP-KVM cube |
+| `asustor-lockerstor-4-gen2` | `shelf-standing` (Shelf) | `nas` | `4.2U` (`170×185.5×230`) | `lan1_25g`, `lan2_25g` (2.5GbE), `usb_front`, `usb_rear`, `dc_in` (`35W`) · 4-Bay + quad M.2 NVMe NAS |
+| `mikrotik-crs305-1g-4s-plus-in` | `rackmount-10` (Included Ears) | `switch` | `1U` (`141×28×115`) | `sfp1`..`sfp4` (4× 10G SFP+), `eth1` (1GbE PoE-In), `dc_in1`..`2` · Fanless 10G SFP+ mini-switch |
+| `mikrotik-rb5009ug-s-in` | `rackmount-10` (Included Ears) | `router` | `1U` (`220×22×125`) | `eth1` (2.5G PoE-In), `eth2`..`eth8` (1GbE), `sfp_plus1` (10G), `usb1`, `dc_in` · Non-PoE RB5009 10G Router |
+| `netgate-4200-pfsense-firewall` | `rackmount-10` (Included Ears) | `router` | `1.5U` (`220×60×180`) | `eth1`..`eth4` (4× 2.5GbE), `console`, `usb1`, `dc_in` (`28W`) · Fanless pfSense+ Security Gateway |
+| `qnap-ts-464-nas` | `shelf-standing` (Shelf) | `nas` | `4U` (`170×165×226.5`) | `lan1_25g`, `lan2_25g` (2.5GbE), `usb_front`, `usb_rear`, `dc_in` (`41W`) · Intel N5095 4-Bay x86 NAS |
+| `synology-ds923-plus` | `shelf-standing` (Shelf) | `nas` | `4U` (`199×166×223`) | `lan1`..`lan2` (1GbE), `lan3_10g` (10GbE module), `usb_front`, `dc_in` (`36W`) · Ryzen 4-Bay RAID NAS |
+| `ubiquiti-usw-enterprise-8-poe` | `rackmount-10` (Included Ears) | `switch` | `1U` (`200×44×248`) | `eth1`..`eth8` (2.5G PoE+ PSE, `120W`), `sfp1`..`sfp2` (10G SFP+), `ac_in` · Layer 3 10" Enterprise Switch |
+| `ugreen-nasync-dxp4800-plus` | `shelf-standing` (Shelf) | `nas` | `4.1U` (`178×178×257.5`) | `lan1_10g` (10GbE), `lan2_25g` (2.5GbE), `usb_c_front`, `usb_a_front`, `dc_in` (`48W`) · 4-Bay 10GbE NAS |
+| `apc-smart-ups-750va-rm-1u` | `rackmount-19` (Included Ears) | `ups` | `1U` (`432×44×660`) | `iec_out1`..`iec_out4` (`iec-c13`, `480W`), `ac_in`, `mgmt_eth` · Full-depth 19" 1U 750VA Smart-UPS |
+| `cyberpower-or600erm1u-ups` | `rackmount-19` (Included Ears) | `ups` | `1U` (`433×44×235`) | `iec_out1`..`iec_out4` (`iec-c13`, `360W`), `ac_in` · Ultra-short-depth `235 mm` 19" 1U Line-Interactive UPS |
+| `digitus-19inch-patch-panel-24p` | `rackmount-19` (Included Ears) | `patch-panel` | `1U` (`482.6×44×32`) | `p1`..`p24` (24× Cat6A modular keystone bays) · DIGITUS DN-91410 19" Patch Panel |
+| `eaton-5p-650i-rack-1u` | `rackmount-19` (Included Ears) | `ups` | `1U` (`438×43.2×364`) | `iec_out1`..`iec_out4` (`iec-c13`, `420W`), `ac_in`, `mgmt_eth` · Short-depth 19" 1U 650VA Enterprise UPS |
+| `gl-inet-mt6000-flint-2` | `shelf-standing` (Shelf) | `router` | `1.2U` (`233×53×137`) | `wan_25g`, `lan_25g` (Dual 2.5GbE), `lan1`..`lan4` (1GbE), `usb1`, `dc_in` · Wi-Fi 6 OpenWrt WireGuard Router |
+| `mikrotik-l009uigs-rm` | `rackmount-19` (Included Ears) | `router` | `1U` (`443×44×125`) | `eth1` (PoE-In), `eth2`..`eth7` (1GbE), `eth8` (PoE-Out `24W`), `sfp1` (2.5G SFP), `usb1` · Fanless 19" 1U Router |
+| `startech-19inch-brush-panel-1u` | `rackmount-19` (Included Ears) | `brush-panel` | `1U` (`482.6×44×16`) | Front-to-rear high-density cable brush strip portal (`has_cable_pass_through: true`) |
+| `ubiquiti-pdu-pro-19inch-2u` | `rackmount-19` (Included Ears) | `pdu` | `2U` (`442.4×87.4×106`) | `outlet1`..`outlet16` (`iec-c13`), `usbc_out1`..`4` (`usb-c`), `eth_gbe`, `ac_in` · Managed UniFi 2U Smart PDU |
+| `ubiquiti-usw-pro-max-48-poe` | `rackmount-19` (Included Ears) | `switch` | `1U` (`442.4×44×400`) | `eth1`..`eth48` (PoE++/PoE+ PSE, `720W`), `sfp1`..`sfp4` (10G SFP+), `ac_in` · High-density 48-Port Switch |
+| `mikrotik-hex-s-2025` | `rackmount-6` (Included Ears) | `router` | `1U` (`113×28×89`) | `eth1` (PoE-In), `eth2`..`eth4`, `eth5` (PoE-Out `13W`), `sfp1` (2.5G SFP), `dc_in` · 6-inch MikroTik Router |
+| `ubiquiti-usw-flex-2-5g-5` | `rackmount-6` (Included Ears) | `switch` | `1U` (`117.1×21.2×90`) | `eth1`..`eth4` (2.5GbE), `eth5` (2.5G PoE-In), `usbc_pwr` (`6.4W`) · 6-inch 5-Port 2.5GbE Mini Switch |
+| `3dprint-10inch-jetkvm-plus-3keystone-1u` | `rackmount-10` (3D-Printed) | `modular-carrier` | `1U` (`254×44×85`) | Slots: `jetkvm-bay-1` (`jetkvm-bay`), `keystone-1`..`keystone-3` (`standard-keystone`) |
+| `3dprint-10inch-minisforum-ms01-2u` | `rackmount-10` (3D-Printed) | `modular-carrier` | `2U` (`254×88.1×195`) | Slots: `ms01-bay-1` (`mini-pc-workstation`), `keystone-1`..`keystone-2` (`standard-keystone`) |
+| `3dprint-10inch-nanokvm-plus-4keystone-1u` | `rackmount-10` (3D-Printed) | `modular-carrier` | `1U` (`254×44×60`) | Slots: `nanokvm-bay-1`..`nanokvm-bay-2` (`ip-kvm-compact`), `keystone-1`..`keystone-4` (`standard-keystone`) |
+| `3dprint-19inch-quad-rpi5-poe-1u` | `rackmount-19` (3D-Printed) | `modular-carrier` | `1U` (`482.6×44×110`) | Slots: `rpi-bay-1`..`rpi-bay-4` (`sbc-rpi5`), `keystone-1`..`keystone-2` (`standard-keystone`) |
+| `hp-prodesk-400-g6-mini` | `sub-module` (Needs Carrier) | `mini-pc` | `0.8U` (`177×34.2×175`) | Compat: `mini-pc-1liter` · `eth0` (1GbE), `usb_c_front`, `usb_a_front`, `dc_in` (`65W`) · 1L USFF Mini-PC |
+| `protectli-fw4b-firewall` | `sub-module` (Needs Carrier) | `router` | `0.9U` (`115×39×107.5`) | Compat: `intel-nuc-4x4` · `eth1`..`eth4` (1GbE), `console`, `usb_front1`..`2`, `dc_in` (`18W`) · OPNsense Box |
+| `tp-link-omada-er605-v2` | `sub-module` (Needs Carrier) | `router` | `0.6U` (`158×25×101`) | Compat: `open-shelf-area` · `eth1`..`eth5` (Multi-WAN VPN), `usb_front`, `dc_in` (`8W`) · Shelf Router |
+| `ubiquiti-ucg-ultra` | `sub-module` (Needs Carrier) | `router` | `0.8U` (`141.8×30×127.6`) | Compat: `unifi-compact-gateway` · `wan` (2.5G), `lan1`..`lan4` (1GbE), `usbc_pwr` (`6.2W`) · Compact Gateway |
+| `ubiquiti-uck-g2-plus` | `sub-module` (Needs Carrier) | `compute-node` | `0.7U` (`131.2×27.1×134.2`) | Compat: `unifi-compact-gateway` · `eth0` (1G PoE-In), `usbc_pwr` (`12.95W`) · UniFi Protect NVR Controller |

@@ -5,6 +5,22 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-11-24
+
+### Added & Improved (Deterministic Optimizer, Printable Build Book, 101 Blueprints, Print-Bed Overlay & CI/Schema Suite)
+- **Deterministic Rack Auto-Optimizer (`@rack-mcp/core-domain`, `@rack-mcp/mcp-server`, `@rack-mcp/web-viewer`):** Added `optimizeRackLayout()` (`packages/core-domain/src/optimization/rack-optimizer.ts`) and canonical 13th MCP tool `optimize_rack` (plus WebSocket command, W3C WebMCP registration, and 1-click **`Optimize`** `btn-optimize-rack` toolbar button) to optimize top-level rackmount U positions and rear PDU placement—eliminating collisions, lowering Center of Gravity (`CoG < 0.50`), preserving mid-height cable portals, and shortening 3D cable runs with optional `pin_instance_ids` locking.
+- **Printable A4/Letter Build Book HTML/PDF (`@rack-mcp/exporters`, `@rack-mcp/mcp-server`, `@rack-mcp/web-viewer`):** Added deterministic `generateBuildBookHtml()` (`packages/exporters/src/build-book-exporter.ts`), `GET /api/export/build-book.html` (CSP-clean, zero external assets), `'build-book-html'` telemetry tracking, and the **`Build Book (PDF / Print)`** (`export-build-book-pdf`) button in `BomAndExportsView` combining title block, 2D elevation, 2-section wiring schematic, hardware/cable BOM, energy & validation reports, and 3D-print queue.
+- **Interactive 3D Print-Bed Overlay & Bed-Fit Badge (`StlPreview3D.tsx`):** Added `STL_PRINT_BED_PRESETS` (`bambu-256` 256×256 mm, `prusa-mk4` 250×210 mm, `ender3` 220×220 mm, `a1-mini` 180×180 mm) and live **`stl-bed-fit-badge`** checking STL print-bed fit directly inside the 3D bracket/carrier preview.
+- **101 Validated Hardware Blueprints (`@rack-mcp/hardware-catalog`):** Expanded catalog from `73` to **`101`** blueprints (`32` 10-inch, `29` 19-inch, `8` 6-inch, `14` 3D-printed carriers, `18` sub-modules), adding Netgate 4200, Synology DS923+, QNAP TS-464, ASUSTOR Lockerstor 4 Gen2, UGREEN NASync DXP4800 Plus, MikroTik CRS305/RB5009UG/L009/hEX S 2025, UniFi Enterprise 8 PoE / Pro Max 48 PoE / PDU Pro 2U / Flex Mini 2.5G / UCG-Ultra / UCK-G2-Plus, APC/Eaton/CyberPower 1U UPS, Protectli FW4B, TP-Link Omada ER605 v2, HP ProDesk 400 G6 Mini, and 4 new 3D-printed carriers.
+- **JSON Schema, CI Mode & GitHub Action (`@rack-mcp/cli`, `schemas/`, `.github/actions/validate-rack`):** Added `rack-mcp schema` generating Draft 2020-12 [`schemas/rack.schema.json`](./schemas/rack.schema.json), `rack-mcp validate <file> --ci` emitting GitHub Actions annotations & JSON diagnostics, reusable composite action [`.github/actions/validate-rack/action.yml`](./.github/actions/validate-rack/action.yml), and [`docs/CI_INTEGRATION.md`](./docs/CI_INTEGRATION.md).
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **Deterministischer Rack-Auto-Optimizer (`optimizeRackLayout` & `optimize_rack`):** Neues 13. MCP-Tool `optimize_rack` (inkl. WebMCP, WebSocket-Befehl und **`Optimize`**-Button in `TopNavBar`) optimiert HE-Positionen und Rear-PDUs voll deterministisch gegen 3D-Kollisionen, `CoG < 0.50`, Kabelportale und Kabellängen (inkl. `pin_instance_ids`).
+- **Druckfertiges A4/Letter Build Book (`generateBuildBookHtml` & `GET /api/export/build-book.html`):** Neuer CSP-sauberer HTML/PDF-Report (**`Build Book (PDF / Print)`** in der BOM-Ansicht) mit Titelblock, 2D-Elevation, Schaltplan, Stückliste, Strom-/PoE-/USV-Diagnose und 3D-Druck-Liste.
+- **Interaktives 3D-Druckbett-Overlay (`StlPreview3D.tsx`):** Presets für Bambu A1/P1S/X1C (`256×256`), Prusa MK4 (`250×210`), Ender 3 (`220×220`) und A1 mini (`180×180`) inkl. Live-`stl-bed-fit-badge`.
+- **101 validierte Hardware-Blueprints (+28 neue Geräte & Carrier):** Ausbau auf `32×` 10", `29×` 19", `8×` 6", `14×` 3D-Druck-Carrier und `18×` Sub-Module sowie vollständige Doku-/Skill-Synchronisation.
+- **JSON Schema (`rack-mcp schema`), CI-Flag (`validate --ci`) & GitHub Action:** Offizielles Draft-2020-12-Schema `schemas/rack.schema.json`, CI-Annotationen und GitHub-Workflow-Doku (`docs/CI_INTEGRATION.md`).
+
 ## [0.10.0] - 2026-11-24
 
 ### Added & Improved (Short Share Links, Client URL Compression & Compact Session Tokens)

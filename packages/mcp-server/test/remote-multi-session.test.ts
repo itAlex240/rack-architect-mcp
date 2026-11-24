@@ -241,6 +241,22 @@ describe('@rack-mcp/mcp-server Hosted Multi-Session Remote MCP (Streamable HTTP 
     expect(yamlRes.status).toBe(200);
     expect(await yamlRes.text()).toContain('Alpha 10-Inch Homelab');
 
+    const buildBookRes = await fetch(
+      `${server.url}/api/export/build-book.html?session=${encodeURIComponent(sessionRecordA!.viewerToken)}`
+    );
+    expect(buildBookRes.status).toBe(200);
+    expect(buildBookRes.headers.get('content-type')).toContain(
+      'text/html; charset=utf-8'
+    );
+    expect(buildBookRes.headers.get('content-security-policy')).toContain(
+      "default-src 'self'"
+    );
+    const buildBookHtml = await buildBookRes.text();
+    expect(buildBookHtml.startsWith('<!DOCTYPE html>')).toBe(true);
+    expect(buildBookHtml).toContain('Alpha 10-Inch Homelab');
+    expect(buildBookHtml).toContain('3dprint-10inch-cover-panel-hex-1u');
+    expect(buildBookHtml).toContain('data-section="cad-elevation"');
+
     // 7. Terminate Session B via DELETE /mcp and verify session count decrements to 1
     wsA.close();
     await transportB.terminateSession();

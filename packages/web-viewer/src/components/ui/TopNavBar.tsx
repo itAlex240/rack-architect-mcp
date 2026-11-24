@@ -19,6 +19,7 @@ import {
   RedoIcon,
   RotateResetIcon,
   ShareLinkIcon,
+  SlidersOptimizeIcon,
   SparklesAiIcon,
   UndoIcon,
   UploadJsonIcon,
@@ -47,6 +48,7 @@ export interface TopNavBarProps {
   readonly onExportDeliverablesToDisk?: (() => void) | undefined;
   readonly onUndo: () => void;
   readonly onRedo: () => void;
+  readonly onOptimizeRack?: (() => void) | undefined;
   readonly onResetDemo: () => void;
   readonly onSimulateAgentStep?:
     | ((stage: 'collision' | 'resolved') => void)
@@ -88,6 +90,7 @@ export function TopNavBar({
   onExportDeliverablesToDisk,
   onUndo,
   onRedo,
+  onOptimizeRack,
   onResetDemo,
   onSimulateAgentStep,
 }: TopNavBarProps) {
@@ -676,6 +679,33 @@ export function TopNavBar({
           >
             <DownloadIcon size={12} />
             <span>{exportSavedFlash ? 'Exported!' : 'Export to Disk'}</span>
+          </button>
+        )}
+
+        {onOptimizeRack && (
+          <button
+            type="button"
+            data-testid="btn-optimize-rack"
+            title="Auto-optimize rack U-positions, CoG, portals & cable lengths"
+            onClick={onOptimizeRack}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '5px 9px',
+              borderRadius: '6px',
+              border: '1px solid rgba(59, 130, 246, 0.35)',
+              background: 'rgba(59, 130, 246, 0.12)',
+              color: '#93C5FD',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+            }}
+          >
+            <SlidersOptimizeIcon size={12} />
+            <span>Optimize</span>
           </button>
         )}
 

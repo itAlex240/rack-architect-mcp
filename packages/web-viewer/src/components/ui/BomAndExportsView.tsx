@@ -12,6 +12,7 @@ import {
 import {
   extractCableLabelEntries,
   generateBomMarkdown,
+  generateBuildBookHtml,
   generateCableLabelsCsv,
   generateCableLabelsSvg,
   generateCustomBracketOpenScad,
@@ -370,7 +371,7 @@ export function BomAndExportsView({
           </div>
           <div style={{ fontSize: '12px', color: '#A1A1AA', marginTop: '3px' }}>
             Export synchronized 2D SVG elevations, wiring schematics, Markdown
-            BOM, and 3D glTF 2.0 (.glb) assets.
+            BOM, printable A4/Letter Build Books, and 3D glTF 2.0 (.glb) assets.
           </div>
         </div>
 
@@ -592,6 +593,33 @@ export function BomAndExportsView({
             }}
           >
             Export Share Card (PNG)
+          </button>
+
+          <button
+            type="button"
+            data-testid="export-build-book-pdf"
+            title="Download self-contained A4/Letter Build Book HTML (Ctrl/Cmd+P to Print or Save as PDF)"
+            onClick={() =>
+              triggerBlobDownload(
+                generateBuildBookHtml(computedScene, {
+                  electricityPricePerKwhEur: activeRateEur,
+                }),
+                'rack-build-book.html',
+                'text/html;charset=utf-8',
+              )
+            }
+            style={{
+              padding: '7px 12px',
+              borderRadius: '6px',
+              border: '1px solid rgba(16, 185, 129, 0.35)',
+              background: 'rgba(16, 185, 129, 0.12)',
+              color: '#6EE7B7',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Build Book (PDF / Print)
           </button>
         </div>
       </div>

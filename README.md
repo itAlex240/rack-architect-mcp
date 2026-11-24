@@ -10,12 +10,12 @@
 [![Listed on mcpservers.org](https://mcpservers.org/badge.svg)](https://mcpservers.org/servers/italex240/rack-architect-mcp)
 [![Live 3D Demo](https://img.shields.io/badge/Live_3D_Demo-GitHub_Pages-0EA5E9.svg)](https://italex240.github.io/rack-architect-mcp/)
 [![TypeScript 5.9 Strict](https://img.shields.io/badge/TypeScript-5.9_Strict-3178C6.svg)](./tsconfig.base.json)
-[![MCP Server](https://img.shields.io/badge/MCP-12_Tools_%2B_WebMCP-8B5CF6.svg)](./packages/mcp-server)
+[![MCP Server](https://img.shields.io/badge/MCP-13_Tools_%2B_WebMCP-8B5CF6.svg)](./packages/mcp-server)
 [![Agent Skill: SKILL.md](https://img.shields.io/badge/Agent_Skill-SKILL.md_(Free)-EC4899.svg)](./skills/rack-architect/SKILL.md)
 [![EIA-310 Standards](https://img.shields.io/badge/EIA--310-19%22_%7C_10%22_%7C_6%22-06B6D4.svg)](./ARCHITECTURE.md)
 [![3D Print Ready](https://img.shields.io/badge/3D--Print-OpenSCAD_.SCAD_%2B_.STL-F59E0B.svg)](./packages/exporters/src/openscad-carrier.ts)
 [![Remote MCP](https://img.shields.io/badge/Remote_MCP-Streamable_HTTP-8B5CF6.svg)](https://mcp.rackarchitect.dev/mcp)
-[![Tests](https://img.shields.io/badge/Vitest-57%2F57_Passing-10B981.svg)](./vitest.config.ts)
+[![Tests](https://img.shields.io/badge/Vitest-91%2F91_Passing-10B981.svg)](./vitest.config.ts)
 
 [**⚡ Zero-Install Remote MCP (`.../mcp`)**](#-connect-claude-desktop-claude-code-cursor-vs-code-windsurf-or-antigravity) · [**🖥️ Hosted Live 3D Studio**](https://mcp.rackarchitect.dev/) · [**🌐 Static 3D Demo**](https://italex240.github.io/rack-architect-mcp/) · [**Quickstart**](#-30-second-quickstart) · [**Agent Skill**](#-official-open-source-agent-skill-skillsrack-architectskillmd) · [**3D-Print (.SCAD / .STL)**](#-parametric-3d-print-generator-scad--stl) · [**Add Blueprint**](./CONTRIBUTING.md) · [**Handbook (DE)**](./docs/COMPLETE_SYSTEM_HANDBOOK.md)
 
@@ -93,7 +93,7 @@ git clone https://github.com/itAlex240/rack-architect-mcp.git
 cd rack-architect-mcp
 pnpm install
 
-# 2. Build all 6 packages & run all 52 Vitest suites
+# 2. Build all 6 packages & run all 13 Vitest suites (91 tests)
 pnpm build
 pnpm test
 
@@ -196,7 +196,7 @@ Add `rack_architect_mcp` to your `claude_desktop_config.json`, `.cursor/mcp.json
 }
 ```
 
-Whenever your AI agent starts the MCP server over `stdio`, it **automatically launches the local WebSocket Sidecar at `http://127.0.0.1:3100`**. Every tool call the AI executes (`mount_equipment`, `connect_cables`, `modify_equipment`, `undo_redo`) updates your 3D browser view in real time!
+Whenever your AI agent starts the MCP server over `stdio`, it **automatically launches the local WebSocket Sidecar at `http://127.0.0.1:3100`**. Every tool call the AI executes (`mount_equipment`, `connect_cables`, `modify_equipment`, `optimize_rack`, `undo_redo`) updates your 3D browser view in real time!
 
 ### 🧠 Official Open-Source Agent Skill ([`skills/rack-architect/SKILL.md`](./skills/rack-architect/SKILL.md))
 
@@ -230,14 +230,14 @@ Pre-generated reference files in [`examples/10inch-homelab/`](./examples/10inch-
 ## 🖥️ Live 3D Digital Twin & 2D CAD Web-Viewer (Hosted & Local `:3100`)
 
 - **Interactive Catalog, Custom Blueprint Wizard & Cable Patch Builder (`+ Catalog & Cable Builder`):**
-  - Search all 73 hardware blueprints, filter by `10inch` / `19inch` / `6inch` / `sub-module`, select `Target U` + `FRONT/REAR`, and mount with 1 click — or define custom equipment live with the **Custom Blueprint Wizard**.
-  - Drag devices vertically between U-slots in 3D (`Shift + Drag`) with live green/red collision ghost boxes, and drag-and-drop `.yaml` / `.json` / NetBox / UniFi / Proxmox exports directly into the studio.
-  - Patch 3D Catmull-Rom cables between any two ports with optional `VLAN ID` (`1..4094`) and `IP CIDR` (`10.10.20.0/24`) annotations, inspect **UPS backup runtime**, **kWh energy cost (`€/kWh`)**, and **3D `.STL` bracket previews**, and download `labels.csv` / `labels.svg` sheets.
+  - Search all 101 hardware blueprints, filter by `10inch` / `19inch` / `6inch` / `sub-module`, select `Target U` + `FRONT/REAR`, and mount with 1 click — or define custom equipment live with the **Custom Blueprint Wizard**.
+  - Auto-optimize layouts deterministically with 1 click (**`Optimize`** / `optimize_rack`) to eliminate collisions, lower Center of Gravity (`CoG < 0.50`), preserve cable portals, and shorten 3D cable runs; drag devices vertically in 3D (`Shift + Drag`) with live green/red collision ghost boxes, and drag-and-drop `.yaml` / `.json` / NetBox / UniFi / Proxmox exports directly into the studio.
+  - Patch 3D Catmull-Rom cables between any two ports with optional `VLAN ID` (`1..4094`) and `IP CIDR` (`10.10.20.0/24`) annotations, inspect **UPS backup runtime**, **kWh energy cost (`€/kWh`)**, and **3D `.STL` bracket previews with interactive print-bed overlays** (`256×256` Bambu, `250×210` Prusa MK4, `220×220` Ender 3, `180×180` A1 mini), download a printable A4/Letter **`Build Book (PDF / Print)`** (`rack-build-book.html`), and export `labels.csv` / `labels.svg` sheets.
 - **3D Engineering HUD:**
   - Camera Presets: `Perspective`, `Front Ortho`, `Rear Ortho`, `Left Cutaway`
   - Toggles: `X-Ray Chassis` (inspect internal mini-PCs & PSU bricks), `Clearance Boxes` ($\Delta Z_{\text{plug}}$ wireframes), `Cable Splines`
   - `Explode Z (0..140 mm)` slider to separate front and rear assemblies
-- **W3C WebMCP Ready:** Automatically registers all 12 tools on `document.modelContext` when opened in a WebMCP-capable browser.
+- **W3C WebMCP Ready:** Automatically registers all 13 tools on `document.modelContext` when opened in a WebMCP-capable browser.
 
 ---
 
@@ -257,12 +257,12 @@ Pre-generated reference files in [`examples/10inch-homelab/`](./examples/10inch-
 
 | Package | Description |
 | :--- | :--- |
-| [`@rack-mcp/core-domain`](./packages/core-domain) | Pure TypeScript/Zod schemas, 3D coordinate transformer, AABB collision solver, 5-stage validator, and clamped Catmull-Rom 3D spline router (zero Node/DOM dependencies). |
-| [`@rack-mcp/hardware-catalog`](./packages/hardware-catalog) | 73 YAML hardware blueprints (`10inch`, `19inch`, `6inch`, `carriers`, `sub-modules`), `port_groups` matrix expander, and catalog search/validator. |
-| [`@rack-mcp/exporters`](./packages/exporters) | `elevation.svg`, `wiring-schematic.svg`, `BOM.md` (UPS/energy/budget), `labels.csv` / `labels.svg`, NetBox/UniFi/Proxmox importers, binary `.glb`, and parametric OpenSCAD/STL carriers & custom brackets. |
-| [`@rack-mcp/mcp-server`](./packages/mcp-server) | Multi-tenant Remote MCP server (`Streamable HTTP /mcp` & `SSE /sse`) + local `stdio` MCP server, 12 tools, 4 resources, 2 prompts, 50-step Undo/Redo manager, and HTTP/WebSocket 3D sidecar (`:3100`). |
-| [`@rack-mcp/web-viewer`](./packages/web-viewer) | React 19 + Three.js (`@react-three/fiber`) live 3D/2D CAD studio, drag-and-drop YAML/NetBox/UniFi/Proxmox import, 3D `.STL` preview, Catalog/Custom Blueprint Wizard, and W3C WebMCP integration. |
-| [`@rack-mcp/cli`](./packages/cli) | Unified `rack-mcp` CLI (`serve`, `validate`, `export`, `import`, `new-blueprint`). |
+| [`@rack-mcp/core-domain`](./packages/core-domain) | Pure TypeScript/Zod schemas, 3D coordinate transformer, AABB collision solver, 5-stage validator, deterministic layout optimizer (`optimizeRackLayout`), and clamped Catmull-Rom 3D spline router (zero Node/DOM dependencies). |
+| [`@rack-mcp/hardware-catalog`](./packages/hardware-catalog) | 101 YAML hardware blueprints (`10inch`, `19inch`, `6inch`, `carriers`, `sub-modules`), `port_groups` matrix expander, and catalog search/validator. |
+| [`@rack-mcp/exporters`](./packages/exporters) | `elevation.svg`, `wiring-schematic.svg`, `BOM.md` (UPS/energy/budget), printable A4/Letter `Build Book` HTML/PDF (`generateBuildBookHtml`), `labels.csv` / `labels.svg`, NetBox/UniFi/Proxmox importers, binary `.glb`, and parametric OpenSCAD/STL carriers & custom brackets. |
+| [`@rack-mcp/mcp-server`](./packages/mcp-server) | Multi-tenant Remote MCP server (`Streamable HTTP /mcp` & `SSE /sse`) + local `stdio` MCP server, 13 tools, 4 resources, 5 prompts, 50-step Undo/Redo manager, and HTTP/WebSocket 3D sidecar (`:3100`). |
+| [`@rack-mcp/web-viewer`](./packages/web-viewer) | React 19 + Three.js (`@react-three/fiber`) live 3D/2D CAD studio, 1-click `Optimize` (`optimize_rack`), Build Book PDF/Print export, interactive 3D `.STL` preview with print-bed overlay, drag-and-drop YAML/NetBox/UniFi/Proxmox import, Catalog/Custom Blueprint Wizard, and W3C WebMCP integration. |
+| [`@rack-mcp/cli`](./packages/cli) | Unified `rack-mcp` CLI (`serve`, `validate --ci`, `export`, `import`, `new-blueprint`, `schema`) and [GitHub CI Action](./docs/CI_INTEGRATION.md). |
 
 ---
 

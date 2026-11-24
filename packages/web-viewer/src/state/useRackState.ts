@@ -5,10 +5,12 @@ import {
   HardwareBlueprintSchema,
   MCP_TOOL_DEFINITIONS,
   normalizeHardwareBlueprint,
+  optimizeRackLayout,
   RackProjectSchema,
   type CableType,
   type ConnectorType,
   type HardwareBlueprint,
+  type OptimizeRackResult,
   type RackFace,
   type RackProjectInput,
   type SerializedRackScene,
@@ -284,6 +286,7 @@ export interface RackViewerState {
   simulateAgentStep(stage: 'collision' | 'resolved'): void;
   undo(): void;
   redo(): void;
+  optimizeRack(): void;
   resetDemoScene(): void;
 }
 
@@ -606,6 +609,59 @@ export function useRackState(): RackViewerState {
     setRedoAvailable(redoStackRef.current.length);
     syncDerivedExports(nextScene);
   }, [connectionMode, syncDerivedExports]);
+
+  const optimizeRack = useCallback(() => {
+    if (
+      connectionMode === 'sidecar-live' &&
+      !wsReadOnlyRef.current &&
+      wsRef.current &&
+      wsRef.current.readyState === WebSocket.OPEN
+    ) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'COMMAND',
+          tool: 'optimize_rack',
+          args: {},
+        }),
+      );
+      return;
+    }
+
+    const optResult: OptimizeRackResult = optimizeRackLayout(
+      initialInputRef.current,
+      catalogRecordRef.current,
+    );
+    if (optResult.improved) {
+      applyStandaloneMutation(() => structuredClone(optResult.optimized_project));
+    }
+
+    const activeScene = sceneRef.current;
+    const nextSelectedId =
+      optResult.moved_devices[0]?.instance_id ??
+      optResult.optimized_project.mounted_devices[0]?.instance_id ??
+      null;
+    if (nextSelectedId !== null) {
+      setSelectedDeviceId(nextSelectedId);
+      setSelectedCableId(null);
+    }
+
+    const summary = optResult.improved
+      ? `Optimized rack layout by relocating ${optResult.moved_devices.length} device(s) (Errors: ${optResult.metrics_before.error_count} -> ${optResult.metrics_after.error_count}, Warnings: ${optResult.metrics_before.warning_count} -> ${optResult.metrics_after.warning_count}, CoG: ${optResult.metrics_before.normalized_cog_y} -> ${optResult.metrics_after.normalized_cog_y}, Cable Length: ${optResult.metrics_before.total_cable_length_mm}mm -> ${optResult.metrics_after.total_cable_length_mm}mm).`
+      : `Rack layout is already optimal for current constraints; no devices were moved (Errors: ${optResult.metrics_after.error_count}, Warnings: ${optResult.metrics_after.warning_count}, CoG: ${optResult.metrics_after.normalized_cog_y}).`;
+
+    setMcpToolLog((prev) => [
+      {
+        id: `optimize-${Date.now()}`,
+        timestamp: 'LIVE',
+        tool: 'optimize_rack',
+        summary,
+        status: activeScene.validation.is_valid ? 'VALID' : 'INVALID',
+        errorCount: activeScene.validation.error_count,
+        warningCount: activeScene.validation.warning_count,
+      },
+      ...prev.slice(0, 19),
+    ]);
+  }, [applyStandaloneMutation, connectionMode]);
 
   const selectPreset = useCallback(
     (presetId: StandalonePresetId) => {
@@ -1694,6 +1750,23 @@ export function useRackState(): RackViewerState {
           },
           { signal },
         );
+
+        await modelContext.registerTool(
+          {
+            name: MCP_TOOL_DEFINITIONS.optimize_rack.name,
+            description: MCP_TOOL_DEFINITIONS.optimize_rack.description,
+            inputSchema: { type: 'object', properties: {} },
+            annotations: {
+              readOnlyHint:
+                MCP_TOOL_DEFINITIONS.optimize_rack.annotations.readOnlyHint,
+            },
+            execute: () => {
+              optimizeRack();
+              return { status: 'OK', action: 'optimize_rack' };
+            },
+          },
+          { signal },
+        );
       } catch {
         // Ignore duplicate tool registration errors during hot reload
       }
@@ -1704,7 +1777,7 @@ export function useRackState(): RackViewerState {
     return () => {
       abortController.abort();
     };
-  }, [catalog, redo, scene.validation, undo]);
+  }, [catalog, optimizeRack, redo, scene.validation, undo]);
 
   return {
     connectionMode,
@@ -1764,6 +1837,7 @@ export function useRackState(): RackViewerState {
     simulateAgentStep,
     undo,
     redo,
+    optimizeRack,
     resetDemoScene,
   };
 }

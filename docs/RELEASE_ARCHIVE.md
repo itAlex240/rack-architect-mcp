@@ -1,10 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.8.1`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.9.0`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.8.1`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.9.0`)
+
+### 🚀 `v0.9.x` Series — 2-Part 19" Print-Bed Splitting, Share Cards & Launch Readiness
+
+- **[`v0.9.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.9.0) (2026-11-24) — 2-Part 19" Print-Bed STL Splitting (`<= 245 mm`), 16:9 Share Card PNG, URL Deep-Links, UI Telemetry & Launch Kit:**
+  - Added `split_half: 'full' | 'left' | 'right'` support across custom bracket OpenSCAD/STL/SVG exporters (`241.3 mm` left/right halves with rear **M3 bolt joiner lugs** and watertight 2-manifold `.STL`), deterministic `1200×675` Carbon/Zinc **Share Card PNG/SVG** exports (`TopNavBar` `Card` & BOM hub), `?preset=...&tab=...#custom-bracket` URL deep-linking, 1-click **Submit to GitHub Catalog** button in `CatalogBuilderDrawer`, privacy-first same-origin `POST /api/ui-event` + `rack_mcp_ui_events_total` Prometheus metrics, GitHub homepage/topics discovery optimization, and `docs/LAUNCH_KIT.md`.
 
 ### ⚡ `v0.8.x` Series — Custom 3D-Print Brackets, Infrastructure Imports & Energy Telemetry
 
@@ -118,7 +123,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.8.1`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.9.0`)
+
+### 🚀 Serie `v0.9.x` — Zweiteilige 19"-Druckbett-Teilung, 16:9 Share-Card & Launch-Kit
+
+- **[`v0.9.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.9.0) (2026-11-24) — Zweiteilige 19"-Druckbett-Teilung (`<= 245 mm`), 16:9 Share-Card (PNG), URL-Deep-Links, UI-Telemetrie & Launch-Kit:**
+  - Breite `482,6 mm`-19-Zoll-Brackets lassen sich über `split_half` in zwei `241,3 mm`-Hälften inkl. hinterem **M3-Schraubverbinder-Block** und wasserdichter 2-Manifold-`.STL`-Geometrie für Bambu/Prusa-Drucker teilen (`Left Half .STL` / `Right Half .STL`), ergänzt durch den deterministischen `1200×675` **Share Card PNG/SVG**-Export (`Card`-Button & BOM-Ansicht), URL-Deep-Links (`?preset=...&tab=...#custom-bracket`), den 1-Klick-Button **GitHub Catalog** im Custom-Blueprint-Wizard, anonyme Same-Origin-UI-Telemetrie (`POST /api/ui-event` + `rack_mcp_ui_events_total`) sowie `docs/LAUNCH_KIT.md`.
 
 ### ⚡ Serie `v0.8.x` — Custom 3D-Druck-Halterungen, Infrastruktur-Import & USV-/Stromkosten-Telemetrie
 

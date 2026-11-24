@@ -53,7 +53,8 @@ export const EXPORT_DOWNLOAD_FORMATS = [
   'carrier-scad',
   'rack-yaml',
   'labels-csv',
-  'labels-svg'
+  'labels-svg',
+  'build-book-html'
 ] as const;
 
 export type ExportDownloadFormat = (typeof EXPORT_DOWNLOAD_FORMATS)[number];

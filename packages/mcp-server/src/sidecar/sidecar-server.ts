@@ -14,6 +14,7 @@ import {
 } from '@rack-mcp/core-domain';
 import {
   generateBomMarkdown,
+  generateBuildBookHtml,
   generateCableLabelsCsv,
   generateCableLabelsSvg,
   generateElevationSvg,
@@ -1372,6 +1373,27 @@ export async function startRackSidecarServer(
             'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'"
           },
           svgBuffer,
+          { compressible: true }
+        );
+        return;
+      }
+
+      if (pathname === '/api/export/build-book.html') {
+        telemetry.recordExportDownload('build-book-html');
+        const htmlBuffer = Buffer.from(
+          generateBuildBookHtml(targetStateManager.getScene()),
+          'utf8'
+        );
+        sendBufferWithOptionalGzip(
+          req,
+          res,
+          200,
+          {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Content-Disposition': 'inline; filename="rack-build-book.html"',
+            'Content-Security-Policy': HTML_CONTENT_SECURITY_POLICY
+          },
+          htmlBuffer,
           { compressible: true }
         );
         return;

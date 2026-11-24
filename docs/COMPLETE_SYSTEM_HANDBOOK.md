@@ -14,10 +14,10 @@
 5. [Datenmodelle & Strikte Zod-Schemas (`rack.yaml` & Blueprints)](#5-datenmodelle--strikte-zod-schemas-rackyaml--blueprints)
 6. [Die 5-stufige Deterministische Validierungs-Engine (`validateRackProject`)](#6-die-5-stufige-deterministische-validierungs-engine-validaterackproject)
 7. [Die 3D-Kabel-Routing- & Längenberechnungs-Engine (`catmull-rom-router.ts`)](#7-die-3d-kabel-routing---längenberechnungs-engine-catmull-rom-routerts)
-8. [Der Hardware-Katalog (`@rack-mcp/hardware-catalog`) — Alle 73 Blueprints](#8-der-hardware-katalog-rack-mcphardware-catalog--alle-73-blueprints)
+8. [Der Hardware-Katalog (`@rack-mcp/hardware-catalog`) — Alle 101 Blueprints](#8-der-hardware-katalog-rack-mcphardware-catalog--alle-101-blueprints)
 9. [Der MCP-Server, State-Manager & Sidecar-Server (`@rack-mcp/mcp-server`)](#9-der-mcp-server-state-manager--sidecar-server-rack-mcpmcp-server)
 10. [Das Dashboard & 3D/2D Web-Viewer UI — Jede Schaltfläche im Detail (`@rack-mcp/web-viewer`)](#10-das-dashboard--3d2d-web-viewer-ui--jede-schaltfläche-im-detail-rack-mcpweb-viewer)
-11. [Die 4 CAD- & Dokumentations-Exporter (`@rack-mcp/exporters`)](#11-die-4-cad---dokumentations-exporter-rack-mcpexporters)
+11. [Die CAD-, Build-Book- & 3D-Druck-Exporter (`@rack-mcp/exporters`)](#11-die-cad--build-book---3d-druck-exporter-rack-mcpexporters)
 12. [Das Kommandozeilen-Werkzeug (`@rack-mcp/cli` / `rack-mcp`)](#12-das-kommandozeilen-werkzeug-rack-mcpcli--rack-mcp)
 13. [End-to-End Datenfluss & Tracing-Szenarien (Mensch & KI-Agent)](#13-end-to-end-datenfluss--tracing-szenarien-mensch--ki-agent)
 14. [Das Referenzprojekt `examples/10inch-homelab` (Vollständiges Walkthrough)](#14-das-referenzprojekt-examples10inch-homelab-vollständiges-walkthrough)
@@ -106,12 +106,12 @@ flowchart TD
 
 | Paket | Pfad | Erlaubte interne Abhängigkeiten | Hauptaufgabe |
 | :--- | :--- | :--- | :--- |
-| **`@rack-mcp/core-domain`** | [`packages/core-domain`](../packages/core-domain/src/index.ts) | **KEINE** (`"types": []` in `tsconfig.json`) | Reine Mathematik, Konstanten, Zod-Schemas, Port-Matrix-Expander, 3D-Koordinaten-Transformer, 5-Stufen-Validierungs-Engine, 3D-Catmull-Rom-Kabelrouter. Läuft identisch in Node.js und im Browser. |
-| **`@rack-mcp/hardware-catalog`** | [`packages/hardware-catalog`](../packages/hardware-catalog/src/index.ts) | `@rack-mcp/core-domain` | 73 kuratierte YAML-Hardware-Blueprints (`catalog/10inch`, `catalog/19inch`, `catalog/6inch`, `catalog/carriers`, `catalog/sub-modules`), eingebettetes TS-Bundle (`embedded-catalog.ts`), Geometrie-Integritäts-Validator und Such-/Filter-Registry (`CatalogRegistry`). |
-| **`@rack-mcp/exporters`** | [`packages/exporters`](../packages/exporters/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` | Deterministische Generatoren für `elevation.svg`, `wiring-schematic.svg`, `BOM.md` (inkl. USV/Strom/Budget), `labels.csv` / `labels.svg`, NetBox/UniFi/Proxmox-Importer, binäres `.glb` sowie parametrische `.scad`/`.stl`-Träger & Custom Device Brackets. |
-| **`@rack-mcp/mcp-server`** | [`packages/mcp-server`](../packages/mcp-server/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters` | `ProjectStateManager` (Undo/Redo, File-Watcher, Atomic-Save), `RemoteSessionRegistry` (Multi-Tenant `Streamable HTTP` `/mcp` & `SSE` `/sse`), `RackMcpToolHandlers` (12 Tools), `createRackMcpServer` (4 Resources, 2 Prompts), `generateAsciiElevation` und `startRackSidecarServer` (`HTTP + WebSocket`). |
-| **`@rack-mcp/web-viewer`** | [`packages/web-viewer`](../packages/web-viewer/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters` | Interaktives React 19 + Three.js (`@react-three/fiber`) CAD-Dashboard mit Drag-and-Drop-YAML/NetBox/UniFi/Proxmox-Import, 3D-`.STL`-Vorschau, `Shift+Drag` U-Slot-Verschiebung, Custom-Blueprint-Wizard und Client-Side WebMCP. |
-| **`@rack-mcp/cli`** | [`packages/cli`](../packages/cli/src/index.ts) | `@rack-mcp/mcp-server` (und transitiv alle Pakete) | Kommandozeilen-Einstiegspunkt (`rack-mcp`) mit den Befehlen `serve`, `validate`, `export`, `import` und `new-blueprint`. |
+| **`@rack-mcp/core-domain`** | [`packages/core-domain`](../packages/core-domain/src/index.ts) | **KEINE** (`"types": []` in `tsconfig.json`) | Reine Mathematik, Konstanten, Zod-Schemas, Port-Matrix-Expander, 3D-Koordinaten-Transformer, 5-Stufen-Validierungs-Engine, deterministischer Rack-Optimizer (`optimizeRackLayout`), 3D-Catmull-Rom-Kabelrouter. Läuft identisch in Node.js und im Browser. |
+| **`@rack-mcp/hardware-catalog`** | [`packages/hardware-catalog`](../packages/hardware-catalog/src/index.ts) | `@rack-mcp/core-domain` | 101 kuratierte YAML-Hardware-Blueprints (`catalog/10inch`, `catalog/19inch`, `catalog/6inch`, `catalog/carriers`, `catalog/sub-modules`), eingebettetes TS-Bundle (`embedded-catalog.ts`), Geometrie-Integritäts-Validator und Such-/Filter-Registry (`CatalogRegistry`). |
+| **`@rack-mcp/exporters`** | [`packages/exporters`](../packages/exporters/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog` | Deterministische Generatoren für `elevation.svg`, `wiring-schematic.svg`, `BOM.md` (inkl. USV/Strom/Budget), `generateBuildBookHtml()` (A4/Letter PDF/Print Build Book), `labels.csv` / `labels.svg`, NetBox/UniFi/Proxmox-Importer, binäres `.glb` sowie parametrische `.scad`/`.stl`-Träger & Custom Device Brackets. |
+| **`@rack-mcp/mcp-server`** | [`packages/mcp-server`](../packages/mcp-server/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters` | `ProjectStateManager` (Undo/Redo, File-Watcher, Atomic-Save), `RemoteSessionRegistry` (Multi-Tenant `Streamable HTTP` `/mcp` & `SSE` `/sse`), `RackMcpToolHandlers` (13 Tools), `createRackMcpServer` (4 Resources, 5 Prompts), `generateAsciiElevation` und `startRackSidecarServer` (`HTTP + WebSocket`). |
+| **`@rack-mcp/web-viewer`** | [`packages/web-viewer`](../packages/web-viewer/src/index.ts) | `@rack-mcp/core-domain`, `@rack-mcp/hardware-catalog`, `@rack-mcp/exporters` | Interaktives React 19 + Three.js (`@react-three/fiber`) CAD-Dashboard mit Drag-and-Drop-YAML/NetBox/UniFi/Proxmox-Import, 3D-`.STL`-Vorschau inkl. Druckbett-Overlay, 1-Klick-Auto-Optimize (`Optimize`), Build-Book-Export (`PDF / Print`), `Shift+Drag` U-Slot-Verschiebung, Custom-Blueprint-Wizard und Client-Side WebMCP. |
+| **`@rack-mcp/cli`** | [`packages/cli`](../packages/cli/src/index.ts) | `@rack-mcp/mcp-server` (und transitiv alle Pakete) | Kommandozeilen-Einstiegspunkt (`rack-mcp`) mit den Befehlen `serve`, `validate` (`--ci`), `export`, `import`, `new-blueprint` und `schema`. |
 
 ### 3.2 Vollständiger Dateibaum des Projekts
 
@@ -142,18 +142,20 @@ rack-designer/
     │       │   ├── port-expander.ts               # expandPortGroupMacro(), normalizeHardwareBlueprint()
     │       │   ├── rack-project.ts                # RackProjectSchema, MountedDeviceSchema, CableConnectionSchema
     │       │   ├── validation-result.ts           # ValidationResultSchema, DiagnosticIssueSchema, DiagnosticCodeSchema
-    │       │   └── mcp-tools.ts                   # MCP_TOOL_DEFINITIONS (alle 11 Tools + Input-Schemas)
+    │       │   └── mcp-tools.ts                   # MCP_TOOL_DEFINITIONS (alle 13 Tools + Input-/Output-Schemas)
     │       ├── geometry/
     │       │   ├── precision.ts                   # roundMm(), roundCentis(), roundTenths(), AABB_INTERSECTION_EPSILON_MM
     │       │   ├── types.ts                       # Vector3D, BoundingBox3D, ComputedRackGeometry, ComputedDeviceGeometry
     │       │   ├── aabb.ts                        # vec3-Mathematik, boxesIntersect(), getBoxIntersection()
     │       │   └── coordinate-transformer.ts      # computeRackGeometry(), transformLocalToWorldPoint(), Coupler-Auflösung
+    │       ├── optimization/
+    │       │   └── rack-optimizer.ts              # optimizeRackLayout() (deterministische U-/Rear-PDU-Optimierung)
     │       ├── validation/
     │       │   └── validation-engine.ts           # validateRackProject() (5-Stufen-Solver + Remediation-Synthesizer)
     │       └── routing/
     │           └── catmull-rom-router.ts          # routeProjectCables(), 3-Case-Router, Hex-Bundling, Catmull-Rom-Spline
     ├── hardware-catalog/
-    │   ├── catalog/                               # 20 YAML-Hardware-Blueprints auf Disk
+    │   ├── catalog/                               # 101 YAML-Hardware-Blueprints auf Disk
     │   └── src/
     │       ├── embedded-catalog.ts                # Eingebettete YAML-Strings für Browser-Kompatibilität ohne fs
     │       ├── catalog-validator.ts               # validateBlueprintIntegrity(), Port-/Slot-Overlap-Prüfung
@@ -164,6 +166,7 @@ rack-designer/
     │       ├── elevation-svg.ts                   # generateElevationSvg()
     │       ├── wiring-svg.ts                      # generateWiringSchematicSvg()
     │       ├── bom-markdown.ts                    # generateBomMarkdown()
+    │       ├── build-book-exporter.ts             # generateBuildBookHtml() (A4/Letter PDF/Print Build Book)
     │       ├── glb-exporter.ts                    # generateGlbBinary()
     │       └── reference-homelab.ts               # create10InchHomelabProjectInput(), evaluate10InchHomelabScene()
     ├── mcp-server/
@@ -171,8 +174,8 @@ rack-designer/
     │       ├── state-manager.ts                   # ProjectStateManager (Undo/Redo, Atomic Save, File-Watcher)
     │       ├── ascii-elevation.ts                 # generateAsciiElevation() für LLM-Kontextfenster
     │       ├── mcp/
-    │       │   ├── tool-handlers.ts               # RackMcpToolHandlers (Ausführungslogik aller 11 Tools)
-    │       │   └── server.ts                      # createRackMcpServer() (Tools, 4 Resources, 2 Prompts)
+    │       │   ├── tool-handlers.ts               # RackMcpToolHandlers (Ausführungslogik aller 13 Tools)
+    │       │   └── server.ts                      # createRackMcpServer() (13 Tools, 4 Resources, 5 Prompts)
     │       └── sidecar/
     │           └── sidecar-server.ts              # startRackSidecarServer() (HTTP REST + Static SPA + WebSocket /ws)
     ├── web-viewer/
@@ -375,9 +378,9 @@ Laufen mehrere Kabel durch denselben Schacht, erhält das $k$-te Kabel ($k = 0, 
 
 ---
 
-## 8. Der Hardware-Katalog (`@rack-mcp/hardware-catalog`) — Alle 73 Blueprints
+## 8. Der Hardware-Katalog (`@rack-mcp/hardware-catalog`) — Alle 101 Blueprints
 
-Der Katalog liegt sowohl als Einzeldateien unter [`packages/hardware-catalog/catalog/`](../packages/hardware-catalog/catalog/) als auch als vorab eingebettetes TypeScript-Array in [`embedded-catalog.ts`](../packages/hardware-catalog/src/embedded-catalog.ts) vor. Das Skript `pnpm validate:catalog` ([`validate-cli.ts`](../packages/hardware-catalog/src/validate-cli.ts)) stellt sicher, dass alle 73 YAML-Dateien auf der Festplatte und das eingebettete Bundle zu 100 % synchron sind, keine Ports außerhalb der Gehäusemaße liegen und der Mindestabstand zwischen zwei Ports auf derselben Seite `MIN_PORT_CENTER_DISTANCE_MM = 8.0 mm` beträgt. Detailtabellen aller 73 Blueprints (24× `10inch`, 20× `19inch`, 6× `6inch`, 10× `carriers`, 13× `sub-modules`) befinden sich in [`packages/hardware-catalog/README.md`](../packages/hardware-catalog/README.md).
+Der Katalog liegt sowohl als Einzeldateien unter [`packages/hardware-catalog/catalog/`](../packages/hardware-catalog/catalog/) als auch als vorab eingebettetes TypeScript-Array in [`embedded-catalog.ts`](../packages/hardware-catalog/src/embedded-catalog.ts) vor. Das Skript `pnpm validate:catalog` ([`validate-cli.ts`](../packages/hardware-catalog/src/validate-cli.ts)) stellt sicher, dass alle 101 YAML-Dateien auf der Festplatte und das eingebettete Bundle zu 100 % synchron sind, keine Ports außerhalb der Gehäusemaße liegen und der Mindestabstand zwischen zwei Ports auf derselben Seite `MIN_PORT_CENTER_DISTANCE_MM = 8.0 mm` beträgt. Detailtabellen aller 101 Blueprints (32× `10inch`, 29× `19inch`, 8× `6inch`, 14× `carriers`, 18× `sub-modules`) befinden sich in [`packages/hardware-catalog/README.md`](../packages/hardware-catalog/README.md).
 
 ### 8.1 10-Zoll Rackmount-Geräte (`catalog/10inch/*.yaml`)
 | Slug | Hersteller & Modell | Kategorie | HE (`U`) | Maße `B × H × T` (`mm`) | Leistung / Kapazität | Ports |
@@ -435,7 +438,7 @@ Der MCP-Server trägt den kanonischen Namen:
 export const RACK_MCP_SERVER_NAME = 'rack_architect_mcp' as const;
 ```
 
-### 9.2 Alle 11 MCP-Tools im Detail ([`mcp-tools.ts`](../packages/core-domain/src/schemas/mcp-tools.ts) & [`tool-handlers.ts`](../packages/mcp-server/src/mcp/tool-handlers.ts))
+### 9.2 Alle 13 MCP-Tools im Detail ([`mcp-tools.ts`](../packages/core-domain/src/schemas/mcp-tools.ts) & [`tool-handlers.ts`](../packages/mcp-server/src/mcp/tool-handlers.ts))
 Jeder Tool-Aufruf gibt ein JSON-serialisiertes `ToolExecutionEnvelope` zurück (`isError: false`), das immer folgende 4 Felder besitzt:
 - `status`: `'VALID' | 'INVALID'`
 - `summary`: Menschen- und LLM-lesbare Zusammenfassung des Ergebnisses
@@ -452,19 +455,24 @@ Jeder Tool-Aufruf gibt ein JSON-serialisiertes `ToolExecutionEnvelope` zurück (
 | **6** | `modify_equipment` | `false` | `instance_id`, `action` (`'move' \| 'rename' \| 'remove'`), `u_position?` / `new_u_position?`, `face?` / `new_face?`, `parent_carrier_id?`, `slot_id?`, `hostname?` / `new_hostname?`, `remove_connected_cables?` (Default `true`) | Verschiebt ein Gerät (auf eine andere HE oder in einen anderen Carrier-Slot), benennt den `hostname` um oder entfernt das Gerät (inkl. Kinder und angeschlossener Kabel) und berechnet alle 3D-Kabelwege neu. |
 | **7** | `connect_cables` | `false` | `cables`: Array von `CableConnectionSchema` (`cable_id`, `from`, `to`, `cable_type`, `color_hex`, `label?`, `preferred_portal_u?`) | Verbindet ein oder mehrere Kabel (oder aktualisiert bestehende mit derselben `cable_id`), berechnet die 3D-Catmull-Rom-Splines, Längen-Bins und den Strom-/PoE-DAG. |
 | **8** | `disconnect_cables` | `false` | `cable_ids?` (`string[]`), `instance_id?` (`string`) | Trennt alle angegebenen `cable_ids` und/oder alle Kabel, die an `instance_id` angeschlossen sind. |
-| **9** | `validate_rack` | `true` | `{}` (keine Pflichtparameter) | Führt die komplette 5-Stufen-Validierung aus und erzeugt zusätzlich den kompakten **ASCII-Belegungsplan (`ascii_elevation`)** für das LLM-Kontextfenster. |
-| **10** | `export_deliverables` | `false` | `formats?` (Default: `['elevation-svg', 'wiring-svg', 'bom-md', 'scene-glb']`), `output_dir?` | Generiert `elevation.svg`, `wiring-schematic.svg`, `BOM.md` und `rack-scene.glb` auf der Festplatte und gibt Dateipfade, Dateigrößen in Bytes und eine BOM-Zusammenfassung zurück. |
-| **11** | `undo_redo` | `false` | `action` (`'undo' \| 'redo'`) | Wandert im 50-stufigen In-Memory-Verlauf (`undoStack` / `redoStack`) einen Schritt zurück oder vor, aktualisiert `rack.yaml` atomar und pusht das Update per WebSocket an den Browser. |
+| **9** | `plan_external_endpoints` | `false` (`destructiveHint: true`) | `patch_panel_instance_id`, `groups?`, `endpoints?`, `start_port_number?`, `auto_connect_switch_id?`, `auto_connect_switch_start_port?`, `clear_existing?` | Terminiert externe Gebäude-/Raum-Kabel (Kameras, APs, Arbeitsplätze) auf den hinteren Patchpanel-Ports (ohne HE zu verbrauchen) und patcht optional 1:1 vorne an einen Switch. |
+| **10** | `validate_rack` | `true` | `{}` (keine Pflichtparameter) | Führt die komplette 5-Stufen-Validierung aus und erzeugt zusätzlich den kompakten **ASCII-Belegungsplan (`ascii_elevation`)** für das LLM-Kontextfenster. |
+| **11** | `export_deliverables` | `false` (`consequentialHint: true`) | `formats?` (Default: `['elevation-svg', 'wiring-svg', 'bom-md', 'scene-glb']`, optional `'labels-csv'`, `'labels-svg'`, `'carrier-scad'`, `'carrier-stl'`), `output_dir?` | Generiert SVG/BOM/GLB/Label/OpenSCAD/STL-Deliverables auf der Festplatte (oder HTTPS-Download-URLs im Remote-MCP-Modus) samt Bytegrößen und BOM-Zusammenfassung. |
+| **12** | `undo_redo` | `false` | `action` (`'undo' \| 'redo'`) | Wandert im 50-stufigen In-Memory-Verlauf (`undoStack` / `redoStack`) einen Schritt zurück oder vor, aktualisiert `rack.yaml` atomar und pusht das Update per WebSocket an den Browser. |
+| **13** | `optimize_rack` | `false` | `pin_instance_ids?`, `target_cog_ratio?`, `max_iterations?` | Optimiert deterministisch U-Positionen und Rear-PDU-Platzierung (eliminiert Kollisionen, senkt `CoG < 0.50`, bewahrt Kabelportale, verkürzt 3D-Kabellängen) und committet nur bei strenger Verbesserung. |
 
-### 9.3 Alle 4 MCP-Resources ([`server.ts` (Zeilen 201–291)](../packages/mcp-server/src/mcp/server.ts#L201-L291))
+### 9.3 Alle 4 MCP-Resources ([`server.ts` (Zeilen 334–425)](../packages/mcp-server/src/mcp/server.ts#L334-L425))
 1. **`rack://current/summary`** (`text/plain`): Liefert den deterministischen ASCII-Elevationsplan (Front-Spalte, Rear-Spalte, Z-Clearance pro HE, Strom-/PoE-Bilanz und aktive Diagnosen).
 2. **`rack://current/bom`** (`text/markdown`): Liefert die aktuelle Markdown-Stückliste (`BOM.md`).
 3. **`rack://current/diagnostics`** (`application/json`): Liefert das aktuelle `ValidationResult` als formatiertes JSON.
 4. **`rack://current/yaml`** (`application/yaml`): Liefert den exakten aktuellen YAML-Quelltext des aktiven Projekts.
 
-### 9.4 Alle 2 geführten MCP-Prompts ([`server.ts` (Zeilen 296–387)](../packages/mcp-server/src/mcp/server.ts#L296-L387))
+### 9.4 Alle 5 geführten MCP-Prompts ([`server.ts` (Zeilen 429–645)](../packages/mcp-server/src/mcp/server.ts#L429-L645))
 1. **`plan-homelab-from-scratch`** (Argumente: `standard?`, `u_height?`, `requirements?`): Gibt dem KI-Agenten einen 6-Schritte-Leitfaden (`search_catalog` $\rightarrow$ `init_rack` $\rightarrow$ `mount_equipment` von unten nach oben $\rightarrow$ `get_device_blueprint` & `connect_cables` $\rightarrow$ `validate_rack` bis 0 Errors $\rightarrow$ `export_deliverables`).
 2. **`optimize-and-fix-rack`** (Argument: `focus?`): Übergibt dem KI-Agenten automatisch den aktuellen ASCII-Elevationsplan samt aller Fehlermeldungen und weist ihn an, zuerst alle `ERROR`- und danach alle `WARNING`-Issues über deren `remediation_suggestions` aufzulösen.
+3. **`design-19inch-enterprise-rack`** (Argumente: `u_height?`, `rail_depth_mm?`): Leitfaden für 19-Zoll Enterprise-/Edge-Racks nach ANSI/TIA-942 5-Zonen-Aufbau mit `plan_external_endpoints` und PoE++/SFP+-Switching.
+4. **`design-3d-printed-carrier-bay`** (Argument: `carrier_type?`): Konfiguriert einen 3D-gedruckten 1U-Träger mit Sub-Modulen/Keystones und exportiert `.scad`/`.stl`.
+5. **`audit-poe-and-thermals`**: Führt ein komplettes PoE-, USV-Last-, Airflow- und Akustik-Audit durch.
 
 ### 9.5 Der Sidecar HTTP- & WebSocket-Server ([`sidecar-server.ts`](../packages/mcp-server/src/sidecar/sidecar-server.ts))
 #### HTTP-Endpunkte (`http://127.0.0.1:3100`)
@@ -475,6 +483,7 @@ Jeder Tool-Aufruf gibt ein JSON-serialisiertes `ToolExecutionEnvelope` zurück (
 - `GET /api/export/wiring.svg` $\rightarrow$ Live generiertes `image/svg+xml` des 2D-Schaltplans
 - `GET /api/export/scene.glb` $\rightarrow$ Live generiertes `model/gltf-binary` (`.glb`) 3D-Modell
 - `GET /api/export/bom.md` $\rightarrow$ Live generiertes `text/markdown` der Stückliste
+- `GET /api/export/build-book.html` $\rightarrow$ Druckfertiges A4/Letter Build Book HTML/PDF (`text/html; charset=utf-8` mit strikter CSP)
 - `GET /*` (alle Nicht-`/api/`-Pfade) $\rightarrow$ Liefert das gebaute Single-Page-App-Frontend aus `packages/web-viewer/dist` aus.
 
 #### WebSocket-Protokoll (`ws://127.0.0.1:3100/ws`)
@@ -483,7 +492,7 @@ Jeder Tool-Aufruf gibt ein JSON-serialisiertes `ToolExecutionEnvelope` zurück (
   - Bei jeder Änderung (durch KI-Agent via MCP, durch Dateiänderung in einer IDE oder durch UI-Interaktion): `{ type: 'STATE_UPDATED', reason: 'mutation' | 'undo' | 'redo' | 'external_file_change' | 'custom_blueprint', scene, undoAvailable, redoAvailable }`
   - Nach einem UI-Befehl: `{ type: 'COMMAND_RESULT', tool, result }` oder `{ type: 'ERROR', message }`
 - **Vom Browser an den Server (`SidecarClientCommand`):**
-  - `{ type: 'COMMAND', tool: 'init_rack' | 'mount_equipment' | 'modify_equipment' | 'connect_cables' | 'disconnect_cables' | 'undo_redo', args: { ... } }`
+  - `{ type: 'COMMAND', tool: 'init_rack' | 'mount_equipment' | 'modify_equipment' | 'connect_cables' | 'disconnect_cables' | 'undo_redo' | 'optimize_rack', args: { ... } }`
 
 ---
 
@@ -512,6 +521,7 @@ Beim Start prüft [`useRackState.ts`](../packages/web-viewer/src/state/useRackSt
 | **Verbindungs-Badge** | `connection-status-badge` | Zeigt blau `● MCP Sidecar Connected` im Live-Modus oder grau `○ Demo Mode (Standalone)` im Browser-Fallback-Modus. |
 | **`Undo (N)`** | `btn-undo` | Macht die letzte Änderung rückgängig (deaktiviert, wenn `undoAvailable === 0`). Sendet im Live-Modus `{ type: 'COMMAND', tool: 'undo_redo', args: { action: 'undo' } }` über WebSocket. |
 | **`Redo (N)`** | `btn-redo` | Stellt eine rückgängig gemachte Änderung wieder her (deaktiviert, wenn `redoAvailable === 0`). |
+| **`Optimize`** | `btn-optimize-rack` | Führt die deterministische Rack-Auto-Optimierung (`optimizeRackLayout` im Standalone-Modus bzw. `{ type: 'COMMAND', tool: 'optimize_rack', args: {} }` über WebSocket) aus, um Kollisionen zu beseitigen, `CoG < 0.50` zu halten und Kabellängen zu verkürzen. |
 | **`Reset`** | `btn-reset-demo` | Setzt im Demo-Modus die Szene und den Undo/Redo-Verlauf wieder auf den ursprünglichen 8U-Homelab-Referenzzustand zurück (`resetDemoScene()`). |
 
 ### 10.3 Schwebende 3D-HUD-Toolbar (`FloatingHudToolbar.tsx`, `data-testid="floating-3d-hud"`)
@@ -586,23 +596,24 @@ In den Tabs `[2] 2D CAD Elevation & Depth Cutaway` und `[3] 2D Wiring & Power Sc
 - Zusätzlich lässt sich die Zeichnung jederzeit mit gedrückter linker Maustaste frei verschieben (Drag-to-Pan).
 
 ### 10.7 Ansicht `[4]`: BOM, 3D-Print Queue & Deliverables (`BomAndExportsView.tsx`)
-Oben rechts befinden sich **5 direkte Download-Schaltflächen**:
+Oben rechts befinden sich die **direkten Download-Schaltflächen** (inkl. `Build Book (PDF / Print)`):
 1. **`Download elevation.svg`** (`data-testid="export-elevation-svg"`) — Lädt die 2D-CAD-Elevationszeichnung herunter.
 2. **`Download wiring-schematic.svg`** (`data-testid="export-wiring-svg"`) — Lädt den 2D-Schaltplan herunter.
 3. **`Download BOM.md`** (`data-testid="export-bom-md"`) — Lädt die komplette Markdown-Stückliste und Patch-Checkliste herunter.
-4. **`Download rack.json`** (`data-testid="export-rack-json"`) — Lädt den deklarativen Projektzustand (`scene.project`) als JSON-Datei herunter.
-5. **`Download rack-scene.glb`** (`data-testid="export-scene-glb"`) — Lädt das binäre 3D-Modell über `/api/export/scene.glb` herunter.
+4. **`Build Book (PDF / Print)`** (`data-testid="export-build-book-pdf"`) — Generiert das druckfertige, selbstenthaltene A4/Letter Build Book (`rack-build-book.html`, CSP-kompatibel ohne externe Assets).
+5. **`Download rack.json`** (`data-testid="export-rack-json"`) — Lädt den deklarativen Projektzustand (`scene.project`) als JSON-Datei herunter.
+6. **`Download rack-scene.glb`** (`data-testid="export-scene-glb"`) — Lädt das binäre 3D-Modell über `/api/export/scene.glb` herunter.
 
 Darunter zeigt die Ansicht drei übersichtliche Tabellen:
 1. **`1. Mounted Equipment & Sub-Module Schedule`** (Alle Geräte + Sub-Module mit HE/Slot, Seite, Hostname, Modell, Maßen und Watt)
-2. **`2. 3D-Print Fabrication Queue`** (Alle 3D-gedruckten Carrier mit Materialempfehlung, Filamentgewicht in Gramm, Einschmelzmuttern und Schrauben)
+2. **`2. 3D-Print Fabrication Queue`** (Alle 3D-gedruckten Carrier mit Materialempfehlung, Filamentgewicht in Gramm, Einschmelzmuttern und Schrauben — plus interaktiver 3D-STL-Vorschau in `StlPreview3D.tsx` samt **3D-Druckbett-Overlay** für `bambu-256` 256×256 mm, `prusa-mk4` 250×210 mm, `ender3` 220×220 mm und `a1-mini` 180×180 mm)
 3. **`3. Step-by-Step Cable Patching Schedule`** (Alle Kabel mit Farbpunkt, Typ, Start-Port, Ziel-Port, exakter 3D-Spline-Länge und kaufmännischer Bestelllänge)
 
 ---
 
-## 11. Die 4 CAD- & Dokumentations-Exporter (`@rack-mcp/exporters`)
+## 11. Die CAD-, Build-Book- & 3D-Druck-Exporter (`@rack-mcp/exporters`)
 
-Alle 4 Exporter in [`packages/exporters/src/`](../packages/exporters/src/index.ts) arbeiten komplett headless (ohne Browser/DOM) auf Basis eines `ComputedRackScene`-Objekts:
+Die Exporter in [`packages/exporters/src/`](../packages/exporters/src/index.ts) arbeiten komplett headless (ohne Browser/DOM) auf Basis eines `ComputedRackScene`-Objekts:
 
 1. **`generateElevationSvg(scene)` ([`elevation-svg.ts`](../packages/exporters/src/elevation-svg.ts)):**
    - Erzeugt ein hochauflösendes, zweizeiliges CAD-Zeichnungsblatt (`2620 × 1260 px` bei `scalePxPerMm = 2.8`):
@@ -630,6 +641,9 @@ Alle 4 Exporter in [`packages/exporters/src/`](../packages/exporters/src/index.t
    - Erzeugt ohne externe 3D-Bibliotheken ein standardkonformes binäres **glTF 2.0 (`.glb`)** 3D-Modell im Maßstab `1.0 = 1 Meter` (`MM_TO_METERS = 0.001`):
    - Enthält benannte Szenen-Knoten für den Rack-Rahmen (`RackFrame`), alle Geräte (`Device_<id>`, `SubDevice_<id>`), `1.8 mm` erhabene Ports (`Port_<instance>_<port>`) gegen Z-Fighting sowie verdrehungsfreie 8-seitige **Parallel-Transport-Frame (PTF) Kabel-Tubes** (`Cable_<id>`, Radius `3.2 mm`) inklusive Knickschutz-Tüllen (`r = 5.0 mm`).
 
+5. **`generateBuildBookHtml(scene, options?)` ([`build-book-exporter.ts`](../packages/exporters/src/build-book-exporter.ts)):**
+   - Erzeugt ein druckoptimiertes, 100 % selbstenthaltenes A4/Letter HTML/PDF-Build-Book (`rack-build-book.html`, ohne externe Fonts/CDN-Links) inklusive Titelblock, 2D-Elevation, Wiring Schematic, Energie-/USV-/Stücklisten-Tabellen, Validierungsbericht und 3D-Druck-Warteschlange.
+
 ---
 
 ## 12. Das Kommandozeilen-Werkzeug (`@rack-mcp/cli` / `rack-mcp`)
@@ -651,18 +665,24 @@ Implementiert in [`packages/cli/src/index.ts`](../packages/cli/src/index.ts) und
    - `--remote-mcp` & `--public-url <url>`: Aktiviert den mandantenfähigen, 100 % speicherbasierten **Remote-MCP-Modus** (`Streamable HTTP` auf `/mcp`, `HTTP+SSE` auf `/sse`, Discovery auf `/.well-known/mcp.json`, isolierte Live-3D-Viewer-Links `/?session=<uuid>` und direkte HTTPS-Download-URLs unter `/api/export/*?session=<uuid>`), wie er öffentlich unter **`https://mcp.rackarchitect.dev/mcp`** bereitsteht.
 
 2. **`validate`:**
-   Lädt die angegebene `rack.yaml`, führt die 5-Stufen-Validierung aus, gibt den kompletten **ASCII-Elevationsplan + Diagnosebericht** aus und beendet sich mit **Exit-Code `0`** (wenn `VALID`, d. h. `0` Errors) oder **Exit-Code `1`** (wenn `INVALID` oder Datei nicht gefunden).
+   Lädt die angegebene `rack.yaml`, führt die 5-Stufen-Validierung aus, gibt den kompletten **ASCII-Elevationsplan + Diagnosebericht** aus und beendet sich mit **Exit-Code `0`** (wenn `VALID`, d. h. `0` Errors) oder **Exit-Code `1`** (wenn `INVALID` oder Datei nicht gefunden). Mit `--ci` werden GitHub-Actions-/CI-Annotations und eine strukturierte JSON-Zusammenfassung ausgegeben.
    ```bash
    node packages/cli/dist/bin.js validate examples/10inch-homelab/rack.yaml
-   # oder:
-   node packages/cli/dist/bin.js validate --project examples/10inch-homelab/rack.yaml
+   # oder für CI-Pipelines:
+   node packages/cli/dist/bin.js validate examples/10inch-homelab/rack.yaml --ci
    ```
 
 3. **`export`:**
-   Lädt die angegebene `rack.yaml` und generiert alle 4 Deliverables (`elevation.svg`, `wiring-schematic.svg`, `BOM.md`, `rack-scene.glb`) im Zielordner.
+   Lädt die angegebene `rack.yaml` und generiert die CAD-, BOM-, Label-, GLB- sowie OpenSCAD/STL-Deliverables im Zielordner.
    ```bash
    node packages/cli/dist/bin.js export examples/10inch-homelab/rack.yaml --out-dir ./examples/10inch-homelab
    # Unterstützte Ausgabe-Flags: --out-dir <dir>, --output-dir <dir> oder -o <dir>
+   ```
+
+4. **`schema`:**
+   Gibt das offizielle Draft 2020-12 JSON Schema (`rack.schema.json`) für `rack.yaml` auf `stdout` aus oder schreibt es mit `--out <pfad>` direkt in eine Datei (z. B. `schemas/rack.schema.json` für VS Code YAML-Autocomplete und CI-Linting).
+   ```bash
+   node packages/cli/dist/bin.js schema --out schemas/rack.schema.json
    ```
 
 ---
@@ -777,7 +797,7 @@ Alle modularen 3D-Druck-Carrier (`category: 'modular-carrier'`) werden aus ihren
 
 ### 15.2 Interaktiver Katalog- & Kabel-Builder im Web-Viewer (`CatalogBuilderDrawer.tsx`)
 - **`+ Catalog & Cable Builder`** (`data-testid="btn-toggle-builder"`) in der oberen Navigationsleiste öffnet die linke Builder-Schublade (`340 px`):
-  - **Tab `Hardware Catalog` (`builder-tab-catalog`):** Volltextsuche über alle 20 Blueprints, Formfaktor-Filter (`10inch`, `19inch`, `sub-module`), Wahl von `Target U (1..N)` und `Face (FRONT/REAR)` sowie 1-Klick **`+ Mount on U<N>`** (`mount-bp-<slug>`).
+  - **Tab `Hardware Catalog` (`builder-tab-catalog`):** Volltextsuche über alle 101 Blueprints, Formfaktor-Filter (`10inch`, `19inch`, `6inch`, `sub-module`), Wahl von `Target U (1..N)` und `Face (FRONT/REAR)` sowie 1-Klick **`+ Mount on U<N>`** (`mount-bp-<slug>`).
   - **Tab `Cable Patch Builder` (`builder-tab-cables`):** Auswahl von Quell-Gerät/Port und Ziel-Gerät/Port, Kabeltyp (`cat6a`, `cat5e`, `sfp-dac`, `iec-c13-c14`, ...), optionaler `VLAN ID` & `IP CIDR` und **`+ Route 3D Spline Cable`** (`btn-connect-cable-submit`).
 - **Weitere Direkt-Aktionen im Browser:**
   - **`Import JSON`** (`data-testid="btn-import-json"`) in `TopNavBar.tsx` lädt ein komplettes `RackProject`-JSON.

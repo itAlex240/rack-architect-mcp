@@ -10,10 +10,14 @@ import { BomAndExportsView } from './BomAndExportsView.js';
 import { InspectorSidebar } from './InspectorSidebar.js';
 import { CatalogBuilderDrawer } from './CatalogBuilderDrawer.js';
 
+export interface AppDashboardProps {
+  readonly onOptimizeRack?: (() => void) | undefined;
+}
+
 /**
  * Precision Hardware & CAD Studio Dashboard for `@rack-mcp/web-viewer`.
  */
-export function AppDashboard() {
+export function AppDashboard({ onOptimizeRack }: AppDashboardProps = {}) {
   const state = useRackState();
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [importToast, setImportToast] = useState<{
@@ -114,6 +118,7 @@ export function AppDashboard() {
         onExportDeliverablesToDisk={state.exportDeliverablesToDisk}
         onUndo={state.undo}
         onRedo={state.redo}
+        onOptimizeRack={onOptimizeRack ?? state.optimizeRack}
         onResetDemo={state.resetDemoScene}
         onSimulateAgentStep={state.simulateAgentStep}
       />

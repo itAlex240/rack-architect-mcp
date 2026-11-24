@@ -235,6 +235,7 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     const initNewRackSpy = vi.fn();
     const exportToDiskSpy = vi.fn();
     const clearToolLogSpy = vi.fn();
+    const optimizeRackSpy = vi.fn();
 
     render(
       <div>
@@ -248,6 +249,7 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
           redoAvailable={0}
           onUndo={vi.fn()}
           onRedo={vi.fn()}
+          onOptimizeRack={optimizeRackSpy}
           onResetDemo={vi.fn()}
           catalogDrawerOpen={false}
           onToggleCatalogDrawer={vi.fn()}
@@ -302,6 +304,9 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
 
     fireEvent.click(screen.getByTestId('btn-export-disk'));
     expect(exportToDiskSpy).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByTestId('btn-optimize-rack'));
+    expect(optimizeRackSpy).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByTestId('btn-init-new-rack'));
     expect(screen.getByTestId('new-rack-popover')).toBeDefined();
@@ -759,5 +764,77 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     expect(screen.getByTestId('stl-bed-fit-badge').textContent).toContain(
       'Exceeds 220×220 — Split STL',
     );
+  });
+
+  it('optimizes colliding rack layouts via TopNavBar Optimize button and downloads Build Book HTML with active electricity rate', async () => {
+    render(<AppDashboard />);
+
+    // 1. Trigger CHASSIS_COLLISION by moving sw-u8 onto occupied U7, then click Optimize
+    fireEvent.click(screen.getByTestId('move-device-u-7'));
+    expect(screen.getByTestId('validation-status-pill').textContent).toContain(
+      'INVALID',
+    );
+
+    const optimizeBtn = screen.getByTestId('btn-optimize-rack');
+    expect(optimizeBtn.textContent).toContain('Optimize');
+    fireEvent.click(optimizeBtn);
+
+    expect(screen.getByTestId('validation-status-pill').textContent).toContain(
+      'VALID (0 ERRORS)',
+    );
+    const optFeedEntries = screen.getAllByTestId('mcp-tool-call-optimize_rack');
+    expect(optFeedEntries.length).toBeGreaterThanOrEqual(1);
+    expect(optFeedEntries[0]?.textContent).toContain('optimize_rack()');
+
+    // Clicking Undo restores the pre-optimization INVALID state
+    fireEvent.click(screen.getByTestId('btn-undo'));
+    expect(screen.getByTestId('validation-status-pill').textContent).toContain(
+      'INVALID',
+    );
+
+    // 2. Navigate to BOM & 3D-Print tab, adjust electricity rate, and download Build Book HTML
+    fireEvent.click(screen.getByTestId('nav-tab-bom'));
+    fireEvent.change(screen.getByTestId('input-electricity-rate'), {
+      target: { value: '0.45' },
+    });
+
+    let capturedBlob: Blob | undefined;
+    const createUrlSpy = vi
+      .spyOn(URL, 'createObjectURL')
+      .mockImplementation((obj: Blob | MediaSource) => {
+        if (obj instanceof Blob) {
+          capturedBlob = obj;
+        }
+        return 'blob:rack-build-book-test';
+      });
+    const revokeUrlSpy = vi
+      .spyOn(URL, 'revokeObjectURL')
+      .mockImplementation(() => {});
+    const anchorClickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {});
+
+    try {
+      const buildBookBtn = screen.getByTestId('export-build-book-pdf');
+      expect(buildBookBtn.textContent).toContain('Build Book (PDF / Print)');
+      fireEvent.click(buildBookBtn);
+
+      expect(createUrlSpy).toHaveBeenCalledTimes(1);
+      expect(anchorClickSpy).toHaveBeenCalledTimes(1);
+      expect(revokeUrlSpy).toHaveBeenCalledWith('blob:rack-build-book-test');
+      expect(capturedBlob).toBeDefined();
+      expect(capturedBlob!.type).toBe('text/html;charset=utf-8');
+
+      const htmlText = await capturedBlob!.text();
+      expect(htmlText.startsWith('<!DOCTYPE html>')).toBe(true);
+      expect(htmlText).toContain('€0.45/kWh');
+      expect(htmlText).toContain('data-section="cad-elevation"');
+      expect(htmlText).toContain('data-section="wiring-schematic"');
+      expect(htmlText).toContain('data-testid="buildbook-hardware-bom"');
+    } finally {
+      createUrlSpy.mockRestore();
+      revokeUrlSpy.mockRestore();
+      anchorClickSpy.mockRestore();
+    }
   });
 });

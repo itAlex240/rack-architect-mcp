@@ -21,6 +21,6 @@ Multi-tenant Hosted Remote MCP (`Streamable HTTP` `/mcp` & `HTTP+SSE` `/sse`) an
 
 ## Capabilities
 
-- **12 Canonical MCP Tools:** `init_rack`, `search_catalog`, `get_device_blueprint`, `define_custom_blueprint`, `mount_equipment`, `modify_equipment`, `connect_cables`, `disconnect_cables`, `plan_external_endpoints`, `validate_rack`, `export_deliverables`, `undo_redo`.
-- **4 MCP Resources:** `rack://project/current`, `rack://project/validation`, `rack://project/elevation-ascii`, `rack://catalog/summary`.
-- **2 Guided MCP Prompts:** `design-homelab-rack`, `audit-and-fix-rack`.
+- **13 Canonical MCP Tools:** `init_rack`, `search_catalog`, `get_device_blueprint`, `define_custom_blueprint`, `mount_equipment`, `modify_equipment`, `connect_cables`, `disconnect_cables`, `plan_external_endpoints`, `validate_rack`, `export_deliverables`, `undo_redo`, `optimize_rack`.
+- **4 MCP Resources:** `rack://current/summary`, `rack://current/bom`, `rack://current/diagnostics`, `rack://current/yaml`.
+- **5 Guided MCP Prompts:** `plan-homelab-from-scratch`, `optimize-and-fix-rack`, `design-19inch-enterprise-rack`, `design-3d-printed-carrier-bay`, `audit-poe-and-thermals`.

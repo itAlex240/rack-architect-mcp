@@ -19,7 +19,7 @@ Ready-to-post, technical, zero-fluff templates for sharing **RackArchitect MCP**
 > - **16:9 Share Card Export + Brother/DYMO Cable Labels:** Export a clean 1200×675 build summary PNG (`Card` button in the top bar) to share your layout, plus printable `12mm`/`18mm`/`24mm` cable label SVGs & CSVs.
 >
 > Zero login, zero paywall, MIT-licensed: https://github.com/itAlex240/rack-architect-mcp  
-> *(And if you have custom mini-PC or switch dimensions missing from the 73-part catalog, you can design one in the `Custom Blueprint` drawer and open a pre-filled GitHub Catalog Issue in one click!)*
+> *(And if you have custom mini-PC or switch dimensions missing from the 101-part catalog, you can design one in the `Custom Blueprint` drawer and open a pre-filled GitHub Catalog Issue in one click!)*
 
 ---
 
