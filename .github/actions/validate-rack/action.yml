@@ -1,0 +1,60 @@
+name: 'Validate Rack-as-Code (RackArchitect MCP)'
+description: 'Validates a rack.yaml layout across all 5 deterministic geometry, port, PoE/power, mechanical, and thermal/acoustic stages with GitHub Actions annotations and Step Summary.'
+branding:
+  icon: 'server'
+  color: 'blue'
+
+inputs:
+  rack-file:
+    description: 'Path to the rack.yaml project file to validate.'
+    required: true
+    default: 'rack.yaml'
+  node-version:
+    description: 'Node.js version to setup before running @rack-mcp/cli.'
+    required: false
+    default: '22'
+
+outputs:
+  status:
+    description: 'Validation result ("VALID" or "INVALID").'
+    value: ${{ steps.validate.outputs.status }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Run RackArchitect 5-Stage Validation
+      id: validate
+      shell: bash
+      env:
+        RACK_FILE: ${{ inputs.rack-file }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: |
+        set -euo pipefail
+        LOCAL_BIN=""
+        if [ -f "./packages/cli/dist/bin.js" ]; then
+          LOCAL_BIN="./packages/cli/dist/bin.js"
+        elif [ -f "${ACTION_PATH}/../../../packages/cli/dist/bin.js" ]; then
+          LOCAL_BIN="${ACTION_PATH}/../../../packages/cli/dist/bin.js"
+        fi
+
+        set +e
+        if [ -n "${LOCAL_BIN}" ]; then
+          node "${LOCAL_BIN}" validate "${RACK_FILE}" --ci
+          EXIT_CODE=$?
+        else
+          npx -y @rack-mcp/cli validate "${RACK_FILE}" --ci
+          EXIT_CODE=$?
+        fi
+        set -e
+
+        if [ "${EXIT_CODE}" -eq 0 ]; then
+          echo "status=VALID" >> "${GITHUB_OUTPUT}"
+        else
+          echo "status=INVALID" >> "${GITHUB_OUTPUT}"
+        fi
+        exit "${EXIT_CODE}"

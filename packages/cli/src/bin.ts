@@ -10,12 +10,14 @@ async function main(): Promise<void> {
     parsed.command === 'validate' ||
     parsed.command === 'export' ||
     parsed.command === 'import' ||
-    parsed.command === 'new-blueprint'
+    parsed.command === 'new-blueprint' ||
+    parsed.command === 'schema'
   ) {
+    const line = res.output.endsWith('\n') ? res.output : `${res.output}\n`;
     if (res.exitCode === 0) {
-      process.stdout.write(`${res.output}\n`);
+      process.stdout.write(line);
     } else {
-      process.stderr.write(`${res.output}\n`);
+      process.stderr.write(line);
     }
     process.exit(res.exitCode);
   }

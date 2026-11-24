@@ -1,0 +1,421 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp.rackarchitect.dev/schemas/rack.schema.json",
+  "title": "RackArchitect MCP Project Schema",
+  "description": "Root declarative Rack-as-Code state schema (rack.yaml).",
+  "type": "object",
+  "properties": {
+    "cables": {
+      "type": "array",
+      "default": [],
+      "maxItems": 512,
+      "items": {
+        "description": "Point-to-point physical cable connection between two ports.",
+        "type": "object",
+        "properties": {
+          "cable_id": {
+            "description": "Unique identifier for the cable connection.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "cable_type": {
+            "description": "Standardized physical cable and connector assembly type.",
+            "type": "string",
+            "enum": [
+              "cat6a",
+              "cat6a-angled",
+              "cat6",
+              "cat6-angled",
+              "cat5e",
+              "cat5e-angled",
+              "sfp-plus-dac",
+              "sfp-plus-dac-angled",
+              "fiber-lc-duplex",
+              "fiber-lc-duplex-angled",
+              "rj45-serial-rollover",
+              "rj45-serial-rollover-angled",
+              "power-c13-c14",
+              "power-c13-c14-angled",
+              "power-schuko-c13",
+              "power-schuko-c13-angled",
+              "power-dc-5525",
+              "power-dc-5525-angled",
+              "power-usb-c",
+              "power-usb-c-angled"
+            ]
+          },
+          "color_hex": {
+            "description": "Hex color code for 2D/3D cable visualization.",
+            "type": "string",
+            "default": "#3B82F6",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          },
+          "from": {
+            "description": "Source or destination port endpoint of a physical cable.",
+            "type": "object",
+            "properties": {
+              "face": {
+                "description": "Explicit rack face selector (used to distinguish front vs rear connections on passthrough couplers).",
+                "type": "string",
+                "enum": [
+                  "front",
+                  "rear"
+                ]
+              },
+              "instance_id": {
+                "description": "Target device instance_id (top-level or child sub-module).",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "port_id": {
+                "description": "Target port_id on the device.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "instance_id",
+              "port_id"
+            ]
+          },
+          "ip_cidr": {
+            "description": "Optional IPv4/IPv6 subnet or interface CIDR annotation (e.g. \"10.10.20.0/24\").",
+            "type": "string",
+            "maxLength": 64
+          },
+          "label": {
+            "description": "Optional cable label or circuit tag.",
+            "type": "string",
+            "maxLength": 240
+          },
+          "preferred_portal_u": {
+            "description": "Optional 1-indexed U hint for front-to-rear cable portal routing.",
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 60
+          },
+          "routing_mode": {
+            "description": "Optional routing strategy override: defaults to shortest-direct (shortest collision-free path); set to left-duct or right-duct only when the user explicitly requests routing via a side cable duct.",
+            "type": "string",
+            "enum": [
+              "shortest-direct",
+              "left-duct",
+              "right-duct"
+            ],
+            "default": "shortest-direct"
+          },
+          "to": {
+            "description": "Source or destination port endpoint of a physical cable.",
+            "type": "object",
+            "properties": {
+              "face": {
+                "description": "Explicit rack face selector (used to distinguish front vs rear connections on passthrough couplers).",
+                "type": "string",
+                "enum": [
+                  "front",
+                  "rear"
+                ]
+              },
+              "instance_id": {
+                "description": "Target device instance_id (top-level or child sub-module).",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "port_id": {
+                "description": "Target port_id on the device.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "instance_id",
+              "port_id"
+            ]
+          },
+          "vlan_id": {
+            "description": "Optional IEEE 802.1Q primary VLAN ID carried on this link (1..4094).",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4094
+          }
+        },
+        "required": [
+          "cable_id",
+          "from",
+          "to",
+          "cable_type"
+        ]
+      }
+    },
+    "external_endpoints": {
+      "description": "External building/room cable drops (PoE cameras, Wi-Fi APs, room wall outlets) entering from the rear conduit onto a patch panel.",
+      "type": "array",
+      "default": [],
+      "maxItems": 256,
+      "items": {
+        "description": "External building/house cable drop entering from outside the rack and terminating on the rear of a patch panel (consuming 0U of rack space).",
+        "type": "object",
+        "properties": {
+          "category": {
+            "description": "Physical category of an external building or room drop entering the rack from outside.",
+            "type": "string",
+            "enum": [
+              "poe-camera",
+              "wifi-ap",
+              "wall-outlet-pc",
+              "projector-media",
+              "workstation-dock",
+              "iot-controller",
+              "isp-wan-uplink",
+              "other-lan"
+            ],
+            "default": "other-lan"
+          },
+          "color_hex": {
+            "description": "Hex color code for the external cable drop and its front patch guide.",
+            "type": "string",
+            "default": "#38BDF8",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          },
+          "endpoint_id": {
+            "description": "Unique project-wide identifier for the external building/room drop (e.g., \"cam-01\", \"ap-eg-01\", \"room-office-pc\").",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "entry_position": {
+            "description": "Rear building cable conduit entry point into the rack frame.",
+            "type": "string",
+            "enum": [
+              "top-rear",
+              "bottom-rear"
+            ],
+            "default": "top-rear"
+          },
+          "label": {
+            "description": "Human-readable label shown on cable badges and patching instructions (e.g., \"Kamera 1 – Einfahrt\", \"Büro – Workstation\").",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "notes": {
+            "description": "Optional user-facing installation note.",
+            "type": "string",
+            "maxLength": 1000
+          },
+          "patch_panel_instance_id": {
+            "description": "Target patch panel instance_id where the incoming building cable is punched down on the rear face.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "patch_panel_port_id": {
+            "description": "Target port_id on the patch panel rear face (e.g., \"p1\" .. \"p24\").",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "poe_draw_watts": {
+            "description": "Required PoE power draw in watts (0 for non-PoE LAN drops; e.g., 9W for PoE camera, 18W for Wi-Fi 7 AP).",
+            "type": "number",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 200
+          },
+          "required_speed": {
+            "description": "Required Ethernet link speed for the external room/device drop.",
+            "type": "string",
+            "enum": [
+              "100m",
+              "1gbe",
+              "2.5gbe",
+              "10gbe"
+            ],
+            "default": "1gbe"
+          },
+          "room_or_zone": {
+            "description": "Optional building zone or room name (e.g., \"Außenbereich\", \"EG Wohnzimmer\", \"OG Büro\", \"Heimkino\").",
+            "type": "string",
+            "maxLength": 160
+          },
+          "vlan_id": {
+            "description": "Optional IEEE 802.1Q VLAN ID assigned to this room/device drop (1..4094).",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4094
+          }
+        },
+        "required": [
+          "endpoint_id",
+          "label",
+          "patch_panel_instance_id",
+          "patch_panel_port_id"
+        ]
+      }
+    },
+    "mounted_devices": {
+      "type": "array",
+      "default": [],
+      "maxItems": 120,
+      "items": {
+        "description": "Equipment mounted directly onto a rack unit.",
+        "type": "object",
+        "properties": {
+          "blueprint_slug": {
+            "description": "Hardware catalog blueprint slug.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "children": {
+            "description": "Child sub-modules mounted inside this carrier.",
+            "type": "array",
+            "default": [],
+            "maxItems": 32,
+            "items": {
+              "description": "Sub-module device mounted inside a specific slot of a parent carrier.",
+              "type": "object",
+              "properties": {
+                "blueprint_slug": {
+                  "description": "Hardware catalog blueprint slug for the child sub-module.",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "hostname": {
+                  "description": "Optional logical hostname or label.",
+                  "type": "string",
+                  "maxLength": 160
+                },
+                "instance_id": {
+                  "description": "Unique project-wide instance identifier for the child device.",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "slot_id": {
+                  "description": "Target slot_id inside the parent modular carrier.",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                }
+              },
+              "required": [
+                "instance_id",
+                "blueprint_slug",
+                "slot_id"
+              ]
+            }
+          },
+          "face": {
+            "description": "Mounting or port face relative to the rack or chassis.",
+            "type": "string",
+            "enum": [
+              "front",
+              "rear"
+            ],
+            "default": "front"
+          },
+          "hostname": {
+            "description": "Optional logical hostname or label.",
+            "type": "string",
+            "maxLength": 160
+          },
+          "instance_id": {
+            "description": "Unique project-wide instance identifier for the mounted equipment.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "u_position": {
+            "description": "Lowest 1-indexed Rack Unit (U) occupied by this device.",
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 60
+          }
+        },
+        "required": [
+          "instance_id",
+          "blueprint_slug",
+          "u_position"
+        ]
+      }
+    },
+    "project_name": {
+      "description": "Human-readable name of the rack layout project.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "rack": {
+      "description": "Physical rack frame dimensions and enclosure configuration.",
+      "type": "object",
+      "properties": {
+        "enclosure_type": {
+          "description": "Physical rack enclosure style governing front door clearance checks.",
+          "type": "string",
+          "enum": [
+            "open-frame",
+            "closed-glass-front",
+            "closed-vented-front"
+          ],
+          "default": "open-frame"
+        },
+        "front_door_clearance_mm": {
+          "description": "Available clearance in front of Z=0 before hitting the front door in mm.",
+          "type": "number",
+          "default": 45,
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "rail_depth_mm": {
+          "description": "Distance from front mounting rail face (Z=0) to rear mounting rail face in mm (max 2000mm).",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 2000
+        },
+        "rear_clearance_mm": {
+          "description": "Available clearance behind Z=rail_depth_mm in mm.",
+          "type": "number",
+          "default": 40,
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "standard": {
+          "description": "EIA-310-D or homelab rack width standard.",
+          "type": "string",
+          "enum": [
+            "19inch",
+            "10inch",
+            "6inch"
+          ]
+        },
+        "u_height": {
+          "description": "Total vertical rack capacity in Rack Units (U / HE, 1..60).",
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 60
+        }
+      },
+      "required": [
+        "standard",
+        "u_height",
+        "rail_depth_mm"
+      ]
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0",
+      "default": "1.0"
+    }
+  },
+  "required": [
+    "project_name",
+    "rack"
+  ]
+}

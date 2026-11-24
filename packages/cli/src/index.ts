@@ -6,7 +6,10 @@ import {
   HardwareBlueprintSchema,
   HardwareCategorySchema,
   MountTypeSchema,
+  RackProjectSchema,
   RackStandardSchema,
+  type ComputedRackScene,
+  type DiagnosticIssue,
   type HardwareBlueprintInput,
   type RackStandard
 } from '@rack-mcp/core-domain';
@@ -26,10 +29,12 @@ import {
 } from '@rack-mcp/mcp-server';
 
 export interface ParsedCliArgs {
-  readonly command: 'serve' | 'validate' | 'export' | 'import' | 'new-blueprint';
+  readonly command: 'serve' | 'validate' | 'export' | 'import' | 'new-blueprint' | 'schema';
   readonly projectPath?: string | undefined;
   readonly outDir?: string | undefined;
   readonly outFile?: string | undefined;
+  readonly missingOutArg?: boolean | undefined;
+  readonly ci: boolean;
   readonly importFormat?: ExternalImportFormat | undefined;
   readonly rackStandard?: RackStandard | undefined;
   readonly uHeight?: number | undefined;
@@ -63,6 +68,8 @@ export function parseCliArgs(
   let projectPath: string | undefined;
   let outDir: string | undefined;
   let outFile: string | undefined;
+  let missingOutArg = false;
+  let ci = false;
   let importFormat: ExternalImportFormat | undefined;
   let rackStandard: RackStandard | undefined;
   let uHeight: number | undefined;
@@ -102,7 +109,8 @@ export function parseCliArgs(
     argv[0] === 'export' ||
     argv[0] === 'serve' ||
     argv[0] === 'import' ||
-    argv[0] === 'new-blueprint'
+    argv[0] === 'new-blueprint' ||
+    argv[0] === 'schema'
   ) {
     command = argv[0];
     i = 1;
@@ -125,6 +133,8 @@ export function parseCliArgs(
     } else if (arg === '--no-stdio') {
       stdio = false;
       explicitStdio = true;
+    } else if (arg === '--ci') {
+      ci = true;
     } else if (arg === '--remote-mcp') {
       remoteMcp = true;
     } else if (arg === '--public-url' && next !== undefined) {
@@ -151,10 +161,14 @@ export function parseCliArgs(
     } else if ((arg === '--out-dir' || arg === '--output-dir') && next !== undefined) {
       outDir = next;
       i++;
-    } else if ((arg === '--out' || arg === '-o') && next !== undefined) {
-      outFile = next;
-      outDir = next;
-      i++;
+    } else if (arg === '--out' || arg === '-o') {
+      if (next !== undefined && !next.startsWith('-')) {
+        outFile = next;
+        outDir = next;
+        i++;
+      } else {
+        missingOutArg = true;
+      }
     } else if (arg === '--format' && next !== undefined) {
       if (next === 'netbox' || next === 'unifi' || next === 'proxmox') {
         importFormat = next;
@@ -225,6 +239,12 @@ export function parseCliArgs(
         powerConnector = next;
       }
       i++;
+    } else if (
+      (command === 'validate' || command === 'export' || command === 'import') &&
+      projectPath === undefined &&
+      !arg.startsWith('-')
+    ) {
+      projectPath = arg;
     }
   }
 
@@ -237,6 +257,8 @@ export function parseCliArgs(
     ...(projectPath !== undefined ? { projectPath } : {}),
     ...(outDir !== undefined ? { outDir } : {}),
     ...(outFile !== undefined ? { outFile } : {}),
+    ...(missingOutArg ? { missingOutArg } : {}),
+    ci,
     ...(importFormat !== undefined ? { importFormat } : {}),
     ...(rackStandard !== undefined ? { rackStandard } : {}),
     ...(uHeight !== undefined ? { uHeight } : {}),
@@ -332,6 +354,370 @@ function discoverActiveSidecarProjectPath(
   });
 }
 
+export const RACK_SCHEMA_ID =
+  'https://mcp.rackarchitect.dev/schemas/rack.schema.json';
+export const RACK_SCHEMA_TITLE = 'RackArchitect MCP Project Schema';
+
+const SCHEMA_KEYWORD_ORDER: ReadonlyMap<string, number> = new Map(
+  [
+    '$schema',
+    '$id',
+    'title',
+    'description',
+    'type',
+    'const',
+    'enum',
+    'default',
+    'format',
+    'pattern',
+    'minLength',
+    'maxLength',
+    'minimum',
+    'exclusiveMinimum',
+    'maximum',
+    'exclusiveMaximum',
+    'minItems',
+    'maxItems',
+    'items',
+    'properties',
+    'required',
+    'additionalProperties'
+  ].map((keyword, idx) => [keyword, idx] as const)
+);
+
+function sortJsonSchemaKeys(
+  value: unknown,
+  insidePropertiesMap = false
+): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => sortJsonSchemaKeys(item, false));
+  }
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+
+  const record = value as Record<string, unknown>;
+  const keys = Object.keys(record).sort((a, b) => {
+    if (!insidePropertiesMap) {
+      const pa = SCHEMA_KEYWORD_ORDER.get(a);
+      const pb = SCHEMA_KEYWORD_ORDER.get(b);
+      if (pa !== undefined && pb !== undefined) {
+        return pa - pb;
+      }
+      if (pa !== undefined) {
+        return -1;
+      }
+      if (pb !== undefined) {
+        return 1;
+      }
+    }
+    return a < b ? -1 : a > b ? 1 : 0;
+  });
+
+  const sorted: Record<string, unknown> = {};
+  for (const key of keys) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      continue;
+    }
+    const childValue = sortJsonSchemaKeys(
+      record[key],
+      !insidePropertiesMap && key === 'properties'
+    );
+    Object.defineProperty(sorted, key, {
+      value: childValue,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  }
+  return sorted;
+}
+
+/**
+ * Generates the official RackArchitect `rack.schema.json` object directly
+ * from `RackProjectSchema` (`@rack-mcp/core-domain`) with deterministic key order.
+ */
+export function buildRackJsonSchema(): Record<string, unknown> {
+  const generated = RackProjectSchema.toJSONSchema({
+    io: 'input',
+    target: 'draft-2020-12'
+  }) as Record<string, unknown>;
+
+  const enriched: Record<string, unknown> = {
+    ...generated,
+    $schema:
+      typeof generated['$schema'] === 'string'
+        ? generated['$schema']
+        : 'https://json-schema.org/draft/2020-12/schema',
+    $id: RACK_SCHEMA_ID,
+    title: RACK_SCHEMA_TITLE
+  };
+
+  return sortJsonSchemaKeys(enriched) as Record<string, unknown>;
+}
+
+export function serializeRackJsonSchema(): string {
+  return `${JSON.stringify(buildRackJsonSchema(), null, 2)}\n`;
+}
+
+function writeTextFileAtomicallySafe(
+  rawTargetPath: string,
+  content: string
+): string {
+  if (rawTargetPath.trim().length === 0 || rawTargetPath.includes('\0')) {
+    throw new Error('Invalid output file path.');
+  }
+  const targetPath = path.resolve(rawTargetPath);
+
+  let existingStat: fs.Stats | undefined;
+  try {
+    existingStat = fs.lstatSync(targetPath);
+  } catch {
+    existingStat = undefined;
+  }
+  if (existingStat !== undefined) {
+    if (existingStat.isSymbolicLink()) {
+      throw new Error(
+        `Refusing to write through symbolic link '${targetPath}'.`
+      );
+    }
+    if (existingStat.isDirectory()) {
+      throw new Error(`Output path '${targetPath}' is a directory.`);
+    }
+  }
+
+  const parentDir = path.dirname(targetPath);
+  fs.mkdirSync(parentDir, { recursive: true });
+  const realParent = fs.realpathSync(parentDir);
+  const safeTarget = path.join(realParent, path.basename(targetPath));
+  const tmpPath = path.join(
+    realParent,
+    `.${path.basename(targetPath)}.tmp.${process.pid}.${Date.now()}`
+  );
+
+  try {
+    fs.writeFileSync(tmpPath, content, { encoding: 'utf8', flag: 'wx' });
+    fs.renameSync(tmpPath, safeTarget);
+  } catch (err) {
+    try {
+      if (fs.existsSync(tmpPath)) {
+        fs.unlinkSync(tmpPath);
+      }
+    } catch {
+      // Ignore cleanup failure
+    }
+    throw err;
+  }
+  return targetPath;
+}
+
+function escapeGhaData(value: string): string {
+  return value
+    .replace(/%/g, '%25')
+    .replace(/\r/g, '%0D')
+    .replace(/\n/g, '%0A');
+}
+
+function escapeGhaProperty(value: string): string {
+  return value
+    .replace(/%/g, '%25')
+    .replace(/\r/g, '%0D')
+    .replace(/\n/g, '%0A')
+    .replace(/:/g, '%3A')
+    .replace(/,/g, '%2C');
+}
+
+function escapeMarkdownCell(value: string): string {
+  return value
+    .replace(/\|/g, '\\|')
+    .replace(/\r?\n/g, ' ')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function escapeMarkdownCode(value: string): string {
+  return value.replace(/`/g, "'").replace(/\r?\n/g, ' ');
+}
+
+function formatAnnotationFilePath(
+  resolvedTargetPath: string,
+  rawProjectPath?: string
+): string {
+  const rel = path.relative(process.cwd(), resolvedTargetPath);
+  if (rel.length > 0 && !rel.startsWith('..') && !path.isAbsolute(rel)) {
+    return rel.split(path.sep).join('/');
+  }
+  return (rawProjectPath ?? resolvedTargetPath).split(path.sep).join('/');
+}
+
+function formatWorkflowCommand(
+  level: 'error' | 'warning' | 'notice',
+  file: string,
+  title: string,
+  message: string,
+  line?: number
+): string {
+  const props = [
+    `file=${escapeGhaProperty(file)}`,
+    ...(line !== undefined && Number.isInteger(line) && line > 0
+      ? [`line=${line}`]
+      : []),
+    `title=${escapeGhaProperty(title)}`
+  ].join(',');
+  return `::${level} ${props}::${escapeGhaData(message)}`;
+}
+
+function appendGithubStepSummary(markdownSummary: string): void {
+  const summaryPath = process.env['GITHUB_STEP_SUMMARY']?.trim();
+  if (summaryPath === undefined || summaryPath.length === 0) {
+    return;
+  }
+  try {
+    let stat: fs.Stats | undefined;
+    try {
+      stat = fs.lstatSync(summaryPath);
+    } catch {
+      stat = undefined;
+    }
+    if (stat !== undefined && (stat.isSymbolicLink() || stat.isDirectory())) {
+      return;
+    }
+    fs.appendFileSync(summaryPath, `${markdownSummary}\n`, 'utf8');
+  } catch {
+    // Non-fatal: runner summary file write errors must not override validation outcome
+  }
+}
+
+function formatIssueAnnotationMessage(issue: DiagnosticIssue): string {
+  const parts: string[] = [issue.message];
+  if (issue.affected_instances.length > 0) {
+    parts.push(`[instances: ${issue.affected_instances.join(', ')}]`);
+  }
+  if (issue.u_range !== undefined) {
+    parts.push(`[U${issue.u_range[0]}..U${issue.u_range[1]}]`);
+  }
+  const firstRemediation = issue.remediation_suggestions[0];
+  if (firstRemediation !== undefined && firstRemediation.length > 0) {
+    parts.push(`Remediation: ${firstRemediation}`);
+  }
+  return parts.join(' ');
+}
+
+function formatCiSceneReport(
+  scene: ComputedRackScene,
+  annotationFile: string
+): string {
+  const { project, validation } = scene;
+  const annotations: string[] = [];
+
+  for (const issue of validation.issues) {
+    const level =
+      issue.severity === 'ERROR'
+        ? 'error'
+        : issue.severity === 'WARNING'
+          ? 'warning'
+          : 'notice';
+    const title = `Rack Validation (${issue.code})`;
+    annotations.push(
+      formatWorkflowCommand(
+        level,
+        annotationFile,
+        title,
+        formatIssueAnnotationMessage(issue)
+      )
+    );
+  }
+
+  const pwr = validation.power_summary;
+  const mech = validation.mechanical_summary;
+  const totalPoeBudget = pwr.pse_budgets.reduce(
+    (sum, b) => sum + b.poe_budget_watts,
+    0
+  );
+  const statusBadge = validation.is_valid ? '✅ VALID' : '❌ INVALID';
+
+  const summaryLines: string[] = [
+    '## RackArchitect Validation Report',
+    '',
+    `- **Project:** \`${escapeMarkdownCode(project.project_name)}\``,
+    `- **File:** \`${escapeMarkdownCode(annotationFile)}\``,
+    `- **Status:** ${statusBadge} (${validation.error_count} Errors, ${validation.warning_count} Warnings)`,
+    `- **Rack:** \`${project.rack.standard}\`, ${project.rack.u_height}U, ${project.rack.rail_depth_mm} mm depth (\`${project.rack.enclosure_type}\`)`,
+    '',
+    '| Metric | Value |',
+    '| :--- | :--- |',
+    `| Peak Power Draw | ${pwr.total_system_watts} W |`,
+    `| PoE Load / Budget | ${pwr.total_poe_watts} W / ${totalPoeBudget} W |`,
+    `| Total Equipment Mass | ${mech.total_weight_grams} g |`,
+    `| Normalized CoG Y | ${mech.normalized_cog_y} |`,
+    `| Thermal / Noise | ${mech.total_thermal_btu_hr} BTU/hr, ${mech.combined_noise_db_a} dB(A) (\`${mech.airflow_profile}\`) |`,
+    `| Cables / External Drops | ${project.cables.length} / ${project.external_endpoints.length} |`
+  ];
+
+  if (validation.issues.length > 0) {
+    summaryLines.push('');
+    summaryLines.push(
+      '| Severity | Code | Instances | Message | Remediation |'
+    );
+    summaryLines.push('| :--- | :--- | :--- | :--- | :--- |');
+    for (const issue of validation.issues) {
+      const instancesText =
+        issue.affected_instances.length > 0
+          ? issue.affected_instances.join(', ')
+          : '-';
+      const remediationText = issue.remediation_suggestions[0] ?? '-';
+      summaryLines.push(
+        `| ${escapeMarkdownCell(issue.severity)} | \`${escapeMarkdownCode(issue.code)}\` | ${escapeMarkdownCell(instancesText)} | ${escapeMarkdownCell(issue.message)} | ${escapeMarkdownCell(remediationText)} |`
+      );
+    }
+  } else {
+    summaryLines.push('');
+    summaryLines.push('No spatial, electrical, mechanical, or thermal issues detected.');
+  }
+
+  const markdownSummary = summaryLines.join('\n');
+  appendGithubStepSummary(markdownSummary);
+
+  return annotations.length > 0
+    ? `${annotations.join('\n')}\n\n${markdownSummary}`
+    : markdownSummary;
+}
+
+function formatCiFailureReport(
+  annotationFile: string,
+  failures: ReadonlyArray<{
+    readonly code: string;
+    readonly message: string;
+    readonly line?: number | undefined;
+  }>
+): string {
+  const annotations = failures.map((f) =>
+    formatWorkflowCommand(
+      'error',
+      annotationFile,
+      `Rack Validation (${f.code})`,
+      f.message,
+      f.line
+    )
+  );
+  const summaryLines: string[] = [
+    '## RackArchitect Validation Report',
+    '',
+    `- **File:** \`${escapeMarkdownCode(annotationFile)}\``,
+    `- **Status:** ❌ INVALID (${failures.length} Error${failures.length === 1 ? '' : 's'})`,
+    '',
+    '| Severity | Code | Message |',
+    '| :--- | :--- | :--- |',
+    ...failures.map(
+      (f) =>
+        `| ERROR | \`${escapeMarkdownCode(f.code)}\` | ${escapeMarkdownCell(f.message)} |`
+    )
+  ];
+  const markdownSummary = summaryLines.join('\n');
+  appendGithubStepSummary(markdownSummary);
+  return `${annotations.join('\n')}\n\n${markdownSummary}`;
+}
+
 /**
  * Executes the `rack-mcp` CLI command.
  * In `serve` (`--stdio`) mode, all human logs are written strictly to `process.stderr`
@@ -343,14 +729,115 @@ export async function runCli(
 ): Promise<CliExecutionResult> {
   const parsed = parseCliArgs(argv);
 
+  if (parsed.command === 'schema') {
+    if (parsed.missingOutArg) {
+      return {
+        exitCode: 1,
+        output: 'Error: --out requires a target file path.'
+      };
+    }
+    const schemaText = serializeRackJsonSchema();
+    if (parsed.outFile !== undefined) {
+      try {
+        const writtenPath = writeTextFileAtomicallySafe(
+          parsed.outFile,
+          schemaText
+        );
+        return {
+          exitCode: 0,
+          output: `Generated RackProject JSON Schema -> '${writtenPath}' (${Buffer.byteLength(schemaText, 'utf8')} bytes).`
+        };
+      } catch (err) {
+        return {
+          exitCode: 1,
+          output: `Error: ${err instanceof Error ? err.message : String(err)}`
+        };
+      }
+    }
+    return {
+      exitCode: 0,
+      output: schemaText
+    };
+  }
+
   if (parsed.command === 'validate') {
     const targetPath = path.resolve(parsed.projectPath ?? 'rack.yaml');
+    const annotationFile = formatAnnotationFilePath(
+      targetPath,
+      parsed.projectPath
+    );
     if (!fs.existsSync(targetPath)) {
       const msg = `Error: Project file not found at '${targetPath}'.`;
+      if (parsed.ci) {
+        return {
+          exitCode: 1,
+          output: formatCiFailureReport(annotationFile, [
+            { code: 'FILE_NOT_FOUND', message: msg }
+          ])
+        };
+      }
       return { exitCode: 1, output: msg };
     }
+
+    const rawYaml = fs.readFileSync(targetPath, 'utf8');
+    let parsedObj: unknown;
+    try {
+      parsedObj = parseYaml(rawYaml);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const linePos = (
+        err as { readonly linePos?: ReadonlyArray<{ readonly line?: number }> }
+      )?.linePos;
+      const line = linePos?.[0]?.line;
+      if (parsed.ci) {
+        return {
+          exitCode: 1,
+          output: formatCiFailureReport(annotationFile, [
+            {
+              code: 'YAML_PARSE_ERROR',
+              message: msg,
+              ...(line !== undefined ? { line } : {})
+            }
+          ])
+        };
+      }
+      return {
+        exitCode: 1,
+        output: `Error: Failed to parse '${targetPath}': ${msg}`
+      };
+    }
+
+    const schemaResult = RackProjectSchema.safeParse(parsedObj);
+    if (!schemaResult.success) {
+      const failures = schemaResult.error.issues.map((issue) => {
+        const fieldPath =
+          issue.path.length > 0 ? issue.path.join('.') : '<root>';
+        return {
+          code: 'SCHEMA_VALIDATION_ERROR',
+          message: `${fieldPath}: ${issue.message}`
+        };
+      });
+      if (parsed.ci) {
+        return {
+          exitCode: 1,
+          output: formatCiFailureReport(annotationFile, failures)
+        };
+      }
+      return {
+        exitCode: 1,
+        output: `Error: Schema validation failed for '${targetPath}':\n${failures.map((f) => `  - ${f.message}`).join('\n')}`
+      };
+    }
+
     const stateManager = new ProjectStateManager({ projectPath: targetPath });
     const scene = stateManager.getScene();
+    if (parsed.ci) {
+      return {
+        exitCode: scene.validation.is_valid ? 0 : 1,
+        output: formatCiSceneReport(scene, annotationFile)
+      };
+    }
+
     const ascii = generateAsciiElevation(scene, stateManager.getCatalog());
     return {
       exitCode: scene.validation.is_valid ? 0 : 1,
