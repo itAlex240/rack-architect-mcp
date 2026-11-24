@@ -6,3 +6,4 @@ export * from './openscad-carrier.js';
 export * from './labels-exporter.js';
 export * from './importers.js';
 export * from './reference-homelab.js';
+export * from './build-book-exporter.js';
