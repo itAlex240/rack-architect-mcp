@@ -529,10 +529,14 @@ function escapeGhaProperty(value: string): string {
 
 function escapeMarkdownCell(value: string): string {
   return value
+    .replace(/\\/g, '\\\\')
     .replace(/\|/g, '\\|')
     .replace(/\r?\n/g, ' ')
+    .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function escapeMarkdownCode(value: string): string {

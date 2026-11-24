@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🏗️ RackArchitect MCP `v1.0.0` — 3D/2D Rack Planner, Hosted Remote MCP (`mcp.rackarchitect.dev`), CAD Blueprints & 3D-Print Package (`.STL`)
+# 🏗️ RackArchitect MCP `v1.0.1` — 3D/2D Rack Planner, Hosted Remote MCP (`mcp.rackarchitect.dev`), CAD Blueprints & 3D-Print Package (`.STL`)
 
-**Welcome to RackArchitect MCP `v1.0.0`!**  
+**Welcome to RackArchitect MCP `v1.0.1`!**  
 Whether you are a **complete beginner with zero coding experience** who just wants to plan a compact 10-inch mini-rack or 19-inch server rack in your browser and 3D-print custom modular brackets, or an **AI / DevOps engineer** orchestrating racks via our **zero-install Hosted Remote MCP endpoint (`https://mcp.rackarchitect.dev/mcp`)** — everything is explained step by step below (**English first, followed by the full German version / Deutsche Version weiter unten**).
 
 <p align="center">
@@ -11,15 +11,17 @@ Whether you are a **complete beginner with zero coding experience** who just wan
   </a>
 </p>
 
-> **✨ What's New in the Last 3 Releases (`v0.9.1` – `v1.0.0`):**
+> **✨ What's New in the Last 3 Releases (`v0.10.0` – `v1.0.1`):**
+> - **CodeQL CI Markdown Sanitization Security Fix (`v1.0.1`):** Escaped backslashes (`\\`), ampersands (`&`), and quotes inside `escapeMarkdownCell` (`packages/cli/src/index.ts`) before table pipes and HTML angle brackets to close CodeQL High Alert `#9` (`js/incomplete-sanitization`).
 > - **Deterministic Rack Optimizer (`optimize_rack`), Printable Build Book (`PDF / Print`), 101 Blueprints, 3D Print-Bed Overlay & CI/Schema CLI (`v1.0.0`):** Added the 13th MCP tool `optimize_rack` (`optimizeRackLayout` + 1-click **`Optimize`** button in `TopNavBar` eliminating collisions, lowering `CoG < 0.50`, preserving portals & shortening cables), self-contained A4/Letter **`Build Book (PDF / Print)`** (`generateBuildBookHtml` & `GET /api/export/build-book.html`), interactive **`StlPreview3D`** print-bed presets (`256×256` Bambu, `250×210` Prusa MK4, `220×220` Ender 3, `180×180` A1 mini) with live fit badge, expanded the validated catalog from `73` to **`101`** blueprints (`32` 10", `29` 19", `8` 6", `14` carriers, `18` sub-modules), and shipped `rack-mcp schema`, `rack-mcp validate --ci`, `schemas/rack.schema.json`, and the `validate-rack` GitHub Action.
 > - **Short Share Links (`/?s=<id>` & `/s/:id`), Client `#rack=v2.` Deflate Compression & Compact Session Tokens (`v0.10.0`):** Added content-addressed zero-PII `RackShareStore` (`POST /api/share`, `GET /api/share/:id`, `GET /s/:id`, 5,000-entry LRU / 90-day TTL / SHA-256 deduplication) turning multi-thousand-character rack share links into ~40-character URLs on `mcp.rackarchitect.dev`, added `CompressionStream('deflate-raw')` `#rack=v2.` fallback (~75–85% shorter static GitHub Pages URLs with full `#rack=v1.` compatibility), and compacted live MCP `viewerToken`s from 32 hex chars to 22 URL-safe Base64URL chars.
-> - **CodeQL Hostname Boundary Security Fix (`v0.9.1`):** Replaced `hostname.endsWith('github.io')` in `packages/web-viewer/src/state/ui-telemetry.ts` with exact domain boundary checking (`normalizedHost === 'github.io' || normalizedHost.endsWith('.github.io')`) to close CodeQL High Alert `#8` (`js/incomplete-url-substring-sanitization`).
 
 <details>
-<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.9.0) in the Release Archive</b></summary>
+<summary>🗄️ <b>View Earlier Releases (v0.1.0 – v0.9.1) in the Release Archive</b></summary>
 
 <br />
+
+- **`v0.9.1`** — Replaced `hostname.endsWith('github.io')` in `packages/web-viewer/src/state/ui-telemetry.ts` with exact domain boundary checking (`normalizedHost === 'github.io' || normalizedHost.endsWith('.github.io')`) to close CodeQL High Alert `#8` (`js/incomplete-url-substring-sanitization`).
 
 - **`v0.9.0`** — Split `482.6 mm` 19-inch custom device brackets into `241.3 mm` left/right halves with rear **M3 bolt joiner lugs** for standard Bambu/Prusa print beds (`split_half` in `.STL`/`.SCAD`/SVG + quick UI buttons), added deterministic `1200×675` **Share Card PNG/SVG** exports (`TopNavBar` & BOM hub), `?preset=...&tab=...#custom-bracket` URL deep-linking, 1-click **GitHub Catalog** issue submission in `CatalogBuilderDrawer`, privacy-first same-origin `POST /api/ui-event` + `rack_mcp_ui_events_total` Prometheus counters, GitHub homepage/topics discovery optimization, and `docs/LAUNCH_KIT.md`.
 
@@ -141,18 +143,20 @@ docker run --rm -p 3100:3100 rack-architect-mcp
 
 ## 🇩🇪 Deutsche Version — Release Notes & Einsteiger-Anleitung
 
-**Willkommen beim Release `v1.0.0` von RackArchitect MCP!**  
+**Willkommen beim Release `v1.0.1` von RackArchitect MCP!**  
 Egal ob du **gar nicht programmieren kannst** und einfach nur deinen kleinen Netzwerkschrank / 10-Zoll-Mini-Rack im Browser planen oder eine Halterung auf deinem 3D-Drucker ausdrucken möchtest, oder deinen KI-Assistenten direkt per **Remote-MCP-URL (`https://mcp.rackarchitect.dev/mcp`)** verbindest — hier steht Schritt für Schritt in einfacher Sprache, was du tun musst.
 
-> **✨ Was ist neu in den letzten 3 Versionen (`v0.9.1` – `v1.0.0`):**
+> **✨ Was ist neu in den letzten 3 Versionen (`v0.10.0` – `v1.0.1`):**
+> - **CodeQL-Sicherheitsfix im CLI-Markdown-Report (`v1.0.1`):** Vollständiges Escaping von Backslashes (`\\`), `&` und Anführungszeichen in `escapeMarkdownCell` (`packages/cli/src/index.ts`) vor Tabellen-Pipes und spitzen Klammern zur Behebung von CodeQL High Alert `#9` (`js/incomplete-sanitization`).
 > - **Deterministischer Rack-Auto-Optimizer (`optimize_rack`), Build Book (`PDF / Print`), 101 Blueprints, 3D-Druckbett-Overlay & CI/Schema-CLI (`v1.0.0`):** Neues 13. MCP-Tool `optimize_rack` (samt 1-Klick-Button **`Optimize`** in der oberen Leiste für kollisionsfreie HEs, `CoG < 0.50`, Kabelportale & kürzeste Kabelwege), druckfertiges A4/Letter-**`Build Book (PDF / Print)`** (`generateBuildBookHtml` & `GET /api/export/build-book.html`), interaktives **3D-Druckbett-Overlay** in `StlPreview3D` (`256×256` Bambu, `250×210` Prusa MK4, `220×220` Ender 3, `180×180` A1 mini inkl. Fit-Badge), Katalog-Ausbau von `73` auf **`101`** validierte Blueprints sowie `rack-mcp schema`, `rack-mcp validate --ci`, `schemas/rack.schema.json` und die `validate-rack` GitHub Action.
 > - **Kurze Share-Links (`/?s=<ID>` & `/s/:id`), Client-`#rack=v2.`-Kompression & kompakte Session-Tokens (`v0.10.0`):** Neuer Zero-PII-`RackShareStore` (`POST /api/share`, `GET /api/share/:id`, `GET /s/:id`, 5.000-Einträge-LRU, 90 Tage TTL, SHA-256-Deduplizierung) verkürzt tausende Zeichen lange Teil-Links auf `mcp.rackarchitect.dev` automatisch auf ca. 40 Zeichen, zusätzlicher `CompressionStream('deflate-raw')` `#rack=v2.`-Fallback (~75–85 % kürzere Links für GitHub Pages mit voller `#rack=v1.`-Kompatibilität) und kürzere 22-Zeichen Base64URL-`viewerToken` für Live-MCP-Sessions.
-> - **CodeQL-Sicherheitsfix für Hostnamen-Prüfung (`v0.9.1`):** Ersetzung von `hostname.endsWith('github.io')` in `packages/web-viewer/src/state/ui-telemetry.ts` durch exakte Domain-Grenzprüfung (`normalizedHost === 'github.io' || normalizedHost.endsWith('.github.io')`) zur Behebung von CodeQL High Alert `#8` (`js/incomplete-url-substring-sanitization`).
 
 <details>
-<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.9.0) auf Deutsch anzeigen</b></summary>
+<summary>🗄️ <b>Ältere Versionen (v0.1.0 – v0.9.1) auf Deutsch anzeigen</b></summary>
 
 <br />
+
+- **`v0.9.1`** — Ersetzung von `hostname.endsWith('github.io')` in `packages/web-viewer/src/state/ui-telemetry.ts` durch exakte Domain-Grenzprüfung (`normalizedHost === 'github.io' || normalizedHost.endsWith('.github.io')`) zur Behebung von CodeQL High Alert `#8` (`js/incomplete-url-substring-sanitization`).
 
 - **`v0.9.0`** — Breite `482,6 mm`-19-Zoll-Halterungen werden mit `split_half` in zwei `241,3 mm`-Hälften inklusive hinterem **M3-Schraubverbinder-Block** und 2-Manifold-`.STL` für Bambu/Prusa-Drucker geteilt (`Left Half .STL` / `Right Half .STL`), neuer **1200×675 Share Card PNG/SVG**-Export (`Card`-Button & BOM-Ansicht), direkte Start-Links `?preset=...&tab=...#custom-bracket`, 1-Klick-Button **GitHub Catalog** im Custom-Blueprint-Wizard, anonyme Zero-PII UI-Event-Telemetrie (`POST /api/ui-event` + `rack_mcp_ui_events_total`), optimierte GitHub-Topics + Homepage-Link sowie Community-Vorlagen in `docs/LAUNCH_KIT.md`.
 

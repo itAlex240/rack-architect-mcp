@@ -5,6 +5,14 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-11-24
+
+### Security Fix
+- **CodeQL Backslash & HTML Entity Escaping (`packages/cli/src/index.ts`):** Updated `escapeMarkdownCell` in the CI validation summary generator to escape backslashes (`\\` -> `\\\\`), ampersands (`&` -> `&amp;`), and quotes (`"` -> `&quot;`, `'` -> `&#39;`) prior to Markdown table pipes and angle brackets, resolving CodeQL High Alert `#9` (`js/incomplete-sanitization`).
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **CodeQL Alert #9 Fix (`packages/cli/src/index.ts`):** Erweiterung von `escapeMarkdownCell` im CLI-CI-Report auf vollständiges Escaping von Backslashes (`\\` -> `\\\\`), `&`, `"` und `'` vor Tabellen-Pipes und spitzen Klammern (schließt CodeQL High Alert `#9`, `js/incomplete-sanitization`).
+
 ## [1.0.0] - 2026-11-24
 
 ### Added & Improved (Deterministic Optimizer, Printable Build Book, 101 Blueprints, Print-Bed Overlay & CI/Schema Suite)
