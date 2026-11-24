@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import {
   deserializeRackScene,
@@ -364,23 +364,15 @@ export function useRackState(): RackViewerState {
   const [undoAvailable, setUndoAvailable] = useState<number>(0);
   const [redoAvailable, setRedoAvailable] = useState<number>(0);
 
-  const [elevationSvg, setElevationSvg] = useState<string>(() =>
-    renderClientSideElevationSvg(scene),
-  );
-  const [wiringSvg, setWiringSvg] = useState<string>(() =>
-    renderClientSideWiringSvg(scene),
-  );
-  const [bomMarkdown, setBomMarkdown] = useState<string>(() =>
-    renderBomWithRate(scene, defaultCatalogRegistry.toRecord(), 0.32),
-  );
   const [electricityPricePerKwhEur, setElectricityPricePerKwhEurState] =
     useState<number>(0.32);
-  const [labelsCsv, setLabelsCsv] = useState<string>(() =>
-    generateCableLabelsCsv(deserializeRackScene(scene)),
-  );
-  const [labelsSvg, setLabelsSvg] = useState<string>(() =>
-    generateCableLabelsSvg(deserializeRackScene(scene)),
-  );
+  const [sidecarExports, setSidecarExports] = useState<{
+    readonly elevationSvg?: string | undefined;
+    readonly wiringSvg?: string | undefined;
+    readonly bomMarkdown?: string | undefined;
+    readonly labelsCsv?: string | undefined;
+    readonly labelsSvg?: string | undefined;
+  } | null>(null);
   const catalogRecordRef = useRef<Record<string, HardwareBlueprint>>(
     defaultCatalogRegistry.toRecord(),
   );
@@ -398,6 +390,54 @@ export function useRackState(): RackViewerState {
   const [showClearanceBoxes, setShowClearanceBoxes] = useState<boolean>(false);
   const [doorOpen, setDoorOpen] = useState<boolean>(false);
   const [catalogDrawerOpen, setCatalogDrawerOpen] = useState<boolean>(false);
+
+  // Lazy derived exports — computed only for the active workspace tab to keep 3D mutations instant
+  const computedSceneForBom = useMemo(
+    () => (activeTab === 'bom' ? deserializeRackScene(scene) : null),
+    [activeTab, scene],
+  );
+  const elevationSvg = useMemo(
+    () =>
+      activeTab === 'elevation' || activeTab === 'bom'
+        ? (sidecarExports?.elevationSvg ?? renderClientSideElevationSvg(scene))
+        : (sidecarExports?.elevationSvg ?? ''),
+    [activeTab, scene, sidecarExports?.elevationSvg],
+  );
+  const wiringSvg = useMemo(
+    () =>
+      activeTab === 'wiring' || activeTab === 'bom'
+        ? (sidecarExports?.wiringSvg ?? renderClientSideWiringSvg(scene))
+        : (sidecarExports?.wiringSvg ?? ''),
+    [activeTab, scene, sidecarExports?.wiringSvg],
+  );
+  const bomMarkdown = useMemo(() => {
+    if (activeTab !== 'bom') return sidecarExports?.bomMarkdown ?? '';
+    if (
+      Math.abs(electricityPricePerKwhEur - 0.32) < 1e-6 &&
+      sidecarExports?.bomMarkdown !== undefined
+    ) {
+      return sidecarExports.bomMarkdown;
+    }
+    return renderBomWithRate(
+      scene,
+      catalogRecordRef.current,
+      electricityPricePerKwhEur,
+    );
+  }, [activeTab, electricityPricePerKwhEur, scene, sidecarExports?.bomMarkdown]);
+  const labelsCsv = useMemo(
+    () =>
+      activeTab === 'bom' && computedSceneForBom !== null
+        ? (sidecarExports?.labelsCsv ?? generateCableLabelsCsv(computedSceneForBom))
+        : (sidecarExports?.labelsCsv ?? ''),
+    [activeTab, computedSceneForBom, sidecarExports?.labelsCsv],
+  );
+  const labelsSvg = useMemo(
+    () =>
+      activeTab === 'bom' && computedSceneForBom !== null
+        ? (sidecarExports?.labelsSvg ?? generateCableLabelsSvg(computedSceneForBom))
+        : (sidecarExports?.labelsSvg ?? ''),
+    [activeTab, computedSceneForBom, sidecarExports?.labelsSvg],
+  );
 
   // Selection, Hover & Direct 2-Click 3D Port Patching state
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
@@ -418,17 +458,9 @@ export function useRackState(): RackViewerState {
   const wsReadOnlyRef = useRef<boolean>(false);
 
   const syncDerivedExports = useCallback(
-    (nextScene: SerializedRackScene, rateEur = electricityPriceRef.current) => {
-      const computed = deserializeRackScene(nextScene);
-      setElevationSvg(renderClientSideElevationSvg(nextScene));
-      setWiringSvg(renderClientSideWiringSvg(nextScene));
-      setBomMarkdown(
-        generateBomMarkdown(computed, catalogRecordRef.current, {
-          electricityPricePerKwhEur: rateEur,
-        }),
-      );
-      setLabelsCsv(generateCableLabelsCsv(computed));
-      setLabelsSvg(generateCableLabelsSvg(computed));
+    (_nextScene: SerializedRackScene, _rateEur = electricityPriceRef.current) => {
+      // Invalidate any stale sidecar export cache; active tab memos recompute lazily on render
+      setSidecarExports(null);
     },
     [],
   );
@@ -440,13 +472,6 @@ export function useRackState(): RackViewerState {
         : 0.32;
       electricityPriceRef.current = clamped;
       setElectricityPricePerKwhEurState(clamped);
-      setBomMarkdown(
-        renderBomWithRate(
-          sceneRef.current,
-          catalogRecordRef.current,
-          clamped,
-        ),
-      );
     },
     [],
   );
@@ -462,29 +487,29 @@ export function useRackState(): RackViewerState {
             fetch(`${baseUrl}/api/export/labels.csv${sessionQuery}`),
             fetch(`${baseUrl}/api/export/labels.svg${sessionQuery}`),
           ]);
+        const nextExports: {
+          elevationSvg?: string;
+          wiringSvg?: string;
+          bomMarkdown?: string;
+          labelsCsv?: string;
+          labelsSvg?: string;
+        } = {};
         if (elevRes.ok) {
-          setElevationSvg(await elevRes.text());
+          nextExports.elevationSvg = await elevRes.text();
         }
         if (wireRes.ok) {
-          setWiringSvg(await wireRes.text());
+          nextExports.wiringSvg = await wireRes.text();
         }
-        if (bomRes.ok && Math.abs(electricityPriceRef.current - 0.32) < 1e-6) {
-          setBomMarkdown(await bomRes.text());
-        } else if (Math.abs(electricityPriceRef.current - 0.32) >= 1e-6) {
-          setBomMarkdown(
-            renderBomWithRate(
-              sceneRef.current,
-              catalogRecordRef.current,
-              electricityPriceRef.current,
-            ),
-          );
+        if (bomRes.ok) {
+          nextExports.bomMarkdown = await bomRes.text();
         }
         if (labelsCsvRes.ok) {
-          setLabelsCsv(await labelsCsvRes.text());
+          nextExports.labelsCsv = await labelsCsvRes.text();
         }
         if (labelsSvgRes.ok) {
-          setLabelsSvg(await labelsSvgRes.text());
+          nextExports.labelsSvg = await labelsSvgRes.text();
         }
+        setSidecarExports(nextExports);
       } catch {
         // Keep client-side rendered SVG/BOM fallback
       }

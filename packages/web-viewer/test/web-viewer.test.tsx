@@ -63,7 +63,7 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     expect(computeDeviceExplodeOffsetZMm(subNode, 100)).toBe(25);
   });
 
-  it('renders AppDashboard, switches across all 4 workspace views, and toggles 3D HUD controls (X-Ray, Explode Z, Camera, Cable Filters)', () => {
+  it('renders AppDashboard, switches across all 4 workspace views, and toggles 3D HUD controls (X-Ray, Explode Z, Camera, Cable Filters)', async () => {
     render(<AppDashboard />);
 
     expect(screen.getByTestId('app-dashboard')).toBeDefined();
@@ -98,21 +98,21 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
 
     // Switch to Tab [2] 2D CAD Elevation & Depth Cutaway
     fireEvent.click(screen.getByTestId('nav-tab-elevation'));
-    expect(screen.getByTestId('svg-pan-zoom-viewer').textContent).toContain(
-      'elevation.svg',
-    );
+    expect(
+      (await screen.findByTestId('svg-pan-zoom-viewer')).textContent,
+    ).toContain('elevation.svg');
 
     // Switch to Tab [3] 2D Wiring & Power Schematic
     fireEvent.click(screen.getByTestId('nav-tab-wiring'));
-    expect(screen.getByTestId('svg-pan-zoom-viewer').textContent).toContain(
-      'wiring-schematic.svg',
-    );
+    expect(
+      (await screen.findByTestId('svg-pan-zoom-viewer')).textContent,
+    ).toContain('wiring-schematic.svg');
 
     // Switch to Tab [4] BOM, 3D-Print Queue & Patch Checklist
     fireEvent.click(screen.getByTestId('nav-tab-bom'));
-    expect(screen.getByTestId('bom-and-exports-view').textContent).toContain(
-      '3D-Print Fabrication Queue',
-    );
+    expect(
+      (await screen.findByTestId('bom-and-exports-view')).textContent,
+    ).toContain('3D-Print Fabrication Queue');
 
     // Switch back to Tab [1] 3D Live Rack Inspector
     fireEvent.click(screen.getByTestId('nav-tab-3d'));
@@ -155,7 +155,7 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     Reflect.deleteProperty(document, 'modelContext');
   });
 
-  it('opens the Catalog & Cable Builder Drawer, mounts equipment interactively, displays Thermal/Acoustic KPIs, and exposes .SCAD/.STL 3D-print buttons', () => {
+  it('opens the Catalog & Cable Builder Drawer, mounts equipment interactively, displays Thermal/Acoustic KPIs, and exposes .SCAD/.STL 3D-print buttons', async () => {
     render(<AppDashboard />);
 
     // Verify new Thermal & Acoustic KPIs in InspectorSidebar
@@ -171,7 +171,7 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
 
     // Open Catalog & Cable Builder Drawer
     fireEvent.click(screen.getByTestId('btn-toggle-catalog-drawer'));
-    expect(screen.getByTestId('catalog-builder-drawer')).toBeDefined();
+    expect(await screen.findByTestId('catalog-builder-drawer')).toBeDefined();
     expect(screen.getByTestId('interactive-cable-patcher')).toBeDefined();
 
     // Mount a device from the catalog
@@ -182,7 +182,7 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
 
     // Switch to BOM & 3D-Print Queue and verify .SCAD and .STL buttons (including U2 cover panel & Cover Panels Library)
     fireEvent.click(screen.getByTestId('nav-tab-bom'));
-    expect(screen.getByTestId('download-scad-cover-u2')).toBeDefined();
+    expect(await screen.findByTestId('download-scad-cover-u2')).toBeDefined();
     expect(screen.getByTestId('download-stl-cover-u2')).toBeDefined();
     expect(screen.getByTestId('download-scad-carrier-u3')).toBeDefined();
     expect(screen.getByTestId('download-stl-carrier-u3')).toBeDefined();
@@ -377,7 +377,7 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     ).toBe(true);
   });
 
-  it('supports direct 2-click 3D port-to-port cable patching and custom 3D-print cover-panel configuration', () => {
+  it('supports direct 2-click 3D port-to-port cable patching and custom 3D-print cover-panel configuration', async () => {
     render(<AppDashboard />);
 
     expect(screen.getByTestId('rack-3d-scene-summary').textContent).toContain(
@@ -401,7 +401,9 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
 
     // Navigate to BOM & 3D-Print tab and exercise the Custom Cover-Panel Configurator
     fireEvent.click(screen.getByTestId('nav-tab-bom'));
-    expect(screen.getByTestId('cover-panel-customizer-form')).toBeDefined();
+    expect(
+      await screen.findByTestId('cover-panel-customizer-form'),
+    ).toBeDefined();
 
     fireEvent.change(screen.getByTestId('custom-cover-u-height'), {
       target: { value: '0.5' },

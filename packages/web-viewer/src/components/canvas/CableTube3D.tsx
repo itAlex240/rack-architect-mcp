@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import type { ThreeEvent } from '@react-three/fiber';
 import {
@@ -104,12 +104,12 @@ export function CableTube3D({
         0.5,
       );
 
-      const tubularSegments = Math.max(96, Math.min(192, vectors.length));
+      const tubularSegments = Math.max(48, Math.min(96, vectors.length));
       const geometry = new THREE.TubeGeometry(
         curve,
         tubularSegments,
         tubeRadiusMm,
-        12,
+        8,
         false,
       );
 
@@ -170,6 +170,12 @@ export function CableTube3D({
       toDev,
       tubeRadiusMm,
     ]);
+
+  useEffect(() => {
+    return () => {
+      tubeGeo.dispose();
+    };
+  }, [tubeGeo]);
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();

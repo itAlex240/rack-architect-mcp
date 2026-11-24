@@ -348,7 +348,7 @@ function StlMeshScene({
   readonly bedPreset: PrintBedPresetId;
   readonly fitResult: StlBedFitResult | null;
 }) {
-  const { camera } = useThree();
+  const { camera, invalidate } = useThree();
   const geometry = useMemo(
     () => parseAsciiStlToBufferGeometry(stlAscii),
     [stlAscii],
@@ -391,7 +391,8 @@ function StlMeshScene({
     }
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
-  }, [camera, geometry, hasBed, plateWidthMm, plateDepthMm]);
+    invalidate();
+  }, [camera, geometry, hasBed, invalidate, plateWidthMm, plateDepthMm]);
 
   const bedSurfaceY = -bounds.depthMm / 2 - 0.2;
 
@@ -576,6 +577,8 @@ export function StlPreview3D({
 
       {webGlAvailable && bounds.triangleCount > 0 ? (
         <Canvas
+          frameloop="demand"
+          dpr={[1, 2]}
           camera={{ fov: 36, near: 0.5, far: 4000, position: [140, 90, 180] }}
         >
           <StlMeshScene

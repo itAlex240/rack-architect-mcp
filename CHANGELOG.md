@@ -5,6 +5,19 @@ All notable changes to **RackArchitect MCP (`@rack-mcp/*`)** are documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-11-24
+
+### Performance Optimizations (`@rack-mcp/web-viewer`)
+- **GPU Memory Leak Fix & Lighter 3D Cable Geometry (`CableTube3D.tsx` & `RackSceneCanvas.tsx`):** Added `useEffect` `BufferGeometry.dispose()` cleanup for both `CableTube3D` and `ExternalBuildingDrops3D` `TubeGeometry` instances (eliminating WebGL memory leaks during `Explode Z` dragging) and tightened tube segments from `96–192 × 12` to `48–96 × 8` (~50% lower vertex allocation).
+- **On-Demand 3D Rendering & HiDPI `dpr` Cap (`RackSceneCanvas.tsx` & `StlPreview3D.tsx`):** Enabled `frameloop="demand"` with explicit `invalidate()` on camera preset/geometry updates and `dpr={[1, 2]}`, dropping idle GPU usage from continuous 60–120 FPS to ~0%.
+- **Lazy Tab-Scoped Derived Exports (`useRackState.ts` & `AppDashboard.tsx`):** Replaced eager synchronous recalculation of all 5 SVG/BOM/Label exports on every 3D mutation with lazy `useMemo` computation scoped to the active workspace tab (with on-demand elevation SVG generation for the 16:9 Share Card button).
+- **Route/Drawer Code-Splitting & Vite Chunking (`AppDashboard.tsx` & `vite.config.ts`):** Lazy-loaded `BomAndExportsView`, `SvgPanZoomViewer`, and `CatalogBuilderDrawer` via `React.lazy` + `Suspense` and split `vendor-catalog` and `vendor-exporters` chunks, shrinking the initial app entry chunk (`index-*.js`) from `922 KB` (`227 KB` gzip) to `156 KB` (`38 KB` gzip).
+
+### 🇩🇪 Zusammenfassung (Deutsch)
+- **WebGL-Memory-Leak-Fix & leichtere 3D-Kabel (`CableTube3D.tsx`, `RackSceneCanvas.tsx`):** Automatisches `tubeGeo.dispose()` beim `Explode Z`-Slider & Unmount sowie ~50 % weniger Vertices pro 3D-Kabel (`48–96 × 8`).
+- **On-Demand-3D-Rendering (`frameloop="demand"`, `dpr={[1, 2]}`):** Reduziert die Leerlauf-GPU-Last im 3D-Viewer und STL-Preview von dauerhaften 60–120 FPS auf nahezu `0 %`.
+- **Lazy Exporte & Code-Splitting (`useRackState.ts`, `AppDashboard.tsx`, `vite.config.ts`):** 2D-SVGs, BOM und Etiketten werden nur noch im aktiven Tab berechnet; `BomAndExportsView`, `SvgPanZoomViewer` und `CatalogBuilderDrawer` laden per `React.lazy`, wodurch der Haupt-Chunk (`index-*.js`) von `922 KB` auf `156 KB` (`38 KB` gzip) schrumpft.
+
 ## [1.0.1] - 2026-11-24
 
 ### Security Fix

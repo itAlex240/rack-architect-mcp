@@ -127,7 +127,7 @@ function CameraPresetController({
   railDepthMm,
   controlsEnabled = true,
 }: CameraPresetControllerProps) {
-  const { camera } = useThree();
+  const { camera, invalidate } = useThree();
   const [cx, cy, cz] = center;
 
   useEffect(() => {
@@ -155,7 +155,8 @@ function CameraPresetController({
     }
     camera.lookAt(cx, cy, cz);
     camera.updateProjectionMatrix();
-  }, [camera, cx, cy, cz, panelWidthMm, preset, railDepthMm, totalHeightMm]);
+    invalidate();
+  }, [camera, cx, cy, cz, invalidate, panelWidthMm, preset, railDepthMm, totalHeightMm]);
 
   return (
     <OrbitControls
@@ -285,6 +286,14 @@ function ExternalBuildingDrops3D({
     railDepthMm,
     totalHeightMm,
   ]);
+
+  useEffect(() => {
+    return () => {
+      for (const item of dropItems) {
+        item.tubeGeo.dispose();
+      }
+    };
+  }, [dropItems]);
 
   if (dropItems.length === 0) return null;
 
@@ -586,6 +595,8 @@ export function RackSceneCanvas({
     >
       {webGlAvailable ? (
         <Canvas
+          frameloop="demand"
+          dpr={[1, 2]}
           camera={{
             fov: 38,
             near: 1,

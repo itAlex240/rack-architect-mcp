@@ -1,14 +1,41 @@
-import { useEffect, useState, type DragEvent } from 'react';
+import { lazy, Suspense, useEffect, useState, type DragEvent } from 'react';
 import { exportRackShareCardPng } from '../../state/share-card-renderer.js';
+import { renderClientSideElevationSvg } from '../../state/standalone-homelab.js';
 import { trackUiEvent } from '../../state/ui-telemetry.js';
 import { useRackState, type ProjectImportResult } from '../../state/useRackState.js';
 import { RackSceneCanvas } from '../canvas/RackSceneCanvas.js';
 import { TopNavBar } from './TopNavBar.js';
 import { FloatingHudToolbar } from './FloatingHudToolbar.js';
-import { SvgPanZoomViewer } from './SvgPanZoomViewer.js';
-import { BomAndExportsView } from './BomAndExportsView.js';
 import { InspectorSidebar } from './InspectorSidebar.js';
-import { CatalogBuilderDrawer } from './CatalogBuilderDrawer.js';
+
+const LazySvgPanZoomViewer = lazy(async () => ({
+  default: (await import('./SvgPanZoomViewer.js')).SvgPanZoomViewer,
+}));
+const LazyBomAndExportsView = lazy(async () => ({
+  default: (await import('./BomAndExportsView.js')).BomAndExportsView,
+}));
+const LazyCatalogBuilderDrawer = lazy(async () => ({
+  default: (await import('./CatalogBuilderDrawer.js')).CatalogBuilderDrawer,
+}));
+
+function StudioViewFallback() {
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#09090b',
+        color: '#71717A',
+        fontSize: '12px',
+      }}
+    >
+      Loading CAD view…
+    </div>
+  );
+}
 
 export interface AppDashboardProps {
   readonly onOptimizeRack?: (() => void) | undefined;
@@ -51,7 +78,9 @@ export function AppDashboard({ onOptimizeRack }: AppDashboardProps = {}) {
 
   const handleExportShareCard = () => {
     trackUiEvent('share_card_export');
-    void exportRackShareCardPng(state.scene, state.elevationSvg);
+    const elevSvg =
+      state.elevationSvg || renderClientSideElevationSvg(state.scene);
+    void exportRackShareCardPng(state.scene, elevSvg);
   };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -132,15 +161,19 @@ export function AppDashboard({ onOptimizeRack }: AppDashboardProps = {}) {
           overflow: 'hidden',
         }}
       >
-        <CatalogBuilderDrawer
-          open={state.catalogDrawerOpen}
-          catalog={state.catalog}
-          scene={state.scene}
-          onClose={() => state.setCatalogDrawerOpen(false)}
-          onMountEquipment={state.mountEquipmentFromCatalog}
-          onConnectCable={state.connectInteractiveCable}
-          onRegisterCustomBlueprint={state.registerCustomBlueprint}
-        />
+        {state.catalogDrawerOpen && (
+          <Suspense fallback={null}>
+            <LazyCatalogBuilderDrawer
+              open={state.catalogDrawerOpen}
+              catalog={state.catalog}
+              scene={state.scene}
+              onClose={() => state.setCatalogDrawerOpen(false)}
+              onMountEquipment={state.mountEquipmentFromCatalog}
+              onConnectCable={state.connectInteractiveCable}
+              onRegisterCustomBlueprint={state.registerCustomBlueprint}
+            />
+          </Suspense>
+        )}
 
         {/* Center Active View */}
         <main
@@ -191,34 +224,40 @@ export function AppDashboard({ onOptimizeRack }: AppDashboardProps = {}) {
           )}
 
           {state.activeTab === 'elevation' && (
-            <SvgPanZoomViewer
-              title="Synchronized 2D Front/Rear Elevation & Z-Y Depth Cutaway"
-              filename="elevation.svg"
-              svgMarkup={state.elevationSvg}
-            />
+            <Suspense fallback={<StudioViewFallback />}>
+              <LazySvgPanZoomViewer
+                title="Synchronized 2D Front/Rear Elevation & Z-Y Depth Cutaway"
+                filename="elevation.svg"
+                svgMarkup={state.elevationSvg}
+              />
+            </Suspense>
           )}
 
           {state.activeTab === 'wiring' && (
-            <SvgPanZoomViewer
-              title="Hierarchical Power/PoE DAG & Multi-Track Wiring Schematic"
-              filename="wiring-schematic.svg"
-              svgMarkup={state.wiringSvg}
-            />
+            <Suspense fallback={<StudioViewFallback />}>
+              <LazySvgPanZoomViewer
+                title="Hierarchical Power/PoE DAG & Multi-Track Wiring Schematic"
+                filename="wiring-schematic.svg"
+                svgMarkup={state.wiringSvg}
+              />
+            </Suspense>
           )}
 
           {state.activeTab === 'bom' && (
-            <BomAndExportsView
-              scene={state.scene}
-              elevationSvg={state.elevationSvg}
-              wiringSvg={state.wiringSvg}
-              bomMarkdown={state.bomMarkdown}
-              labelsCsv={state.labelsCsv}
-              labelsSvg={state.labelsSvg}
-              projectYaml={state.exportProjectYaml()}
-              electricityPricePerKwhEur={state.electricityPricePerKwhEur}
-              onChangeElectricityPricePerKwhEur={state.setElectricityPricePerKwhEur}
-              onExportShareCard={handleExportShareCard}
-            />
+            <Suspense fallback={<StudioViewFallback />}>
+              <LazyBomAndExportsView
+                scene={state.scene}
+                elevationSvg={state.elevationSvg}
+                wiringSvg={state.wiringSvg}
+                bomMarkdown={state.bomMarkdown}
+                labelsCsv={state.labelsCsv}
+                labelsSvg={state.labelsSvg}
+                projectYaml={state.exportProjectYaml()}
+                electricityPricePerKwhEur={state.electricityPricePerKwhEur}
+                onChangeElectricityPricePerKwhEur={state.setElectricityPricePerKwhEur}
+                onExportShareCard={handleExportShareCard}
+              />
+            </Suspense>
           )}
         </main>
 

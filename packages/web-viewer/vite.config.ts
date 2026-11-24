@@ -34,6 +34,12 @@ export default defineConfig({
           if (id.includes('node_modules/react')) {
             return 'vendor-react';
           }
+          if (id.includes('packages/hardware-catalog')) {
+            return 'vendor-catalog';
+          }
+          if (id.includes('packages/exporters')) {
+            return 'vendor-exporters';
+          }
           return undefined;
         },
       },

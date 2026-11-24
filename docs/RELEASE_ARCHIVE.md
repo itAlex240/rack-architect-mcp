@@ -1,10 +1,15 @@
-# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.9.1`)
+# 🗄️ RackArchitect MCP — Release Archive (`v0.1.0` – `v0.10.0`)
 
 To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-mcp/releases) clean and readable, only the **3 most recent releases** are kept active on the Releases feed. All earlier releases and their highlights are archived here (**English first, followed by the German version below**) and in full technical detail in [`CHANGELOG.md`](../CHANGELOG.md). Every historical Git tag remains permanently available under [GitHub Tags](https://github.com/itAlex240/rack-architect-mcp/tags).
 
 ---
 
-## 🇬🇧 English Release Archive (`v0.1.0` – `v0.9.1`)
+## 🇬🇧 English Release Archive (`v0.1.0` – `v0.10.0`)
+
+### 🔗 `v0.10.x` Series — Short Share Links & Client URL Compression
+
+- **[`v0.10.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.10.0) (2026-11-24) — Short Share Links (`/?s=<id>` & `/s/:id`), Client `#rack=v2.` Deflate Compression & Compact Session Tokens:**
+  - Added zero-PII content-addressed `RackShareStore` (`POST /api/share`, `GET /api/share/:id`, `GET /s/:id`, 5,000-entry LRU / 90-day TTL / SHA-256 deduplication) turning multi-thousand-character share links into ~40-character URLs on `mcp.rackarchitect.dev`, added `CompressionStream('deflate-raw')` `#rack=v2.` fallback (~75–85% shorter static GitHub Pages URLs with full `#rack=v1.` compatibility), and compacted live MCP `viewerToken`s from 32 hex chars to 22 URL-safe Base64URL chars.
 
 ### 🚀 `v0.9.x` Series — 2-Part 19" Print-Bed Splitting, Share Cards & Launch Readiness
 
@@ -126,7 +131,12 @@ To keep the [GitHub Releases page](https://github.com/itAlex240/rack-architect-m
 
 ---
 
-## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.9.1`)
+## 🇩🇪 Deutsches Release-Archiv (`v0.1.0` – `v0.10.0`)
+
+### 🔗 Serie `v0.10.x` — Kurze Share-Links & Client-URL-Kompression
+
+- **[`v0.10.0`](https://github.com/itAlex240/rack-architect-mcp/tree/v0.10.0) (2026-11-24) — Kurze Share-Links (`/?s=<ID>` & `/s/:id`), Client-`#rack=v2.`-Kompression & kompakte Session-Tokens:**
+  - Neuer Zero-PII-`RackShareStore` (`POST /api/share`, `GET /api/share/:id`, `GET /s/:id`, 5.000-Einträge-LRU, 90 Tage TTL, SHA-256-Deduplizierung) verkürzt tausende Zeichen lange Teil-Links auf `mcp.rackarchitect.dev` automatisch auf ca. 40 Zeichen, zusätzlicher `CompressionStream('deflate-raw')` `#rack=v2.`-Fallback (~75–85 % kürzere Links für GitHub Pages mit voller `#rack=v1.`-Kompatibilität) und kürzere 22-Zeichen Base64URL-`viewerToken` für Live-MCP-Sessions.
 
 ### 🚀 Serie `v0.9.x` — Zweiteilige 19"-Druckbett-Teilung, 16:9 Share-Card & Launch-Kit
 
