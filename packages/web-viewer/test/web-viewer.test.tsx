@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import {
   AppDashboard,
-  STANDALONE_PRESET_OPTIONS,
+  checkStlFitsPrintBed,
   computeDeviceExplodeOffsetZMm,
   createStandalonePresetProjectInput,
   decodeRackProjectFromHash,
@@ -12,10 +12,15 @@ import {
   encodeRackProjectToHash,
   evaluateStandaloneScene,
   generateClientCustomCoverPanelStl,
+  generateCustomBracketStl,
   InspectorSidebar,
+  measureAsciiStlBoundsMm,
   parseAsciiStlToBufferGeometry,
   renderClientSideElevationSvg,
   renderRackShareCardSvg,
+  STANDALONE_PRESET_OPTIONS,
+  STL_PRINT_BED_PRESETS,
+  StlPreview3D,
   TopNavBar,
 } from '../src/index.js';
 
@@ -572,5 +577,187 @@ describe('@rack-mcp/web-viewer — Interactive 3D/2D Inspector & CAD Studio', ()
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('measures ASCII STL bounding boxes cleanly and checks 0°/90° fit against print-bed presets', () => {
+    const cover10InchStl = generateClientCustomCoverPanelStl({
+      standard: '10inch',
+      u_height: 1,
+      pattern: 'hex',
+    });
+    const cover10Bounds = measureAsciiStlBoundsMm(cover10InchStl);
+    expect(cover10Bounds.widthMm).toBe(254);
+    expect(cover10Bounds.heightMm).toBe(43.7);
+    expect(cover10Bounds.depthMm).toBe(10);
+    expect(cover10Bounds.triangleCount).toBeGreaterThan(50);
+
+    expect(
+      checkStlFitsPrintBed(cover10Bounds, STL_PRINT_BED_PRESETS['bambu-256']),
+    ).toEqual({ fits: true, rotated: false });
+    expect(
+      checkStlFitsPrintBed(cover10Bounds, STL_PRINT_BED_PRESETS['prusa-mk4']),
+    ).toEqual({ fits: false, rotated: false });
+    expect(
+      checkStlFitsPrintBed(cover10Bounds, STL_PRINT_BED_PRESETS.ender3),
+    ).toEqual({ fits: false, rotated: false });
+    expect(
+      checkStlFitsPrintBed(cover10Bounds, STL_PRINT_BED_PRESETS['a1-mini']),
+    ).toEqual({ fits: false, rotated: false });
+
+    const cover6InchStl = generateClientCustomCoverPanelStl({
+      standard: '6inch',
+      u_height: 1,
+      pattern: 'solid',
+    });
+    const cover6Bounds = measureAsciiStlBoundsMm(cover6InchStl);
+    expect(cover6Bounds.widthMm).toBe(152.4);
+    expect(checkStlFitsPrintBed(cover6Bounds, 'a1-mini')).toEqual({
+      fits: true,
+      rotated: false,
+    });
+
+    // 90-degree rotated fit check (205x245 fits 250x210 Prusa bed when rotated)
+    expect(
+      checkStlFitsPrintBed({ widthMm: 205, heightMm: 245 }, 'prusa-mk4'),
+    ).toEqual({ fits: true, rotated: true });
+
+    // Empty / invalid STL gracefully returns zero bounds and non-fit
+    const emptyBounds = measureAsciiStlBoundsMm('');
+    expect(emptyBounds).toEqual({
+      widthMm: 0,
+      heightMm: 0,
+      depthMm: 0,
+      triangleCount: 0,
+    });
+    expect(checkStlFitsPrintBed(emptyBounds, 'bambu-256')).toEqual({
+      fits: false,
+      rotated: false,
+    });
+
+    // 19-inch full bracket vs 2-part split_half
+    const bracketFullStl = generateCustomBracketStl({
+      standard: '19inch',
+      u_height: 1,
+      device_name: 'Firewall',
+      device_width_mm: 220,
+      device_height_mm: 35,
+      device_depth_mm: 150,
+      keystone_count: 0,
+      split_half: 'full',
+    });
+    const fullBounds = measureAsciiStlBoundsMm(bracketFullStl);
+    expect(fullBounds.widthMm).toBe(482.6);
+    expect(checkStlFitsPrintBed(fullBounds, 'bambu-256').fits).toBe(false);
+
+    const bracketLeftStl = generateCustomBracketStl({
+      standard: '19inch',
+      u_height: 1,
+      device_name: 'Firewall',
+      device_width_mm: 220,
+      device_height_mm: 35,
+      device_depth_mm: 150,
+      keystone_count: 0,
+      split_half: 'left',
+    });
+    const leftBounds = measureAsciiStlBoundsMm(bracketLeftStl);
+    expect(leftBounds.widthMm).toBe(241.3);
+    expect(checkStlFitsPrintBed(leftBounds, 'bambu-256').fits).toBe(true);
+    expect(checkStlFitsPrintBed(leftBounds, 'prusa-mk4').fits).toBe(true);
+    expect(checkStlFitsPrintBed(leftBounds, 'ender3').fits).toBe(false);
+
+    const bracketRightStl = generateCustomBracketStl({
+      standard: '19inch',
+      u_height: 1,
+      device_name: 'Firewall',
+      device_width_mm: 220,
+      device_height_mm: 35,
+      device_depth_mm: 150,
+      keystone_count: 0,
+      split_half: 'right',
+    });
+    const rightBounds = measureAsciiStlBoundsMm(bracketRightStl);
+    expect(rightBounds.widthMm).toBe(241.3);
+    expect(checkStlFitsPrintBed(rightBounds, 'bambu-256').fits).toBe(true);
+  });
+
+  it('updates StlPreview3D print-bed fit badge dynamically across bed presets and 19-inch 2-part splits', () => {
+    const cover10InchStl = generateClientCustomCoverPanelStl({
+      standard: '10inch',
+      u_height: 1,
+      pattern: 'lines',
+    });
+    render(<StlPreview3D stlAscii={cover10InchStl} />);
+
+    const selectEl = screen.getByTestId(
+      'stl-bed-preset-select',
+    ) as HTMLSelectElement;
+    expect(selectEl.value).toBe('bambu-256');
+    expect(screen.getByTestId('stl-bed-fit-badge').textContent).toContain(
+      'Fits 256×256',
+    );
+    expect(screen.getByTestId('stl-bed-fit-badge').textContent).toContain(
+      '254×43.7 mm',
+    );
+
+    fireEvent.change(selectEl, { target: { value: 'ender3' } });
+    expect(screen.getByTestId('stl-bed-fit-badge').textContent).toContain(
+      'Exceeds 220×220 — Split STL',
+    );
+
+    fireEvent.change(selectEl, { target: { value: 'none' } });
+    expect(screen.queryByTestId('stl-bed-fit-badge')).toBeNull();
+
+    cleanup();
+
+    // Respects defaultBedPreset and showBedControls=false
+    render(
+      <StlPreview3D
+        stlAscii={cover10InchStl}
+        defaultBedPreset="prusa-mk4"
+      />,
+    );
+    expect(
+      (screen.getByTestId('stl-bed-preset-select') as HTMLSelectElement).value,
+    ).toBe('prusa-mk4');
+    expect(screen.getByTestId('stl-bed-fit-badge').textContent).toContain(
+      'Exceeds 250×210 — Split STL',
+    );
+    cleanup();
+
+    render(
+      <StlPreview3D stlAscii={cover10InchStl} showBedControls={false} />,
+    );
+    expect(screen.queryByTestId('stl-bed-preset-select')).toBeNull();
+    expect(screen.queryByTestId('stl-bed-fit-badge')).toBeNull();
+    cleanup();
+
+    // End-to-end inside BomAndExportsView (19-inch full -> Exceeds, split_half='left' -> Fits)
+    window.history.replaceState(null, '', '/?tab=bom&preset=19inch-enterprise');
+    render(<AppDashboard />);
+
+    fireEvent.click(screen.getByTestId('bracket-preview-mode-stl'));
+    expect(screen.getByTestId('stl-bed-fit-badge').textContent).toContain(
+      'Exceeds 256×256 — Split STL',
+    );
+    expect(screen.getByTestId('stl-bed-fit-badge').textContent).toContain(
+      '482.6×43.7 mm',
+    );
+
+    fireEvent.change(screen.getByTestId('custom-bracket-split-half'), {
+      target: { value: 'left' },
+    });
+    expect(screen.getByTestId('stl-bed-fit-badge').textContent).toContain(
+      'Fits 256×256',
+    );
+    expect(screen.getByTestId('stl-bed-fit-badge').textContent).toContain(
+      '241.3×43.7 mm',
+    );
+
+    fireEvent.change(screen.getByTestId('stl-bed-preset-select'), {
+      target: { value: 'ender3' },
+    });
+    expect(screen.getByTestId('stl-bed-fit-badge').textContent).toContain(
+      'Exceeds 220×220 — Split STL',
+    );
   });
 });
