@@ -1,0 +1,107 @@
+slug: "mikrotik-l009uigs-rm"
+manufacturer: "MikroTik"
+model: "L009UiGS-RM (19-Inch 1U 8x GbE + 2.5G SFP Router)"
+description: "Fanless 19-inch 1U ARM64 rackmount router (443×44×125mm) equipped with 8x 1GbE RJ45 ports (PoE-In on ETH1, PoE-Out on ETH8), 1x 2.5G SFP cage, RJ45 serial console, and USB 3.0."
+category: "router"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 443.0
+  height_mm: 44.0
+  depth_mm: 125.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 980
+power_and_thermal:
+  electrical_role: "pse-switch"
+  idle_watts: 8
+  max_system_watts: 15
+  poe_budget_watts: 24
+  airflow: "passive-convection"
+  noise_db_a: 0
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "ETH "
+    start_index: 2
+    count: 6
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 165.0
+      origin_y_mm: 22.0
+      columns: 6
+      rows: 1
+      pitch_x_mm: 16.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "console"
+    label: "RJ45 Console"
+    face: "front"
+    connector_type: "rj45-serial-console"
+    direction: "bidirectional"
+    capabilities: ["serial-rs232"]
+    coordinates:
+      x_mm: 110.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "eth1"
+    label: "ETH1 (PoE-In)"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "poe-in-af", "poe-in-at"]
+    coordinates:
+      x_mm: 145.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "eth8"
+    label: "ETH8 (PoE-Out)"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "poe-out", "poe-out-af", "poe-out-at"]
+    coordinates:
+      x_mm: 265.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "sfp1"
+    label: "2.5G SFP"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 292.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "usb1"
+    label: "USB 3.0"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0"]
+    coordinates:
+      x_mm: 322.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "24-56V DC In"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 400.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#7F1D1D"
+  material_preset: "coated-aluminum"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 129

@@ -1,0 +1,79 @@
+slug: "asustor-lockerstor-4-gen2"
+manufacturer: "ASUSTOR"
+model: "Lockerstor 4 Gen2 (AS6704T) 4-Bay 2.5GbE NAS"
+description: "Quiet 4-bay 2.5GbE + quad M.2 NVMe NAS (170×185.5×230mm) powered by Intel Celeron N5105 with dual 2.5GbE ports and dual USB 3.2 Gen2. Shelf-standing across 5U inside 10-inch or 19-inch racks."
+category: "nas"
+mount_type: "shelf-standing"
+geometry:
+  u_height: 4.2
+  width_mm: 170.0
+  height_mm: 185.5
+  depth_mm: 230.0
+  ear_mount_style: "none"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 2940
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 17
+  max_system_watts: 35
+  airflow: "front-to-rear"
+  noise_db_a: 19.6
+ports:
+  - port_id: "usb_front"
+    label: "USB 3.2 Gen2 Front"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 144.0
+      y_mm: 26.0
+      orientation: "upright"
+  - port_id: "lan1_25g"
+    label: "2.5GbE LAN 1"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 108.0
+      y_mm: 38.0
+      orientation: "upright"
+  - port_id: "lan2_25g"
+    label: "2.5GbE LAN 2"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 130.0
+      y_mm: 38.0
+      orientation: "upright"
+  - port_id: "usb_rear"
+    label: "USB 3.2 Rear"
+    face: "rear"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 84.0
+      y_mm: 38.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "12V 90W DC In"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 148.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 569

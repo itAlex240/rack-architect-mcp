@@ -1,0 +1,90 @@
+slug: "hp-prodesk-400-g6-mini"
+manufacturer: "HP"
+model: "ProDesk 400 G6 Desktop Mini PC (1L USFF)"
+description: "Compact 1-liter enterprise USFF mini-PC (177×34.2×175mm) supporting Intel Core 10th Gen T-series CPUs, 64GB DDR4, and M.2 NVMe storage for Proxmox or Docker workloads. Mounts inside any `mini-pc-1liter` 10-inch or 19-inch 1U carrier."
+category: "mini-pc"
+mount_type: "sub-module"
+slot_compatibility: "mini-pc-1liter"
+geometry:
+  u_height: 0.8
+  width_mm: 177.0
+  height_mm: 34.2
+  depth_mm: 175.0
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 0.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 1250
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 9.0
+  max_system_watts: 65
+  airflow: "front-to-rear"
+  noise_db_a: 23.5
+ports:
+  - port_id: "usb_c_front"
+    label: "USB-C 3.2"
+    face: "front"
+    connector_type: "usb-c"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 42.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "usb_a_front"
+    label: "USB-A 3.2"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 64.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "audio_front"
+    label: "Headset Audio"
+    face: "front"
+    connector_type: "audio-35mm"
+    direction: "bidirectional"
+    capabilities: ["audio-analog"]
+    coordinates:
+      x_mm: 86.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "19.5V DC Input"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 22.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "usb_rear"
+    label: "USB-A 3.2 Rear"
+    face: "rear"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 108.0
+      y_mm: 16.0
+      orientation: "upright"
+  - port_id: "eth0"
+    label: "1GbE RJ45 LAN"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 136.0
+      y_mm: 16.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 195

@@ -1,0 +1,74 @@
+slug: "3dprint-10inch-jetkvm-plus-3keystone-1u"
+manufacturer: "Community 3D-Print"
+model: "10-Inch 1U Carrier for 1x JetKVM + 3x Keystone"
+description: "3D-printable 10-inch 1U modular faceplate carrier (PETG / ABS) holding 1x JetKVM out-of-band IP-KVM touchscreen module on the left and 3x standard RJ45 keystone coupler cutouts on the right."
+category: "modular-carrier"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.0
+  width_mm: 254.0
+  height_mm: 44.0
+  depth_mm: 85.0
+  ear_mount_style: "flush-front"
+  front_protrusion_mm: 3.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 130
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "passive-convection"
+  noise_db_a: 0
+slots:
+  - slot_id: "jetkvm-bay-1"
+    accepted_slot_type: "jetkvm-bay"
+    offset_mm:
+      x: 24.0
+      y: 4.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 48.0
+      height: 38.0
+      depth: 70.0
+  - slot_id: "keystone-1"
+    accepted_slot_type: "standard-keystone"
+    offset_mm:
+      x: 140.0
+      y: 11.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 16.5
+      height: 22.0
+      depth: 35.0
+  - slot_id: "keystone-2"
+    accepted_slot_type: "standard-keystone"
+    offset_mm:
+      x: 170.0
+      y: 11.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 16.5
+      height: 22.0
+      depth: 35.0
+  - slot_id: "keystone-3"
+    accepted_slot_type: "standard-keystone"
+    offset_mm:
+      x: 200.0
+      y: 11.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 16.5
+      height: 22.0
+      depth: 35.0
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "3d-printed-petg"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata:
+  filament_grams: 120
+  material_recommendation: "PETG / ABS"
+  heat_set_inserts: "4x M3x5x4mm"
+  fasteners: "4x M3x10mm Socket Head + 4x M6 cage nuts"
+  printables_url: "https://www.printables.com/model/10inch-jetkvm-3keystone-1u"
+estimated_price_eur: 14

@@ -1,0 +1,79 @@
+slug: "qnap-ts-464-nas"
+manufacturer: "QNAP"
+model: "TS-464 4-Bay 2.5GbE x86 NAS"
+description: "Compact 4-bay Intel Celeron N5095 NAS (170×165×226.5mm) featuring dual 2.5GbE RJ45 ports, dual M.2 NVMe PCIe slots, and USB 3.2 Gen2 connectivity. Shelf-standing across 4U inside 10-inch or 19-inch racks."
+category: "nas"
+mount_type: "shelf-standing"
+geometry:
+  u_height: 4.0
+  width_mm: 170.0
+  height_mm: 165.0
+  depth_mm: 226.5
+  ear_mount_style: "none"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 2260
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 21
+  max_system_watts: 41
+  airflow: "front-to-rear"
+  noise_db_a: 21.0
+ports:
+  - port_id: "usb_front"
+    label: "USB 3.2 Gen2 One-Touch"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 144.0
+      y_mm: 26.0
+      orientation: "upright"
+  - port_id: "lan1_25g"
+    label: "2.5GbE LAN 1"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 108.0
+      y_mm: 36.0
+      orientation: "upright"
+  - port_id: "lan2_25g"
+    label: "2.5GbE LAN 2"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 130.0
+      y_mm: 36.0
+      orientation: "upright"
+  - port_id: "usb_rear"
+    label: "USB 3.2 Rear"
+    face: "rear"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 84.0
+      y_mm: 36.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "12V 90W DC In"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 148.0
+      y_mm: 20.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 549

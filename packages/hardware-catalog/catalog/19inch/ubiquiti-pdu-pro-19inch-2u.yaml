@@ -1,0 +1,83 @@
+slug: "ubiquiti-pdu-pro-19inch-2u"
+manufacturer: "Ubiquiti"
+model: "UniFi Power Distribution Pro (USP-PDU-Pro 2U)"
+description: "Managed 19-inch 2U smart PDU (442.4×87.4×106mm) featuring 16x individually switchable rear AC outlets (IEC-C13), 4x front USB-C power ports (20W shared), GbE management uplink, and a 1.3-inch OLED touchscreen."
+category: "pdu"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 2.0
+  width_mm: 442.4
+  height_mm: 87.4
+  depth_mm: 106.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 3.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 3700
+power_and_thermal:
+  electrical_role: "pdu"
+  idle_watts: 12
+  max_system_watts: 40
+  pdu_capacity_watts: 1875
+  airflow: "passive-convection"
+  noise_db_a: 0
+port_groups:
+  - id_prefix: "outlet"
+    label_prefix: "AC Outlet "
+    start_index: 1
+    count: 16
+    face: "rear"
+    connector_type: "iec-c13"
+    direction: "output"
+    capabilities: ["ac-mains"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 52.0
+      origin_y_mm: 24.0
+      columns: 8
+      rows: 2
+      pitch_x_mm: 42.0
+      pitch_y_mm: 36.0
+  - id_prefix: "usbc_out"
+    label_prefix: "USB-C "
+    start_index: 1
+    count: 4
+    face: "front"
+    connector_type: "usb-c"
+    direction: "output"
+    capabilities: ["usb-pd", "dc-power"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 110.0
+      origin_y_mm: 24.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 22.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "eth_gbe"
+    label: "1GbE Mgmt"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 240.0
+      y_mm: 24.0
+      orientation: "upright"
+  - port_id: "ac_in"
+    label: "Mains AC Input"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 404.0
+      y_mm: 44.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#D1D5DB"
+  material_preset: "coated-aluminum"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 299

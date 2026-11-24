@@ -1,0 +1,50 @@
+slug: "ubiquiti-uck-g2-plus"
+manufacturer: "Ubiquiti"
+model: "UniFi Cloud Key Gen2 Plus (UCK-G2-PLUS)"
+description: "Compact anodized aluminum UniFi OS console and Protect NVR with internal 2.5-inch SSD/HDD bay (131.2×27.1×134.2mm), front OLED readout, and 802.3af PoE or USB-C QC power. Clips into a `unifi-compact-gateway` carrier bay."
+category: "compute-node"
+mount_type: "sub-module"
+slot_compatibility: "unifi-compact-gateway"
+geometry:
+  u_height: 0.7
+  width_mm: 131.2
+  height_mm: 27.1
+  depth_mm: 134.2
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 1.5
+  rear_protrusion_mm: 0.0
+  weight_grams: 582
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 7.0
+  max_system_watts: 12.95
+  airflow: "passive-convection"
+  noise_db_a: 0
+ports:
+  - port_id: "eth0"
+    label: "1GbE PoE-In"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "poe-in-af"]
+    coordinates:
+      x_mm: 42.0
+      y_mm: 13.5
+      orientation: "upright"
+  - port_id: "usbc_pwr"
+    label: "USB-C QC Power"
+    face: "rear"
+    connector_type: "usb-c"
+    direction: "input"
+    capabilities: ["usb-pd", "dc-power"]
+    coordinates:
+      x_mm: 84.0
+      y_mm: 13.5
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#D1D5DB"
+  material_preset: "coated-aluminum"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 215

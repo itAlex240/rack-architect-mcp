@@ -1,0 +1,66 @@
+slug: "ubiquiti-usw-flex-2-5g-5"
+manufacturer: "Ubiquiti"
+model: "UniFi Flex Mini 2.5G (USW-Flex-2.5G-5)"
+description: "Fanless 5-port 2.5GbE desktop/6-inch micro-rack switch (117.1×21.2×90mm) powered via USB-C PD or 802.3at PoE-In on Port 5. Mounts cleanly inside 6-inch 1U micro-homelab enclosures."
+category: "switch"
+mount_type: "rackmount-6"
+geometry:
+  u_height: 1.0
+  width_mm: 117.1
+  height_mm: 21.2
+  depth_mm: 90.0
+  ear_mount_style: "included-6inch-ears"
+  front_protrusion_mm: 1.5
+  rear_protrusion_mm: 0.0
+  weight_grams: 206
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 2.5
+  max_system_watts: 6.4
+  airflow: "passive-convection"
+  noise_db_a: 0
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "2.5G Port "
+    start_index: 1
+    count: 4
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 20.0
+      origin_y_mm: 10.6
+      columns: 4
+      rows: 1
+      pitch_x_mm: 18.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "eth5"
+    label: "2.5G Uplink (PoE-In)"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t", "poe-in-af", "poe-in-at"]
+    coordinates:
+      x_mm: 94.0
+      y_mm: 10.6
+      orientation: "upright"
+  - port_id: "usbc_pwr"
+    label: "5V USB-C In"
+    face: "rear"
+    connector_type: "usb-c"
+    direction: "input"
+    capabilities: ["usb-pd", "dc-power"]
+    coordinates:
+      x_mm: 94.0
+      y_mm: 10.6
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#E5E7EB"
+  material_preset: "polycarbonate"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 54

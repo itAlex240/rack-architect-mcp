@@ -1,0 +1,76 @@
+slug: "netgate-4200-pfsense-firewall"
+manufacturer: "Netgate"
+model: "Netgate 4200 pfSense+ Security Gateway"
+description: "Fanless quad-core Intel Atom C1110 pfSense+ firewall appliance (220×60×180mm) with 4x 2.5GbE discrete RJ45 ports, RJ45 serial console, and USB 3.0. Fits a 10-inch 1.5U/2U rackmount kit or shelf cleanly."
+category: "router"
+mount_type: "rackmount-10"
+geometry:
+  u_height: 1.5
+  width_mm: 220.0
+  height_mm: 60.0
+  depth_mm: 180.0
+  ear_mount_style: "included-10inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 1350
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 12
+  max_system_watts: 28
+  airflow: "passive-convection"
+  noise_db_a: 0
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "2.5G Port "
+    start_index: 1
+    count: 4
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 40.0
+      origin_y_mm: 26.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 18.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "console"
+    label: "RJ45 Console"
+    face: "front"
+    connector_type: "rj45-serial-console"
+    direction: "bidirectional"
+    capabilities: ["serial-rs232"]
+    coordinates:
+      x_mm: 130.0
+      y_mm: 26.0
+      orientation: "upright"
+  - port_id: "usb1"
+    label: "USB 3.0"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0"]
+    coordinates:
+      x_mm: 162.0
+      y_mm: 26.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "12V Locking DC In"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 188.0
+      y_mm: 26.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "coated-aluminum"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 549

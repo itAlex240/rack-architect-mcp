@@ -1,0 +1,67 @@
+slug: "tp-link-omada-er605-v2"
+manufacturer: "TP-Link"
+model: "Omada ER605 v2 Multi-WAN Gigabit VPN Router"
+description: "Compact steel desktop Multi-WAN Gigabit VPN router (158×25×101mm) featuring 5x configurable WAN/LAN 1GbE RJ45 ports and USB 2.0/LTE backup port. Fits cleanly on a 10-inch shelf (`open-shelf-area`) or modular bracket."
+category: "router"
+mount_type: "sub-module"
+slot_compatibility: "open-shelf-area"
+geometry:
+  u_height: 0.6
+  width_mm: 158.0
+  height_mm: 25.0
+  depth_mm: 101.0
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 1.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 380
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 4.0
+  max_system_watts: 8.0
+  airflow: "passive-convection"
+  noise_db_a: 0
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "Port "
+    start_index: 1
+    count: 5
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 40.0
+      origin_y_mm: 12.5
+      columns: 5
+      rows: 1
+      pitch_x_mm: 18.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "usb_front"
+    label: "USB LTE Backup"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0"]
+    coordinates:
+      x_mm: 136.0
+      y_mm: 12.5
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "12V 1A DC In"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 132.0
+      y_mm: 12.5
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#1E293B"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 59

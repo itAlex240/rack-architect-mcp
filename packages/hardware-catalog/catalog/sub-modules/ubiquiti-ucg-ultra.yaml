@@ -1,0 +1,67 @@
+slug: "ubiquiti-ucg-ultra"
+manufacturer: "Ubiquiti"
+model: "Cloud Gateway Ultra (UCG-Ultra)"
+description: "Compact multi-WAN UniFi Cloud Gateway & IDS/IPS router (141.8×30×127.6mm) with 1x 2.5GbE WAN, 4x 1GbE LAN ports, front status LCM display, and USB-C power. Mounts as a sub-module inside `3dprint-10inch-ucg-ultra-plus-3keystone`."
+category: "router"
+mount_type: "sub-module"
+slot_compatibility: "unifi-compact-gateway"
+geometry:
+  u_height: 0.8
+  width_mm: 141.8
+  height_mm: 30.0
+  depth_mm: 127.6
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 1.5
+  rear_protrusion_mm: 0.0
+  weight_grams: 520
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 4.5
+  max_system_watts: 6.2
+  airflow: "passive-convection"
+  noise_db_a: 0
+port_groups:
+  - id_prefix: "lan"
+    label_prefix: "1G LAN "
+    start_index: 1
+    count: 4
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 24.0
+      origin_y_mm: 14.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 18.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "wan"
+    label: "2.5G WAN"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 100.0
+      y_mm: 14.0
+      orientation: "upright"
+  - port_id: "usbc_pwr"
+    label: "5V USB-C In"
+    face: "rear"
+    connector_type: "usb-c"
+    direction: "input"
+    capabilities: ["usb-pd", "dc-power"]
+    coordinates:
+      x_mm: 124.0
+      y_mm: 14.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#F3F4F6"
+  material_preset: "polycarbonate"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 109

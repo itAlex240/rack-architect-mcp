@@ -1,0 +1,94 @@
+slug: "3dprint-19inch-quad-rpi5-poe-1u"
+manufacturer: "Community 3D-Print"
+model: "19-Inch 1U Cluster Carrier for 4x Raspberry Pi 5 PoE+ + 2x Keystone"
+description: "2-piece interlocking 3D-printable 19-inch 1U SBC cluster rackmount carrier (PETG / ABS) accommodating 4x Raspberry Pi 5 PoE+ nodes side-by-side plus 2x keystone uplink couplers."
+category: "modular-carrier"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 482.6
+  height_mm: 44.0
+  depth_mm: 110.0
+  ear_mount_style: "flush-front"
+  front_protrusion_mm: 3.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 280
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "front-to-rear"
+  noise_db_a: 0
+slots:
+  - slot_id: "rpi-bay-1"
+    accepted_slot_type: "sbc-rpi5"
+    offset_mm:
+      x: 24.0
+      y: 4.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 66.0
+      height: 36.0
+      depth: 100.0
+  - slot_id: "rpi-bay-2"
+    accepted_slot_type: "sbc-rpi5"
+    offset_mm:
+      x: 104.0
+      y: 4.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 66.0
+      height: 36.0
+      depth: 100.0
+  - slot_id: "rpi-bay-3"
+    accepted_slot_type: "sbc-rpi5"
+    offset_mm:
+      x: 184.0
+      y: 4.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 66.0
+      height: 36.0
+      depth: 100.0
+  - slot_id: "rpi-bay-4"
+    accepted_slot_type: "sbc-rpi5"
+    offset_mm:
+      x: 264.0
+      y: 4.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 66.0
+      height: 36.0
+      depth: 100.0
+  - slot_id: "keystone-1"
+    accepted_slot_type: "standard-keystone"
+    offset_mm:
+      x: 370.0
+      y: 11.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 16.5
+      height: 22.0
+      depth: 35.0
+  - slot_id: "keystone-2"
+    accepted_slot_type: "standard-keystone"
+    offset_mm:
+      x: 400.0
+      y: 11.0
+      z: 0.0
+    max_dimensions_mm:
+      width: 16.5
+      height: 22.0
+      depth: 35.0
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "3d-printed-petg"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata:
+  filament_grams: 260
+  material_recommendation: "PETG / ABS (2-Piece Interlocking)"
+  heat_set_inserts: "16x M2.5x4mm, 4x M3x5x4mm"
+  fasteners: "16x M2.5x8mm Pan Head + 4x M6 cage nuts"
+  printables_url: "https://www.printables.com/model/19inch-quad-rpi5-1u"
+estimated_price_eur: 24

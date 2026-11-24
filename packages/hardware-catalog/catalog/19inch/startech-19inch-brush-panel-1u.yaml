@@ -1,0 +1,29 @@
+slug: "startech-19inch-brush-panel-1u"
+manufacturer: "StarTech.com"
+model: "19-Inch 1U High-Density Cable Brush Strip Panel (CMBRUSH1U)"
+description: "19-inch 1U steel cable management brush panel (482.6×44×16mm) with high-density nylon bristles serving as a clean front-to-rear cable pass-through portal while blocking bypass airflow."
+category: "brush-panel"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 482.6
+  height_mm: 44.0
+  depth_mm: 16.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 310
+  has_cable_pass_through: true
+power_and_thermal:
+  electrical_role: "passive"
+  idle_watts: 0
+  max_system_watts: 0
+  airflow: "passive-convection"
+  noise_db_a: 0
+visuals:
+  chassis_color_hex: "#111827"
+  material_preset: "matte-black-steel"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 24

@@ -1,0 +1,87 @@
+slug: "protectli-fw4b-firewall"
+manufacturer: "Protectli"
+model: "Vault FW4B 4-Port Fanless Firewall Appliance"
+description: "Fanless aluminum 4x Intel i211 1GbE firewall/router appliance (115×39×107.5mm) for OPNsense, pfSense, or VyOS with RJ45 COM console and dual front USB 3.0 ports. Fits `intel-nuc-4x4` 10-inch carriers or rack shelves."
+category: "router"
+mount_type: "sub-module"
+slot_compatibility: "intel-nuc-4x4"
+geometry:
+  u_height: 0.9
+  width_mm: 115.0
+  height_mm: 39.0
+  depth_mm: 107.5
+  ear_mount_style: "sub-module-clip"
+  front_protrusion_mm: 0.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 500
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 5.5
+  max_system_watts: 18
+  airflow: "passive-convection"
+  noise_db_a: 0
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "1GbE Port "
+    start_index: 1
+    count: 4
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 30.0
+      origin_y_mm: 18.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 18.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "usb_front1"
+    label: "USB 3.0 Front 1"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0"]
+    coordinates:
+      x_mm: 34.0
+      y_mm: 18.0
+      orientation: "upright"
+  - port_id: "usb_front2"
+    label: "USB 3.0 Front 2"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0"]
+    coordinates:
+      x_mm: 54.0
+      y_mm: 18.0
+      orientation: "upright"
+  - port_id: "console"
+    label: "RJ45 COM Console"
+    face: "front"
+    connector_type: "rj45-serial-console"
+    direction: "bidirectional"
+    capabilities: ["serial-rs232"]
+    coordinates:
+      x_mm: 84.0
+      y_mm: 18.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "12V DC In"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 102.0
+      y_mm: 18.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "coated-aluminum"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 269

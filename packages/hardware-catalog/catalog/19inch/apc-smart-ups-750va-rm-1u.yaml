@@ -1,0 +1,68 @@
+slug: "apc-smart-ups-750va-rm-1u"
+manufacturer: "APC"
+model: "Smart-UPS 750VA RM 1U (SUA750RMI1U / 480W)"
+description: "Classic 19-inch 1U line-interactive rackmount UPS (432×44×660mm, 750VA / 480W, 216Wh VRLA cartridge) with 4x IEC-C13 battery outlets and SmartSlot network management for deep 800mm+ server cabinets."
+category: "ups"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 432.0
+  height_mm: 44.0
+  depth_mm: 660.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 10.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 21820
+power_and_thermal:
+  electrical_role: "ups"
+  idle_watts: 15
+  max_system_watts: 35
+  ups_capacity_watts: 480
+  ups_battery_wh: 216
+  airflow: "front-to-rear"
+  noise_db_a: 42.0
+port_groups:
+  - id_prefix: "iec_out"
+    label_prefix: "OUT "
+    start_index: 1
+    count: 4
+    face: "rear"
+    connector_type: "iec-c13"
+    direction: "output"
+    capabilities: ["ac-mains"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 130.0
+      origin_y_mm: 22.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 42.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "ac_in"
+    label: "IEC-C14 AC In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 65.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "mgmt_eth"
+    label: "Network Mgmt"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 345.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 599

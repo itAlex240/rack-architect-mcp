@@ -1,0 +1,58 @@
+slug: "cyberpower-or600erm1u-ups"
+manufacturer: "CyberPower"
+model: "OR600ERM1U Short-Depth 1U Rack UPS (600VA / 360W)"
+description: "Short-depth 19-inch 1U line-interactive rackmount UPS (433×44×235mm, 600VA / 360W, 86Wh battery) with front LCD status display and 4x rear IEC-C13 battery outlets — ideal for shallow 400–600mm wall cabinets."
+category: "ups"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 433.0
+  height_mm: 44.0
+  depth_mm: 235.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 6.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 7800
+power_and_thermal:
+  electrical_role: "ups"
+  idle_watts: 10
+  max_system_watts: 24
+  ups_capacity_watts: 360
+  ups_battery_wh: 86
+  airflow: "front-to-rear"
+  noise_db_a: 38.0
+port_groups:
+  - id_prefix: "iec_out"
+    label_prefix: "Battery OUT "
+    start_index: 1
+    count: 4
+    face: "rear"
+    connector_type: "iec-c13"
+    direction: "output"
+    capabilities: ["ac-mains"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 125.0
+      origin_y_mm: 22.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 42.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "ac_in"
+    label: "IEC-C14 AC In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 62.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 259

@@ -1,0 +1,68 @@
+slug: "eaton-5p-650i-rack-1u"
+manufacturer: "Eaton"
+model: "5P 650i Rack 1U Line-Interactive UPS (650VA / 420W)"
+description: "Enterprise 19-inch 1U pure sinewave line-interactive UPS (438×43.2×364mm, 650VA / 420W, 108Wh battery) with 4x IEC-C13 switched outlets, front LCD panel, and network management interface."
+category: "ups"
+mount_type: "rackmount-19"
+geometry:
+  u_height: 1.0
+  width_mm: 438.0
+  height_mm: 43.2
+  depth_mm: 364.0
+  ear_mount_style: "included-19inch-ears"
+  front_protrusion_mm: 8.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 8600
+power_and_thermal:
+  electrical_role: "ups"
+  idle_watts: 10
+  max_system_watts: 28
+  ups_capacity_watts: 420
+  ups_battery_wh: 108
+  airflow: "front-to-rear"
+  noise_db_a: 40.0
+port_groups:
+  - id_prefix: "iec_out"
+    label_prefix: "OUT "
+    start_index: 1
+    count: 4
+    face: "rear"
+    connector_type: "iec-c13"
+    direction: "output"
+    capabilities: ["ac-mains"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 130.0
+      origin_y_mm: 21.6
+      columns: 4
+      rows: 1
+      pitch_x_mm: 40.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "ac_in"
+    label: "IEC-C14 AC In"
+    face: "rear"
+    connector_type: "iec-c14"
+    direction: "input"
+    capabilities: ["ac-mains"]
+    coordinates:
+      x_mm: 68.0
+      y_mm: 21.6
+      orientation: "upright"
+  - port_id: "mgmt_eth"
+    label: "Network Mgmt"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    coordinates:
+      x_mm: 340.0
+      y_mm: 21.6
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#18181B"
+  material_preset: "matte-black-steel"
+  has_oled_display: true
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 449

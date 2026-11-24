@@ -9,16 +9,16 @@ import {
 import { validateCatalogDirectory } from '../src/validate-cli.js';
 
 describe('@rack-mcp/hardware-catalog', () => {
-  it('validates all 73 YAML hardware blueprints on disk with zero schema, port, or slot errors', () => {
+  it('validates all 101 YAML hardware blueprints on disk with zero schema, port, or slot errors', () => {
     const report = validateCatalogDirectory();
-    expect(report.totalFiles).toBe(73);
+    expect(report.totalFiles).toBe(101);
     expect(report.issues).toEqual([]);
-    expect(report.validFiles).toBe(73);
+    expect(report.validFiles).toBe(101);
   });
 
-  it('loads all 73 blueprints in CatalogRegistry with expanded port_groups', () => {
+  it('loads all 101 blueprints in CatalogRegistry with expanded port_groups', () => {
     const all = getAllBlueprints();
-    expect(all.length).toBe(73);
+    expect(all.length).toBe(101);
 
     for (const slug of [
       'minisforum-ms-01-workstation',
@@ -27,11 +27,56 @@ describe('@rack-mcp/hardware-catalog', () => {
       'deskpi-10inch-4bay-nvme-nas-2u',
       'ubiquiti-usw-pro-xg-8-poe',
       '3dprint-10inch-mac-mini-m4-plus-2keystone-2u',
+      'mikrotik-rb5009ug-s-in',
+      'mikrotik-crs305-1g-4s-plus-in',
+      'mikrotik-hex-s-2025',
+      'mikrotik-l009uigs-rm',
+      'ubiquiti-ucg-ultra',
+      'ubiquiti-uck-g2-plus',
+      'ubiquiti-usw-enterprise-8-poe',
+      'ubiquiti-usw-flex-2-5g-5',
+      'ubiquiti-usw-pro-max-48-poe',
+      'ubiquiti-pdu-pro-19inch-2u',
+      'netgate-4200-pfsense-firewall',
+      'gl-inet-mt6000-flint-2',
+      'protectli-fw4b-firewall',
+      'tp-link-omada-er605-v2',
+      'hp-prodesk-400-g6-mini',
+      'synology-ds923-plus',
+      'ugreen-nasync-dxp4800-plus',
+      'qnap-ts-464-nas',
+      'asustor-lockerstor-4-gen2',
+      'eaton-5p-650i-rack-1u',
+      'apc-smart-ups-750va-rm-1u',
+      'cyberpower-or600erm1u-ups',
+      'startech-19inch-brush-panel-1u',
+      'digitus-19inch-patch-panel-24p',
+      '3dprint-10inch-jetkvm-plus-3keystone-1u',
+      '3dprint-10inch-minisforum-ms01-2u',
+      '3dprint-10inch-nanokvm-plus-4keystone-1u',
+      '3dprint-19inch-quad-rpi5-poe-1u',
     ]) {
       expect(getBlueprintBySlug(slug)).toBeDefined();
     }
     const ups10 = getBlueprintBySlug('cyberpower-10inch-ups-1u');
     expect(ups10?.power_and_thermal.ups_battery_wh).toBe(72);
+
+    expect(getBlueprintBySlug('eaton-5p-650i-rack-1u')?.power_and_thermal.ups_battery_wh).toBe(108);
+    expect(getBlueprintBySlug('apc-smart-ups-750va-rm-1u')?.power_and_thermal.ups_battery_wh).toBe(216);
+    expect(getBlueprintBySlug('cyberpower-or600erm1u-ups')?.power_and_thermal.ups_battery_wh).toBe(86);
+
+    const proMax48 = getBlueprintBySlug('ubiquiti-usw-pro-max-48-poe');
+    expect(proMax48).toBeDefined();
+    // 48 expanded eth1..eth48 + 4 SFP+ + 1 AC in = 53 ports
+    expect(proMax48!.ports.length).toBe(53);
+
+    const digitusPatch24 = getBlueprintBySlug('digitus-19inch-patch-panel-24p');
+    expect(digitusPatch24).toBeDefined();
+    expect(digitusPatch24!.ports.length).toBe(24);
+    expect(digitusPatch24!.ports.every((p) => p.is_passthrough_coupler)).toBe(true);
+
+    const starTechBrush = getBlueprintBySlug('startech-19inch-brush-panel-1u');
+    expect(starTechBrush?.geometry.has_cable_pass_through).toBe(true);
 
     const flex25g = getBlueprintBySlug('ubiquiti-usw-flex-2-5g-8-poe');
     expect(flex25g).toBeDefined();
@@ -100,6 +145,7 @@ describe('@rack-mcp/hardware-catalog', () => {
       'ubiquiti-usw-flex-2-5g-8-poe',
       'ubiquiti-usw-pro-max-16-poe-rack-1u',
       'ubiquiti-usw-pro-max-24-poe',
+      'ubiquiti-usw-pro-max-48-poe',
     ]);
 
     // Filter by accepted_slot_type
@@ -110,6 +156,7 @@ describe('@rack-mcp/hardware-catalog', () => {
       '3dprint-19inch-triple-mini-pc-carrier',
       'dell-optiplex-7010-micro',
       'hp-elitedesk-800-g6-mini',
+      'hp-prodesk-400-g6-mini',
       'lenovo-thinkcentre-m920q',
       'zimaboard-832-2-5g-router-nas',
     ]);
@@ -122,6 +169,8 @@ describe('@rack-mcp/hardware-catalog', () => {
       'generic-6inch-patch-panel-6port',
       'generic-6inch-usb-pd-pdu-4port',
       'gl-inet-mt3000-beryl-ax-6inch',
+      'mikrotik-hex-s-2025',
+      'ubiquiti-usw-flex-2-5g-5',
       'ubiquiti-usw-flex-mini-6inch',
     ]);
 
@@ -140,8 +189,29 @@ describe('@rack-mcp/hardware-catalog', () => {
 
     const jetkvmCompatible = searchCatalog({ accepted_slot_type: 'jetkvm-bay' });
     expect(jetkvmCompatible.map((b) => b.slug).sort()).toEqual([
+      '3dprint-10inch-jetkvm-plus-3keystone-1u',
       '3dprint-10inch-rpi5-jetkvm-2keystone',
       'jetkvm-smart-ip-kvm',
+    ]);
+
+    const ms01Compatible = searchCatalog({ accepted_slot_type: 'mini-pc-workstation' });
+    expect(ms01Compatible.map((b) => b.slug).sort()).toEqual([
+      '3dprint-10inch-minisforum-ms01-2u',
+      'minisforum-ms-01-workstation',
+    ]);
+
+    const nanoKvmCompatible = searchCatalog({ accepted_slot_type: 'ip-kvm-compact' });
+    expect(nanoKvmCompatible.map((b) => b.slug).sort()).toEqual([
+      '3dprint-10inch-nanokvm-plus-4keystone-1u',
+      'sipeed-nanokvm-full',
+    ]);
+
+    const shelfStandingNas = searchCatalog({ mount_type: 'shelf-standing', category: 'nas' });
+    expect(shelfStandingNas.map((b) => b.slug).sort()).toEqual([
+      'asustor-lockerstor-4-gen2',
+      'qnap-ts-464-nas',
+      'synology-ds923-plus',
+      'ugreen-nasync-dxp4800-plus',
     ]);
   });
 

@@ -1,0 +1,89 @@
+slug: "ugreen-nasync-dxp4800-plus"
+manufacturer: "UGREEN"
+model: "NASync DXP4800 Plus 4-Bay NAS (10GbE + 2.5GbE)"
+description: "High-speed 4-bay aluminum desktop NAS (178×178×257.5mm) with Intel Pentium Gold 8505, dual M.2 NVMe slots, 1x 10GbE RJ45, and 1x 2.5GbE RJ45. Sits shelf-standing in 10-inch deep racks or 19-inch racks."
+category: "nas"
+mount_type: "shelf-standing"
+geometry:
+  u_height: 4.1
+  width_mm: 178.0
+  height_mm: 178.0
+  depth_mm: 257.5
+  ear_mount_style: "none"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 3900
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 18
+  max_system_watts: 48
+  airflow: "front-to-rear"
+  noise_db_a: 26.0
+ports:
+  - port_id: "usb_c_front"
+    label: "USB-C 3.2 Gen2"
+    face: "front"
+    connector_type: "usb-c"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 128.0
+      y_mm: 24.0
+      orientation: "upright"
+  - port_id: "usb_a_front"
+    label: "USB-A 3.2 Gen2"
+    face: "front"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 148.0
+      y_mm: 24.0
+      orientation: "upright"
+  - port_id: "lan1_10g"
+    label: "10GbE LAN"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t", "10gbase-t"]
+    coordinates:
+      x_mm: 110.0
+      y_mm: 34.0
+      orientation: "upright"
+  - port_id: "lan2_25g"
+    label: "2.5GbE LAN"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 132.0
+      y_mm: 34.0
+      orientation: "upright"
+  - port_id: "usb_rear"
+    label: "USB-A 3.2 Rear"
+    face: "rear"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.1"]
+    coordinates:
+      x_mm: 86.0
+      y_mm: 34.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "19V 150W DC In"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 152.0
+      y_mm: 24.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#27272A"
+  material_preset: "coated-aluminum"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 699

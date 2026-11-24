@@ -1,0 +1,86 @@
+slug: "gl-inet-mt6000-flint-2"
+manufacturer: "GL.iNet"
+model: "Flint 2 (GL-MT6000) Dual 2.5G Wi-Fi 6 OpenWrt Router"
+description: "High-throughput OpenWrt / WireGuard router box (233×53×137mm excluding antennas) equipped with 2x 2.5GbE RJ45 (WAN/LAN), 4x 1GbE RJ45 LAN ports, and USB 3.0. Mounts shelf-standing across 2U inside a 19-inch rack."
+category: "router"
+mount_type: "shelf-standing"
+geometry:
+  u_height: 1.2
+  width_mm: 233.0
+  height_mm: 53.0
+  depth_mm: 137.0
+  ear_mount_style: "none"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 761
+power_and_thermal:
+  electrical_role: "consumer"
+  idle_watts: 6.5
+  max_system_watts: 19.0
+  airflow: "passive-convection"
+  noise_db_a: 0
+port_groups:
+  - id_prefix: "lan"
+    label_prefix: "1G LAN "
+    start_index: 1
+    count: 4
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 86.0
+      origin_y_mm: 22.0
+      columns: 4
+      rows: 1
+      pitch_x_mm: 18.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "wan_25g"
+    label: "2.5G WAN"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 34.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "lan_25g"
+    label: "2.5G LAN"
+    face: "rear"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "2500base-t"]
+    coordinates:
+      x_mm: 58.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "usb1"
+    label: "USB 3.0"
+    face: "rear"
+    connector_type: "usb-a"
+    direction: "bidirectional"
+    capabilities: ["usb-3.0"]
+    coordinates:
+      x_mm: 168.0
+      y_mm: 22.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "12V 4A DC In"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 204.0
+      y_mm: 22.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#374151"
+  material_preset: "polycarbonate"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 149

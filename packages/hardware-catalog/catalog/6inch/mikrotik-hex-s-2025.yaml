@@ -1,0 +1,87 @@
+slug: "mikrotik-hex-s-2025"
+manufacturer: "MikroTik"
+model: "hEX S (2025 E60iUGS) 5x GbE + 2.5G SFP Router"
+description: "Ultra-compact 6-inch micro-lab router (113×28×89mm) featuring 5x 1GbE RJ45 ports (PoE-In on ETH1, passive/af PoE-Out on ETH5) and 1x 2.5G SFP fiber cage. Fits natively in 6-inch 1U micro-racks via 3D-printed rack ears."
+category: "router"
+mount_type: "rackmount-6"
+geometry:
+  u_height: 1.0
+  width_mm: 113.0
+  height_mm: 28.0
+  depth_mm: 89.0
+  ear_mount_style: "included-6inch-ears"
+  front_protrusion_mm: 2.0
+  rear_protrusion_mm: 0.0
+  weight_grams: 350
+power_and_thermal:
+  electrical_role: "pse-switch"
+  idle_watts: 5
+  max_system_watts: 10
+  poe_budget_watts: 13
+  airflow: "passive-convection"
+  noise_db_a: 0
+port_groups:
+  - id_prefix: "eth"
+    label_prefix: "ETH "
+    start_index: 2
+    count: 3
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t"]
+    orientation: "upright"
+    grid:
+      origin_x_mm: 36.0
+      origin_y_mm: 14.0
+      columns: 3
+      rows: 1
+      pitch_x_mm: 15.0
+      pitch_y_mm: 0.0
+ports:
+  - port_id: "eth1"
+    label: "ETH1 (PoE-In)"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "poe-in-af", "poe-in-at"]
+    coordinates:
+      x_mm: 21.0
+      y_mm: 14.0
+      orientation: "upright"
+  - port_id: "eth5"
+    label: "ETH5 (PoE-Out)"
+    face: "front"
+    connector_type: "rj45"
+    direction: "bidirectional"
+    capabilities: ["1000base-t", "poe-out", "poe-out-af"]
+    coordinates:
+      x_mm: 81.0
+      y_mm: 14.0
+      orientation: "upright"
+  - port_id: "sfp1"
+    label: "2.5G SFP"
+    face: "front"
+    connector_type: "sfp-plus"
+    direction: "bidirectional"
+    capabilities: ["10gbase-sr", "10gbase-dac"]
+    coordinates:
+      x_mm: 100.0
+      y_mm: 14.0
+      orientation: "upright"
+  - port_id: "dc_in"
+    label: "12-57V DC In"
+    face: "rear"
+    connector_type: "dc-5525"
+    direction: "input"
+    capabilities: ["dc-power"]
+    coordinates:
+      x_mm: 92.0
+      y_mm: 14.0
+      orientation: "upright"
+visuals:
+  chassis_color_hex: "#E5E7EB"
+  material_preset: "polycarbonate"
+  has_oled_display: false
+  stl_mesh_path: null
+printable_metadata: null
+estimated_price_eur: 79
