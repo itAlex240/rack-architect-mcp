@@ -73,6 +73,7 @@ export interface SidecarClientCommand {
     | 'validate_rack'
     | 'export_deliverables'
     | 'undo_redo'
+    | 'optimize_rack'
     | 'clear_tool_log';
   readonly args?: Record<string, unknown> | undefined;
 }
@@ -535,6 +536,9 @@ function executeWsToolCommand(
       }
       case 'undo_redo':
         result = targetHandlers.undoRedo(args);
+        break;
+      case 'optimize_rack':
+        result = targetHandlers.optimizeRack(args);
         break;
       case 'clear_tool_log':
         targetStateManager.clearToolCallLog();

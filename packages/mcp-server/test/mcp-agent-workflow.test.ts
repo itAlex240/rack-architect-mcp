@@ -652,7 +652,7 @@ describe('@rack-mcp/mcp-server End-to-End Agentic Workflow & Sidecar Suite', () 
         }>;
       };
 
-      expect(listToolsRes.tools).toHaveLength(12);
+      expect(listToolsRes.tools).toHaveLength(13);
 
       for (const tool of listToolsRes.tools) {
         // 1. Meaningful Title & Rich Non-Tautological Description
@@ -720,7 +720,8 @@ describe('@rack-mcp/mcp-server End-to-End Agentic Workflow & Sidecar Suite', () 
           arguments: { formats: ['bom-md'], output_dir: path.join(tmpDir, 'out') }
         },
         { name: 'disconnect_cables', arguments: {} },
-        { name: 'undo_redo', arguments: { action: 'undo' } }
+        { name: 'undo_redo', arguments: { action: 'undo' } },
+        { name: 'optimize_rack', arguments: {} }
       ]) {
         const res = (await callToolHandler!(
           {
@@ -856,6 +857,205 @@ describe('@rack-mcp/mcp-server End-to-End Agentic Workflow & Sidecar Suite', () 
       expect(await svgRes.text()).toContain('<svg');
     } finally {
       await sidecar.close();
+    }
+  });
+
+  it('executes optimize_rack MCP tool end-to-end to resolve collisions, lower CoG, preserve pinned carriers, and support undo/redo', async () => {
+    const tmpDir = createTempDir();
+    const projectPath = path.join(tmpDir, 'rack.yaml');
+    const stateManager = new ProjectStateManager({ projectPath, watchFile: false });
+    const mcpInstance = createRackMcpServer(stateManager);
+
+    try {
+      mcpInstance.handlers.initRack({
+        project_name: 'Optimize Rack E2E Test',
+        standard: '10inch',
+        u_height: 8,
+        rail_depth_mm: 245,
+        enclosure_type: 'closed-glass-front',
+        front_door_clearance_mm: 45,
+        rear_clearance_mm: 40
+      });
+
+      // Intentionally place heavy UPS at top (U8) and colliding rear PDU directly behind it (U8 rear),
+      // with patch panel at bottom (U1) and switch separated at U4, plus modular carrier + mini-PC at U6.
+      mcpInstance.handlers.mountEquipment({
+        instance_id: 'ups-1',
+        blueprint_slug: 'cyberpower-10inch-ups-1u',
+        u_position: 8,
+        face: 'front'
+      });
+      mcpInstance.handlers.mountEquipment({
+        instance_id: 'pdu-1',
+        blueprint_slug: 'brennenstuhl-10inch-pdu-6way-iec-c13',
+        u_position: 8,
+        face: 'rear'
+      });
+      mcpInstance.handlers.mountEquipment({
+        instance_id: 'patch-1',
+        blueprint_slug: 'deskpi-10inch-patch-panel-12port',
+        u_position: 1,
+        face: 'front'
+      });
+      mcpInstance.handlers.mountEquipment({
+        instance_id: 'sw-1',
+        blueprint_slug: 'ubiquiti-usw-flex-2-5g-8-poe',
+        u_position: 4,
+        face: 'front'
+      });
+      mcpInstance.handlers.mountEquipment({
+        instance_id: 'cover-1',
+        blueprint_slug: '3dprint-10inch-cover-panel-hex-1u',
+        u_position: 5,
+        face: 'front'
+      });
+      mcpInstance.handlers.mountEquipment({
+        instance_id: 'carrier-1',
+        blueprint_slug: '3dprint-10inch-lenovo-tiny-plus-2keystone',
+        u_position: 6,
+        face: 'front'
+      });
+      mcpInstance.handlers.mountEquipment({
+        instance_id: 'mini-1',
+        blueprint_slug: 'lenovo-thinkcentre-m920q',
+        parent_carrier_id: 'carrier-1',
+        slot_id: 'left-mini-pc-bay'
+      });
+
+      const badWire = mcpInstance.handlers.connectCables({
+        cables: [
+          {
+            cable_id: 'pwr-ups-pdu',
+            cable_type: 'power-c13-c14',
+            from: { instance_id: 'ups-1', port_id: 'iec_out1' },
+            to: { instance_id: 'pdu-1', port_id: 'ac_in' }
+          },
+          {
+            cable_id: 'pwr-ups-sw',
+            cable_type: 'power-c13-c14',
+            from: { instance_id: 'ups-1', port_id: 'iec_out2' },
+            to: { instance_id: 'sw-1', port_id: 'pwr_in' }
+          },
+          {
+            cable_id: 'pwr-pdu-mini',
+            cable_type: 'power-dc-5525',
+            from: { instance_id: 'pdu-1', port_id: 'iec_out1' },
+            to: { instance_id: 'mini-1', port_id: 'dc_in' }
+          },
+          {
+            cable_id: 'lan-mini-pp',
+            cable_type: 'cat6a',
+            from: { instance_id: 'mini-1', port_id: 'eth0' },
+            to: { instance_id: 'patch-1', port_id: 'p1', face: 'rear' }
+          },
+          {
+            cable_id: 'patch-pp-sw-1',
+            cable_type: 'cat6a',
+            from: { instance_id: 'patch-1', port_id: 'p1', face: 'front' },
+            to: { instance_id: 'sw-1', port_id: 'eth1' }
+          },
+          {
+            cable_id: 'patch-pp-sw-2',
+            cable_type: 'cat6a',
+            from: { instance_id: 'patch-1', port_id: 'p2', face: 'front' },
+            to: { instance_id: 'sw-1', port_id: 'eth2' }
+          }
+        ]
+      });
+      expect(badWire.status).toBe('INVALID');
+      expect(
+        badWire.issues.some((i) => i.code === 'PLUG_CLEARANCE_COLLISION')
+      ).toBe(true);
+
+      // Invoke optimize_rack through official MCP Server tools/call with pinned child mini-1 (locks carrier-1 at U6)
+      const internalServer = mcpInstance.mcpServer.server as unknown as {
+        _requestHandlers: Map<
+          string,
+          (req: unknown, extra: unknown) => Promise<unknown>
+        >;
+      };
+      const callToolHandler = internalServer._requestHandlers.get('tools/call');
+      expect(callToolHandler).toBeDefined();
+
+      const mcpRes = (await callToolHandler!(
+        {
+          method: 'tools/call',
+          params: {
+            name: 'optimize_rack',
+            arguments: { pin_instance_ids: ['mini-1'] }
+          }
+        },
+        {}
+      )) as {
+        readonly isError?: boolean;
+        readonly structuredContent?: {
+          readonly status: string;
+          readonly data: {
+            readonly improved: boolean;
+            readonly applied: boolean;
+            readonly moved_devices: ReadonlyArray<{
+              readonly instance_id: string;
+              readonly from_u: number;
+              readonly to_u: number;
+              readonly from_face: string;
+              readonly to_face: string;
+              readonly reason: string;
+            }>;
+            readonly metrics_before: {
+              readonly error_count: number;
+              readonly warning_count: number;
+              readonly normalized_cog_y: number;
+              readonly total_cable_length_mm: number;
+            };
+            readonly metrics_after: {
+              readonly error_count: number;
+              readonly warning_count: number;
+              readonly normalized_cog_y: number;
+              readonly total_cable_length_mm: number;
+            };
+          };
+        };
+      };
+
+      expect(mcpRes.isError).toBe(false);
+      expect(mcpRes.structuredContent).toBeDefined();
+      expect(mcpRes.structuredContent!.status).toBe('VALID');
+      const data = mcpRes.structuredContent!.data;
+      expect(data.improved).toBe(true);
+      expect(data.applied).toBe(true);
+      expect(data.moved_devices.length).toBeGreaterThan(0);
+      expect(data.metrics_before.error_count).toBeGreaterThan(0);
+      expect(data.metrics_after.error_count).toBe(0);
+      expect(data.metrics_after.warning_count).toBe(0);
+      expect(data.metrics_after.normalized_cog_y).toBeLessThanOrEqual(0.5);
+      expect(data.metrics_after.total_cable_length_mm).toBeLessThan(
+        data.metrics_before.total_cable_length_mm
+      );
+
+      // Pinned child's parent carrier stayed at U6 and kept mini-1 intact
+      const sceneAfter = stateManager.getScene();
+      const carrierAfter = sceneAfter.project.mounted_devices.find(
+        (d) => d.instance_id === 'carrier-1'
+      );
+      expect(carrierAfter?.u_position).toBe(6);
+      expect(carrierAfter?.children[0]?.instance_id).toBe('mini-1');
+
+      // Calling optimize_rack again is idempotent (no further moves)
+      const secondRun = mcpInstance.handlers.optimizeRack({
+        pin_instance_ids: ['mini-1']
+      });
+      expect(secondRun.status).toBe('VALID');
+      expect((secondRun.data as { readonly improved: boolean }).improved).toBe(
+        false
+      );
+
+      // Undo reverts back to INVALID pre-optimization state; Redo restores VALID optimized state
+      const undoRes = mcpInstance.handlers.undoRedo({ action: 'undo' });
+      expect(undoRes.status).toBe('INVALID');
+      const redoRes = mcpInstance.handlers.undoRedo({ action: 'redo' });
+      expect(redoRes.status).toBe('VALID');
+    } finally {
+      await mcpInstance.close();
     }
   });
 });

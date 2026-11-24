@@ -2,6 +2,7 @@ export * from './schemas/index.js';
 export * from './geometry/index.js';
 export * from './validation/index.js';
 export * from './routing/index.js';
+export * from './optimization/index.js';
 
 import {
   type BlueprintCatalogMap,

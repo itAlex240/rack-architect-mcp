@@ -467,6 +467,16 @@ export const UndoRedoInputSchema = z.object({
     .describe('History traversal direction: "undo" reverts the most recent state mutation, "redo" reapplies a reverted mutation.')
 });
 
+export const OptimizeRackInputSchema = z.object({
+  pin_instance_ids: z
+    .array(z.string().min(1).max(100))
+    .max(120)
+    .optional()
+    .describe(
+      'Optional list of mounted device or child sub-module instance_id values whose current U position and rack face must remain locked during optimization.'
+    )
+});
+
 // ---------------------------------------------------------------------------
 // Documented Tool Output Schemas (TDQS Contextual Completeness & MCP Structured Output)
 // ---------------------------------------------------------------------------
@@ -928,6 +938,83 @@ export const UndoRedoOutputSchema = createToolOutputEnvelopeSchema(
   'Structured result of undo_redo containing stack availability, updated ASCII elevation, and validation status.'
 );
 
+export const MovedDeviceRecordSchema = z
+  .object({
+    instance_id: z
+      .string()
+      .describe('Top-level mounted rack-unit device or carrier instance_id that was relocated.'),
+    from_u: z
+      .number()
+      .int()
+      .positive()
+      .describe('Original 1-indexed U position before optimization.'),
+    to_u: z
+      .number()
+      .int()
+      .positive()
+      .describe('Optimized 1-indexed U position after optimization.'),
+    from_face: RackFaceSchema.describe('Original rack mounting face ("front" or "rear").'),
+    to_face: RackFaceSchema.describe('Optimized rack mounting face ("front" or "rear").'),
+    reason: z
+      .string()
+      .describe('Deterministic engineering rationale explaining why this device was relocated.')
+  })
+  .passthrough()
+  .describe('Relocation record emitted by optimize_rack for a moved top-level device.');
+
+export const OptimizationMetricsSchema = z
+  .object({
+    error_count: z
+      .number()
+      .int()
+      .nonnegative()
+      .describe('Total blocking validation ERROR diagnostics.'),
+    warning_count: z
+      .number()
+      .int()
+      .nonnegative()
+      .describe('Total non-blocking validation WARNING diagnostics.'),
+    normalized_cog_y: z
+      .number()
+      .describe('Normalized vertical Center of Gravity ratio (0.0 = bottom, 1.0 = top; target <= 0.50).'),
+    total_cable_length_mm: z
+      .number()
+      .nonnegative()
+      .describe('Sum of 3D Catmull-Rom spline arc lengths across all routed cables in millimeters.')
+  })
+  .passthrough()
+  .describe('Aggregated rack layout quality metrics before or after optimization.');
+
+export const OptimizeRackOutputSchema = createToolOutputEnvelopeSchema(
+  z
+    .object({
+      improved: z
+        .boolean()
+        .describe('True when optimization strictly improved the rack layout and relocated at least one device.'),
+      applied: z
+        .boolean()
+        .describe('True when the optimized layout was committed to rack.yaml and pushed onto the undo stack.'),
+      moved_devices: z
+        .array(MovedDeviceRecordSchema)
+        .describe('Top-level mounted devices relocated during optimization with before/after U positions and faces.'),
+      metrics_before: OptimizationMetricsSchema.describe(
+        'Validation error/warning counts, normalized CoG, and total cable length before optimization.'
+      ),
+      metrics_after: OptimizationMetricsSchema.describe(
+        'Validation error/warning counts, normalized CoG, and total cable length after optimization.'
+      ),
+      ascii_elevation: z
+        .string()
+        .describe('Updated ASCII front/rear rack elevation diagram after optimization.'),
+      validation: ValidationResultSchema.describe(
+        'Complete 5-stage deterministic validation report for the resulting rack layout.'
+      )
+    })
+    .passthrough()
+    .describe('Deterministic rack auto-optimization result payload.'),
+  'Structured result of optimize_rack containing moved device records, before/after metrics, ASCII elevation, and 5-stage validation status.'
+);
+
 /**
  * Canonical MCP / WebMCP Tool Registry definitions per ARCHITECTURE.md Section 6.1.
  * Note: Server name uses snake_case (`rack_architect_mcp`) per Gemini API Remote MCP naming rules.
@@ -1106,6 +1193,20 @@ export const MCP_TOOL_DEFINITIONS = {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
+      openWorldHint: false
+    } satisfies McpToolAnnotations
+  },
+  optimize_rack: {
+    name: 'optimize_rack',
+    title: 'Auto-Optimize Rack Equipment Layout Deterministically',
+    description:
+      "Deterministically optimize top-level rackmount equipment U positions and rear PDU face assignments to eliminate chassis or plug-clearance collisions, lower the vertical Center of Gravity below 0.50, preserve mid-height front-to-rear cable portals, and minimize 3D cable arc lengths. Evaluates candidate zoned and locally refined layouts against the full 3D geometry, 5-stage validation, and Catmull-Rom routing engines while keeping carrier sub-modules inside their parent bays, keeping existing cables and external endpoints intact, and locking any devices or parent carriers named in 'pin_instance_ids'. Only commits a strictly improving, non-regressing layout to rack.yaml and pushes an undo snapshot when at least one device moves, making repeated calls safely idempotent. Use when a rack has collisions, top-heavy warnings, or unclustered patch cabling; use modify_equipment instead to move a single device to an explicit U slot.",
+    inputSchema: OptimizeRackInputSchema,
+    outputSchema: OptimizeRackOutputSchema,
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
       openWorldHint: false
     } satisfies McpToolAnnotations
   }

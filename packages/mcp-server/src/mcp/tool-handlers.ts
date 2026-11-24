@@ -10,6 +10,8 @@ import {
   InitRackInputSchema,
   ModifyEquipmentInputSchema,
   MountEquipmentInputSchema,
+  OptimizeRackInputSchema,
+  optimizeRackLayout,
   PlanExternalEndpointsInputSchema,
   SearchCatalogInputSchema,
   UndoRedoInputSchema,
@@ -152,6 +154,7 @@ export class RackMcpToolHandlers {
     const shouldAppendViewerBanner =
       (tool === 'init_rack' ||
         tool === 'validate_rack' ||
+        tool === 'optimize_rack' ||
         tool === 'export_deliverables') &&
       !env.summary.includes(liveViewerUrl);
 
@@ -1496,6 +1499,44 @@ export class RackMcpToolHandlers {
         validation: res.scene.validation
       },
       issues: res.scene.validation.issues
+    });
+  }
+
+  public optimizeRack(
+    rawInput: z.input<typeof OptimizeRackInputSchema> = {}
+  ): ToolExecutionEnvelope {
+    const input = OptimizeRackInputSchema.parse(rawInput);
+    const currentProject = this.stateManager.getProject();
+    const catalog = this.stateManager.getCatalog();
+
+    const optResult = optimizeRackLayout(currentProject, catalog.toRecord(), {
+      ...(input.pin_instance_ids !== undefined
+        ? { pin_instance_ids: input.pin_instance_ids }
+        : {})
+    });
+
+    const scene = optResult.improved
+      ? this.stateManager.applyMutation(optResult.optimized_project, 'mutation')
+      : this.stateManager.getScene();
+    const asciiElevation = generateAsciiElevation(scene, catalog);
+
+    const summary = optResult.improved
+      ? `Optimized rack layout by relocating ${optResult.moved_devices.length} device(s) (Errors: ${optResult.metrics_before.error_count} -> ${optResult.metrics_after.error_count}, Warnings: ${optResult.metrics_before.warning_count} -> ${optResult.metrics_after.warning_count}, CoG: ${optResult.metrics_before.normalized_cog_y} -> ${optResult.metrics_after.normalized_cog_y}, Cable Length: ${optResult.metrics_before.total_cable_length_mm}mm -> ${optResult.metrics_after.total_cable_length_mm}mm).`
+      : `Rack layout is already optimal for current constraints; no devices were moved (Errors: ${optResult.metrics_after.error_count}, Warnings: ${optResult.metrics_after.warning_count}, CoG: ${optResult.metrics_after.normalized_cog_y}).`;
+
+    return this.finalize('optimize_rack', {
+      status: scene.validation.is_valid ? 'VALID' : 'INVALID',
+      summary,
+      data: {
+        improved: optResult.improved,
+        applied: optResult.improved,
+        moved_devices: optResult.moved_devices,
+        metrics_before: optResult.metrics_before,
+        metrics_after: optResult.metrics_after,
+        ascii_elevation: asciiElevation,
+        validation: scene.validation
+      },
+      issues: scene.validation.issues
     });
   }
 }

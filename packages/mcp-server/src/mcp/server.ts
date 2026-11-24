@@ -63,7 +63,7 @@ export interface CreateRackMcpServerOptions {
 }
 
 /**
- * Creates and wires the official MCP server (`rack_architect_mcp`) with all 12 tools,
+ * Creates and wires the official MCP server (`rack_architect_mcp`) with all 13 tools,
  * 4 resources, and 5 guided planning prompts.
  */
 export function createRackMcpServer(
@@ -98,7 +98,7 @@ export function createRackMcpServer(
   );
 
   // ---------------------------------------------------------------------------
-  // 1. Register Canonical 12 MCP Tools from MCP_TOOL_DEFINITIONS
+  // 1. Register Canonical 13 MCP Tools from MCP_TOOL_DEFINITIONS
   // ---------------------------------------------------------------------------
   const tools = MCP_TOOL_DEFINITIONS;
 
@@ -310,6 +310,22 @@ export function createRackMcpServer(
     },
     async (args) =>
       wrapToolResult(tools.undo_redo.name, handlers.undoRedo(args))
+  );
+
+  mcpServer.registerTool(
+    tools.optimize_rack.name,
+    {
+      title: tools.optimize_rack.title,
+      description: tools.optimize_rack.description,
+      inputSchema: tools.optimize_rack.inputSchema.shape,
+      outputSchema: tools.optimize_rack.outputSchema.shape,
+      annotations: toMcpAnnotations(
+        tools.optimize_rack.title,
+        tools.optimize_rack.annotations
+      )
+    },
+    async (args) =>
+      wrapToolResult(tools.optimize_rack.name, handlers.optimizeRack(args))
   );
 
   // ---------------------------------------------------------------------------
